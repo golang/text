@@ -6,9 +6,10 @@ package norm_test
 
 import (
 	"bytes"
-	"exp/norm"
 	"fmt"
 	"unicode/utf8"
+
+	"code.google.com/p/go.text/unicode/norm"
 )
 
 // EqualSimple uses a norm.Iter to compare two non-normalized

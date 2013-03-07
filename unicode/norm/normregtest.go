@@ -9,7 +9,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"exp/norm"
 	"flag"
 	"fmt"
 	"log"
@@ -23,6 +22,8 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"code.google.com/p/go.text/unicode/norm"
 )
 
 func main() {
