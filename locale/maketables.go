@@ -612,6 +612,9 @@ func (b *builder) writeLanguage() {
 
 	// altLangISO3 get the alternative ISO3 names that need to be mapped.
 	altLangISO3 := stringSet{}
+	// Add dummy start to avoid the use of index 0.
+	altLangISO3.add("000")
+	altLangISO3.updateLater("000", "aa")
 
 	// legacyTag maps from tag to language code.
 	legacyTag := make(map[string]string)

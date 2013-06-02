@@ -17,17 +17,17 @@ const unknownLang = 196
 var lang string = "" +
 	"aaarabbkaeveaffrakkaammhanrgarraassmavvaayymazzebaakbeelbgul" +
 	"bhihbiisbmambnenboodbrrebsoscaatcehechhacooscrrecsescuhucvhv" +
-	"cyymdaandeeudsb\x00dvivdzzoeeweelllenngeopoes\x00\x04etsteuu" +
+	"cyymdaandeeudsb\x00dvivdzzoeeweelllenngeopoes\x00\x05etsteuu" +
 	"sfaasffulfiinfjijfoaofrrafrr\x00frs\x00fyrygalegdlagllggnrng" +
 	"sw\x00guujgvlvhaauheebhiinhomohrrvhsb\x00htathuunhyyehzerian" +
-	"aidndieleigboiiiiikpkinndiodoisslittaiukuiw\x00\x02japnji" +
-	"\x00\x05jvavjwavkaatkgonkiikkjuakkazklalkmhmknankoorkok\x00k" +
-	"rauksaskuurkvomkw\x00\x00kyirlaatlbtzlgugliimlninloaoltitluu" +
+	"aidndieleigboiiiiikpkinndiodoisslittaiukuiw\x00\x03japnji" +
+	"\x00\x06jvavjwavkaatkgonkiikkjuakkazklalkmhmknankoorkok\x00k" +
+	"rauksaskuurkvomkw\x00\x01kyirlaatlbtzlgugliimlninloaoltitluu" +
 	"blvavmai\x00men\x00mglgmhahmirimis\x00mkkdmlalmnonmoolmrarms" +
 	"samtltmul\x00myyanaaunbobnddends\x00neepngdoniu\x00nlldnnnon" +
 	"oornqo\x00nrblnso\x00nvavnyyaocciojjiomrmorriossspaanpiliplo" +
-	"lpsusptorquuermohrnunroonruusrw\x00\x03saanscrdsdndsemesgags" +
-	"h\x00\x01siinsklksllvsmmosnnasoomsqqisrrpssswstotsuunsvwesww" +
+	"lpsusptorquuermohrnunroonruusrw\x00\x04saanscrdsdndsemesgags" +
+	"h\x00\x02siinsklksllvsmmosnnasoomsqqisrrpssswstotsuunsvwesww" +
 	"ataamteeltem\x00tggkthhatiirtkuktkl\x00tlgltmh\x00tnsntoontp" +
 	"i\x00trurtssottattvl\x00twwityahugigukkrund\x00urrduzzbveenv" +
 	"iievoolwalnwoolxhhoyiidyoorzahazbl\x00zhhozuulzxx\x00\xff" +
@@ -229,8 +229,8 @@ var langNoIndex = [2197]uint8{
 // altLangISO3 holds an alphabetically sorted list of 3-letter language code alternatives
 // to 2-letter language codes that cannot be derived using the method described above.
 // Each 3-letter code is followed by its 1-byte langID.
-// Size: 44 bytes
-var altLangISO3 string = "corchbs\xa1hebPkin\x9bspa(yidR\xff\xff\xff\xff"
+// Size: 48 bytes
+var altLangISO3 string = "000\x00corchbs\xa1hebPkin\x9bspa(yidR\xff\xff\xff\xff"
 
 // langOldMap maps deprecated langIDs to their suggested replacements.
 // Size: 108 bytes, 27 elements
@@ -609,4 +609,4 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 8.7K (8876 bytes); Check: D7ACA2A7
+// Size: 8.7K (8880 bytes); Check: FCB76CB5

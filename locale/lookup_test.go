@@ -96,6 +96,7 @@ func TestLangID(t *testing.T) {
 		{id: "ji", bcp47: "ji", iso3: "yid-", norm: "yi"},
 		{id: "jw", bcp47: "jw", iso3: "jav-", norm: "jv"},
 		{id: "ar", bcp47: "ar", iso3: "ara"},
+		{id: "kw", bcp47: "kw", iso3: "cor"},
 		{id: "arb", bcp47: "arb", iso3: "arb", norm: "ar"},
 		{id: "ar", bcp47: "ar", iso3: "ara"},
 		{id: "kur", bcp47: "ku", iso3: "kur"},
