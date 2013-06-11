@@ -59,6 +59,8 @@ altLangISO3 holds an alphabetically sorted list of 3-letter language code altern
 to 2-letter language codes that cannot be derived using the method described above.
 Each 3-letter code is followed by its 1-byte langID.`,
 	`
+altLangIndex is used to convert indexes in altLangISO3 to langIDs.`,
+	`
 tagAlias holds a mapping from legacy and grandfathered tags to their locale ID.`,
 	`
 langOldMap maps deprecated langIDs to their suggested replacements.`,
@@ -84,7 +86,7 @@ codes indicating collections of regions.`,
 altRegionISO3 holds a list of 3-letter region codes that cannot be
 mapped to 2-letter codes using the default algorithm. This is a short list.`,
 	`
-altRegionIDs holsd a list of regionIDs the positions of which match those
+altRegionIDs holds a list of regionIDs the positions of which match those
 of the 3-letter ISO codes in altRegionISO3.`,
 	`
 currency holds an alphabetically sorted list of canonical 3-letter currency identifiers.
@@ -94,6 +96,24 @@ number of decimal positions.`,
 	`
 suppressScript is an index from langID to the dominant script for that language,
 if it exists.  If a script is given, it should be suppressed from the language tag.`,
+	`
+likelyLang is a lookup table, indexed by langID, for the most likely
+scripts and regions given incomplete information. If more entries exist for a
+given language, region and script are the index and size respectively
+of the list in likelyLangList.`,
+	`
+likelyLangList holds lists info associated with likelyLang.`,
+	`
+likelyRegion is a lookup table, indexed by regionID, for the most likely
+languages and scripts given incomplete information. If more entries exist
+for a given regionID, lang and script are the index and size respectively
+of the list in likelyRegionList.
+TODO: exclude containers and user-definable regions from the list.`,
+	`
+likelyRegionList holds lists info associated with likelyRegion.`,
+	`
+likelyScript is a lookup table, indexed by scriptID, for the most likely
+languages and regions given a script.`,
 	`
 nRegionGroups is the number of region groups.  All regionIDs < nRegionGroups
 are groups.`,
@@ -432,15 +452,40 @@ func (b *builder) writeConst(name string, x interface{}) {
 	b.pf("const %s = %v", name, x)
 }
 
+// writeConsts computes f(v) for all v in values and writes the results
+// as constants named prefix+v to a single constant block.
+func (b *builder) writeConsts(prefix string, f func(string) int, values ...string) {
+	b.comment(prefix)
+	b.pf("const (")
+	for _, v := range values {
+		b.pf("\t%s%s = %v", prefix, v, f(v))
+	}
+	b.pf(")")
+}
+
+// writeType writes the type of the given value, which must be a struct.
+func (b *builder) writeType(value interface{}) {
+	t := reflect.TypeOf(value)
+	b.comment(t.Name())
+	b.pf("type %s struct {", t.Name())
+	for i := 0; i < t.NumField(); i++ {
+		b.pf("\t%s %s", t.Field(i).Name, t.Field(i).Type.Name())
+	}
+	b.pf("}")
+}
+
 func (b *builder) writeSlice(name string, ss interface{}) {
 	b.comment(name)
 	v := reflect.ValueOf(ss)
 	t := v.Type().Elem()
+	tn := strings.Replace(fmt.Sprintf("%s", t), "main.", "", 1)
 	b.addArraySize(v.Len()*int(t.Size()), v.Len())
-	fmt.Fprintf(b.w, `var %s = [%d]%s{`, name, v.Len(), t)
+	fmt.Fprintf(b.w, `var %s = [%d]%s{`, name, v.Len(), tn)
 	for i := 0; i < v.Len(); i++ {
 		if t.Kind() == reflect.Struct {
-			fmt.Fprintf(b.w, "\n\t%#v, ", v.Index(i).Interface())
+			line := fmt.Sprintf("\n\t%#v, ", v.Index(i).Interface())
+			line = strings.Replace(line, "main.", "", 1)
+			fmt.Fprintf(b.w, line)
 		} else {
 			if i%12 == 0 {
 				fmt.Fprintf(b.w, "\n\t")
@@ -585,14 +630,17 @@ func (b *builder) parseIndices() {
 			ss.add(k)
 		}
 	}
-
+	// Include languages in likely subtags.
+	for _, m := range b.supp.LikelySubtags.LikelySubtag {
+		from := strings.Split(m.From, "_")
+		b.lang.add(from[0])
+	}
 	// currency codes
 	for _, reg := range b.supp.CurrencyData.Region {
 		for _, cur := range reg.Currency {
 			b.currency.add(cur.Iso4217)
 		}
 	}
-
 	// common locales
 	b.locale.parse(meta.DefaultContent.Locales)
 }
@@ -601,7 +649,8 @@ func (b *builder) parseIndices() {
 func (b *builder) writeLanguage() {
 	meta := b.supp.Metadata
 
-	b.writeConst("unknownLang", b.lang.index("und"))
+	b.writeConst("unknownLang", b.lang.index("und")) // TODO: remove
+	b.writeConsts("lang_", b.lang.index, "en", "und")
 
 	// Get language codes that need to be mapped (overlong 3-letter codes, deprecated
 	// 2-letter codes and grandfathered tags.
@@ -697,19 +746,26 @@ func (b *builder) writeLanguage() {
 	// space of all valid 3-letter language identifiers.
 	b.writeBitVector("langNoIndex", b.langNoIndex.slice())
 
+	altLangIndex := []uint16{}
 	for i, s := range altLangISO3.slice() {
-		idx := b.lang.index(altLangISO3.update[s])
-		altLangISO3.s[i] += string([]byte{byte(idx)})
+		altLangISO3.s[i] += string([]byte{byte(len(altLangIndex))})
+		if i > 0 {
+			idx := b.lang.index(altLangISO3.update[s])
+			altLangIndex = append(altLangIndex, uint16(idx))
+		}
 	}
 	b.writeString("altLangISO3", altLangISO3.join())
+	b.writeSlice("altLangIndex", altLangIndex)
 
+	type fromTo struct{ from, to uint16 }
+	b.writeType(fromTo{})
 	makeMap := func(name string, ss *stringSet) {
 		ss.sortFunc(func(i, j string) bool {
 			return b.langIndex(i) < b.langIndex(j)
 		})
-		m := []struct{ from, to uint16 }{}
+		m := []fromTo{}
 		for _, s := range ss.s {
-			m = append(m, struct{ from, to uint16 }{
+			m = append(m, fromTo{
 				b.langIndex(s),
 				b.langIndex(ss.update[s]),
 			})
@@ -726,7 +782,8 @@ func (b *builder) writeLanguage() {
 
 func (b *builder) writeScript() {
 	unknown := uint8(b.script.index("Zzzz"))
-	b.writeConst("unknownScript", unknown)
+	b.writeConst("unknownScript", unknown) // TODO: remove
+	b.writeConsts("scr", b.script.index, "Latn", "Hani", "Hans", "Zzzz")
 	b.writeString("script", b.script.join())
 
 	supp := make([]uint8, len(b.lang.slice()))
@@ -749,7 +806,8 @@ func parseM49(s string) uint16 {
 }
 
 func (b *builder) writeRegion() {
-	b.writeConst("unknownRegion", b.region.index("ZZ"))
+	b.writeConst("unknownRegion", b.region.index("ZZ")) // TODO: remove
+	b.writeConsts("reg", b.region.index, "US", "ZZ")
 
 	isoOffset := b.region.index("AA")
 	m49map := make([]uint16, len(b.region.slice()))
@@ -828,6 +886,157 @@ func (b *builder) writeCurrencies() {
 	// Write this constant after currency to force a proper indentation of
 	// the final comment.
 	b.writeConst("unknownCurrency", unknown)
+}
+
+// writeLikelyData writes tables that are used both for finding parent relations and for
+// language matching.  Each entry contains additional bits to indicate the status of the
+// data to know when it cannot be used for parent relations.
+func (b *builder) writeLikelyData() {
+	const (
+		isList = 1 << iota
+		scriptInFrom
+		regionInFrom
+	)
+	type ( // generated types
+		likelyScriptRegion struct {
+			region uint16
+			script uint8
+			flags  uint8
+		}
+		likelyLangScript struct {
+			lang   uint16
+			script uint8
+			flags  uint8
+		}
+		likelyLangRegion struct {
+			lang   uint16
+			region uint16
+		}
+	)
+	var ( // generated variables
+		likelyLang       = make([]likelyScriptRegion, len(b.lang.s))
+		likelyRegion     = make([]likelyLangScript, len(b.region.s))
+		likelyScript     = make([]likelyLangRegion, len(b.script.s))
+		likelyLangList   = []likelyScriptRegion{}
+		likelyRegionList = []likelyLangScript{}
+	)
+	type fromTo struct {
+		from, to []string
+	}
+	var ( // undefined values for language, script and region
+		und  = b.langIndex("und")
+		zzzz = uint8(b.script.index("Zzzz"))
+		zz   = uint16(b.region.index("ZZ"))
+	)
+	langToOther := map[int][]fromTo{}
+	regionToOther := map[int][]fromTo{}
+	for i := range likelyScript {
+		likelyScript[i] = likelyLangRegion{und, zz}
+	}
+	for _, m := range b.supp.LikelySubtags.LikelySubtag {
+		from := strings.Split(m.From, "_")
+		to := strings.Split(m.To, "_")
+		if len(to) != 3 {
+			log.Fatalf("invalid number of subtags in %q: found %d, want 3", m.To, len(to))
+		}
+		if len(from) > 3 {
+			log.Fatalf("invalid number of subtags: found %d, want 1-3", len(from))
+		}
+		if from[0] != to[0] && from[0] != "und" {
+			log.Fatalf("unexpected language change in expansion: %s -> %s", from, to)
+		}
+		if len(from) >= 2 && from[1] != to[1] && from[1] != to[2] && from[1] != "Hani" {
+			log.Fatalf("unexpected changes in expansion: %s -> %s", to, from)
+		}
+		if len(from) == 3 {
+			if from[2] != to[2] {
+				log.Fatalf("unexpected region change in expansion: %s -> %s", from, to)
+			}
+			if from[0] != "und" {
+				log.Fatalf("unexpected fully specified from tag: %s -> %s", from, to)
+			}
+		}
+		if len(from) == 1 || from[0] != "und" {
+			id := b.lang.index(from[0])
+			langToOther[id] = append(langToOther[id], fromTo{from, to})
+		} else if len(from) == 2 && len(from[1]) == 4 {
+			sid := b.script.index(from[1])
+			likelyScript[sid].lang = uint16(b.langIndex(to[0]))
+			likelyScript[sid].region = uint16(b.region.index(to[2]))
+		} else {
+			id := b.region.index(from[len(from)-1])
+			regionToOther[id] = append(regionToOther[id], fromTo{from, to})
+		}
+	}
+	b.writeType(likelyLangRegion{})
+	b.writeSlice("likelyScript", likelyScript)
+
+	for i := range likelyLang {
+		likelyLang[i] = likelyScriptRegion{region: zz, script: zzzz}
+	}
+	for id := range b.lang.s {
+		list := langToOther[id]
+		if len(list) == 1 {
+			likelyLang[id].region = uint16(b.region.index(list[0].to[2]))
+			likelyLang[id].script = uint8(b.script.index(list[0].to[1]))
+		} else if len(list) > 1 {
+			likelyLang[id].flags = isList
+			likelyLang[id].region = uint16(len(likelyLangList))
+			likelyLang[id].script = uint8(len(list))
+			for _, x := range list {
+				flags := uint8(0)
+				if len(x.from) > 1 {
+					if x.from[1] == x.to[2] {
+						flags = regionInFrom
+					} else {
+						flags = scriptInFrom
+					}
+				}
+				likelyLangList = append(likelyLangList, likelyScriptRegion{
+					region: uint16(b.region.index(x.to[2])),
+					script: uint8(b.script.index(x.to[1])),
+					flags:  flags,
+				})
+			}
+		}
+	}
+	// TODO: merge suppressScript data with this table.
+	b.writeType(likelyScriptRegion{})
+	b.writeSlice("likelyLang", likelyLang)
+	b.writeSlice("likelyLangList", likelyLangList)
+
+	for i := range likelyRegion {
+		likelyRegion[i] = likelyLangScript{lang: und, script: zzzz}
+	}
+	for id, list := range regionToOther {
+		if len(list) == 1 {
+			likelyRegion[id].lang = uint16(b.langIndex(list[0].to[0]))
+			likelyRegion[id].script = uint8(b.script.index(list[0].to[1]))
+			if len(list[0].from) > 2 {
+				likelyRegion[id].flags = scriptInFrom
+			}
+		} else {
+			likelyRegion[id].flags = isList
+			likelyRegion[id].lang = uint16(len(likelyRegionList))
+			likelyRegion[id].script = uint8(len(list))
+			if len(list[0].from) != 2 {
+				log.Fatalf("expected script to be unspecified in the first entry, found %s", list[0].from)
+			}
+			for _, x := range list {
+				x := likelyLangScript{
+					lang:   uint16(b.langIndex(x.to[0])),
+					script: uint8(b.script.index(x.to[1])),
+				}
+				if len(list[0].from) > 2 {
+					x.flags = scriptInFrom
+				}
+				likelyRegionList = append(likelyRegionList, x)
+			}
+		}
+	}
+	b.writeType(likelyLangScript{})
+	b.writeSlice("likelyRegion", likelyRegion)
+	b.writeSlice("likelyRegionList", likelyRegionList)
 }
 
 func (b *builder) writeRegionInclusionData() {
@@ -928,6 +1137,7 @@ func main() {
 	b.writeRegion()
 	// TODO: b.writeLocale()
 	b.writeCurrencies()
+	b.writeLikelyData()
 	b.writeRegionInclusionData()
 
 	fmt.Fprintf(b.out, "\n// Size: %.1fK (%d bytes); Check: %X\n", float32(b.size)/1024, b.size, b.hash32.Sum32())

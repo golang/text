@@ -193,11 +193,9 @@ func Parse(s string) (loc ID, err error) {
 func parse(scan *scanner, s string) (loc ID, err error) {
 	loc = und
 	var end int
-	private := false
 	if n := len(scan.token); n <= 1 {
 		scan.toLower(0, len(scan.b))
 		end = parsePrivate(scan)
-		private = end > 0
 	} else if n >= 4 {
 		return und, errInvalid
 	} else { // the usual case
@@ -205,21 +203,18 @@ func parse(scan *scanner, s string) (loc ID, err error) {
 		if n := len(scan.token); n == 1 {
 			loc.pExt = uint16(end)
 			end = parseExtensions(scan)
-			if end-int(loc.pExt) <= 1 {
-				loc.pExt = 0
-			}
 		}
 	}
 	if end < len(scan.b) {
 		scan.setErrorf("locale: invalid parts %q", scan.b[end:])
 		scan.b = scan.b[:end]
 	}
-	if len(scan.b) <= len(s) {
+	if len(scan.b) < len(s) {
 		s = s[:len(scan.b)]
 	}
 	if len(s) > 0 && cmp(s, scan.b) == 0 {
 		loc.str = &s
-	} else if loc.pVariant > 0 || loc.pExt > 0 || private {
+	} else if loc.pVariant < uint8(end) {
 		s = string(scan.b)
 		loc.str = &s
 	}
@@ -264,12 +259,9 @@ func parseTag(scan *scanner) (ID, int) {
 		end = scan.scan()
 	}
 	scan.toLower(scan.start, len(scan.b))
-	start := scan.start
+	loc.pVariant = byte(end)
 	end = parseVariants(scan, end)
-	if start < end {
-		loc.pVariant = byte(start)
-		loc.pExt = uint16(end)
-	}
+	loc.pExt = uint16(end)
 	return loc, end
 }
 
@@ -454,6 +446,12 @@ func Compose(m map[Part]string) (loc ID, err error) {
 	}
 	add(Part('x'))
 	scan.init()
+	if len(scan.token) >= 4 {
+		if !strings.EqualFold(string(scan.b), "root") {
+			return und, errInvalid
+		}
+		return und, nil
+	}
 	return parse(&scan, "")
 }
 
@@ -479,21 +477,19 @@ func (loc ID) Part(p Part) string {
 			s = loc.region.String()
 		}
 	case VariantPart:
-		if loc.pVariant > 0 {
-			s = (*loc.str)[loc.pVariant:loc.pExt]
+		if loc.str != nil && uint16(loc.pVariant) < loc.pExt {
+			s = (*loc.str)[loc.pVariant+1 : loc.pExt]
 		}
 	default:
-		if loc.pExt > 0 {
+		if loc.str != nil {
 			str := *loc.str
-			for i := int(loc.pExt); i < len(str); {
+			for i := int(loc.pExt); i < len(str)-1; {
 				end, name, ext := getExtension(str, i)
 				if name == byte(p) {
 					return ext
 				}
 				i = end
 			}
-		} else if p == 'x' && loc.str != nil && strings.HasPrefix(*loc.str, "x-") {
-			return (*loc.str)[2:]
 		}
 	}
 	return s
@@ -511,18 +507,13 @@ func (loc ID) Parts() map[Part]string {
 	}
 	if loc.str != nil {
 		s := *loc.str
-		if strings.HasPrefix(s, "x-") {
-			m[Extension('x')] = s[2:]
-		} else if loc.pExt > 0 {
-			i := int(loc.pExt)
-			if int(loc.pVariant) != i && loc.pVariant > 0 {
-				m[VariantPart] = s[loc.pVariant:i]
-			}
-			for i < len(s) {
-				end, name, ext := getExtension(s, i)
-				m[Extension(name)] = ext
-				i = end
-			}
+		if uint16(loc.pVariant) < loc.pExt {
+			m[VariantPart] = s[loc.pVariant+1 : loc.pExt]
+		}
+		for i := int(loc.pExt); i < len(s)-1; {
+			end, name, ext := getExtension(s, i)
+			m[Extension(name)] = ext
+			i = end
 		}
 	}
 	return m
@@ -530,7 +521,9 @@ func (loc ID) Parts() map[Part]string {
 
 // getExtension returns the name, body and end position of the extension.
 func getExtension(s string, p int) (end int, name byte, ext string) {
-	p++
+	if s[p] == '-' {
+		p++
+	}
 	if s[p] == 'x' {
 		return len(s), s[p], s[p+2:]
 	}

@@ -102,11 +102,11 @@ func getLangID(s []byte) langID {
 }
 
 // mapLang returns the mapped langID of id according to mapping m.
-func normLang(m []struct{ from, to uint16 }, id langID) langID {
+func normLang(m []fromTo, id langID) langID {
 	k := sort.Search(len(m), func(i int) bool {
 		return m[i].from >= uint16(id)
 	})
-	if m[k].from == uint16(id) {
+	if k < len(m) && m[k].from == uint16(id) {
 		return langID(m[k].to)
 	}
 	return id
@@ -154,7 +154,7 @@ func getLangISO3(s []byte) langID {
 			}
 		}
 		if i := index(altLangISO3, s); i != -1 {
-			return langID(altLangISO3[i+3])
+			return langID(altLangIndex[altLangISO3[i+3]])
 		}
 		n := strToInt(s)
 		if langNoIndex[n/8]&(1<<(n%8)) != 0 {

@@ -41,8 +41,8 @@ type ID struct {
 	lang     langID
 	region   regionID
 	script   scriptID
-	pVariant byte   // offset in str
-	pExt     uint16 // offset of first extension
+	pVariant byte   // offset in str, includes preceding '-'
+	pExt     uint16 // offset of first extension, includes preceding '-'
 	str      *string
 }
 
@@ -54,19 +54,26 @@ func Make(id string) ID {
 	return loc.Canonicalize(All)
 }
 
+// equalTags compares language, script and region identifiers only.
+func (loc ID) equalTags(id ID) bool {
+	return loc.lang == id.lang && loc.script == id.script && loc.region == id.region
+}
+
 // IsRoot returns true if loc is equal to locale "und".
 func (loc ID) IsRoot() bool {
 	if loc.str != nil {
 		n := len(*loc.str)
-		if n > 0 && loc.pExt > 0 && int(loc.pExt) < n {
-			return false
-		}
-		if uint16(loc.pVariant) != loc.pExt || strings.HasPrefix(*loc.str, "x-") {
+		if int(loc.pVariant) < n {
 			return false
 		}
 		loc.str = nil
 	}
-	return loc == und
+	return loc.equalTags(und)
+}
+
+// private reports whether the ID consists solely of a private use tag.
+func (loc ID) private() bool {
+	return loc.str != nil && loc.pVariant == 0
 }
 
 // CanonType is can be used to enable or disable various types of canonicalization.
@@ -111,12 +118,7 @@ func (loc ID) Canonicalize(t CanonType) ID {
 		loc.lang = l
 	}
 	if changed && loc.str != nil {
-		ext := ""
-		if loc.pExt > 0 {
-			ext = (*loc.str)[loc.pExt+1:]
-		}
-		s := loc.makeString(loc.Part(VariantPart), ext)
-		loc.str = &s
+		loc.remakeString()
 	}
 	return loc
 }
@@ -149,36 +151,58 @@ const (
 	Exact                   // exact match or explicitly specified value
 )
 
-func (loc *ID) makeString(vars, ext string) string {
+// remakeString is used to update loc.str in case lang, script or region changed.
+// It is assumed that pExt and pVariant still point to the start of the
+// respective parts, if applicable.
+// remakeString can also be used to compute the string for IDs for which str
+// is not defined.
+func (loc *ID) remakeString() {
+	extra := ""
+	if loc.str != nil && int(loc.pVariant) < len(*loc.str) {
+		extra = (*loc.str)[loc.pVariant:]
+		if loc.pVariant > 0 {
+			extra = extra[1:]
+		}
+	}
 	buf := [128]byte{}
+	isUnd := loc.lang == unknownLang
 	n := loc.lang.stringToBuf(buf[:])
 	if loc.script != unknownScript {
 		n += copy(buf[n:], "-")
 		n += copy(buf[n:], loc.script.String())
+		isUnd = false
 	}
 	if loc.region != unknownRegion {
 		n += copy(buf[n:], "-")
 		n += copy(buf[n:], loc.region.String())
+		isUnd = false
 	}
 	b := buf[:n]
-	if vars != "" {
-		b = append(b, '-')
-		loc.pVariant = byte(len(b))
-		b = append(b, vars...)
+	if extra != "" {
+		if isUnd && strings.HasPrefix(extra, "x-") {
+			loc.str = &extra
+			loc.pVariant = 0
+			loc.pExt = 0
+			return
+		} else {
+			diff := uint8(n) - loc.pVariant
+			b = append(b, '-')
+			b = append(b, extra...)
+			loc.pVariant += diff
+			loc.pExt += uint16(diff)
+		}
+	} else {
+		loc.pVariant = uint8(len(b))
 		loc.pExt = uint16(len(b))
 	}
-	if ext != "" {
-		loc.pExt = uint16(len(b))
-		b = append(b, '-')
-		b = append(b, ext...)
-	}
-	return string(b)
+	s := string(b)
+	loc.str = &s
 }
 
 // String returns the canonical string representation of the locale.
 func (loc ID) String() string {
 	if loc.str == nil {
-		return loc.makeString("", "")
+		loc.remakeString()
 	}
 	return *loc.str
 }
