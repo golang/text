@@ -83,11 +83,15 @@ func TestFixCase(t *testing.T) {
 }
 
 func TestLangID(t *testing.T) {
-	tests := []struct{ id, bcp47, iso3, norm string }{
-		{id: "", bcp47: "und", iso3: "und"},
-		{id: "  ", bcp47: "und", iso3: "und"},
-		{id: "   ", bcp47: "und", iso3: "und"},
-		{id: "    ", bcp47: "und", iso3: "und"},
+	tests := []struct {
+		id, bcp47, iso3, norm string
+		err                   error
+	}{
+		{id: "", bcp47: "und", iso3: "und", err: errInvalid},
+		{id: "  ", bcp47: "und", iso3: "und", err: errInvalid},
+		{id: "   ", bcp47: "und", iso3: "und", err: errInvalid},
+		{id: "    ", bcp47: "und", iso3: "und", err: errInvalid},
+		{id: "xxx", bcp47: "und", iso3: "und", err: errUnknown},
 		{id: "und", bcp47: "und", iso3: "und"},
 		{id: "aju", bcp47: "aju", iso3: "aju", norm: "jrb"},
 		{id: "jrb", bcp47: "jrb", iso3: "jrb"},
@@ -112,21 +116,27 @@ func TestLangID(t *testing.T) {
 		{id: "cmn", bcp47: "cmn", iso3: "cmn", norm: "zh"},
 	}
 	for i, tt := range tests {
-		want := getLangID(b(tt.id))
-		if id := getLangISO2(b(tt.bcp47)); len(tt.bcp47) == 2 && want != id {
+		want, err := getLangID(b(tt.id))
+		if err != tt.err {
+			t.Errorf("%d:err(%s): found %q; want %q", i, tt.id, err, tt.err)
+		}
+		if err != nil {
+			continue
+		}
+		if id, _ := getLangISO2(b(tt.bcp47)); len(tt.bcp47) == 2 && want != id {
 			t.Errorf("%d:getISO2(%s): found %v; want %v", i, tt.bcp47, id, want)
 		}
 		if len(tt.iso3) == 3 {
-			if id := getLangISO3(b(tt.iso3)); want != id {
+			if id, _ := getLangISO3(b(tt.iso3)); want != id {
 				t.Errorf("%d:getISO3(%s): found %q; want %q", i, tt.iso3, id, want)
 			}
-			if id := getLangID(b(tt.iso3)); want != id {
+			if id, _ := getLangID(b(tt.iso3)); want != id {
 				t.Errorf("%d:getID3(%s): found %v; want %v", i, tt.iso3, id, want)
 			}
 		}
 		norm := want
 		if tt.norm != "" {
-			norm = getLangID(b(tt.norm))
+			norm, _ = getLangID(b(tt.norm))
 		}
 		id := normLang(langOldMap[:], want)
 		id = normLang(langMacroMap[:], id)
@@ -147,6 +157,8 @@ func TestRegionID(t *testing.T) {
 		id, iso2, iso3 string
 		m49            int
 	}{
+		{"_  ", "AA", "AAA", 958},
+		{"_000", "AA", "AAA", 958},
 		{"AA", "AA", "AAA", 958},
 		{"IC", "IC", "", 0},
 		{"ZZ", "ZZ", "ZZZ", 999},
@@ -154,17 +166,24 @@ func TestRegionID(t *testing.T) {
 		{"419", "", "", 419},
 	}
 	for i, tt := range tests {
-		want := getRegionID(b(tt.id))
-		if id := getRegionISO2(b(tt.iso2)); len(tt.iso2) == 2 && want != id {
+		if tt.id[0] == '_' {
+			id := tt.id[1:]
+			if _, err := getRegionID(b(id)); err == nil {
+				t.Errorf("%d:err(%s): found nil; want error", i, id, err)
+			}
+			continue
+		}
+		want, _ := getRegionID(b(tt.id))
+		if id, _ := getRegionISO2(b(tt.iso2)); len(tt.iso2) == 2 && want != id {
 			t.Errorf("%d:getISO2(%s): found %d; want %d", i, tt.iso2, id, want)
 		}
-		if id := getRegionISO3(b(tt.iso3)); len(tt.iso3) == 3 && want != id {
+		if id, _ := getRegionISO3(b(tt.iso3)); len(tt.iso3) == 3 && want != id {
 			t.Errorf("%d:getISO3(%s): found %d; want %d", i, tt.iso3, id, want)
 		}
-		if id := getRegionID(b(tt.iso3)); len(tt.iso3) == 3 && want != id {
+		if id, _ := getRegionID(b(tt.iso3)); len(tt.iso3) == 3 && want != id {
 			t.Errorf("%d:getID3(%s): found %d; want %d", i, tt.iso3, id, want)
 		}
-		if id := getRegionM49(tt.m49); tt.m49 != 0 && want != id {
+		if id, _ := getRegionM49(tt.m49); tt.m49 != 0 && want != id {
 			t.Errorf("%d:getM49(%d): found %d; want %d", i, tt.m49, id, want)
 		}
 		if len(tt.iso2) == 2 {
@@ -185,27 +204,29 @@ func TestRegionID(t *testing.T) {
 	}
 }
 
-func TestScript(t *testing.T) {
-	idx := "BbbbDdddEeeeZzzz\xff\xff\xff\xff"
-	const und = unknownScript
+func TestGetScriptID(t *testing.T) {
+	idx := "0000BbbbDdddEeeeZzzz\xff\xff\xff\xff"
 	tests := []struct {
 		in  string
 		out scriptID
 	}{
-		{"    ", und},
-		{"      ", und},
-		{"  ", und},
-		{"", und},
-		{"Bbbb", 0},
-		{"Dddd", 1},
-		{"dddd", 1},
-		{"dDDD", 1},
-		{"Eeee", 2},
-		{"Zzzz", 3},
+		{"    ", 0},
+		{"      ", 0},
+		{"  ", 0},
+		{"", 0},
+		{"Aaaa", 0},
+		{"Bbbb", 1},
+		{"Dddd", 2},
+		{"dddd", 2},
+		{"dDDD", 2},
+		{"Eeee", 3},
+		{"Zzzz", 4},
 	}
 	for i, tt := range tests {
-		if id := getScriptID(idx, b(tt.in)); id != tt.out {
+		if id, err := getScriptID(idx, b(tt.in)); id != tt.out {
 			t.Errorf("%d:%s: found %d; want %d", i, tt.in, id, tt.out)
+		} else if id == 0 && err == nil {
+			t.Errorf("%d:%s: no error; expected one", i, tt.in)
 		}
 	}
 }
@@ -215,35 +236,37 @@ func TestCurrency(t *testing.T) {
 		return string(round<<2 + dec)
 	}
 	idx := strings.Join([]string{
+		"   \x00",
 		"BBB" + curInfo(5, 2),
 		"DDD\x00",
 		"XXX\x00",
 		"ZZZ\x00",
 		"\xff\xff\xff\xff",
 	}, "")
-	const und = unknownCurrency
 	tests := []struct {
 		in         string
 		out        currencyID
 		round, dec int
 	}{
-		{"   ", und, 0, 0},
-		{"     ", und, 0, 0},
-		{" ", und, 0, 0},
-		{"", und, 0, 0},
-		{"BBB", 0, 5, 2},
-		{"DDD", 1, 0, 0},
-		{"dDd", 1, 0, 0},
-		{"ddd", 1, 0, 0},
-		{"XXX", 2, 0, 0},
-		{"Zzz", 3, 0, 0},
+		{"   ", 0, 0, 0},
+		{"     ", 0, 0, 0},
+		{" ", 0, 0, 0},
+		{"", 0, 0, 0},
+		{"BBB", 1, 5, 2},
+		{"DDD", 2, 0, 0},
+		{"dDd", 2, 0, 0},
+		{"ddd", 2, 0, 0},
+		{"XXX", 3, 0, 0},
+		{"Zzz", 4, 0, 0},
 	}
 	for i, tt := range tests {
-		id := getCurrencyID(idx, b(tt.in))
+		id, err := getCurrencyID(idx, b(tt.in))
 		if id != tt.out {
 			t.Errorf("%d:%s: found %d; want %d", i, tt.in, id, tt.out)
+		} else if tt.out == 0 && err == nil {
+			t.Errorf("%d:%s: no error; expected one", i, tt.in)
 		}
-		if id <= 3 {
+		if id > 0 {
 			if d := decimals(idx, id); d != tt.dec {
 				t.Errorf("%d:dec(%s): found %d; want %d", i, tt.in, d, tt.dec)
 			}

@@ -26,6 +26,7 @@ func TestAddLikelySubtags(t *testing.T) {
 		{"und-Arab-CC", "ms-Arab-CC"},
 		{"und-Hans-CC", "zh-Hans-CC"},
 		{"und-CC", "en-Latn-CC"},
+		{"sr", "sr-Cyrl-RS"},
 		// We would like addLikelySubtags to generate the same results if the input
 		// only changes by adding tags that would otherwise have been added
 		// by the expansion.
@@ -155,7 +156,9 @@ func TestRegionDistance(t *testing.T) {
 		{"ZZ", "QQ", 2},
 	}
 	for i, tt := range tests {
-		if d := regionDistance(getRegionID([]byte(tt.a)), getRegionID([]byte(tt.b))); d != tt.d {
+		ra, _ := getRegionID([]byte(tt.a))
+		rb, _ := getRegionID([]byte(tt.b))
+		if d := regionDistance(ra, rb); d != tt.d {
 			t.Errorf("%d: d(%s, %s) = %v; want %v", i, tt.a, tt.b, d, tt.d)
 		}
 	}

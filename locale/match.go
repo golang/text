@@ -15,19 +15,19 @@ const (
 )
 
 func (loc *ID) setUndefinedLang(id langID) {
-	if loc.lang == lang_und {
+	if loc.lang == 0 {
 		loc.lang = id
 	}
 }
 
 func (loc *ID) setUndefinedScript(id scriptID) {
-	if loc.script == scrZzzz {
+	if loc.script == 0 {
 		loc.script = id
 	}
 }
 
 func (loc *ID) setUndefinedRegion(id regionID) {
-	if loc.region == regZZ {
+	if loc.region == 0 {
 		loc.region = id
 	}
 }
@@ -64,8 +64,8 @@ func addTags(loc ID) (ID, error) {
 	if loc.private() {
 		return loc, nil
 	}
-	if loc.script != scrZzzz && loc.region != regZZ {
-		if loc.lang != lang_und {
+	if loc.script != 0 && loc.region != 0 {
+		if loc.lang != 0 {
 			// already fully specified
 			return loc, nil
 		}
@@ -82,20 +82,20 @@ func addTags(loc ID) (ID, error) {
 			}
 		}
 	}
-	if loc.lang != lang_und {
+	if loc.lang != 0 {
 		// Search matches for lang-script and lang-region, where lang != und.
 		if loc.lang < langNoIndexOffset {
 			x := likelyLang[loc.lang]
 			if x.flags&isList != 0 {
 				list := likelyLangList[x.region : x.region+uint16(x.script)]
-				if loc.script != scrZzzz {
+				if loc.script != 0 {
 					for _, x := range list {
 						if scriptID(x.script) == loc.script && x.flags&scriptInFrom != 0 {
 							loc.setUndefinedRegion(regionID(x.region))
 							return loc, nil
 						}
 					}
-				} else if loc.region != regZZ {
+				} else if loc.region != 0 {
 					for _, x := range list {
 						if regionID(x.region) == loc.region && x.flags&regionInFrom != 0 {
 							loc.setUndefinedScript(scriptID(x.script))
@@ -107,21 +107,21 @@ func addTags(loc ID) (ID, error) {
 		}
 	} else {
 		// Search matches for und-script.
-		if loc.script != scrZzzz {
+		if loc.script != 0 {
 			x := likelyScript[loc.script]
-			if x.region != regZZ {
+			if x.region != 0 {
 				loc.setUndefinedRegion(regionID(x.region))
 				loc.setUndefinedLang(langID(x.lang))
 				return loc, nil
 			}
 		}
 		// Search matches for und-region.
-		if loc.region != regZZ {
+		if loc.region != 0 {
 			x := likelyRegion[loc.region]
 			if x.flags&isList != 0 {
 				x = likelyRegionList[x.lang]
 			}
-			if x.script != scrZzzz && x.flags != scriptInFrom {
+			if x.script != 0 && x.flags != scriptInFrom {
 				loc.setUndefinedLang(langID(x.lang))
 				loc.setUndefinedScript(scriptID(x.script))
 				return loc, nil
@@ -134,10 +134,10 @@ func addTags(loc ID) (ID, error) {
 		if x.flags&isList != 0 {
 			x = likelyLangList[x.region]
 		}
-		if x.region != regZZ {
+		if x.region != 0 {
 			loc.setUndefinedScript(scriptID(x.script))
 			loc.setUndefinedRegion(regionID(x.region))
-			if loc.lang == lang_und {
+			if loc.lang == 0 {
 				loc.lang = lang_en // default language
 			}
 			return loc, nil
@@ -173,9 +173,9 @@ func minimizeTags(loc ID) (ID, error) {
 		return loc, err
 	}
 	for _, id := range [...]ID{
-		{lang: loc.lang, script: scrZzzz, region: regZZ},
-		{lang: loc.lang, script: scrZzzz, region: loc.region},
-		{lang: loc.lang, script: loc.script, region: regZZ},
+		{lang: loc.lang},
+		{lang: loc.lang, region: loc.region},
+		{lang: loc.lang, script: loc.script},
 	} {
 		if x, err := addTags(id); err == nil && max.equalTags(x) {
 			loc.setTagsFrom(id)

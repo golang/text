@@ -94,7 +94,7 @@ type langID uint16
 
 // getLangID returns the langID of s if s is a canonical ID
 // or langUnknown if s is not a canonical langID.
-func getLangID(s []byte) langID {
+func getLangID(s []byte) (langID, error) {
 	if len(s) == 2 {
 		return getLangISO2(s)
 	}
@@ -114,13 +114,14 @@ func normLang(m []fromTo, id langID) langID {
 
 // getLangISO2 returns the langID for the given 2-letter ISO language code
 // or unknownLang if this does not exist.
-func getLangISO2(s []byte) langID {
+func getLangISO2(s []byte) (langID, error) {
 	if len(s) == 2 && fixCase("zz", s) {
 		if i := index(lang, s); i != -1 && lang[i+3] != 0 {
-			return langID(i >> 2)
+			return langID(i >> 2), nil
 		}
+		return 0, errUnknown
 	}
-	return unknownLang
+	return 0, errInvalid
 }
 
 const base = 'z' - 'a' + 1
@@ -145,29 +146,37 @@ func intToStr(v uint, s []byte) {
 
 // getLangISO3 returns the langID for the given 3-letter ISO language code
 // or unknownLang if this does not exist.
-func getLangISO3(s []byte) langID {
+func getLangISO3(s []byte) (langID, error) {
 	if fixCase("und", s) {
 		// first try to match canonical 3-letter entries
 		for i := search(lang, s[:2]); cmp(lang[i:i+2], s[:2]) == 0; i += 4 {
 			if lang[i+3] == 0 && lang[i+2] == s[2] {
-				return langID(i >> 2)
+				// We treat "und" as special and always translate it to "unspecified".
+				// Note that ZZ and Zzzz are private use and are not treated as
+				// unspecified by default.
+				id := langID(i >> 2)
+				if id == nonCanonicalUnd {
+					return 0, nil
+				}
+				return id, nil
 			}
 		}
 		if i := index(altLangISO3, s); i != -1 {
-			return langID(altLangIndex[altLangISO3[i+3]])
+			return langID(altLangIndex[altLangISO3[i+3]]), nil
 		}
 		n := strToInt(s)
 		if langNoIndex[n/8]&(1<<(n%8)) != 0 {
-			return langID(n) + langNoIndexOffset
+			return langID(n) + langNoIndexOffset, nil
 		}
 		// Check for non-canonical uses of ISO3.
 		for i := search(lang, s[:1]); lang[i] == s[0]; i += 4 {
 			if cmp(lang[i+2:][:2], s[1:3]) == 0 {
-				return langID(i >> 2)
+				return langID(i >> 2), nil
 			}
 		}
+		return 0, errUnknown
 	}
-	return unknownLang
+	return 0, errInvalid
 }
 
 // stringToBuf writes the string to b and returns the number of bytes
@@ -176,6 +185,8 @@ func (id langID) stringToBuf(b []byte) int {
 	if id >= langNoIndexOffset {
 		intToStr(uint(id)-langNoIndexOffset, b[:3])
 		return 3
+	} else if id == 0 {
+		return copy(b, "und")
 	}
 	l := lang[id<<2:]
 	if l[3] == 0 {
@@ -186,7 +197,9 @@ func (id langID) stringToBuf(b []byte) int {
 
 // String returns the BCP 47 representation of the langID.
 func (id langID) String() string {
-	if id >= langNoIndexOffset {
+	if id == 0 {
+		return "und"
+	} else if id >= langNoIndexOffset {
 		id -= langNoIndexOffset
 		buf := [3]byte{}
 		intToStr(uint(id), buf[:])
@@ -201,7 +214,7 @@ func (id langID) String() string {
 
 // ISO3 returns the ISO 639-3 language code.
 func (id langID) ISO3() string {
-	if id >= langNoIndexOffset {
+	if id == 0 || id >= langNoIndexOffset {
 		return id.String()
 	}
 	l := lang[id<<2:]
@@ -219,7 +232,7 @@ type regionID uint16
 
 // getRegionID returns the region id for s if s is a valid 2-letter region code
 // or unknownRegion.
-func getRegionID(s []byte) regionID {
+func getRegionID(s []byte) (regionID, error) {
 	if len(s) == 3 {
 		if isAlpha(s[0]) {
 			return getRegionISO3(s)
@@ -233,51 +246,57 @@ func getRegionID(s []byte) regionID {
 
 // getRegionISO2 returns the regionID for the given 2-letter ISO country code
 // or unknownRegion if this does not exist.
-func getRegionISO2(s []byte) regionID {
+func getRegionISO2(s []byte) (regionID, error) {
 	if fixCase("ZZ", s) {
 		if i := index(regionISO, s); i != -1 {
-			return regionID(i>>2) + isoRegionOffset
+			return regionID(i>>2) + isoRegionOffset, nil
 		}
+		return 0, errUnknown
 	}
-	return unknownRegion
+	return 0, errInvalid
 }
 
 // getRegionISO3 returns the regionID for the given 3-letter ISO country code
 // or unknownRegion if this does not exist.
-func getRegionISO3(s []byte) regionID {
+func getRegionISO3(s []byte) (regionID, error) {
 	if fixCase("ZZZ", s) {
 		for i := search(regionISO, s[:1]); regionISO[i] == s[0]; i += 4 {
 			if cmp(regionISO[i+2:][:2], s[1:3]) == 0 {
-				return regionID(i>>2) + isoRegionOffset
+				return regionID(i>>2) + isoRegionOffset, nil
 			}
 		}
 		for i := 0; i < len(altRegionISO3); i += 3 {
 			if cmp(altRegionISO3[i:i+3], s) == 0 {
-				return regionID(altRegionIDs[i/3])
+				return regionID(altRegionIDs[i/3]), nil
 			}
 		}
+		return 0, errUnknown
 	}
-	return unknownRegion
+	return 0, errInvalid
 }
 
-func getRegionM49(n int) regionID {
+func getRegionM49(n int) (regionID, error) {
 	// These will mostly be group IDs, which are at the start of the list.
 	// For other values this may be a bit slow, as there are over 300 entries.
 	// TODO: group id is sorted!
 	if n == 0 {
-		return unknownRegion
+		return 0, errUnknown
 	}
 	for i, v := range m49 {
 		if v == uint16(n) {
-			return regionID(i)
+			return regionID(i), nil
 		}
 	}
-	return unknownRegion
+	return 0, errUnknown
 }
 
 // String returns the BCP 47 representation for the region.
+// It returns "ZZ" for an unspecified region.
 func (r regionID) String() string {
 	if r < isoRegionOffset {
+		if r == 0 {
+			return "ZZ"
+		}
 		return fmt.Sprintf("%03d", r.m49())
 	}
 	r -= isoRegionOffset
@@ -309,29 +328,35 @@ type scriptID uint8
 
 // getScriptID returns the script id for string s. It assumes that s
 // is of the format [A-Z][a-z]{3}.
-func getScriptID(idx string, s []byte) scriptID {
+func getScriptID(idx string, s []byte) (scriptID, error) {
 	if fixCase("Zzzz", s) {
 		if i := index(idx, s); i != -1 {
-			return scriptID(i >> 2)
+			return scriptID(i >> 2), nil
 		}
+		return 0, errUnknown
 	}
-	return unknownScript
+	return 0, errInvalid
 }
 
 // String returns the script code in title case.
+// It returns "Zyyy" for an unspecified script.
 func (s scriptID) String() string {
+	if s == 0 {
+		return "Zyyy"
+	}
 	return get(script, int(s), 4)
 }
 
 type currencyID uint16
 
-func getCurrencyID(idx string, s []byte) currencyID {
+func getCurrencyID(idx string, s []byte) (currencyID, error) {
 	if fixCase("XXX", s) {
 		if i := index(idx, s); i != -1 {
-			return currencyID(i >> 2)
+			return currencyID(i >> 2), nil
 		}
+		return 0, errUnknown
 	}
-	return unknownCurrency
+	return 0, errInvalid
 }
 
 // String returns the upper case representation of the currency.

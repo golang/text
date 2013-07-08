@@ -29,6 +29,7 @@ func isAlphaNum(s []byte) bool {
 }
 
 var (
+	errUnknown  = errors.New("locale: unknown language, script, region or currency")
 	errEmpty    = errors.New("locale: empty locale identifier")
 	errInvalid  = errors.New("locale: invalid")
 	errTrailSep = errors.New("locale: trailing separator")
@@ -223,35 +224,41 @@ func parse(scan *scanner, s string) (loc ID, err error) {
 
 // parseTag parses language, script, region and variants.
 // It returns an ID and the end position in the input that was parsed.
-func parseTag(scan *scanner) (ID, int) {
-	loc := und
+func parseTag(scan *scanner) (loc ID, end int) {
+	var e error
 	// TODO: set an error if an unknown lang, script or region is encountered.
-	loc.lang = getLangID(scan.token)
+	loc.lang, e = getLangID(scan.token)
+	scan.setError(e)
 	scan.replace(loc.lang.String())
 	langStart := scan.start
-	end := scan.scan()
+	end = scan.scan()
 	for len(scan.token) == 3 && isAlpha(scan.token[0]) {
 		// From http://tools.ietf.org/html/bcp47, <lang>-<extlang> tags are equivalent
 		// to a tag of the form <extlang>.
-		if lang := getLangID(scan.token); lang != unknownLang {
+		if lang, e := getLangID(scan.token); lang != 0 {
 			loc.lang = lang
+			scan.setError(e)
 			copy(scan.b[langStart:], lang.String())
 			scan.b[langStart+3] = '-'
 			scan.start = langStart + 4
+		} else {
+			scan.setError(e)
 		}
 		scan.gobble()
 		end = scan.scan()
 	}
 	if len(scan.token) == 4 && isAlpha(scan.token[0]) {
-		loc.script = getScriptID(script, scan.token)
-		if loc.script == unknownScript {
+		loc.script, e = getScriptID(script, scan.token)
+		if loc.script == 0 {
+			scan.setError(e)
 			scan.gobble()
 		}
 		end = scan.scan()
 	}
 	if n := len(scan.token); n >= 2 && n <= 3 {
-		loc.region = getRegionID(scan.token)
-		if loc.region == unknownRegion {
+		loc.region, e = getRegionID(scan.token)
+		if loc.region == 0 {
+			scan.setError(e)
 			scan.gobble()
 		} else {
 			scan.replace(loc.region.String())
@@ -300,6 +307,7 @@ func (b bytesSort) Less(i, j int) bool {
 
 // parseExtensions parses and normalizes the extensions in the buffer.
 // It returns the last position of scan.b that is part of any extension.
+// TODO: return errors.
 func parseExtensions(scan *scanner) int {
 	start := scan.start
 	exts := [][]byte{}
@@ -402,12 +410,6 @@ func Extension(e byte) Part {
 	return Part(e)
 }
 
-var (
-	errLang   = errors.New("locale: invalid Language")
-	errScript = errors.New("locale: invalid Script")
-	errRegion = errors.New("locale: invalid Region")
-)
-
 // Compose returns a Locale composed from the given parts or an error
 // if any of the strings for the parts are ill-formed.
 func Compose(m map[Part]string) (loc ID, err error) {
@@ -469,11 +471,11 @@ func (loc ID) Part(p Part) string {
 	case LanguagePart:
 		s = loc.lang.String()
 	case ScriptPart:
-		if loc.script != unknownScript {
+		if loc.script != 0 {
 			s = loc.script.String()
 		}
 	case RegionPart:
-		if loc.region != unknownRegion {
+		if loc.region != 0 {
 			s = loc.region.String()
 		}
 	case VariantPart:
@@ -499,10 +501,10 @@ func (loc ID) Part(p Part) string {
 func (loc ID) Parts() map[Part]string {
 	m := make(map[Part]string)
 	m[LanguagePart] = loc.lang.String()
-	if loc.script != unknownScript {
+	if loc.script != 0 {
 		m[ScriptPart] = loc.script.String()
 	}
-	if loc.region != unknownRegion {
+	if loc.region != 0 {
 		m[RegionPart] = loc.region.String()
 	}
 	if loc.str != nil {

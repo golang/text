@@ -588,6 +588,9 @@ func (b *builder) writeMapFunc(name string, m map[string]string, f func(string) 
 }
 
 func (b *builder) langIndex(s string) uint16 {
+	if s == "und" {
+		return 0
+	}
 	if i, ok := b.lang.find(s); ok {
 		return uint16(i)
 	}
@@ -641,6 +644,12 @@ func (b *builder) parseIndices() {
 			b.currency.add(cur.Iso4217)
 		}
 	}
+	// Add dummy codes at the start of each list to represent "unspecified".
+	b.lang.add("---")
+	b.script.add("----")
+	b.region.add("---")
+	b.currency.add("---")
+
 	// common locales
 	b.locale.parse(meta.DefaultContent.Locales)
 }
@@ -649,8 +658,8 @@ func (b *builder) parseIndices() {
 func (b *builder) writeLanguage() {
 	meta := b.supp.Metadata
 
-	b.writeConst("unknownLang", b.lang.index("und")) // TODO: remove
-	b.writeConsts("lang_", b.lang.index, "en", "und")
+	b.writeConst("nonCanonicalUnd", b.lang.index("und"))
+	b.writeConsts("lang_", b.lang.index, "de", "en")
 
 	// Get language codes that need to be mapped (overlong 3-letter codes, deprecated
 	// 2-letter codes and grandfathered tags.
@@ -662,8 +671,8 @@ func (b *builder) writeLanguage() {
 	// altLangISO3 get the alternative ISO3 names that need to be mapped.
 	altLangISO3 := stringSet{}
 	// Add dummy start to avoid the use of index 0.
-	altLangISO3.add("000")
-	altLangISO3.updateLater("000", "aa")
+	altLangISO3.add("---")
+	altLangISO3.updateLater("---", "aa")
 
 	// legacyTag maps from tag to language code.
 	legacyTag := make(map[string]string)
@@ -705,7 +714,7 @@ func (b *builder) writeLanguage() {
 	lang.updateLater("ak", "aka")
 
 	// Ensure that each 2-letter code is matched with a 3-letter code.
-	for _, v := range lang.s {
+	for _, v := range lang.s[1:] {
 		s, ok := lang.update[v]
 		if !ok {
 			if s, ok = lang.update[langOldMap.update[v]]; !ok {
@@ -781,16 +790,13 @@ func (b *builder) writeLanguage() {
 }
 
 func (b *builder) writeScript() {
-	unknown := uint8(b.script.index("Zzzz"))
-	b.writeConst("unknownScript", unknown) // TODO: remove
-	b.writeConsts("scr", b.script.index, "Latn", "Hani", "Hans", "Zzzz")
+	b.writeConsts("scr", b.script.index, "Latn", "Hani", "Hans", "Zyyy", "Zzzz")
 	b.writeString("script", b.script.join())
 
 	supp := make([]uint8, len(b.lang.slice()))
-	for i, v := range b.lang.slice() {
-		supp[i] = unknown
+	for i, v := range b.lang.slice()[1:] {
 		if sc := b.registry[v].suppressScript; sc != "" {
-			supp[i] = uint8(b.script.index(sc))
+			supp[i+1] = uint8(b.script.index(sc))
 		}
 	}
 	b.writeSlice("suppressScript", supp)
@@ -806,7 +812,6 @@ func parseM49(s string) uint16 {
 }
 
 func (b *builder) writeRegion() {
-	b.writeConst("unknownRegion", b.region.index("ZZ")) // TODO: remove
 	b.writeConsts("reg", b.region.index, "US", "ZZ")
 
 	isoOffset := b.region.index("AA")
@@ -846,7 +851,7 @@ func (b *builder) writeRegion() {
 	b.writeSlice("altRegionIDs", altRegionIDs)
 
 	// 3-digit region lookup, groupings.
-	for i := 0; i < isoOffset; i++ {
+	for i := 1; i < isoOffset; i++ {
 		m49map[i] = parseM49(b.region.s[i])
 	}
 	b.writeSlice("m49", m49map)
@@ -860,7 +865,6 @@ func (b *builder) writeLanguageInfo() {
 }
 
 func (b *builder) writeCurrencies() {
-	unknown := b.currency.index("XXX")
 	digits := map[string]uint64{}
 	rounding := map[string]uint64{}
 	for _, info := range b.supp.CurrencyData.Fractions[0].Info {
@@ -883,9 +887,8 @@ func (b *builder) writeCurrencies() {
 	}
 	b.writeString("currency", b.currency.join())
 	// Hack alert: gofmt indents a trailing comment after an indented string.
-	// Write this constant after currency to force a proper indentation of
-	// the final comment.
-	b.writeConst("unknownCurrency", unknown)
+	// Ensure that the next thing written is not a comment.
+	// writeLikelyData serves this purpose as it starts with an uncommented type.
 }
 
 // writeLikelyData writes tables that are used both for finding parent relations and for
@@ -923,16 +926,8 @@ func (b *builder) writeLikelyData() {
 	type fromTo struct {
 		from, to []string
 	}
-	var ( // undefined values for language, script and region
-		und  = b.langIndex("und")
-		zzzz = uint8(b.script.index("Zzzz"))
-		zz   = uint16(b.region.index("ZZ"))
-	)
 	langToOther := map[int][]fromTo{}
 	regionToOther := map[int][]fromTo{}
-	for i := range likelyScript {
-		likelyScript[i] = likelyLangRegion{und, zz}
-	}
 	for _, m := range b.supp.LikelySubtags.LikelySubtag {
 		from := strings.Split(m.From, "_")
 		to := strings.Split(m.To, "_")
@@ -957,7 +952,10 @@ func (b *builder) writeLikelyData() {
 			}
 		}
 		if len(from) == 1 || from[0] != "und" {
-			id := b.lang.index(from[0])
+			id := 0
+			if from[0] != "und" {
+				id = b.lang.index(from[0])
+			}
 			langToOther[id] = append(langToOther[id], fromTo{from, to})
 		} else if len(from) == 2 && len(from[1]) == 4 {
 			sid := b.script.index(from[1])
@@ -971,9 +969,6 @@ func (b *builder) writeLikelyData() {
 	b.writeType(likelyLangRegion{})
 	b.writeSlice("likelyScript", likelyScript)
 
-	for i := range likelyLang {
-		likelyLang[i] = likelyScriptRegion{region: zz, script: zzzz}
-	}
 	for id := range b.lang.s {
 		list := langToOther[id]
 		if len(list) == 1 {
@@ -1005,17 +1000,15 @@ func (b *builder) writeLikelyData() {
 	b.writeSlice("likelyLang", likelyLang)
 	b.writeSlice("likelyLangList", likelyLangList)
 
-	for i := range likelyRegion {
-		likelyRegion[i] = likelyLangScript{lang: und, script: zzzz}
-	}
-	for id, list := range regionToOther {
+	for id := range b.region.s {
+		list := regionToOther[id]
 		if len(list) == 1 {
 			likelyRegion[id].lang = uint16(b.langIndex(list[0].to[0]))
 			likelyRegion[id].script = uint8(b.script.index(list[0].to[1]))
 			if len(list[0].from) > 2 {
 				likelyRegion[id].flags = scriptInFrom
 			}
-		} else {
+		} else if len(list) > 1 {
 			likelyRegion[id].flags = isList
 			likelyRegion[id].lang = uint16(len(likelyRegionList))
 			likelyRegion[id].script = uint8(len(list))
@@ -1043,8 +1036,8 @@ func (b *builder) writeRegionInclusionData() {
 	type index uint
 	groups := make(map[int]index)
 	// Create group indices.
-	for i := 0; b.region.s[i][0] < 'A'; i++ { // Base M49 indices on regionID.
-		groups[i] = index(i)
+	for i := 1; b.region.s[i][0] < 'A'; i++ { // Base M49 indices on regionID.
+		groups[i] = index(len(groups))
 	}
 	for _, g := range b.supp.TerritoryContainment.Group {
 		group := b.region.index(g.Type)
@@ -1078,7 +1071,7 @@ func (b *builder) writeRegionInclusionData() {
 		bvs[bv] = i
 		regionInclusion[r] = uint8(bvs[bv])
 	}
-	for r := 0; r < len(b.region.s); r++ {
+	for r := 1; r < len(b.region.s); r++ {
 		if _, ok := groups[r]; !ok {
 			bv := uint32(0)
 			for _, g := range mm[r] {

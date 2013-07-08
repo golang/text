@@ -26,10 +26,10 @@ var (
 )
 
 var (
-	de    = ID{lang: getLangID([]byte("de")), region: unknownRegion, script: unknownScript}
-	en    = ID{lang: getLangID([]byte("en")), region: unknownRegion, script: unknownScript}
-	en_US = en
-	und   = ID{lang: unknownLang, region: unknownRegion, script: unknownScript}
+	de    = ID{lang: lang_de}
+	en    = ID{lang: lang_en}
+	en_US = ID{lang: lang_en, region: regUS}
+	und   = ID{}
 )
 
 // ID represents a BCP 47 locale identifier. It can be used to
@@ -51,7 +51,8 @@ type ID struct {
 // In most cases, locale IDs should be created using this method.
 func Make(id string) ID {
 	loc, _ := Parse(id)
-	return loc.Canonicalize(All)
+	loc, _ = loc.Canonicalize(All)
+	return loc
 }
 
 // equalTags compares language, script and region identifiers only.
@@ -95,11 +96,11 @@ const (
 )
 
 // Canonicalize replaces the identifier with its canonical equivalent.
-func (loc ID) Canonicalize(t CanonType) ID {
+func (loc ID) Canonicalize(t CanonType) (ID, error) {
 	changed := false
 	if t&SuppressScript != 0 {
 		if loc.lang < langNoIndexOffset && uint8(loc.script) == suppressScript[loc.lang] {
-			loc.script = unknownScript
+			loc.script = 0
 			changed = true
 		}
 	}
@@ -120,21 +121,7 @@ func (loc ID) Canonicalize(t CanonType) ID {
 	if changed && loc.str != nil {
 		loc.remakeString()
 	}
-	return loc
-}
-
-// Parent returns the direct parent for this locale, which is the locale
-// from which this locale inherits any undefined values.
-func (loc ID) Parent() ID {
-	// TODO: implement
-	return und
-}
-
-// Written strips qualifiers from the identifier until the resulting identfier
-// inherits from root.
-func (loc ID) Written() ID {
-	// TODO: implement
-	return und
+	return loc, nil
 }
 
 // Confidence indicates the level of certainty for a given return value.
@@ -145,11 +132,17 @@ func (loc ID) Written() ID {
 type Confidence int
 
 const (
-	Not   Confidence = iota // full confidence that there was no match
+	No    Confidence = iota // full confidence that there was no match
 	Low                     // most likely value picked out of a set of alternatives
-	High                    // value inferred from a parent and is generally assumed to be the correct match
+	High                    // value is generally assumed to be the correct match
 	Exact                   // exact match or explicitly specified value
 )
+
+var confName = []string{"No", "Low", "High", "Exact"}
+
+func (c Confidence) String() string {
+	return confName[c]
+}
 
 // remakeString is used to update loc.str in case lang, script or region changed.
 // It is assumed that pExt and pVariant still point to the start of the
@@ -165,14 +158,14 @@ func (loc *ID) remakeString() {
 		}
 	}
 	buf := [128]byte{}
-	isUnd := loc.lang == unknownLang
+	isUnd := loc.lang == 0
 	n := loc.lang.stringToBuf(buf[:])
-	if loc.script != unknownScript {
+	if loc.script != 0 {
 		n += copy(buf[n:], "-")
 		n += copy(buf[n:], loc.script.String())
 		isUnd = false
 	}
-	if loc.region != unknownRegion {
+	if loc.region != 0 {
 		n += copy(buf[n:], "-")
 		n += copy(buf[n:], loc.region.String())
 		isUnd = false
@@ -207,10 +200,21 @@ func (loc ID) String() string {
 	return *loc.str
 }
 
-// Language returns the language for the locale.
-func (loc ID) Language() Language {
-	// TODO: implement
-	return Language{0}
+// Language returns the language for the locale. If the language is unspecified,
+// an attempt will be made to infer it from the context.
+// It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
+func (loc ID) Language() (Language, Confidence) {
+	if loc.lang != 0 {
+		return Language{loc.lang}, Exact
+	}
+	c := High
+	if loc.script == 0 && !(Region{loc.region}).IsCountry() {
+		c = Low
+	}
+	if id, err := addTags(loc); err == nil && id.lang != 0 {
+		return Language{id.lang}, c
+	}
+	return Language{0}, No
 }
 
 // Script infers the script for the locale.  If it was not explictly given, it will infer
@@ -221,40 +225,57 @@ func (loc ID) Language() Language {
 // Note that an inferred script is never guaranteed to be the correct one. Latn is
 // almost exclusively used for Afrikaans, but Arabic has been used for some texts
 // in the past.  Also, the script that is commonly used may change over time.
+// It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
 func (loc ID) Script() (Script, Confidence) {
-	// TODO: implement
-	return Script{0}, Exact
+	if loc.script != 0 {
+		return Script{loc.script}, Exact
+	}
+	if loc.lang < langNoIndexOffset {
+		if sc := suppressScript[loc.lang]; sc != 0 {
+			return Script{scriptID(sc)}, High
+		}
+	}
+	sc, c := Script{scrZyyy}, No
+	if id, err := addTags(loc); err == nil {
+		sc, c = Script{id.script}, Low
+	}
+	loc, _ = loc.Canonicalize(Deprecated | Macro)
+	if id, err := addTags(loc); err == nil {
+		sc, c = Script{id.script}, Low
+	}
+	// Translate srcZzzz (uncoded) to srcZyyy (undetermined).
+	if sc == (Script{scrZzzz}) {
+		return Script{scrZyyy}, No
+	}
+	return sc, c
 }
 
-// Region returns the region for l.  If it was not explicitly given, it will
-// infer a most likely candidate from the parent locales.
+// Region returns the region for the locale.  If it was not explicitly given, it will
+// infer a most likely candidate from the context.
+// It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
 func (loc ID) Region() (Region, Confidence) {
-	// TODO: implement
-	return Region{0}, Exact
+	if loc.region != 0 {
+		return Region{loc.region}, Exact
+	}
+	if id, err := addTags(loc); err == nil {
+		return Region{id.region}, Low // TODO: differentiate between high and low.
+	}
+	loc, _ = loc.Canonicalize(Deprecated | Macro)
+	if id, err := addTags(loc); err == nil {
+		return Region{id.region}, Low
+	}
+	return Region{regZZ}, No // TODO: return world instead of undetermined?
 }
 
 // Variant returns the variant specified explicitly for this locale
 // or nil if no variant was specified.
 func (loc ID) Variant() Variant {
+	// TODO: implement
 	return Variant{""}
 }
 
-// Scope returns a Set that indicates the common variants for which the
-// locale may be applicable.
-// Locales will returns all valid sublocales. Languages will return the language
-// for this locale.  Regions will return all regions for which a locale with
-// this language is defined.  And Scripts will return all scripts that are
-// commonly used for this locale.
-// If any of these properties is explicitly specified, the respective lists
-// will be constraint.  For example, for sr_Latn Scripts will return [Latn]
-// instead of [Cyrl Latn].
-func (loc ID) Scope() Set {
-	// TODO: implement
-	return nil
-}
-
-// TypeForKey returns the type associated with the given key, where key
-// is one of the allowed values defined for the Unicode locale extension ('u') in
+// TypeForKey returns the type associated with the given key, where key and type
+// are of the allowed values defined for the Unicode locale extension ('u') in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
 // TypeForKey will traverse the inheritance chain to get the correct value.
 func (loc ID) TypeForKey(key string) string {
@@ -262,16 +283,10 @@ func (loc ID) TypeForKey(key string) string {
 	return ""
 }
 
-// KeyValueString returns a string to be set with KeyValuePart.
-// Error handling is done by Compose.
-func KeyValueString(m map[string]string) (string, error) {
-	// TODO: implement
-	return "", nil
-}
-
-// SimplifyOptions removes options in loc that it would inherit
-// by default from its parent.
-func (loc ID) SimplifyOptions() ID {
+// SetTypeForKey returns a new ID with the key set to type, where key and type
+// are of the allowed values defined for the Unicode locale extension ('u') in
+// http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
+func (loc ID) SetTypeForKey(key, value string) ID {
 	// TODO: implement
 	return ID{}
 }
@@ -281,22 +296,10 @@ type Language struct {
 	langID
 }
 
-// Scope returns a Set of all pre-defined sublocales for this language.
-func (l Language) Scope() Set {
-	// TODO: implement
-	return nil
-}
-
 // Script is a 4-letter ISO 15924 code for representing scripts.
 // It is idiomatically represented in title case.
 type Script struct {
 	scriptID
-}
-
-// Scope returns a Set of all pre-defined sublocales applicable to the script.
-func (s Script) Scope() Set {
-	// TODO: implement
-	return nil
 }
 
 // Region is an ISO 3166-1 or UN M.49 code for representing countries and regions.
@@ -304,16 +307,13 @@ type Region struct {
 	regionID
 }
 
-// IsCountry returns whether this region is a country.
+// IsCountry returns whether this region is a country or autonomous area.
 func (r Region) IsCountry() bool {
-	// TODO: implement
+	const m49PrivateUseStart = 900
+	if r.regionID < isoRegionOffset || r.m49() >= m49PrivateUseStart {
+		return false
+	}
 	return true
-}
-
-// Scope returns a Set of all pre-defined sublocales applicable to the region.
-func (r Region) Scope() Set {
-	// TODO: implement
-	return nil
 }
 
 // Variant represents a registered variant of a language as defined by BCP 47.

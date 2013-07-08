@@ -107,7 +107,8 @@ func parseTests() []parseTest {
 		{in: "root", lang: "und", changed: true},
 		{in: "und", lang: "und"},
 		{in: "en", lang: "en"},
-		{in: "xy", lang: "und", changed: true},
+		{in: "xy", lang: "und", invalid: true, changed: true},
+		{in: "en-ZY", lang: "en", invalid: true},
 		{in: "gsw", lang: "gsw"},
 		{in: "sr_Latn", lang: "sr", script: "Latn", changed: true},
 		{in: "af-Arab", lang: "af", script: "Arab"},
@@ -140,7 +141,7 @@ func parseTests() []parseTest {
 		{in: "en-t-en-Cyrl-NL-1994-t0-abc-def", lang: "en", ext: "t-en-cyrl-nl-1994-t0-abc-def", changed: true},
 		{in: "en-t-t0-abcd", lang: "en", ext: "t-t0-abcd"},
 		// Not necessary to have changed here.
-		{in: "en-t-nl-abcd", lang: "en", ext: "t-nl"},
+		{in: "en-t-nl-abcd", lang: "en", ext: "t-nl", invalid: true},
 		{in: "en-t-nl-latn", lang: "en", ext: "t-nl-latn"},
 		{in: "en-t-t0-abcd-x-a", lang: "en", extList: []string{"t-t0-abcd", "x-a"}},
 		// invalid
@@ -214,7 +215,8 @@ func partChecks(t *testing.T, f func(*parseTest) func(Part) string) {
 		if get == nil {
 			continue
 		}
-		if s, g := get(LanguagePart), getLangID(b(tt.lang)).String(); s != g {
+		l, _ := getLangID(b(tt.lang))
+		if s, g := get(LanguagePart), l.String(); s != g {
 			t.Errorf("%d: lang was %q; want %q", i, s, g)
 		}
 		if s, g := get(ScriptPart), tt.script; s != g {
