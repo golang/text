@@ -4,7 +4,7 @@
 
 // Package transform provides reader and writer wrappers that transform the
 // bytes passing through. Example transformations, provided by other packages,
-// include text collation, normalization and charset decoding.
+// include text collation, normalization and conversion between character sets.
 package transform
 
 // TODO: can a Transformer be reset? How (Reset call, implied by convention)? If
@@ -25,9 +25,9 @@ var (
 	// complete the transformation.
 	ErrShortSrc = errors.New("transform: short source buffer")
 
-	// errInconsistentNSrc means that Transform returned success (nil
+	// errInconsistentByteCount means that Transform returned success (nil
 	// error) but also returned nSrc inconsistent with the src argument.
-	errInconsistentNSrc = errors.New("transform: Transform returned success but nSrc != len(src)")
+	errInconsistentByteCount = errors.New("transform: inconsistent byte count returned")
 )
 
 // Transformer transforms bytes.
@@ -37,25 +37,20 @@ type Transformer interface {
 	// atEOF argument tells whether src represents the last bytes of the
 	// input.
 	//
-	// Implementations should return nil error if and only if all of the
-	// transformed bytes (whether freshly transformed from src or state
-	// left over from previous Transform calls) were written to dst. They
-	// may return nil regardless of whether atEOF is true. If err is nil
-	// then nSrc must equal len(src); the converse is not necessarily true.
+	// Callers should always process the nDst bytes produced and account
+	// for the nSrc bytes consumed before considering the error err.
 	//
-	// They should return ErrShortDst if dst is too short to receive all
-	// of the transformed bytes, and ErrShortSrc if src has insufficient
-	// data to complete the transformation. If both conditions apply, then
-	// either may be returned. They may also return any other sort of error.
+	// A nil error means that all of the transformed bytes (whether freshly
+	// transformed from src or left over from previous Transform calls)
+	// were written to dst. A nil error can be returned regardless of
+	// whether atEOF is true. If err is nil then nSrc must equal len(src);
+	// the converse is not necessarily true.
 	//
-	// Transformers may contain state such as their own buffers. Even if
-	// the source is exhausted, callers should continue to call Transform
-	// until the transformation is successful (err == nil) or no more
-	// progress is made (nDst == 0).
-	//
-	// Implementations may return non-zero nDst and/or non-zero nSrc as
-	// well as a non-nil error. Similarly to io.Reader, callers should
-	// always process the n > 0 bytes before considering the error.
+	// ErrShortDst means that dst was too short to receive all of the
+	// transformed bytes. ErrShortSrc means that src had insufficient data
+	// to complete the transformation. If both conditions apply, then
+	// either error may be returned. Other than the error conditions listed
+	// here, implementations are free to report other errors that arise.
 	Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error)
 }
 
@@ -95,7 +90,7 @@ func NewReader(r io.Reader, t Transformer) *Reader {
 func (r *Reader) Read(p []byte) (int, error) {
 	n, err := 0, error(nil)
 	for {
-		// Copy out any transformed bytes, and the final error if we are done.
+		// Copy out any transformed bytes and return the final error if we are done.
 		if r.dst0 != r.dst1 {
 			n = copy(p, r.dst[r.dst0:r.dst1])
 			r.dst0 += n
@@ -119,7 +114,7 @@ func (r *Reader) Read(p []byte) (int, error) {
 			switch {
 			case err == nil:
 				if r.src0 != r.src1 {
-					r.err = errInconsistentNSrc
+					r.err = errInconsistentByteCount
 				}
 				// The Transform call was successful; we are complete if we
 				// cannot read more bytes into src.
@@ -141,8 +136,8 @@ func (r *Reader) Read(p []byte) (int, error) {
 			}
 		}
 
-		// Read more bytes into src, after moving any untransformed source
-		// bytes to the start of the buffer.
+		// Move any untransformed source bytes to the start of the buffer
+		// and read more bytes.
 		if r.src0 != 0 {
 			r.src0, r.src1 = 0, copy(r.src, r.src[r.src0:r.src1])
 		}
