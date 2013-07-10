@@ -6,6 +6,7 @@ package transform
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -111,227 +112,241 @@ func (e rleEncode) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err e
 	return nDst, nSrc, nil
 }
 
-func TestReader(t *testing.T) {
-	testCases := []struct {
-		desc    string
-		t       Transformer
-		src     string
-		dstSize int
-		srcSize int
-		wantStr string
-		wantErr error
-	}{
-		{
-			"lowerCaseASCII",
-			lowerCaseASCII{},
-			"Hello WORLD.",
-			100,
-			100,
-			"hello world.",
-			nil,
-		},
+type testCase struct {
+	desc    string
+	t       Transformer
+	src     string
+	dstSize int
+	srcSize int
+	wantStr string
+	wantErr error
+}
 
-		{
-			"lowerCaseASCII; small dst",
-			lowerCaseASCII{},
-			"Hello WORLD.",
-			3,
-			100,
-			"hello world.",
-			nil,
-		},
+func (t testCase) String() string {
+	return tstr(t.t) + "; " + t.desc
+}
 
-		{
-			"lowerCaseASCII; small src",
-			lowerCaseASCII{},
-			"Hello WORLD.",
-			100,
-			4,
-			"hello world.",
-			nil,
-		},
-
-		{
-			"lowerCaseASCII; small buffers",
-			lowerCaseASCII{},
-			"Hello WORLD.",
-			3,
-			4,
-			"hello world.",
-			nil,
-		},
-
-		{
-			"lowerCaseASCII; very small buffers",
-			lowerCaseASCII{},
-			"Hello WORLD.",
-			1,
-			1,
-			"hello world.",
-			nil,
-		},
-
-		{
-			"dontMentionX",
-			dontMentionX{},
-			"The First Rule of Transform Club: don't mention Mister X, ever.",
-			100,
-			100,
-			"The First Rule of Transform Club: don't mention Mister ",
-			errYouMentionedX,
-		},
-
-		{
-			"dontMentionX; small buffers",
-			dontMentionX{},
-			"The First Rule of Transform Club: don't mention Mister X, ever.",
-			10,
-			10,
-			"The First Rule of Transform Club: don't mention Mister ",
-			errYouMentionedX,
-		},
-
-		{
-			"dontMentionX; very small buffers",
-			dontMentionX{},
-			"The First Rule of Transform Club: don't mention Mister X, ever.",
-			1,
-			1,
-			"The First Rule of Transform Club: don't mention Mister ",
-			errYouMentionedX,
-		},
-
-		{
-			"rleDecode",
-			rleDecode{},
-			"1a2b3c10d11e0f1g",
-			100,
-			100,
-			"abbcccddddddddddeeeeeeeeeeeg",
-			nil,
-		},
-
-		{
-			"rleDecode; long",
-			rleDecode{},
-			"12a23b34c45d56e99z",
-			100,
-			100,
-			strings.Repeat("a", 12) +
-				strings.Repeat("b", 23) +
-				strings.Repeat("c", 34) +
-				strings.Repeat("d", 45) +
-				strings.Repeat("e", 56) +
-				strings.Repeat("z", 99),
-			nil,
-		},
-
-		{
-			"rleDecode; tight buffers",
-			rleDecode{},
-			"1a2b3c10d11e0f1g",
-			11,
-			3,
-			"abbcccddddddddddeeeeeeeeeeeg",
-			nil,
-		},
-
-		{
-			"rleDecode; short dst",
-			rleDecode{},
-			"1a2b3c10d11e0f1g",
-			10,
-			3,
-			"abbcccdddddddddd",
-			ErrShortDst,
-		},
-
-		{
-			"rleDecode; short src",
-			rleDecode{},
-			"1a2b3c10d11e0f1g",
-			11,
-			2,
-			"abbccc",
-			ErrShortSrc,
-		},
-
-		{
-			"rleEncode",
-			rleEncode{},
-			"abbcccddddddddddeeeeeeeeeeeg",
-			100,
-			100,
-			"1a2b3c10d11e1g",
-			nil,
-		},
-
-		{
-			"rleEncode; long",
-			rleEncode{},
-			strings.Repeat("a", 12) +
-				strings.Repeat("b", 23) +
-				strings.Repeat("c", 34) +
-				strings.Repeat("d", 45) +
-				strings.Repeat("e", 56) +
-				strings.Repeat("z", 99),
-			100,
-			100,
-			"12a23b34c45d56e99z",
-			nil,
-		},
-
-		{
-			"rleEncode; tight buffers",
-			rleEncode{},
-			"abbcccddddddddddeeeeeeeeeeeg",
-			3,
-			12,
-			"1a2b3c10d11e1g",
-			nil,
-		},
-
-		{
-			"rleEncode; short dst",
-			rleEncode{},
-			"abbcccddddddddddeeeeeeeeeeeg",
-			2,
-			12,
-			"1a2b3c",
-			ErrShortDst,
-		},
-
-		{
-			"rleEncode; short src",
-			rleEncode{},
-			"abbcccddddddddddeeeeeeeeeeeg",
-			3,
-			11,
-			"1a2b3c10d",
-			ErrShortSrc,
-		},
-
-		{
-			"rleEncode; allowStutter = false",
-			rleEncode{allowStutter: false},
-			"aaaabbbbbbbbccccddddd",
-			10,
-			10,
-			"4a8b4c5d",
-			nil,
-		},
-
-		{
-			"rleEncode; allowStutter = true",
-			rleEncode{allowStutter: true},
-			"aaaabbbbbbbbccccddddd",
-			10,
-			10,
-			"4a6b2b4c4d1d",
-			nil,
-		},
+func tstr(t Transformer) string {
+	if stringer, ok := t.(fmt.Stringer); ok {
+		return stringer.String()
 	}
+	s := fmt.Sprintf("%T", t)
+	return s[1+strings.Index(s, "."):]
+}
 
+var testCases = []testCase{
+	{
+		"basic",
+		lowerCaseASCII{},
+		"Hello WORLD.",
+		100,
+		100,
+		"hello world.",
+		nil,
+	},
+
+	{
+		"small dst",
+		lowerCaseASCII{},
+		"Hello WORLD.",
+		3,
+		100,
+		"hello world.",
+		nil,
+	},
+
+	{
+		"small src",
+		lowerCaseASCII{},
+		"Hello WORLD.",
+		100,
+		4,
+		"hello world.",
+		nil,
+	},
+
+	{
+		"small buffers",
+		lowerCaseASCII{},
+		"Hello WORLD.",
+		3,
+		4,
+		"hello world.",
+		nil,
+	},
+
+	{
+		"very small buffers",
+		lowerCaseASCII{},
+		"Hello WORLD.",
+		1,
+		1,
+		"hello world.",
+		nil,
+	},
+
+	{
+		"basic",
+		dontMentionX{},
+		"The First Rule of Transform Club: don't mention Mister X, ever.",
+		100,
+		100,
+		"The First Rule of Transform Club: don't mention Mister ",
+		errYouMentionedX,
+	},
+
+	{
+		"small buffers",
+		dontMentionX{},
+		"The First Rule of Transform Club: don't mention Mister X, ever.",
+		10,
+		10,
+		"The First Rule of Transform Club: don't mention Mister ",
+		errYouMentionedX,
+	},
+
+	{
+		"very small buffers",
+		dontMentionX{},
+		"The First Rule of Transform Club: don't mention Mister X, ever.",
+		1,
+		1,
+		"The First Rule of Transform Club: don't mention Mister ",
+		errYouMentionedX,
+	},
+
+	{
+		"basic",
+		rleDecode{},
+		"1a2b3c10d11e0f1g",
+		100,
+		100,
+		"abbcccddddddddddeeeeeeeeeeeg",
+		nil,
+	},
+
+	{
+		"long",
+		rleDecode{},
+		"12a23b34c45d56e99z",
+		100,
+		100,
+		strings.Repeat("a", 12) +
+			strings.Repeat("b", 23) +
+			strings.Repeat("c", 34) +
+			strings.Repeat("d", 45) +
+			strings.Repeat("e", 56) +
+			strings.Repeat("z", 99),
+		nil,
+	},
+
+	{
+		"tight buffers",
+		rleDecode{},
+		"1a2b3c10d11e0f1g",
+		11,
+		3,
+		"abbcccddddddddddeeeeeeeeeeeg",
+		nil,
+	},
+
+	{
+		"short dst",
+		rleDecode{},
+		"1a2b3c10d11e0f1g",
+		10,
+		3,
+		"abbcccdddddddddd",
+		ErrShortDst,
+	},
+
+	{
+		"short src",
+		rleDecode{},
+		"1a2b3c10d11e0f1g",
+		11,
+		2,
+		"abbccc",
+		ErrShortSrc,
+	},
+
+	{
+		"basic",
+		rleEncode{},
+		"abbcccddddddddddeeeeeeeeeeeg",
+		100,
+		100,
+		"1a2b3c10d11e1g",
+		nil,
+	},
+
+	{
+		"long",
+		rleEncode{},
+		strings.Repeat("a", 12) +
+			strings.Repeat("b", 23) +
+			strings.Repeat("c", 34) +
+			strings.Repeat("d", 45) +
+			strings.Repeat("e", 56) +
+			strings.Repeat("z", 99),
+		100,
+		100,
+		"12a23b34c45d56e99z",
+		nil,
+	},
+
+	{
+		"tight buffers",
+		rleEncode{},
+		"abbcccddddddddddeeeeeeeeeeeg",
+		3,
+		12,
+		"1a2b3c10d11e1g",
+		nil,
+	},
+
+	{
+		"short dst",
+		rleEncode{},
+		"abbcccddddddddddeeeeeeeeeeeg",
+		2,
+		12,
+		"1a2b3c",
+		ErrShortDst,
+	},
+
+	{
+		"short src",
+		rleEncode{},
+		"abbcccddddddddddeeeeeeeeeeeg",
+		3,
+		11,
+		"1a2b3c10d",
+		ErrShortSrc,
+	},
+
+	{
+		"allowStutter = false",
+		rleEncode{allowStutter: false},
+		"aaaabbbbbbbbccccddddd",
+		10,
+		10,
+		"4a8b4c5d",
+		nil,
+	},
+
+	{
+		"allowStutter = true",
+		rleEncode{allowStutter: true},
+		"aaaabbbbbbbbccccddddd",
+		10,
+		10,
+		"4a6b2b4c4d1d",
+		nil,
+	},
+}
+
+func TestReader(t *testing.T) {
 	for _, tc := range testCases {
 		r := NewReader(strings.NewReader(tc.src), tc.t)
 		// Differently sized dst and src buffers are not part of the
@@ -341,7 +356,7 @@ func TestReader(t *testing.T) {
 		got, err := ioutil.ReadAll(r)
 		str := string(got)
 		if str != tc.wantStr || err != tc.wantErr {
-			t.Errorf("%s:\ngot  %q, %v\nwant %q, %v", tc.desc, str, err, tc.wantStr, tc.wantErr)
+			t.Errorf("%s:\ngot  %q, %v\nwant %q, %v", tc, str, err, tc.wantStr, tc.wantErr)
 		}
 	}
 }
