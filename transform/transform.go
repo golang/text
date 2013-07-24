@@ -7,10 +7,6 @@
 // include text collation, normalization and conversion between character sets.
 package transform
 
-// TODO: can a Transformer be reset? How (Reset call, implied by convention)? If
-// explicit, as part of the Transformer interface or a different, optional
-// interface?
-
 import (
 	"errors"
 	"io"
@@ -28,6 +24,10 @@ var (
 	// errInconsistentByteCount means that Transform returned success (nil
 	// error) but also returned nSrc inconsistent with the src argument.
 	errInconsistentByteCount = errors.New("transform: inconsistent byte count returned")
+
+	// errShortInternal means that an internal buffer is not large enough
+	// to make progress and the Transform operation must be aborted.
+	errShortInternal = errors.New("transform: short internal buffer")
 )
 
 // Transformer transforms bytes.
@@ -54,6 +54,9 @@ type Transformer interface {
 	Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error)
 }
 
+// TODO: Do we require that a Transformer be reusable if it returns a nil error
+// or do we always require a reset after use?  Is Reset mandatory or optional?
+
 // Reader wraps another io.Reader by transforming the bytes read.
 type Reader struct {
 	r   io.Reader
@@ -75,14 +78,16 @@ type Reader struct {
 	transformComplete bool
 }
 
+const defaultBufSize = 4096
+
 // NewReader returns a new Reader that wraps r by transforming the bytes read
 // via t.
 func NewReader(r io.Reader, t Transformer) *Reader {
 	return &Reader{
 		r:   r,
 		t:   t,
-		dst: make([]byte, 4096),
-		src: make([]byte, 4096),
+		dst: make([]byte, defaultBufSize),
+		src: make([]byte, defaultBufSize),
 	}
 }
 
@@ -148,4 +153,263 @@ func (r *Reader) Read(p []byte) (int, error) {
 
 // TODO: implement ReadByte (and ReadRune??).
 
-// TODO: type Writer.
+// Writer wraps another io.Writer by transforming the bytes read.
+// The user needs to call Close to flush unwritten bytes that may
+// be buffered.
+type Writer struct {
+	w   io.Writer
+	t   Transformer
+	dst []byte
+
+	// src[:n] contains bytes that have not yet passed through t.
+	src []byte
+	n   int
+}
+
+// NewWriter returns a new Writer that wraps w by transforming the bytes written
+// via t.
+func NewWriter(w io.Writer, t Transformer) *Writer {
+	return &Writer{
+		w:   w,
+		t:   t,
+		dst: make([]byte, defaultBufSize),
+		src: make([]byte, defaultBufSize),
+	}
+}
+
+// Write implements the io.Writer interface. If there are not enough
+// bytes available to complete a Transform, the bytes will be buffered
+// for the next write. Call Close to convert the remaining bytes.
+func (w *Writer) Write(data []byte) (n int, err error) {
+	src := data
+	if w.n > 0 {
+		// Append bytes from data to the last remainder.
+		// TODO: limit the amount copied on first try.
+		n = copy(w.src[w.n:], data)
+		w.n += n
+		src = w.src[:w.n]
+	}
+	for {
+		nDst, nSrc, err := w.t.Transform(w.dst, src, false)
+		if _, werr := w.w.Write(w.dst[:nDst]); werr != nil {
+			return n, werr
+		}
+		src = src[nSrc:]
+		if w.n > 0 && len(src) <= n {
+			// Enough bytes from w.src have been consumed. We make src point
+			// to data instead to reduce the copying.
+			w.n = 0
+			n -= len(src)
+			src = data[n:]
+			if n < len(data) && (err == nil || err == ErrShortSrc) {
+				continue
+			}
+		} else {
+			n += nSrc
+		}
+		switch {
+		case err == ErrShortDst && nDst > 0:
+		case err == ErrShortSrc && len(src) < len(w.src):
+			m := copy(w.src, src)
+			// If w.n > 0, bytes from data were already copied to w.src and n
+			// was already set to the number of bytes consumed.
+			if w.n == 0 {
+				n += m
+			}
+			w.n = m
+			return n, nil
+		case err == nil && w.n > 0:
+			return n, errInconsistentByteCount
+		default:
+			return n, err
+		}
+	}
+}
+
+// Close implements the io.Closer interface.
+func (w *Writer) Close() error {
+	for src := w.src[:w.n]; len(src) > 0; {
+		nDst, nSrc, err := w.t.Transform(w.src, src, true)
+		if nDst == 0 {
+			return err
+		}
+		if _, werr := w.w.Write(w.src[:nDst]); werr != nil {
+			return werr
+		}
+		if err != ErrShortDst {
+			return err
+		}
+		src = src[nSrc:]
+	}
+	return nil
+}
+
+type nop struct{}
+
+func (nop) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	n := copy(dst, src)
+	if n < len(src) {
+		err = ErrShortDst
+	}
+	return n, n, err
+}
+
+type discard struct{}
+
+func (discard) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	return 0, len(src), nil
+}
+
+var (
+	// Discard is a Transformer for which all Transform calls succeed
+	// by consuming all bytes and writing nothing.
+	Discard Transformer = discard{}
+
+	// Nop is a Transformer that copies src to dst.
+	Nop Transformer = nop{}
+)
+
+// chain is a sequence of links. A chain with N Transformers has N+1 links and
+// N+1 buffers. Of those N+1 buffers, the first and last are the src and dst
+// buffers given to chain.Transform and the middle N-1 buffers are intermediate
+// buffers owned by the chain. The i'th link transforms bytes from the i'th
+// buffer chain.link[i].b at read offset chain.link[i].p to the i+1'th buffer
+// chain.link[i+1].b at write offset chain.link[i+1].n, for i in [0, N).
+type chain struct {
+	link []link
+	err  error
+	// errStart is the index at which the error occurred plus 1. Processing
+	// errStart at this level at the next call to Transform. As long as
+	// errStart > 0, chain will not consume any more source bytes.
+	errStart int
+}
+
+func (c *chain) fatalError(errIndex int, err error) {
+	if i := errIndex + 1; i > c.errStart {
+		c.errStart = i
+		c.err = err
+	}
+}
+
+type link struct {
+	t Transformer
+	// b[p:n] holds the bytes to be transformed by t.
+	b []byte
+	p int
+	n int
+}
+
+func (l *link) src() []byte {
+	return l.b[l.p:l.n]
+}
+
+func (l *link) dst() []byte {
+	return l.b[l.n:]
+}
+
+// Chain returns a Transformer that applies t in sequence.
+func Chain(t ...Transformer) Transformer {
+	if len(t) == 0 {
+		return nop{}
+	}
+	c := &chain{link: make([]link, len(t)+1)}
+	for i, tt := range t {
+		c.link[i].t = tt
+	}
+	// Allocate intermediate buffers.
+	b := make([][defaultBufSize]byte, len(t)-1)
+	for i := range b {
+		c.link[i+1].b = b[i][:]
+	}
+	return c
+}
+
+// Transform applies the transformers of c in sequence.
+func (c *chain) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	// Set up src and dst in the chain.
+	srcL := &c.link[0]
+	dstL := &c.link[len(c.link)-1]
+	srcL.b, srcL.p, srcL.n = src, 0, len(src)
+	dstL.b, dstL.n = dst, 0
+	var lastFull, needProgress bool // for detecting progress
+
+	// i is the index of the next Transformer to apply, for i in [low, high].
+	// low is the lowest index for which c.link[low] may still produce bytes.
+	// high is the highest index for which c.link[high] has a Transformer.
+	// The error returned by Transform determines whether to increase or
+	// decrease i. We try to completely fill a buffer before converting it.
+	for low, i, high := c.errStart, c.errStart, len(c.link)-2; low <= i && i <= high; {
+		in, out := &c.link[i], &c.link[i+1]
+		nDst, nSrc, err0 := in.t.Transform(out.dst(), in.src(), atEOF && low == i)
+		out.n += nDst
+		in.p += nSrc
+		if i > 0 && in.p == in.n {
+			in.p, in.n = 0, 0
+		}
+		needProgress, lastFull = lastFull, false
+		switch err0 {
+		case ErrShortDst:
+			// Process the destination buffer next. Return if we are already
+			// at the high index.
+			if i == high {
+				return dstL.n, srcL.p, ErrShortDst
+			}
+			if out.n != 0 {
+				i++
+				// If the Transformer at the next index is not able to process any
+				// source bytes there is nothing that can be done to make progress
+				// and the bytes will remain unprocessed. lastFull is used to
+				// detect this and break out of the loop with a fatal error.
+				lastFull = true
+				continue
+			}
+			// The destination buffer was too small, but is completely empty.
+			// Return a fatal error as this transformation can never complete.
+			c.fatalError(i, errShortInternal)
+		case ErrShortSrc:
+			if i == 0 {
+				// Save ErrShortSrc in err. All other errors take precedence.
+				err = ErrShortSrc
+				break
+			}
+			// Source bytes were depleted before filling up the destination buffer.
+			// Verify we made some progress, move the remaining bytes to the errStart
+			// and try to get more source bytes.
+			if needProgress && nSrc == 0 || in.n-in.p == len(in.b) {
+				// There were not enough source bytes to proceed while the source
+				// buffer cannot hold any more bytes. Return a fatal error as this
+				// transformation can never complete.
+				c.fatalError(i, errShortInternal)
+				break
+			}
+			// in.b is an internal buffer and we can make progress.
+			in.p, in.n = 0, copy(in.b, in.src())
+			fallthrough
+		case nil:
+			// if i == low, we have depleted the bytes at index i or any lower levels.
+			// In that case we increase low and i. In all other cases we decrease i to
+			// fetch more bytes before proceeding to the next index.
+			if i > low {
+				i--
+				continue
+			}
+		default:
+			c.fatalError(i, err0)
+		}
+		// Exhausted level low or fatal error: increase low and continue
+		// to process the bytes accepted so far.
+		i++
+		low = i
+	}
+
+	// If c.errStart > 0, this means we found a fatal error.  We will clear
+	// all upstream buffers. At this point, no more progress can be made
+	// downstream, as Transform would have bailed while handling ErrShortDst.
+	if c.errStart > 0 {
+		for i := 1; i < c.errStart; i++ {
+			c.link[i].p, c.link[i].n = 0, 0
+		}
+		err, c.errStart, c.err = c.err, 0, nil
+	}
+	return dstL.n, srcL.p, err
+}
