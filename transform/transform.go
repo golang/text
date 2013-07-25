@@ -229,11 +229,11 @@ func (w *Writer) Write(data []byte) (n int, err error) {
 // Close implements the io.Closer interface.
 func (w *Writer) Close() error {
 	for src := w.src[:w.n]; len(src) > 0; {
-		nDst, nSrc, err := w.t.Transform(w.src, src, true)
+		nDst, nSrc, err := w.t.Transform(w.dst, src, true)
 		if nDst == 0 {
 			return err
 		}
-		if _, werr := w.w.Write(w.src[:nDst]); werr != nil {
+		if _, werr := w.w.Write(w.dst[:nDst]); werr != nil {
 			return werr
 		}
 		if err != ErrShortDst {

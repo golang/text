@@ -48,6 +48,24 @@ func (dontMentionX) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err 
 	return n, n, err
 }
 
+// doublerAtEOF is a strange Transformer that transforms "this" to "tthhiiss",
+// but only if atEOF is true.
+type doublerAtEOF struct{}
+
+func (doublerAtEOF) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	if !atEOF {
+		return 0, 0, ErrShortSrc
+	}
+	for i, c := range src {
+		if 2*i+2 >= len(dst) {
+			return 2 * i, i, ErrShortDst
+		}
+		dst[2*i+0] = c
+		dst[2*i+1] = c
+	}
+	return 2 * len(src), len(src), nil
+}
+
 // rleDecode and rleEncode implement a toy run-length encoding: "aabbbbbbbbbb"
 // is encoded as "2a10b". The decoding is assumed to not contain any numbers.
 
@@ -224,6 +242,15 @@ var testCases = []testCase{
 		srcSize: 1,
 		wantStr: "The First Rule of Transform Club: don't mention Mister ",
 		wantErr: errYouMentionedX,
+	},
+
+	{
+		desc:    "only transform at EOF",
+		t:       doublerAtEOF{},
+		src:     "this",
+		dstSize: 100,
+		srcSize: 100,
+		wantStr: "tthhiiss",
 	},
 
 	{
