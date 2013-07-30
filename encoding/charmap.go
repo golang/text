@@ -84,6 +84,8 @@ func (m charmapDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, 
 // charmapEncoder implements transform.Transformer by encoding from UTF-8.
 type charmapEncoder struct {
 	charmap *charmap
+	// TODO: UTF-8 synchronization is overkill. Remove this code.
+	//
 	// synchronize is whether we have encountered invalid UTF-8 and will
 	// silently consume continuation bytes: those in the range [0x80, 0xc0).
 	//

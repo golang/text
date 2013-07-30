@@ -46,7 +46,6 @@ var UTF8Validator transform.Transformer = utf8Validator{}
 
 type utf8Validator struct{}
 
-// Transform satisfies the transform.Transformer interface.
 func (utf8Validator) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	n := len(src)
 	if n > len(dst) {
@@ -81,5 +80,3 @@ func (utf8Validator) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 	}
 	return n, n, err
 }
-
-// TODO: UTF-16 encodings.

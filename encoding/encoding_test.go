@@ -22,47 +22,83 @@ func trim(s string) string {
 }
 
 var basicTestCases = []struct {
-	e       Encoding
-	encoded string
-	utf8    string
+	e         Encoding
+	encPrefix string
+	encoded   string
+	utf8      string
 }{
-	{CodePage437, "H\x82ll\x93 \x9d\xa7\xf4\x9c\xbe", "Héllô ¥º⌠£╛"},
-	{Windows1252, "H\xe9ll\xf4 \xa5\xbA\xae\xa3\xd0", "Héllô ¥º®£Ð"},
+	{
+		e:       CodePage437,
+		encoded: "H\x82ll\x93 \x9d\xa7\xf4\x9c\xbe",
+		utf8:    "Héllô ¥º⌠£╛",
+	},
+	{
+		e:       Windows1252,
+		encoded: "H\xe9ll\xf4 \xa5\xbA\xae\xa3\xd0",
+		utf8:    "Héllô ¥º®£Ð",
+	},
+	{
+		e:       UTF16(BigEndian, IgnoreBOM),
+		encoded: "\x00\x57\x00\xe4\xd8\x35\xdd\x65",
+		utf8:    "\x57\u00e4\U0001d565",
+	},
+	{
+		e:         UTF16(BigEndian, ExpectBOM),
+		encPrefix: "\xfe\xff",
+		encoded:   "\x00\x57\x00\xe4\xd8\x35\xdd\x65",
+		utf8:      "\x57\u00e4\U0001d565",
+	},
+	{
+		e:       UTF16(LittleEndian, IgnoreBOM),
+		encoded: "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
+		utf8:    "\x57\u00e4\U0001d565",
+	},
+	{
+		e:         UTF16(LittleEndian, ExpectBOM),
+		encPrefix: "\xff\xfe",
+		encoded:   "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
+		utf8:      "\x57\u00e4\U0001d565",
+	},
 }
 
 func TestBasics(t *testing.T) {
 	for _, tc := range basicTestCases {
 		for _, direction := range []string{"Decode", "Encode"} {
 			newTransformer, want, src := (func() transform.Transformer)(nil), "", ""
+			wPrefix, sPrefix := "", ""
 			if direction == "Decode" {
 				newTransformer, want, src = tc.e.NewDecoder, tc.utf8, tc.encoded
+				wPrefix, sPrefix = "", tc.encPrefix
 			} else {
 				newTransformer, want, src = tc.e.NewEncoder, tc.encoded, tc.utf8
+				wPrefix, sPrefix = tc.encPrefix, ""
 			}
 
 			dst := make([]byte, 1024)
-			nDst, nSrc, err := newTransformer().Transform(dst, []byte(src), true)
+			nDst, nSrc, err := newTransformer().Transform(dst, []byte(sPrefix+src), true)
 			if err != nil {
 				t.Errorf("%v: %s: %v", tc.e, direction, err)
 				continue
 			}
-			if nSrc != len(src) {
-				t.Errorf("%v: %s: nSrc got %d, want %d", tc.e, direction, nSrc, len(src))
+			if nSrc != len(sPrefix)+len(src) {
+				t.Errorf("%v: %s: nSrc got %d, want %d",
+					tc.e, direction, nSrc, len(sPrefix)+len(src))
 				continue
 			}
-			if got := string(dst[:nDst]); got != want {
-				t.Errorf("%v: %s:\ngot  %q\nwant %q", tc.e, direction, got, want)
+			if got := string(dst[:nDst]); got != wPrefix+want {
+				t.Errorf("%v: %s:\ngot  %q\nwant %q",
+					tc.e, direction, got, wPrefix+want)
 				continue
 			}
 
 			for _, n := range []int{0, 1, 2, 10, 123, 4567} {
-				sr := strings.NewReader(strings.Repeat(src, n))
+				sr := strings.NewReader(sPrefix + strings.Repeat(src, n))
 				g, err := ioutil.ReadAll(transform.NewReader(sr, newTransformer()))
 				if err != nil {
 					t.Errorf("%v: %s: ReadAll: n=%d: %v", tc.e, direction, n, err)
 					continue
 				}
-				got1, want1 := string(g), strings.Repeat(want, n)
+				got1, want1 := string(g), wPrefix+strings.Repeat(want, n)
 				if got1 != want1 {
 					t.Errorf("%v: %s: ReadAll: n=%d\ngot  %q\nwant %q",
 						tc.e, direction, n, trim(got1), trim(want1))
@@ -239,6 +275,12 @@ func TestUTF8Validator(t *testing.T) {
 	}
 }
 
+// TODO: UTF-16-specific tests:
+// - inputs with multiple U+FEFF and U+FFFE runes. These should not be replaced
+//   by U+FFFD.
+// - malformed input: an odd number of bytes (and atEOF), or unmatched
+//   surrogates. These should be replaced with U+FFFD.
+
 func benchmark(b *testing.B, dstFile, srcFile string, newTransformer func() transform.Transformer) {
 	dst, err := ioutil.ReadFile(dstFile)
 	if err != nil {
@@ -277,5 +319,23 @@ func BenchmarkCharmapEncoder(b *testing.B) {
 		"testdata/candide-windows-1252.txt",
 		"testdata/candide-utf-8.txt",
 		Windows1252.NewEncoder,
+	)
+}
+
+func BenchmarkUTF16Decoder(b *testing.B) {
+	benchmark(
+		b,
+		"testdata/candide-utf-8.txt",
+		"testdata/candide-utf-16le.txt",
+		UTF16(LittleEndian, IgnoreBOM).NewDecoder,
+	)
+}
+
+func BenchmarkUTF16Encoder(b *testing.B) {
+	benchmark(
+		b,
+		"testdata/candide-utf-16le.txt",
+		"testdata/candide-utf-8.txt",
+		UTF16(LittleEndian, IgnoreBOM).NewEncoder,
 	)
 }
