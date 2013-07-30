@@ -155,15 +155,6 @@ type utf16Encoder struct {
 	// transformer is re-used?
 	endianness Endianness
 	bomPolicy  BOMPolicy
-	// TODO: UTF-8 synchronization is overkill. Remove this code.
-	//
-	// synchronize is whether we have encountered invalid UTF-8 and will
-	// silently consume continuation bytes: those in the range [0x80, 0xc0).
-	//
-	// TODO: factor out common UTF-8 synchronization code with charmapEncoder,
-	// if the performance cost is acceptable? Should we extract (and export) it
-	// anyway to help other implementations of Encoding.NewEncoder?
-	synchronize bool
 }
 
 func (u *utf16Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
@@ -183,18 +174,8 @@ func (u *utf16Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 		// Decode a 1-byte rune.
 		if r < utf8.RuneSelf {
 			size = 1
-			u.synchronize = false
 
 		} else {
-			// If the previous input was invalid UTF-8, skip any continuation bytes.
-			if u.synchronize {
-				if r&0xc0 == 0x80 {
-					nSrc++
-					continue
-				}
-				u.synchronize = false
-			}
-
 			// Decode a multi-byte rune.
 			r, size = utf8.DecodeRune(src[nSrc:])
 			if size == 1 {
@@ -204,7 +185,6 @@ func (u *utf16Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 					err = transform.ErrShortSrc
 					break
 				}
-				u.synchronize = true
 			}
 		}
 

@@ -84,14 +84,6 @@ func (m charmapDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, 
 // charmapEncoder implements transform.Transformer by encoding from UTF-8.
 type charmapEncoder struct {
 	charmap *charmap
-	// TODO: UTF-8 synchronization is overkill. Remove this code.
-	//
-	// synchronize is whether we have encountered invalid UTF-8 and will
-	// silently consume continuation bytes: those in the range [0x80, 0xc0).
-	//
-	// TODO: does this need to be explicitly or implicitly reset, if this
-	// transformer is re-used?
-	synchronize bool
 }
 
 func (m *charmapEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
@@ -106,7 +98,6 @@ func (m *charmapEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int,
 		// Decode a 1-byte rune.
 		if r < utf8.RuneSelf {
 			nSrc++
-			m.synchronize = false
 			if m.charmap.asciiSuperset {
 				dst[nDst] = uint8(r)
 				nDst++
@@ -114,15 +105,6 @@ func (m *charmapEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int,
 			}
 
 		} else {
-			// If the previous input was invalid UTF-8, skip any continuation bytes.
-			if m.synchronize {
-				if r&0xc0 == 0x80 {
-					nSrc++
-					continue
-				}
-				m.synchronize = false
-			}
-
 			// Decode a multi-byte rune.
 			r, size = utf8.DecodeRune(src[nSrc:])
 			if size == 1 {
@@ -132,7 +114,6 @@ func (m *charmapEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int,
 					err = transform.ErrShortSrc
 					break
 				}
-				m.synchronize = true
 			}
 			nSrc += size
 			if r == utf8.RuneError {

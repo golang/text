@@ -115,13 +115,14 @@ func TestEncodeInvalidUTF8(t *testing.T) {
 		"wo\ufffdld.",
 		"ABC\xff\x80\x80", // Invalid UTF-8.
 		"\x80\x80\x80\x80\x80",
-		"\x80\x80D\x80\x80",          // Synchronization at "D".
+		"\x80\x80D\x80\x80",          // Valid rune at "D".
 		"E\xed\xa0\x80\xed\xbf\xbfF", // Two invalid UTF-8 runes (surrogates).
 		"G",
 		"H\xe2\x82",     // U+20AC in UTF-8 is "\xe2\x82\xac", which we split over two
 		"\xacI\xe2\x82", // input lines. It maps to 0x80 in the Windows-1252 encoding.
 	}
-	want := strings.Replace("hello.wo?ld.ABC?D?E??FGH\x80I?", "?", "\x1a", -1)
+	// Each invalid source byte becomes '\x1a'.
+	want := strings.Replace("hello.wo?ld.ABC??????????D??E??????FGH\x80I??", "?", "\x1a", -1)
 
 	transformer := Windows1252.NewEncoder()
 	gotBuf := make([]byte, 0, 1024)
