@@ -11,6 +11,10 @@ const (
 	lang_en = 97
 )
 
+const langPrivateStart = 11260
+
+const langPrivateEnd = 11779
+
 // lang holds an alphabetically sorted list of BCP 47 language identifiers.
 // All entries are 4 bytes. The index of the identifier (divided by 4) is the language ID.
 // For 2-byte language identifiers, the two successive bytes have the following meaning:
@@ -184,13 +188,13 @@ var langNoIndex = [2197]uint8{
 	247, 253, 117, 253, 255, 252, 245, 237, 71, 244, 127, 16,
 	1, 1, 196, 127, 255, 247, 221, 249, 95, 5, 134, 235,
 	245, 119, 189, 61, 0, 0, 0, 67, 112, 66, 0, 64,
-	0, 0, 1, 67, 25, 0, 8, 0, 255, 255, 255, 3,
-	0, 0, 8, 0, 0, 32, 0, 0, 128, 0, 0, 0,
-	2, 0, 0, 8, 0, 0, 32, 0, 0, 128, 0, 0,
-	0, 2, 0, 0, 8, 0, 0, 32, 0, 0, 128, 0,
-	0, 0, 2, 0, 0, 8, 0, 0, 32, 0, 0, 128,
-	0, 0, 0, 2, 0, 0, 8, 0, 0, 32, 0, 0,
-	128, 239, 189, 231, 87, 238, 19, 93, 9, 193, 64, 33,
+	0, 0, 1, 67, 25, 0, 8, 0, 255, 255, 255, 255,
+	255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+	255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+	255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+	255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+	255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+	255, 239, 189, 231, 87, 238, 19, 93, 9, 193, 64, 33,
 	250, 23, 1, 128, 0, 0, 0, 0, 240, 254, 255, 191,
 	0, 35, 0, 32, 0, 0, 8, 0, 0, 48, 181, 227,
 	16, 0, 0, 0, 17, 36, 22, 0, 1, 2, 16, 131,
@@ -410,13 +414,15 @@ const (
 	scrLatn = 73
 	scrHani = 45
 	scrHans = 47
-	scrZyyy = 186
-	scrZzzz = 187
+	scrQaaa = 114
+	scrQabx = 163
+	scrZyyy = 210
+	scrZzzz = 211
 )
 
 // script is an alphabetically sorted list of ISO 15924 codes. The index
 // of the script in the string, divided by 4, is the internal script ID.
-// Size: 772 bytes
+// Size: 868 bytes
 var script string = "" +
 	"----AfakAghbArabArmiArmnAvstBaliBamuBassBatkBengBlisBopoBrah" +
 	"BraiBugiBuhdCakmCansCariChamCherCirtCoptCprtCyrlCyrsDevaDsrt" +
@@ -427,10 +433,12 @@ var script string = "" +
 	"MongMoonMrooMteiMymrNarbNbatNkgbNkooNshuOgamOlckOrkhOryaOsma" +
 	"PalmPermPhagPhliPhlpPhlvPhnxPlrdPrtiQaaaQaabQaacQaadQaaeQaaf" +
 	"QaagQaahQaaiQaajQaakQaalQaamQaanQaaoQaapQaaqQaarQaasQaatQaau" +
-	"QaavQaawQaaxQaayQaazRjngRoroRunrSamrSaraSarbSaurSgnwShawShrd" +
-	"SindSinhSoraSundSyloSyrcSyreSyrjSyrnTagbTakrTaleTaluTamlTang" +
-	"TavtTeluTengTfngTglgThaaThaiTibtTirhUgarVaiiVispWaraWoleXpeo" +
-	"XsuxYiiiZinhZmthZsymZxxxZyyyZzzz\xff\xff\xff\xff"
+	"QaavQaawQaaxQaayQaazQabaQabbQabcQabdQabeQabfQabgQabhQabiQabj" +
+	"QabkQablQabmQabnQaboQabpQabqQabrQabsQabtQabuQabvQabwQabxRjng" +
+	"RoroRunrSamrSaraSarbSaurSgnwShawShrdSindSinhSoraSundSyloSyrc" +
+	"SyreSyrjSyrnTagbTakrTaleTaluTamlTangTavtTeluTengTfngTglgThaa" +
+	"ThaiTibtTirhUgarVaiiVispWaraWoleXpeoXsuxYiiiZinhZmthZsymZxxx" +
+	"ZyyyZzzz\xff\xff\xff\xff"
 
 // suppressScript is an index from langID to the dominant script for that language,
 // if it exists.  If a script is given, it should be suppressed from the language tag.
@@ -443,7 +451,7 @@ var suppressScript = [444]uint8{
 	0, 73, 0, 0, 0, 0, 0, 0, 0, 73, 0, 0,
 	0, 0, 0, 73, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 73, 0, 0, 0, 73, 73, 0, 0, 73, 0,
-	0, 0, 0, 73, 0, 170, 0, 0, 172, 0, 0, 0,
+	0, 0, 0, 73, 0, 194, 0, 0, 196, 0, 0, 0,
 	41, 73, 73, 73, 73, 73, 0, 3, 0, 0, 73, 0,
 	73, 73, 0, 73, 73, 73, 0, 73, 73, 0, 0, 0,
 	0, 0, 0, 0, 73, 73, 0, 0, 0, 73, 42, 0,
@@ -465,10 +473,10 @@ var suppressScript = [444]uint8{
 	0, 0, 3, 73, 73, 0, 0, 0, 0, 0, 73, 73,
 	73, 0, 26, 73, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 73, 0, 0,
-	0, 151, 0, 73, 73, 73, 0, 0, 0, 0, 0, 0,
+	0, 175, 0, 73, 73, 73, 0, 0, 0, 0, 0, 0,
 	73, 73, 0, 0, 0, 73, 0, 73, 0, 0, 0, 73,
-	73, 0, 0, 0, 0, 163, 0, 0, 0, 166, 73, 0,
-	0, 0, 171, 35, 0, 0, 0, 73, 73, 73, 73, 73,
+	73, 0, 0, 0, 0, 187, 0, 0, 0, 190, 73, 0,
+	0, 0, 195, 35, 0, 0, 0, 73, 73, 73, 73, 73,
 	73, 73, 0, 73, 0, 0, 0, 0, 73, 0, 0, 0,
 	0, 0, 0, 0, 26, 0, 0, 0, 0, 0, 3, 0,
 	0, 73, 73, 0, 0, 0, 0, 0, 0, 0, 73, 0,
@@ -478,6 +486,8 @@ var suppressScript = [444]uint8{
 const (
 	regUS = 293
 	regZZ = 339
+	regXA = 305
+	regXC = 307
 )
 
 // isoRegionOffset needs to be added to the index of regionISO to obtain the regionID
@@ -562,6 +572,11 @@ var m49 = [340]uint16{
 	894, 180, 716, 999,
 }
 
+const (
+	curXTS = 280
+	curXXX = 282
+)
+
 // currency holds an alphabetically sorted list of canonical 3-letter currency identifiers.
 // Each identifier is followed by a byte of which the 6 most significant bits
 // indicated the rounding and the least 2 significant bits indicate the
@@ -612,8 +627,8 @@ type likelyLangRegion struct {
 
 // likelyScript is a lookup table, indexed by scriptID, for the most likely
 // languages and regions given a script.
-// Size: 756 bytes, 189 elements
-var likelyScript = [189]likelyLangRegion{
+// Size: 852 bytes, 213 elements
+var likelyScript = [213]likelyLangRegion{
 	{lang: 0x0, region: 0x0},
 	{lang: 0x0, region: 0x0},
 	{lang: 0x0, region: 0x0},
@@ -754,6 +769,30 @@ var likelyScript = [189]likelyLangRegion{
 	{lang: 0x0, region: 0x0},
 	{lang: 0x0, region: 0x0},
 	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
+	{lang: 0x0, region: 0x0},
 	{lang: 0x13f, region: 0x8f},
 	{lang: 0x0, region: 0x0},
 	{lang: 0x2589, region: 0xfe},
@@ -847,7 +886,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x46, script: 0x1a, flags: 0x0},
 	{region: 0x150, script: 0x49, flags: 0x0},
 	{region: 0x121, script: 0x49, flags: 0x0},
-	{region: 0x93, script: 0xa3, flags: 0x0},
+	{region: 0x93, script: 0xbb, flags: 0x0},
 	{region: 0xdd, script: 0x3, flags: 0x0},
 	{region: 0x93, script: 0x1c, flags: 0x0},
 	{region: 0x37, script: 0x1a, flags: 0x0},
@@ -861,7 +900,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0xdc, script: 0x49, flags: 0x0},
 	{region: 0xbb, script: 0x49, flags: 0x0},
 	{region: 0x34, script: 0xb, flags: 0x0},
-	{region: 0x52, script: 0xac, flags: 0x0},
+	{region: 0x52, script: 0xc4, flags: 0x0},
 	{region: 0x4e, script: 0x49, flags: 0x0},
 	{region: 0x73, script: 0x49, flags: 0x0},
 	{region: 0x93, script: 0x1c, flags: 0x0},
@@ -906,10 +945,10 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x93, script: 0x3, flags: 0x0},
 	{region: 0x5e, script: 0x49, flags: 0x0},
 	{region: 0x51, script: 0x49, flags: 0x0},
-	{region: 0xc5, script: 0xaa, flags: 0x0},
+	{region: 0xc5, script: 0xc2, flags: 0x0},
 	{region: 0x106, script: 0x49, flags: 0x0},
 	{region: 0x36, script: 0x49, flags: 0x0},
-	{region: 0x42, script: 0xac, flags: 0x0},
+	{region: 0x42, script: 0xc4, flags: 0x0},
 	{region: 0x9d, script: 0x49, flags: 0x0},
 	{region: 0x7b, script: 0x49, flags: 0x0},
 	{region: 0xce, script: 0x49, flags: 0x0},
@@ -972,7 +1011,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x8f, script: 0x49, flags: 0x0},
 	{region: 0x0, script: 0x0, flags: 0x0},
 	{region: 0xce, script: 0x49, flags: 0x0},
-	{region: 0x52, script: 0xb5, flags: 0x0},
+	{region: 0x52, script: 0xcd, flags: 0x0},
 	{region: 0x125, script: 0x49, flags: 0x0},
 	{region: 0xdc, script: 0x49, flags: 0x0},
 	{region: 0x8f, script: 0x49, flags: 0x0},
@@ -996,14 +1035,14 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0xf8, script: 0x1a, flags: 0x0},
 	{region: 0xce, script: 0x49, flags: 0x0},
 	{region: 0x121, script: 0x49, flags: 0x0},
-	{region: 0x115, script: 0xab, flags: 0x0},
+	{region: 0x115, script: 0xc3, flags: 0x0},
 	{region: 0x58, script: 0x49, flags: 0x0},
 	{region: 0x51, script: 0x49, flags: 0x0},
 	{region: 0x4e, script: 0x49, flags: 0x0},
 	{region: 0x93, script: 0x1c, flags: 0x0},
 	{region: 0x4a, script: 0x49, flags: 0x0},
 	{region: 0x93, script: 0x49, flags: 0x0},
-	{region: 0x52, script: 0xa2, flags: 0x0},
+	{region: 0x52, script: 0xba, flags: 0x0},
 	{region: 0xbb, script: 0x49, flags: 0x0},
 	{region: 0x93, script: 0x5e, flags: 0x0},
 	{region: 0x9d, script: 0x49, flags: 0x0},
@@ -1039,7 +1078,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0xdd, script: 0x3, flags: 0x0},
 	{region: 0xb0, script: 0x49, flags: 0x0},
 	{region: 0xf8, script: 0x1a, flags: 0x0},
-	{region: 0x52, script: 0xab, flags: 0x0},
+	{region: 0x52, script: 0xc3, flags: 0x0},
 	{region: 0x93, script: 0x4a, flags: 0x0},
 	{region: 0xf8, script: 0x1a, flags: 0x0},
 	{region: 0x123, script: 0x49, flags: 0x0},
@@ -1047,7 +1086,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0xd2, script: 0x1c, flags: 0x0},
 	{region: 0x52, script: 0x4e, flags: 0x0},
 	{region: 0x96, script: 0x3, flags: 0x0},
-	{region: 0x93, script: 0xa6, flags: 0x0},
+	{region: 0x93, script: 0xbe, flags: 0x0},
 	{region: 0x4a, script: 0x49, flags: 0x0},
 	{region: 0xa8, script: 0x46, flags: 0x0},
 	{region: 0x4a, script: 0x49, flags: 0x0},
@@ -1057,7 +1096,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x9d, script: 0x49, flags: 0x0},
 	{region: 0x9d, script: 0x49, flags: 0x0},
 	{region: 0xb1, script: 0x49, flags: 0x0},
-	{region: 0x115, script: 0xab, flags: 0x0},
+	{region: 0x115, script: 0xc3, flags: 0x0},
 	{region: 0x8f, script: 0x49, flags: 0x0},
 	{region: 0x93, script: 0x1c, flags: 0x0},
 	{region: 0x93, script: 0x1c, flags: 0x0},
@@ -1152,7 +1191,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x9d, script: 0x49, flags: 0x0},
 	{region: 0x8f, script: 0x49, flags: 0x0},
 	{region: 0x93, script: 0x49, flags: 0x0},
-	{region: 0x93, script: 0x92, flags: 0x0},
+	{region: 0x93, script: 0xaa, flags: 0x0},
 	{region: 0x121, script: 0x49, flags: 0x0},
 	{region: 0x0, script: 0x0, flags: 0x0},
 	{region: 0x98, script: 0x49, flags: 0x0},
@@ -1166,7 +1205,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x0, script: 0x0, flags: 0x0},
 	{region: 0x2e, script: 0x2, flags: 0x1},
 	{region: 0xbc, script: 0x5e, flags: 0x0},
-	{region: 0xac, script: 0x97, flags: 0x0},
+	{region: 0xac, script: 0xaf, flags: 0x0},
 	{region: 0x6c, script: 0x49, flags: 0x0},
 	{region: 0x103, script: 0x49, flags: 0x0},
 	{region: 0x101, script: 0x49, flags: 0x0},
@@ -1193,17 +1232,17 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x14d, script: 0x3, flags: 0x0},
 	{region: 0x4a, script: 0x49, flags: 0x0},
 	{region: 0x34, script: 0xb, flags: 0x0},
-	{region: 0x10e, script: 0x9b, flags: 0x0},
-	{region: 0x93, script: 0xa3, flags: 0x0},
+	{region: 0x10e, script: 0xb3, flags: 0x0},
+	{region: 0x93, script: 0xbb, flags: 0x0},
 	{region: 0xdc, script: 0x49, flags: 0x0},
 	{region: 0x93, script: 0x41, flags: 0x0},
-	{region: 0x52, script: 0xa1, flags: 0x0},
-	{region: 0x93, script: 0xa6, flags: 0x0},
+	{region: 0x52, script: 0xb9, flags: 0x0},
+	{region: 0x93, script: 0xbe, flags: 0x0},
 	{region: 0x104, script: 0x49, flags: 0x0},
 	{region: 0x123, script: 0x49, flags: 0x0},
 	{region: 0x118, script: 0x49, flags: 0x0},
 	{region: 0x35, script: 0x3, flags: 0x1},
-	{region: 0x115, script: 0xab, flags: 0x0},
+	{region: 0x115, script: 0xc3, flags: 0x0},
 	{region: 0x6c, script: 0x23, flags: 0x0},
 	{region: 0x6a, script: 0x23, flags: 0x0},
 	{region: 0xce, script: 0x49, flags: 0x0},
@@ -1219,7 +1258,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x14f, script: 0x49, flags: 0x0},
 	{region: 0xdc, script: 0x49, flags: 0x0},
 	{region: 0xf8, script: 0x1a, flags: 0x0},
-	{region: 0x115, script: 0xab, flags: 0x0},
+	{region: 0x115, script: 0xc3, flags: 0x0},
 	{region: 0xc6, script: 0x49, flags: 0x0},
 	{region: 0x11f, script: 0x49, flags: 0x0},
 	{region: 0x0, script: 0x0, flags: 0x0},
@@ -1237,7 +1276,7 @@ var likelyLang = [444]likelyScriptRegion{
 	{region: 0x93, script: 0xb, flags: 0x0},
 	{region: 0xdd, script: 0x3, flags: 0x0},
 	{region: 0x3c, script: 0x5, flags: 0x1},
-	{region: 0xad, script: 0xaf, flags: 0x0},
+	{region: 0xad, script: 0xc7, flags: 0x0},
 	{region: 0x14f, script: 0x49, flags: 0x0},
 	{region: 0x12d, script: 0x49, flags: 0x0},
 	{region: 0x1, script: 0x49, flags: 0x0},
@@ -1312,7 +1351,7 @@ var likelyLangList = [86]likelyScriptRegion{
 	{region: 0x59, script: 0x49, flags: 0x2},
 	{region: 0x93, script: 0x3, flags: 0x0},
 	{region: 0x93, script: 0x1c, flags: 0x2},
-	{region: 0xb3, script: 0xa8, flags: 0x0},
+	{region: 0xb3, script: 0xc0, flags: 0x0},
 	{region: 0xb3, script: 0x49, flags: 0x4},
 	{region: 0xf7, script: 0x1a, flags: 0x0},
 	{region: 0xb6, script: 0x49, flags: 0x4},
@@ -1539,7 +1578,7 @@ var likelyRegion = [340]likelyLangScript{
 	{lang: 0x36, script: 0x2, flags: 0x1},
 	{lang: 0x0, script: 0x0, flags: 0x0},
 	{lang: 0x52, script: 0x49, flags: 0x0},
-	{lang: 0x15d, script: 0x97, flags: 0x0},
+	{lang: 0x15d, script: 0xaf, flags: 0x0},
 	{lang: 0x0, script: 0x0, flags: 0x0},
 	{lang: 0x16f, script: 0x49, flags: 0x0},
 	{lang: 0xea, script: 0x49, flags: 0x0},
@@ -1564,7 +1603,7 @@ var likelyRegion = [340]likelyLangScript{
 	{lang: 0x0, script: 0x0, flags: 0x0},
 	{lang: 0x10e, script: 0x49, flags: 0x0},
 	{lang: 0x44, script: 0x3, flags: 0x1},
-	{lang: 0x59, script: 0xaa, flags: 0x0},
+	{lang: 0x59, script: 0xc2, flags: 0x0},
 	{lang: 0x0, script: 0x0, flags: 0x0},
 	{lang: 0x63, script: 0x49, flags: 0x0},
 	{lang: 0x10d, script: 0x49, flags: 0x0},
@@ -1725,12 +1764,12 @@ var likelyRegionList = [104]likelyLangScript{
 	{lang: 0x16a, script: 0x1a, flags: 0x0},
 	{lang: 0x21, script: 0x1a, flags: 0x0},
 	{lang: 0x18d, script: 0x49, flags: 0x0},
-	{lang: 0x5c, script: 0xac, flags: 0x0},
+	{lang: 0x5c, script: 0xc4, flags: 0x0},
 	{lang: 0x11a, script: 0x1c, flags: 0x0},
 	{lang: 0x1b8, script: 0x2f, flags: 0x0},
 	{lang: 0x19b, script: 0x3, flags: 0x0},
 	{lang: 0x1b6, script: 0x49, flags: 0x0},
-	{lang: 0xde, script: 0xab, flags: 0x0},
+	{lang: 0xde, script: 0xc3, flags: 0x0},
 	{lang: 0x60, script: 0x29, flags: 0x0},
 	{lang: 0x18d, script: 0x49, flags: 0x0},
 	{lang: 0x52, script: 0x49, flags: 0x0},
@@ -1759,13 +1798,13 @@ var likelyRegionList = [104]likelyLangScript{
 	{lang: 0x186, script: 0x49, flags: 0x0},
 	{lang: 0xc3, script: 0x3f, flags: 0x0},
 	{lang: 0x44, script: 0x3, flags: 0x0},
-	{lang: 0xb3, script: 0xab, flags: 0x0},
+	{lang: 0xb3, script: 0xc3, flags: 0x0},
 	{lang: 0xd, script: 0x3, flags: 0x0},
 	{lang: 0x6f, script: 0x49, flags: 0x0},
 	{lang: 0x146, script: 0x1a, flags: 0x0},
 	{lang: 0x52, script: 0x49, flags: 0x0},
 	{lang: 0xe8, script: 0x46, flags: 0x0},
-	{lang: 0xb3, script: 0xab, flags: 0x0},
+	{lang: 0xb3, script: 0xc3, flags: 0x0},
 	{lang: 0xd, script: 0x3, flags: 0x0},
 	{lang: 0x6f, script: 0x49, flags: 0x0},
 	{lang: 0xd, script: 0x3, flags: 0x0},
@@ -1798,7 +1837,7 @@ var likelyRegionList = [104]likelyLangScript{
 	{lang: 0x168, script: 0x49, flags: 0x0},
 	{lang: 0xd, script: 0x3, flags: 0x0},
 	{lang: 0x6f, script: 0x49, flags: 0x0},
-	{lang: 0x182, script: 0xab, flags: 0x0},
+	{lang: 0x182, script: 0xc3, flags: 0x0},
 	{lang: 0x109, script: 0x5e, flags: 0x0},
 	{lang: 0x181, script: 0x1a, flags: 0x0},
 	{lang: 0x67, script: 0x3, flags: 0x0},
@@ -1885,4 +1924,4 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 14.4K (14715 bytes); Check: 5491035E
+// Size: 14.6K (14907 bytes); Check: 1BCAE8F

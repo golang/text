@@ -163,6 +163,7 @@ func TestRegionID(t *testing.T) {
 		{"IC", "IC", "", 0},
 		{"ZZ", "ZZ", "ZZZ", 999},
 		{"EU", "EU", "QUU", 967},
+		{"QO", "QO", "QOO", 961},
 		{"419", "", "", 419},
 	}
 	for i, tt := range tests {
@@ -195,10 +196,10 @@ func TestRegionID(t *testing.T) {
 				t.Errorf("%d:String(): found %s; want %03d", i, id, tt.m49)
 			}
 		}
-		if id := want.iso3(); tt.iso3 != id {
+		if id := want.ISO3(); tt.iso3 != id {
 			t.Errorf("%d:iso3(): found %s; want %s", i, id, tt.iso3)
 		}
-		if id := int(want.m49()); tt.m49 != id {
+		if id := int(want.M49()); tt.m49 != id {
 			t.Errorf("%d:m49(): found %d; want %d", i, id, tt.m49)
 		}
 	}
@@ -273,6 +274,67 @@ func TestCurrency(t *testing.T) {
 			if d := round(idx, id); d != tt.round {
 				t.Errorf("%d:round(%s): found %d; want %d", i, tt.in, d, tt.round)
 			}
+		}
+	}
+}
+
+func TestIsPrivateUse(t *testing.T) {
+	type test struct {
+		s       string
+		private bool
+	}
+	tests := []test{
+		{"en", false},
+		{"und", false},
+		{"pzn", false},
+		{"qaa", true},
+		{"qtz", true},
+		{"qua", false},
+	}
+	for i, tt := range tests {
+		x, _ := getLangID([]byte(tt.s))
+		if b := x.IsPrivateUse(); b != tt.private {
+			t.Errorf("%d: langID.IsPrivateUse(%s) was %v; want %v", i, tt.s, b, tt.private, int(x))
+		}
+	}
+	tests = []test{
+		{"001", false},
+		{"419", false},
+		{"899", false},
+		{"900", false},
+		{"957", false},
+		{"958", true},
+		{"AA", true},
+		{"AC", false},
+		{"EU", true}, // CLDR grouping
+		{"QO", true}, // CLDR grouping
+		{"QA", false},
+		{"QM", true},
+		{"QZ", true},
+		{"XA", true},
+		{"XZ", true},
+		{"ZW", false},
+		{"ZZ", true},
+	}
+	for i, tt := range tests {
+		x, _ := getRegionID([]byte(tt.s))
+		if b := x.IsPrivateUse(); b != tt.private {
+			t.Errorf("%d: regionID.IsPrivateUse(%s) was %v; want %v", i, tt.s, b, tt.private)
+		}
+	}
+	tests = []test{
+		{"Latn", false},
+		{"Laaa", false}, // invalid
+		{"Qaaa", true},
+		{"Qabx", true},
+		{"Qaby", false},
+		{"Zyyy", false},
+		{"Zzzz", false},
+	}
+	for i, tt := range tests {
+		x, _ := getScriptID(script, []byte(tt.s))
+		if b := x.IsPrivateUse(); b != tt.private {
+			t.Errorf("%d: scriptID.IsPrivateUse(%s) was %v; want %v", i, tt.s, b, tt.private)
 		}
 	}
 }

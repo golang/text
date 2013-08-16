@@ -557,6 +557,15 @@ func strToInt(s string) uint {
 	return v
 }
 
+// converts the given integer to the original ASCII string passed to strToInt.
+// len(s) must match the number of characters obtained.
+func intToStr(v uint, s []byte) {
+	for i := len(s) - 1; i >= 0; i-- {
+		s[i] = byte(v%base) + 'a'
+		v /= base
+	}
+}
+
 func (b *builder) writeBitVector(name string, ss []string) {
 	vec := make([]uint8, int(math.Ceil(math.Pow(base, float64(len(ss[0])))/8)))
 	for _, s := range ss {
@@ -599,10 +608,15 @@ func (b *builder) langIndex(s string) uint16 {
 
 // inc advances the string to its lexicographical successor.
 func inc(s string) string {
-	i := len(s) - 1
-	for ; s[i]+1 > 'z'; i-- {
+	const maxTagLength = 4
+	var buf [maxTagLength]byte
+	intToStr(strToInt(strings.ToLower(s))+1, buf[:len(s)])
+	for i := 0; i < len(s); i++ {
+		if s[i] <= 'Z' {
+			buf[i] -= 'a' - 'A'
+		}
 	}
-	return fmt.Sprintf("%s%s%s", s[:i], string(s[i]+1), s[i+1:])
+	return string(buf[:len(s)])
 }
 
 func (b *builder) parseIndices() {
@@ -660,6 +674,8 @@ func (b *builder) writeLanguage() {
 
 	b.writeConst("nonCanonicalUnd", b.lang.index("und"))
 	b.writeConsts("lang_", b.lang.index, "de", "en")
+	b.writeConst("langPrivateStart", b.langIndex("qaa"))
+	b.writeConst("langPrivateEnd", b.langIndex("qtz"))
 
 	// Get language codes that need to be mapped (overlong 3-letter codes, deprecated
 	// 2-letter codes and grandfathered tags.
@@ -692,6 +708,7 @@ func (b *builder) writeLanguage() {
 			if a.Reason != "deprecated" {
 				langMacroMap.add(a.Type)
 				langMacroMap.updateLater(a.Type, repl)
+				println(a.Type, repl)
 			}
 		} else {
 			legacyTag[strings.Replace(a.Type, "_", "-", -1)] = repl
@@ -790,7 +807,7 @@ func (b *builder) writeLanguage() {
 }
 
 func (b *builder) writeScript() {
-	b.writeConsts("scr", b.script.index, "Latn", "Hani", "Hans", "Zyyy", "Zzzz")
+	b.writeConsts("scr", b.script.index, "Latn", "Hani", "Hans", "Qaaa", "Qabx", "Zyyy", "Zzzz")
 	b.writeString("script", b.script.join())
 
 	supp := make([]uint8, len(b.lang.slice()))
@@ -812,7 +829,7 @@ func parseM49(s string) uint16 {
 }
 
 func (b *builder) writeRegion() {
-	b.writeConsts("reg", b.region.index, "US", "ZZ")
+	b.writeConsts("reg", b.region.index, "US", "ZZ", "XA", "XC")
 
 	isoOffset := b.region.index("AA")
 	m49map := make([]uint16, len(b.region.slice()))
@@ -865,6 +882,8 @@ func (b *builder) writeLanguageInfo() {
 }
 
 func (b *builder) writeCurrencies() {
+	b.writeConsts("cur", b.currency.index, "XTS", "XXX")
+
 	digits := map[string]uint64{}
 	rounding := map[string]uint64{}
 	for _, info := range b.supp.CurrencyData.Fractions[0].Info {

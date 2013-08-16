@@ -228,6 +228,11 @@ func (id langID) ISO3() string {
 	return l[0:1] + l[2:4]
 }
 
+// IsPrivateUse reports whether this language code is reserved for private use.
+func (id langID) IsPrivateUse() bool {
+	return langPrivateStart <= id && id <= langPrivateEnd
+}
+
 type regionID uint16
 
 // getRegionID returns the region id for s if s is a valid 2-letter region code
@@ -297,15 +302,16 @@ func (r regionID) String() string {
 		if r == 0 {
 			return "ZZ"
 		}
-		return fmt.Sprintf("%03d", r.m49())
+		return fmt.Sprintf("%03d", r.M49())
 	}
 	r -= isoRegionOffset
 	return get(regionISO, int(r), 2)
 }
 
-// The use of this is uncommon.
-// Note: not all regionIDs have corresponding 3-letter ISO codes!
-func (r regionID) iso3() string {
+// ISO3 returns the 3-letter ISO code of r.
+// Note that not all regions have a 3-letter ISO code.
+// In such cases this method returns the empty string.
+func (r regionID) ISO3() string {
 	if r < isoRegionOffset {
 		return ""
 	}
@@ -320,8 +326,16 @@ func (r regionID) iso3() string {
 	return reg[0:1] + reg[2:4]
 }
 
-func (r regionID) m49() uint16 {
-	return m49[r]
+// M49 returns the UN M.49 encoding of r, or 0 if this encoding
+// is not defined for r.
+func (r regionID) M49() int {
+	return int(m49[r])
+}
+
+// IsPrivateUse reports whether r is reserved for private use.
+func (r regionID) IsPrivateUse() bool {
+	const m49PrivateUseStart = 900
+	return r.M49() >= m49PrivateUseStart
 }
 
 type scriptID uint8
@@ -347,6 +361,11 @@ func (s scriptID) String() string {
 	return get(script, int(s), 4)
 }
 
+// IsPrivateUse reports whether this script code is reserved for private use.
+func (s scriptID) IsPrivateUse() bool {
+	return scrQaaa <= s && s <= scrQabx
+}
+
 type currencyID uint16
 
 func getCurrencyID(idx string, s []byte) (currencyID, error) {
@@ -361,6 +380,9 @@ func getCurrencyID(idx string, s []byte) (currencyID, error) {
 
 // String returns the upper case representation of the currency.
 func (c currencyID) String() string {
+	if c == 0 {
+		return "XXX"
+	}
 	return get(currency, int(c), 3)
 }
 

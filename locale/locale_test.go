@@ -84,6 +84,28 @@ func TestLanguage(t *testing.T) {
 	}
 }
 
+func TestParseLanguage(t *testing.T) {
+	tests := []struct {
+		in  string
+		out string
+		ok  bool
+	}{
+		{"en", "en", true},
+		{"EN", "en", true},
+		{"nld", "nl", true},
+		{"aaj", "und", false}, // unknown
+		{"qaa", "qaa", true},
+		{"a", "und", false},
+		{"", "und", false},
+		{"aaaa", "und", false},
+	}
+	for i, tt := range tests {
+		if x, err := ParseLanguage(tt.in); x.String() != tt.out || err == nil != tt.ok {
+			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
+		}
+	}
+}
+
 func TestScript(t *testing.T) {
 	tests := []struct {
 		loc, scr string
@@ -107,6 +129,26 @@ func TestScript(t *testing.T) {
 		}
 		if conf != tt.conf {
 			t.Errorf("%d: confidence was %d; want %d", i, conf, tt.conf)
+		}
+	}
+}
+
+func TestParseScript(t *testing.T) {
+	tests := []struct {
+		in  string
+		out string
+		ok  bool
+	}{
+		{"Latn", "Latn", true},
+		{"zzzz", "Zzzz", true},
+		{"Latm", "Zyyy", false},
+		{"Zzz", "Zyyy", false},
+		{"", "Zyyy", false},
+		{"Zzzxx", "Zyyy", false},
+	}
+	for i, tt := range tests {
+		if x, err := ParseScript(tt.in); x.String() != tt.out || err == nil != tt.ok {
+			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
 		}
 	}
 }
@@ -138,6 +180,46 @@ func TestRegion(t *testing.T) {
 	}
 }
 
+func TestEncodeM49(t *testing.T) {
+	tests := []struct {
+		m49  int
+		code string
+		ok   bool
+	}{
+		{1, "001", true},
+		{840, "US", true},
+		{899, "ZZ", false},
+	}
+	for i, tt := range tests {
+		if r, err := EncodeM49(tt.m49); r.String() != tt.code || err == nil != tt.ok {
+			t.Errorf("%d:%d: was %s, %v; want %s, %v", i, tt.m49, r, err == nil, tt.code, tt.ok)
+		}
+	}
+}
+
+func TestParseRegion(t *testing.T) {
+	tests := []struct {
+		in  string
+		out string
+		ok  bool
+	}{
+		{"001", "001", true},
+		{"840", "US", true},
+		{"899", "ZZ", false},
+		{"USA", "US", true},
+		{"US", "US", true},
+		{"BC", "ZZ", false},
+		{"C", "ZZ", false},
+		{"CCCC", "ZZ", false},
+		{"01", "ZZ", false},
+	}
+	for i, tt := range tests {
+		if r, err := ParseRegion(tt.in); r.String() != tt.out || err == nil != tt.ok {
+			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, r, err == nil, tt.out, tt.ok)
+		}
+	}
+}
+
 func TestIsCountry(t *testing.T) {
 	tests := []struct {
 		reg     string
@@ -160,6 +242,27 @@ func TestIsCountry(t *testing.T) {
 		r := Region{reg}
 		if r.IsCountry() != tt.country {
 			t.Errorf("%d: IsCountry(%s) was %v; want %v", i, tt.reg, r.IsCountry(), tt.country)
+		}
+	}
+}
+
+func TestParseCurrency(t *testing.T) {
+	tests := []struct {
+		in  string
+		out string
+		ok  bool
+	}{
+		{"USD", "USD", true},
+		{"xxx", "XXX", true},
+		{"xts", "XTS", true},
+		{"XX", "XXX", false},
+		{"XXXX", "XXX", false},
+		{"", "XXX", false},
+		{"UUU", "XXX", false}, // unknown
+	}
+	for i, tt := range tests {
+		if x, err := ParseCurrency(tt.in); x.String() != tt.out || err == nil != tt.ok {
+			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
 		}
 	}
 }

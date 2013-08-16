@@ -217,7 +217,7 @@ func (loc ID) Language() (Language, Confidence) {
 	return Language{0}, No
 }
 
-// Script infers the script for the locale.  If it was not explictly given, it will infer
+// Script infers the script for the locale. If it was not explictly given, it will infer
 // a most likely candidate from the parent locales.
 // If more than one script is commonly used for a language, the most likely one
 // is returned with a low confidence indication. For example, it returns (Cyrl, Low)
@@ -250,7 +250,7 @@ func (loc ID) Script() (Script, Confidence) {
 	return sc, c
 }
 
-// Region returns the region for the locale.  If it was not explicitly given, it will
+// Region returns the region for the locale. If it was not explicitly given, it will
 // infer a most likely candidate from the context.
 // It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
 func (loc ID) Region() (Region, Confidence) {
@@ -296,10 +296,32 @@ type Language struct {
 	langID
 }
 
+// ParseLanguage parses a 2- or 3-letter ISO 639 code.
+// It returns an error if the given string is not a valid language code.
+func ParseLanguage(s string) (Language, error) {
+	if n := len(s); n < 2 || 3 < n {
+		return Language{}, errInvalid
+	}
+	var buf [3]byte
+	l, err := getLangID(buf[:copy(buf[:], s)])
+	return Language{l}, err
+}
+
 // Script is a 4-letter ISO 15924 code for representing scripts.
 // It is idiomatically represented in title case.
 type Script struct {
 	scriptID
+}
+
+// ParseScript parses a 4-letter ISO 15924 code.
+// It returns an error if the given string is not a valid script code.
+func ParseScript(s string) (Script, error) {
+	if len(s) != 4 {
+		return Script{}, errInvalid
+	}
+	var buf [4]byte
+	sc, err := getScriptID(script, buf[:copy(buf[:], s)])
+	return Script{sc}, err
 }
 
 // Region is an ISO 3166-1 or UN M.49 code for representing countries and regions.
@@ -307,10 +329,27 @@ type Region struct {
 	regionID
 }
 
+// EncodeM49 returns the Region for the given UN M.49 code.
+// It returns an error if r is not a valid code.
+func EncodeM49(r int) (Region, error) {
+	rid, err := getRegionM49(r)
+	return Region{rid}, err
+}
+
+// ParseRegion parses a 2- or 3-letter ISO 3166-1 or a UN M.49 code.
+// It returns an error if the given string is not a valid region code.
+func ParseRegion(s string) (Region, error) {
+	if n := len(s); n < 2 || 3 < n {
+		return Region{}, errInvalid
+	}
+	var buf [3]byte
+	r, err := getRegionID(buf[:copy(buf[:], s)])
+	return Region{r}, err
+}
+
 // IsCountry returns whether this region is a country or autonomous area.
 func (r Region) IsCountry() bool {
-	const m49PrivateUseStart = 900
-	if r.regionID < isoRegionOffset || r.m49() >= m49PrivateUseStart {
+	if r.regionID < isoRegionOffset || r.IsPrivateUse() {
 		return false
 	}
 	return true
@@ -331,6 +370,17 @@ func (v Variant) String() string {
 // Currency is an ISO 4217 currency designator.
 type Currency struct {
 	currencyID
+}
+
+// ParseCurrency parses a 3-letter ISO 4217 code.
+// It returns an error if the given string is not a valid currency code.
+func ParseCurrency(s string) (Currency, error) {
+	if len(s) != 3 {
+		return Currency{}, errInvalid
+	}
+	var buf [3]byte
+	c, err := getCurrencyID(currency, buf[:copy(buf[:], s)])
+	return Currency{c}, err
 }
 
 // Set provides information about a set of locales.
