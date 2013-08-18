@@ -476,12 +476,11 @@ func root(e Elem) *LDML {
 // inheritStructPtr first merges possible aliases in with v and then inherits
 // any underspecified elements from parent.
 func (cldr *CLDR) inheritStructPtr(v, parent reflect.Value) (r reflect.Value, err error) {
-	e := v.Interface().(Elem).GetCommon()
-	p := parent.Interface().(Elem).GetCommon()
-	if e != nil {
+	if !v.IsNil() {
+		e := v.Interface().(Elem).GetCommon()
 		alias := e.Alias
-		if alias == nil && p != nil {
-			alias = p.Alias
+		if alias == nil && !parent.IsNil() {
+			alias = parent.Interface().(Elem).GetCommon().Alias
 		}
 		if alias != nil {
 			a, err := cldr.resolveAlias(v.Interface().(Elem), alias.Source, alias.Path)
@@ -491,10 +490,10 @@ func (cldr *CLDR) inheritStructPtr(v, parent reflect.Value) (r reflect.Value, er
 				}
 			}
 		}
-		if p != nil {
+		if !parent.IsNil() {
 			return cldr.inheritFields(v.Elem(), parent.Elem())
 		}
-	} else if p != nil {
+	} else if parent.IsNil() {
 		panic("should not reach here")
 	}
 	return v, nil
