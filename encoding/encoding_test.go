@@ -33,9 +33,54 @@ var basicTestCases = []struct {
 		utf8:    "Héllô ¥º⌠£╛",
 	},
 	{
+		e:       Windows874,
+		encoded: "He\xb7\xf0",
+		utf8:    "Heท๐",
+	},
+	{
+		e:       Windows1250,
+		encoded: "He\xe5\xe5o",
+		utf8:    "Heĺĺo",
+	},
+	{
+		e:       Windows1251,
+		encoded: "H\xball\xfe",
+		utf8:    "Hєllю",
+	},
+	{
 		e:       Windows1252,
 		encoded: "H\xe9ll\xf4 \xa5\xbA\xae\xa3\xd0",
 		utf8:    "Héllô ¥º®£Ð",
+	},
+	{
+		e:       Windows1253,
+		encoded: "H\xe5ll\xd6",
+		utf8:    "HεllΦ",
+	},
+	{
+		e:       Windows1254,
+		encoded: "\xd0ello",
+		utf8:    "Ğello",
+	},
+	{
+		e:       Windows1255,
+		encoded: "He\xd4o",
+		utf8:    "Heװo",
+	},
+	{
+		e:       Windows1256,
+		encoded: "H\xdbllo",
+		utf8:    "Hغllo",
+	},
+	{
+		e:       Windows1257,
+		encoded: "He\xeflo",
+		utf8:    "Heļlo",
+	},
+	{
+		e:       Windows1258,
+		encoded: "Hell\xf5",
+		utf8:    "Hellơ",
 	},
 	{
 		e:       UTF16(BigEndian, IgnoreBOM),
@@ -138,7 +183,7 @@ func TestEncodeInvalidUTF8(t *testing.T) {
 			t.Fatalf("i=%d: %v", i, err)
 		}
 		if atEOF && err != nil {
-			t.Fatalf("atEOF: %v", i, err)
+			t.Fatalf("i=%d: atEOF: %v", i, err)
 		}
 	}
 	if got := string(gotBuf); got != want {
