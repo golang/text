@@ -51,7 +51,7 @@ type ID struct {
 // In most cases, locale IDs should be created using this method.
 func Make(id string) ID {
 	loc, _ := Parse(id)
-	loc, _ = loc.Canonicalize(All)
+	loc, _ = loc.Canonicalize(Default)
 	return loc
 }
 
@@ -85,12 +85,18 @@ const (
 	Deprecated CanonType = 1 << iota
 	// Remove redundant scripts.
 	SuppressScript
-	// Map the dominant language of macro language group to the macro language identifier.
+	// Normalize legacy encodings, as defined by CLDR.
+	Legacy
+	// Map the dominant language of a macro language group to the macro language identifier.
 	// For example cmn -> zh.
 	Macro
+	// The CLDR flag should be used if full compatibility with CLDR is required.  There are
+	// a few cases where locale.ID may differ from CLDR.
+	CLDR
 	// All canonicalizations prescribed by BCP 47.
-	BCP47 = Deprecated | SuppressScript
-	All   = BCP47 | Macro
+	BCP47   = Deprecated | SuppressScript
+	All     = BCP47 | Legacy | Macro
+	Default = All
 
 	// TODO: LikelyScript, LikelyRegion: supress similar to ICU.
 )
@@ -104,19 +110,57 @@ func (loc ID) Canonicalize(t CanonType) (ID, error) {
 			changed = true
 		}
 	}
+	if t&Legacy != 0 {
+		// We hard code this set as it is very small, unlikely to change and requires some
+		// handling that does not fit elsewhere.
+		switch loc.lang {
+		case lang_no:
+			if t&CLDR != 0 {
+				loc.lang = lang_nb
+				changed = true
+			}
+		case lang_tl:
+			loc.lang = lang_fil
+			changed = true
+		case lang_sh:
+			if loc.script == 0 {
+				loc.script = scrLatn
+			}
+			loc.lang = lang_sr
+			changed = true
+		}
+	}
 	if t&Deprecated != 0 {
 		l := normLang(langOldMap[:], loc.lang)
 		if l != loc.lang {
+			// CLDR maps "mo" to "ro". This mapping loses the piece of information
+			// that "mo" very likely implies the region "MD". This may be important
+			// for applications that insist on making a difference between these
+			// two language codes.
+			if loc.lang == lang_mo && loc.region == 0 && t&CLDR == 0 {
+				loc.region = regMD
+			}
 			changed = true
+			loc.lang = l
 		}
-		loc.lang = l
 	}
 	if t&Macro != 0 {
 		l := normLang(langMacroMap[:], loc.lang)
+		// We deviate here from CLDR. The mapping "nb" -> "no" qualifies as a typical
+		// Macro language mapping.  However, for legacy reasons, CLDR maps "no,
+		// the macro language code for Norwegian, to the dominant variant "nb.
+		// This change is currently under consideration for CLDR as well.
+		// See http://unicode.org/cldr/trac/ticket/2698 and also
+		// http://unicode.org/cldr/trac/ticket/1790 for some of the practical
+		// implications.
+		// TODO: this code could be removed if CLDR adopts this change.
+		if l == lang_nb && t&CLDR == 0 {
+			l = lang_no
+		}
 		if l != loc.lang {
 			changed = true
+			loc.lang = l
 		}
-		loc.lang = l
 	}
 	if changed && loc.str != nil {
 		loc.remakeString()

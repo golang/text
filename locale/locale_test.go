@@ -266,3 +266,38 @@ func TestParseCurrency(t *testing.T) {
 		}
 	}
 }
+
+func TestCanonicalize(t *testing.T) {
+	// TODO: do a full test using CLDR data in a separate regression test.
+	tests := []struct {
+		in, out string
+		option  CanonType
+	}{
+		{"en-Latn", "en", SuppressScript},
+		{"sr-Cyrl", "sr-Cyrl", SuppressScript},
+		{"sh", "sr-Latn", Legacy},
+		{"sh-HR", "sr-Latn-HR", Legacy},
+		{"sh-Cyrl-HR", "sr-Cyrl-HR", Legacy},
+		{"tl", "fil", Legacy},
+		{"no", "no", Legacy},
+		{"no", "nb", Legacy | CLDR},
+		{"cmn", "cmn", Legacy},
+		{"cmn", "zh", Macro},
+		{"yue", "yue", Macro},
+		{"nb", "no", Macro},
+		{"nb", "nb", Macro | CLDR},
+		{"no", "no", Macro},
+		{"no", "no", Macro | CLDR},
+		{"iw", "he", Deprecated},
+		{"iw", "he", Deprecated | CLDR},
+		{"mo", "ro-MD", Deprecated},
+		{"mo", "ro", Deprecated | CLDR},
+	}
+	for i, tt := range tests {
+		in, _ := Parse(tt.in)
+		in, _ = in.Canonicalize(tt.option)
+		if in.String() != tt.out {
+			t.Errorf("%d:%s: was %s; want %s", i, tt.in, in.String(), tt.out)
+		}
+	}
+}

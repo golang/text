@@ -673,7 +673,7 @@ func (b *builder) writeLanguage() {
 	meta := b.supp.Metadata
 
 	b.writeConst("nonCanonicalUnd", b.lang.index("und"))
-	b.writeConsts("lang_", b.lang.index, "de", "en")
+	b.writeConsts("lang_", b.lang.index, "de", "en", "fil", "mo", "nb", "no", "sh", "sr", "tl")
 	b.writeConst("langPrivateStart", b.langIndex("qaa"))
 	b.writeConst("langPrivateEnd", b.langIndex("qtz"))
 
@@ -705,10 +705,13 @@ func (b *builder) writeLanguage() {
 				lang.updateLater(a.Replacement, a.Type)
 			}
 		} else if len(a.Type) <= 3 {
-			if a.Reason != "deprecated" {
+			if a.Reason == "macrolanguage" {
 				langMacroMap.add(a.Type)
 				langMacroMap.updateLater(a.Type, repl)
-				println(a.Type, repl)
+			} else if a.Reason == "deprecated" {
+				// handled elsewhere
+			} else if l := a.Type; !(l == "sh" || l == "no" || l == "tl") {
+				log.Fatalf("new %s alias: %s", a.Reason, a.Type)
 			}
 		} else {
 			legacyTag[strings.Replace(a.Type, "_", "-", -1)] = repl
@@ -829,7 +832,7 @@ func parseM49(s string) uint16 {
 }
 
 func (b *builder) writeRegion() {
-	b.writeConsts("reg", b.region.index, "US", "ZZ", "XA", "XC")
+	b.writeConsts("reg", b.region.index, "MD", "US", "ZZ", "XA", "XC")
 
 	isoOffset := b.region.index("AA")
 	m49map := make([]uint16, len(b.region.slice()))

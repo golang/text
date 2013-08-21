@@ -7,8 +7,15 @@ package locale
 const nonCanonicalUnd = 415
 
 const (
-	lang_de = 82
-	lang_en = 97
+	lang_de  = 82
+	lang_en  = 97
+	lang_fil = 107
+	lang_mo  = 266
+	lang_nb  = 279
+	lang_no  = 290
+	lang_sh  = 346
+	lang_sr  = 362
+	lang_tl  = 392
 )
 
 const langPrivateStart = 11260
@@ -312,11 +319,8 @@ var langOldMap = [27]fromTo{
 }
 
 // langMacroMap maps languages to their macro language replacement, if applicable.
-// Size: 260 bytes, 65 elements
-var langMacroMap = [65]fromTo{
-	{from: 0x122, to: 0x117},
-	{from: 0x15a, to: 0x16a},
-	{from: 0x188, to: 0x6b},
+// Size: 248 bytes, 62 elements
+var langMacroMap = [62]fromTo{
 	{from: 0x195, to: 0x8},
 	{from: 0x2ba, to: 0x1b3b},
 	{from: 0x2ec, to: 0x169},
@@ -484,6 +488,7 @@ var suppressScript = [444]uint8{
 }
 
 const (
+	regMD = 181
 	regUS = 293
 	regZZ = 339
 	regXA = 305
@@ -1924,4 +1929,4 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 14.6K (14907 bytes); Check: 1BCAE8F
+// Size: 14.5K (14895 bytes); Check: 1A91D521

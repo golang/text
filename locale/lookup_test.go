@@ -109,10 +109,10 @@ func TestLangID(t *testing.T) {
 		{id: "gsw", bcp47: "gsw", iso3: "gsw"},
 		{id: "gSW", bcp47: "gsw", iso3: "gsw"},
 		{id: "und", bcp47: "und", iso3: "und"},
-		{id: "sh", bcp47: "sh", iso3: "hbs", norm: "sr"},
-		{id: "hbs", bcp47: "sh", iso3: "hbs", norm: "sr"},
-		{id: "no", bcp47: "no", iso3: "nor", norm: "nb"},
-		{id: "nor", bcp47: "no", iso3: "nor", norm: "nb"},
+		{id: "sh", bcp47: "sh", iso3: "hbs", norm: "sh"},
+		{id: "hbs", bcp47: "sh", iso3: "hbs", norm: "sh"},
+		{id: "no", bcp47: "no", iso3: "nor", norm: "no"},
+		{id: "nor", bcp47: "no", iso3: "nor", norm: "no"},
 		{id: "cmn", bcp47: "cmn", iso3: "cmn", norm: "zh"},
 	}
 	for i, tt := range tests {
