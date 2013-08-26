@@ -40,7 +40,7 @@ func (m *charmap) NewDecoder() transform.Transformer {
 }
 
 func (m *charmap) NewEncoder() transform.Transformer {
-	return &charmapEncoder{charmap: m}
+	return charmapEncoder{charmap: m}
 }
 
 func (m *charmap) String() string {
@@ -86,7 +86,7 @@ type charmapEncoder struct {
 	charmap *charmap
 }
 
-func (m *charmapEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+func (m charmapEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
 	for nSrc < len(src) {
 		if nDst >= len(dst) {
