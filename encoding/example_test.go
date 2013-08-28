@@ -5,6 +5,7 @@
 package encoding_test
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -19,9 +20,6 @@ func ExampleDecodeWindows1252() {
 	io.Copy(os.Stdout, tr)
 	// Output: Garçon !
 }
-
-/*
-TODO: enable this example when transform.Chain is checked in.
 
 func ExampleUTF8Validator() {
 	for i := 0; i < 2; i++ {
@@ -39,4 +37,3 @@ func ExampleUTF8Validator() {
 	// i=0: produced "abc\x1axyz", consumed "abc\xffxyz", error <nil>
 	// i=1: produced "abc", consumed "abc", error encoding: invalid UTF-8
 }
-*/
