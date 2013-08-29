@@ -7,7 +7,7 @@
 package main
 
 // This program generates tables.go:
-//	go run maketables.go |gofmt >tables.go
+//	go run maketables.go | gofmt > tables.go
 
 import (
 	"bytes"

@@ -37,6 +37,10 @@ type Encoding interface {
 	NewEncoder() transform.Transformer
 }
 
+// ASCIISub is the ASCII substitute character, as recommended by
+// http://unicode.org/reports/tr36/#Text_Comparison
+const ASCIISub = '\x1a'
+
 // ErrInvalidUTF8 means that a transformer encountered invalid UTF-8.
 var ErrInvalidUTF8 = errors.New("encoding: invalid UTF-8")
 
@@ -60,7 +64,8 @@ func (utf8Validator) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 		_, size := utf8.DecodeRune(src[i:])
 		if size == 1 {
 			// All valid runes of size 1 (those below utf8.RuneSelf) were
-			// handled above. We have invalid UTF-8.
+			// handled above. We have invalid UTF-8 or we haven't seen the
+			// full character yet.
 			err = ErrInvalidUTF8
 			if !atEOF && !utf8.FullRune(src[i:]) {
 				err = transform.ErrShortSrc

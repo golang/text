@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package encoding
+package encoding_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
 
+	"code.google.com/p/go.text/encoding"
+	"code.google.com/p/go.text/encoding/japanese"
 	"code.google.com/p/go.text/transform"
 )
 
@@ -22,87 +25,133 @@ func trim(s string) string {
 }
 
 var basicTestCases = []struct {
-	e         Encoding
+	e         encoding.Encoding
 	encPrefix string
 	encoded   string
 	utf8      string
 }{
+	// Charmap tests.
 	{
-		e:       CodePage437,
+		e:       encoding.CodePage437,
 		encoded: "H\x82ll\x93 \x9d\xa7\xf4\x9c\xbe",
 		utf8:    "Héllô ¥º⌠£╛",
 	},
 	{
-		e:       Windows874,
+		e:       encoding.Windows874,
 		encoded: "He\xb7\xf0",
 		utf8:    "Heท๐",
 	},
 	{
-		e:       Windows1250,
+		e:       encoding.Windows1250,
 		encoded: "He\xe5\xe5o",
 		utf8:    "Heĺĺo",
 	},
 	{
-		e:       Windows1251,
+		e:       encoding.Windows1251,
 		encoded: "H\xball\xfe",
 		utf8:    "Hєllю",
 	},
 	{
-		e:       Windows1252,
+		e:       encoding.Windows1252,
 		encoded: "H\xe9ll\xf4 \xa5\xbA\xae\xa3\xd0",
 		utf8:    "Héllô ¥º®£Ð",
 	},
 	{
-		e:       Windows1253,
+		e:       encoding.Windows1253,
 		encoded: "H\xe5ll\xd6",
 		utf8:    "HεllΦ",
 	},
 	{
-		e:       Windows1254,
+		e:       encoding.Windows1254,
 		encoded: "\xd0ello",
 		utf8:    "Ğello",
 	},
 	{
-		e:       Windows1255,
+		e:       encoding.Windows1255,
 		encoded: "He\xd4o",
 		utf8:    "Heװo",
 	},
 	{
-		e:       Windows1256,
+		e:       encoding.Windows1256,
 		encoded: "H\xdbllo",
 		utf8:    "Hغllo",
 	},
 	{
-		e:       Windows1257,
+		e:       encoding.Windows1257,
 		encoded: "He\xeflo",
 		utf8:    "Heļlo",
 	},
 	{
-		e:       Windows1258,
+		e:       encoding.Windows1258,
 		encoded: "Hell\xf5",
 		utf8:    "Hellơ",
 	},
+
+	// UTF-16 tests.
 	{
-		e:       UTF16(BigEndian, IgnoreBOM),
+		e:       encoding.UTF16(encoding.BigEndian, encoding.IgnoreBOM),
 		encoded: "\x00\x57\x00\xe4\xd8\x35\xdd\x65",
 		utf8:    "\x57\u00e4\U0001d565",
 	},
 	{
-		e:         UTF16(BigEndian, ExpectBOM),
+		e:         encoding.UTF16(encoding.BigEndian, encoding.ExpectBOM),
 		encPrefix: "\xfe\xff",
 		encoded:   "\x00\x57\x00\xe4\xd8\x35\xdd\x65",
 		utf8:      "\x57\u00e4\U0001d565",
 	},
 	{
-		e:       UTF16(LittleEndian, IgnoreBOM),
+		e:       encoding.UTF16(encoding.LittleEndian, encoding.IgnoreBOM),
 		encoded: "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
 		utf8:    "\x57\u00e4\U0001d565",
 	},
 	{
-		e:         UTF16(LittleEndian, ExpectBOM),
+		e:         encoding.UTF16(encoding.LittleEndian, encoding.ExpectBOM),
 		encPrefix: "\xff\xfe",
 		encoded:   "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
 		utf8:      "\x57\u00e4\U0001d565",
+	},
+
+	// CJK tests.
+	// The encoded forms can be verified by the iconv program:
+	// $ echo 月日は百代 | iconv -f UTF-8 -t SHIFT-JIS | xxd
+
+	// Japanese tests.
+	//
+	// "A｡ｶﾟ 0208: etc 0212: etc" is a nonsense string that contains ASCII, half-width
+	// kana, JIS X 0208 (including two near the kink in the Shift JIS second byte
+	// encoding) and JIS X 0212 codepoints.
+	//
+	// "月日は百代の過客にして、行かふ年も又旅人也。" comes from the 17th century poem
+	// "Oku no Hosomichi" and contains both hiragana and kanji.
+	{
+		e: japanese.EUCJP,
+		encoded: "A\x8e\xa1\x8e\xb6\x8e\xdf " +
+			"0208: \xa1\xa1\xa1\xa2\xa1\xdf\xa1\xe0\xa1\xfd\xa1\xfe\xa2\xa1\xa2\xa2\xf4\xa6 " +
+			"0212: \x8f\xa2\xaf\x8f\xed\xe3",
+		utf8: "A｡ｶﾟ " +
+			"0208: \u3000\u3001\u00d7\u00f7\u25ce\u25c7\u25c6\u25a1\u7199 " +
+			"0212: \u02d8\u9fa5",
+	},
+	{
+		e: japanese.EUCJP,
+		encoded: "\xb7\xee\xc6\xfc\xa4\xcf\xc9\xb4\xc2\xe5\xa4\xce\xb2\xe1\xb5\xd2" +
+			"\xa4\xcb\xa4\xb7\xa4\xc6\xa1\xa2\xb9\xd4\xa4\xab\xa4\xd5\xc7\xaf" +
+			"\xa4\xe2\xcb\xf4\xce\xb9\xbf\xcd\xcc\xe9\xa1\xa3",
+		utf8: "月日は百代の過客にして、行かふ年も又旅人也。",
+	},
+	{
+		e: japanese.ShiftJIS,
+		encoded: "A\xa1\xb6\xdf " +
+			"0208: \x81\x40\x81\x41\x81\x7e\x81\x80\x81\x9d\x81\x9e\x81\x9f\x81\xa0\xea\xa4",
+		utf8: "A｡ｶﾟ " +
+			"0208: \u3000\u3001\u00d7\u00f7\u25ce\u25c7\u25c6\u25a1\u7199",
+	},
+	{
+		e: japanese.ShiftJIS,
+		encoded: "\x8c\x8e\x93\xfa\x82\xcd\x95\x53\x91\xe3\x82\xcc\x89\xdf\x8b\x71" +
+			"\x82\xc9\x82\xb5\x82\xc4\x81\x41\x8d\x73\x82\xa9\x82\xd3\x94\x4e" +
+			"\x82\xe0\x96\x94\x97\xb7\x90\x6c\x96\xe7\x81\x42",
+		utf8: "月日は百代の過客にして、行かふ年も又旅人也。",
 	},
 }
 
@@ -169,7 +218,7 @@ func TestEncodeInvalidUTF8(t *testing.T) {
 	// Each invalid source byte becomes '\x1a'.
 	want := strings.Replace("hello.wo?ld.ABC??????????D??E??????FGH\x80I??", "?", "\x1a", -1)
 
-	transformer := Windows1252.NewEncoder()
+	transformer := encoding.Windows1252.NewEncoder()
 	gotBuf := make([]byte, 0, 1024)
 	src := make([]byte, 0, 1024)
 	for i, input := range inputs {
@@ -278,7 +327,7 @@ func TestUTF8Validator(t *testing.T) {
 			"a\u0100\xf1",
 			true,
 			"a\u0100",
-			ErrInvalidUTF8,
+			encoding.ErrInvalidUTF8,
 		},
 		{
 			"invalid input (!EOF)",
@@ -286,7 +335,7 @@ func TestUTF8Validator(t *testing.T) {
 			"a\u0100\x80",
 			false,
 			"a\u0100",
-			ErrInvalidUTF8,
+			encoding.ErrInvalidUTF8,
 		},
 		{
 			"invalid input (above U+10FFFF)",
@@ -294,7 +343,7 @@ func TestUTF8Validator(t *testing.T) {
 			"a\u0100\xf7\xbf\xbf\xbf",
 			false,
 			"a\u0100",
-			ErrInvalidUTF8,
+			encoding.ErrInvalidUTF8,
 		},
 		{
 			"invalid input (surrogate half)",
@@ -302,12 +351,12 @@ func TestUTF8Validator(t *testing.T) {
 			"a\u0100\xed\xa0\x80",
 			false,
 			"a\u0100",
-			ErrInvalidUTF8,
+			encoding.ErrInvalidUTF8,
 		},
 	}
 	for _, tc := range testCases {
 		dst := make([]byte, tc.dstSize)
-		nDst, nSrc, err := utf8Validator{}.Transform(dst, []byte(tc.src), tc.atEOF)
+		nDst, nSrc, err := encoding.UTF8Validator.Transform(dst, []byte(tc.src), tc.atEOF)
 		if nDst < 0 || len(dst) < nDst {
 			t.Errorf("%s: nDst=%d out of range", tc.desc, nDst)
 			continue
@@ -327,61 +376,88 @@ func TestUTF8Validator(t *testing.T) {
 // - malformed input: an odd number of bytes (and atEOF), or unmatched
 //   surrogates. These should be replaced with U+FFFD.
 
-func benchmark(b *testing.B, dstFile, srcFile string, newTransformer func() transform.Transformer) {
+var utf16LEIB = encoding.UTF16(encoding.LittleEndian, encoding.IgnoreBOM)
+
+// testdataFiles are files in testdata/*.txt.
+var testdataFiles = []struct {
+	enc           encoding.Encoding
+	basename, ext string
+}{
+	{encoding.Windows1252, "candide", "windows-1252"},
+	{japanese.EUCJP, "rashomon", "euc-jp"},
+	{japanese.ShiftJIS, "rashomon", "shift-jis"},
+	{utf16LEIB, "candide", "utf-16le"},
+}
+
+func load(direction string, enc encoding.Encoding) ([]byte, []byte, func() transform.Transformer, error) {
+	basename, ext := "", ""
+	for _, tf := range testdataFiles {
+		if tf.enc == enc {
+			basename, ext = tf.basename, tf.ext
+			break
+		}
+	}
+	if basename == "" {
+		return nil, nil, nil, fmt.Errorf("no testdata found for %s", enc)
+	}
+	dstFile := fmt.Sprintf("testdata/%s-%s.txt", basename, ext)
+	srcFile := fmt.Sprintf("testdata/%s-utf-8.txt", basename)
+	newTransformer := enc.NewEncoder
+	if direction == "Decode" {
+		dstFile, srcFile = srcFile, dstFile
+		newTransformer = enc.NewDecoder
+	}
 	dst, err := ioutil.ReadFile(dstFile)
 	if err != nil {
-		b.Fatal(err)
+		return nil, nil, nil, err
 	}
 	src, err := ioutil.ReadFile(srcFile)
 	if err != nil {
+		return nil, nil, nil, err
+	}
+	return dst, src, newTransformer, nil
+}
+
+func TestFiles(t *testing.T) {
+	for _, dir := range []string{"Decode", "Encode"} {
+		for _, tf := range testdataFiles {
+			dst, src, newTransformer, err := load(dir, tf.enc)
+			if err != nil {
+				t.Errorf("%s, %s: load: %v", dir, tf.enc, err)
+				continue
+			}
+			buf := bytes.NewBuffer(nil)
+			r := transform.NewReader(bytes.NewReader(src), newTransformer())
+			if _, err := io.Copy(buf, r); err != nil {
+				t.Errorf("%s, %s: copy: %v", dir, tf.enc, err)
+				continue
+			}
+			if !bytes.Equal(buf.Bytes(), dst) {
+				t.Errorf("%s, %s: transformed bytes did not match golden file", dir, tf.enc)
+				continue
+			}
+		}
+	}
+}
+
+func benchmark(b *testing.B, direction string, enc encoding.Encoding) {
+	_, src, newTransformer, err := load(direction, enc)
+	if err != nil {
 		b.Fatal(err)
 	}
-
+	b.SetBytes(int64(len(src)))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		r := transform.NewReader(bytes.NewReader(src), newTransformer())
-		n, err := io.Copy(ioutil.Discard, r)
-		if err != nil {
-			b.Fatal(err)
-		}
-		if n != int64(len(dst)) {
-			b.Fatalf("copied %d bytes, want %d", n, len(dst))
-		}
+		io.Copy(ioutil.Discard, r)
 	}
 }
 
-func BenchmarkCharmapDecoder(b *testing.B) {
-	benchmark(
-		b,
-		"testdata/candide-utf-8.txt",
-		"testdata/candide-windows-1252.txt",
-		Windows1252.NewDecoder,
-	)
-}
-
-func BenchmarkCharmapEncoder(b *testing.B) {
-	benchmark(
-		b,
-		"testdata/candide-windows-1252.txt",
-		"testdata/candide-utf-8.txt",
-		Windows1252.NewEncoder,
-	)
-}
-
-func BenchmarkUTF16Decoder(b *testing.B) {
-	benchmark(
-		b,
-		"testdata/candide-utf-8.txt",
-		"testdata/candide-utf-16le.txt",
-		UTF16(LittleEndian, IgnoreBOM).NewDecoder,
-	)
-}
-
-func BenchmarkUTF16Encoder(b *testing.B) {
-	benchmark(
-		b,
-		"testdata/candide-utf-16le.txt",
-		"testdata/candide-utf-8.txt",
-		UTF16(LittleEndian, IgnoreBOM).NewEncoder,
-	)
-}
+func BenchmarkCharmapDecoder(b *testing.B)  { benchmark(b, "Decode", encoding.Windows1252) }
+func BenchmarkCharmapEncoder(b *testing.B)  { benchmark(b, "Encode", encoding.Windows1252) }
+func BenchmarkEUCJPDecoder(b *testing.B)    { benchmark(b, "Decode", japanese.EUCJP) }
+func BenchmarkEUCJPEncoder(b *testing.B)    { benchmark(b, "Encode", japanese.EUCJP) }
+func BenchmarkShiftJISDecoder(b *testing.B) { benchmark(b, "Decode", japanese.ShiftJIS) }
+func BenchmarkShiftJISEncoder(b *testing.B) { benchmark(b, "Encode", japanese.ShiftJIS) }
+func BenchmarkUTF16Decoder(b *testing.B)    { benchmark(b, "Decode", utf16LEIB) }
+func BenchmarkUTF16Encoder(b *testing.B)    { benchmark(b, "Encode", utf16LEIB) }

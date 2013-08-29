@@ -180,7 +180,8 @@ func (u *utf16Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 			r, size = utf8.DecodeRune(src[nSrc:])
 			if size == 1 {
 				// All valid runes of size 1 (those below utf8.RuneSelf) were
-				// handled above. We have invalid UTF-8.
+				// handled above. We have invalid UTF-8 or we haven't seen the
+				// full character yet.
 				if !atEOF && !utf8.FullRune(src[nSrc:]) {
 					err = transform.ErrShortSrc
 					break
