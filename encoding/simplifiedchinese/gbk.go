@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package japanese
+package simplifiedchinese
 
 import (
 	"errors"
@@ -12,29 +12,29 @@ import (
 	"code.google.com/p/go.text/transform"
 )
 
-// ShiftJIS is the Shift JIS (Japanese Industrial Standards) encoding, also
-// known as Code Page 932 and Windows-31J.
-var ShiftJIS encoding.Encoding = shiftJIS{}
+// GBK is the GBK encoding. It encodes an extension of the GB2312 character set
+// and is also known as Code Page 936.
+var GBK encoding.Encoding = gbk{}
 
-type shiftJIS struct{}
+type gbk struct{}
 
-func (shiftJIS) NewDecoder() transform.Transformer {
-	return shiftJISDecoder{}
+func (gbk) NewDecoder() transform.Transformer {
+	return gbkDecoder{}
 }
 
-func (shiftJIS) NewEncoder() transform.Transformer {
-	return shiftJISEncoder{}
+func (gbk) NewEncoder() transform.Transformer {
+	return gbkEncoder{}
 }
 
-func (shiftJIS) String() string {
-	return "Shift JIS"
+func (gbk) String() string {
+	return "GBK"
 }
 
-var errInvalidShiftJIS = errors.New("japanese: invalid Shift JIS encoding")
+var errInvalidGBK = errors.New("simplifiedchinese: invalid GBK encoding")
 
-type shiftJISDecoder struct{}
+type gbkDecoder struct{}
 
-func (shiftJISDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+func (gbkDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
 loop:
 	for ; nSrc < len(src); nSrc += size {
@@ -42,51 +42,37 @@ loop:
 		case c0 < utf8.RuneSelf:
 			r, size = rune(c0), 1
 
-		case 0xa1 <= c0 && c0 <= 0xdf:
-			r, size = rune(c0)+(0xff61-0xa1), 1
+		// Microsoft's Code Page 936 extends GBK 1.0 to encode the euro sign U+20AC
+		// as 0x80. The HTML5 specification at http://encoding.spec.whatwg.org/#gbk
+		// says to treat "gbk" as Code Page 936.
+		case c0 == 0x80:
+			r, size = '€', 1
 
-		case (0x81 <= c0 && c0 <= 0x9f) || (0xe0 <= c0 && c0 <= 0xef):
-			if c0 <= 0x9f {
-				c0 -= 0x70
-			} else {
-				c0 -= 0xb0
-			}
-			c0 = 2*c0 - 0x21
-
+		case c0 < 0xff:
 			if nSrc+1 >= len(src) {
 				err = transform.ErrShortSrc
 				break loop
 			}
 			c1 := src[nSrc+1]
 			switch {
-			case c1 < 0x40:
-				err = errInvalidShiftJIS
-				break loop
-			case c1 < 0x7f:
-				c0--
+			case 0x40 <= c1 && c1 <= 0x7e:
 				c1 -= 0x40
-			case c1 == 0x7f:
-				err = errInvalidShiftJIS
-				break loop
-			case c1 < 0x9f:
-				c0--
+			case 0x80 <= c1 && c1 <= 0xfe:
 				c1 -= 0x41
-			case c1 < 0xfd:
-				c1 -= 0x9f
 			default:
-				err = errInvalidShiftJIS
+				err = errInvalidGBK
 				break loop
 			}
 			r, size = encoding.ASCIISub, 2
-			if i := int(c0)*94 + int(c1); i < len(jis0208Decode) {
-				r = rune(jis0208Decode[i])
+			if i := int(c0-0x81)*190 + int(c1); i < len(gbkDecode) {
+				r = rune(gbkDecode[i])
 				if r == 0 {
 					r = encoding.ASCIISub
 				}
 			}
 
 		default:
-			err = errInvalidShiftJIS
+			err = errInvalidGBK
 			break loop
 		}
 
@@ -97,14 +83,14 @@ loop:
 		nDst += utf8.EncodeRune(dst[nDst:], r)
 	}
 	if atEOF && err == transform.ErrShortSrc {
-		err = errInvalidShiftJIS
+		err = errInvalidGBK
 	}
 	return nDst, nSrc, err
 }
 
-type shiftJISEncoder struct{}
+type gbkEncoder struct{}
 
-func (shiftJISEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
 loop:
 	for ; nSrc < len(src); nSrc += size {
@@ -130,40 +116,29 @@ loop:
 
 		switch {
 		case r < utf8.RuneSelf:
-			// r is an ASCII rune.
+			// No-op.
 
-		case 0xff61 <= r && r <= 0xff9f:
-			r -= 0xff61 - 0xa1
+		// Microsoft's Code Page 936 extends GBK 1.0 to encode the euro sign U+20AC
+		// as 0x80. The HTML5 specification at http://encoding.spec.whatwg.org/#gbk
+		// says to treat "gbk" as Code Page 936.
+		case r == '€':
+			r = 0x80
 
 		case 0xffff < r:
 			r = encoding.ASCIISub
 
 		default:
-			e := jisEncode[uint16(r)]
+			e := gbkEncode[uint16(r)]
 			if e == 0 {
 				r = encoding.ASCIISub
 				break
 			}
-			if e>>tableShift != jis0208 {
-				r = encoding.ASCIISub
-				break
-			}
-			j1 := uint8(e>>codeShift) & codeMask
-			j2 := uint8(e) & codeMask
 			if nDst+2 > len(dst) {
 				err = transform.ErrShortDst
 				break loop
 			}
-			if j1 <= 61 {
-				dst[nDst+0] = 129 + j1/2
-			} else {
-				dst[nDst+0] = 193 + j1/2
-			}
-			if j1&1 == 0 {
-				dst[nDst+1] = j2 + j2/63 + 64
-			} else {
-				dst[nDst+1] = j2 + 159
-			}
+			dst[nDst+0] = uint8(e >> 8)
+			dst[nDst+1] = uint8(e)
 			nDst += 2
 			continue loop
 		}

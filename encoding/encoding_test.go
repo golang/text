@@ -14,6 +14,7 @@ import (
 
 	"code.google.com/p/go.text/encoding"
 	"code.google.com/p/go.text/encoding/japanese"
+	"code.google.com/p/go.text/encoding/simplifiedchinese"
 	"code.google.com/p/go.text/transform"
 )
 
@@ -115,13 +116,31 @@ var basicTestCases = []struct {
 	// The encoded forms can be verified by the iconv program:
 	// $ echo 月日は百代 | iconv -f UTF-8 -t SHIFT-JIS | xxd
 
+	// Chinese tests.
+	//
+	// "A\u3000\u554a\u4e02\u4e90\u72dc\u7349\u02ca\u2588Z" is a nonsense
+	// string that contains ASCII and GBK codepoints from Levels 1-5.
+	//
+	// "花间一壶酒，独酌无相亲。" is from the 8th century poem "Yuè Xià Dú Zhuó".
+	{
+		e:       simplifiedchinese.GBK,
+		encoded: "A\xa1\xa1\xb0\xa1\x81\x40\x81\x80\xaa\x40\xaa\x80\xa8\x40\xa8\x80Z",
+		utf8:    "A\u3000\u554a\u4e02\u4e90\u72dc\u7349\u02ca\u2588Z",
+	},
+	{
+		e: simplifiedchinese.GBK,
+		encoded: "\xbb\xa8\xbc\xe4\xd2\xbb\xba\xf8\xbe\xc6\xa3\xac\xb6\xc0\xd7\xc3" +
+			"\xce\xde\xcf\xe0\xc7\xd7\xa1\xa3",
+		utf8: "花间一壶酒，独酌无相亲。",
+	},
+
 	// Japanese tests.
 	//
 	// "A｡ｶﾟ 0208: etc 0212: etc" is a nonsense string that contains ASCII, half-width
 	// kana, JIS X 0208 (including two near the kink in the Shift JIS second byte
 	// encoding) and JIS X 0212 codepoints.
 	//
-	// "月日は百代の過客にして、行かふ年も又旅人也。" comes from the 17th century poem
+	// "月日は百代の過客にして、行かふ年も又旅人也。" is from the 17th century poem
 	// "Oku no Hosomichi" and contains both hiragana and kanji.
 	{
 		e: japanese.EUCJP,
@@ -386,6 +405,7 @@ var testdataFiles = []struct {
 	{encoding.Windows1252, "candide", "windows-1252"},
 	{japanese.EUCJP, "rashomon", "euc-jp"},
 	{japanese.ShiftJIS, "rashomon", "shift-jis"},
+	{simplifiedchinese.GBK, "sunzi-bingfa-simplified", "gbk"},
 	{utf16LEIB, "candide", "utf-16le"},
 }
 
@@ -457,6 +477,8 @@ func BenchmarkCharmapDecoder(b *testing.B)  { benchmark(b, "Decode", encoding.Wi
 func BenchmarkCharmapEncoder(b *testing.B)  { benchmark(b, "Encode", encoding.Windows1252) }
 func BenchmarkEUCJPDecoder(b *testing.B)    { benchmark(b, "Decode", japanese.EUCJP) }
 func BenchmarkEUCJPEncoder(b *testing.B)    { benchmark(b, "Encode", japanese.EUCJP) }
+func BenchmarkGBKDecoder(b *testing.B)      { benchmark(b, "Decode", simplifiedchinese.GBK) }
+func BenchmarkGBKEncoder(b *testing.B)      { benchmark(b, "Encode", simplifiedchinese.GBK) }
 func BenchmarkShiftJISDecoder(b *testing.B) { benchmark(b, "Decode", japanese.ShiftJIS) }
 func BenchmarkShiftJISEncoder(b *testing.B) { benchmark(b, "Encode", japanese.ShiftJIS) }
 func BenchmarkUTF16Decoder(b *testing.B)    { benchmark(b, "Decode", utf16LEIB) }
