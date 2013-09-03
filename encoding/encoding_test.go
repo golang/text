@@ -13,8 +13,10 @@ import (
 	"testing"
 
 	"code.google.com/p/go.text/encoding"
+	"code.google.com/p/go.text/encoding/charmap"
 	"code.google.com/p/go.text/encoding/japanese"
 	"code.google.com/p/go.text/encoding/simplifiedchinese"
+	"code.google.com/p/go.text/encoding/unicode"
 	"code.google.com/p/go.text/transform"
 )
 
@@ -33,80 +35,80 @@ var basicTestCases = []struct {
 }{
 	// Charmap tests.
 	{
-		e:       encoding.CodePage437,
+		e:       charmap.CodePage437,
 		encoded: "H\x82ll\x93 \x9d\xa7\xf4\x9c\xbe",
 		utf8:    "Héllô ¥º⌠£╛",
 	},
 	{
-		e:       encoding.Windows874,
+		e:       charmap.Windows874,
 		encoded: "He\xb7\xf0",
 		utf8:    "Heท๐",
 	},
 	{
-		e:       encoding.Windows1250,
+		e:       charmap.Windows1250,
 		encoded: "He\xe5\xe5o",
 		utf8:    "Heĺĺo",
 	},
 	{
-		e:       encoding.Windows1251,
+		e:       charmap.Windows1251,
 		encoded: "H\xball\xfe",
 		utf8:    "Hєllю",
 	},
 	{
-		e:       encoding.Windows1252,
+		e:       charmap.Windows1252,
 		encoded: "H\xe9ll\xf4 \xa5\xbA\xae\xa3\xd0",
 		utf8:    "Héllô ¥º®£Ð",
 	},
 	{
-		e:       encoding.Windows1253,
+		e:       charmap.Windows1253,
 		encoded: "H\xe5ll\xd6",
 		utf8:    "HεllΦ",
 	},
 	{
-		e:       encoding.Windows1254,
+		e:       charmap.Windows1254,
 		encoded: "\xd0ello",
 		utf8:    "Ğello",
 	},
 	{
-		e:       encoding.Windows1255,
+		e:       charmap.Windows1255,
 		encoded: "He\xd4o",
 		utf8:    "Heװo",
 	},
 	{
-		e:       encoding.Windows1256,
+		e:       charmap.Windows1256,
 		encoded: "H\xdbllo",
 		utf8:    "Hغllo",
 	},
 	{
-		e:       encoding.Windows1257,
+		e:       charmap.Windows1257,
 		encoded: "He\xeflo",
 		utf8:    "Heļlo",
 	},
 	{
-		e:       encoding.Windows1258,
+		e:       charmap.Windows1258,
 		encoded: "Hell\xf5",
 		utf8:    "Hellơ",
 	},
 
 	// UTF-16 tests.
 	{
-		e:       encoding.UTF16(encoding.BigEndian, encoding.IgnoreBOM),
+		e:       unicode.UTF16(unicode.BigEndian, unicode.IgnoreBOM),
 		encoded: "\x00\x57\x00\xe4\xd8\x35\xdd\x65",
 		utf8:    "\x57\u00e4\U0001d565",
 	},
 	{
-		e:         encoding.UTF16(encoding.BigEndian, encoding.ExpectBOM),
+		e:         unicode.UTF16(unicode.BigEndian, unicode.ExpectBOM),
 		encPrefix: "\xfe\xff",
 		encoded:   "\x00\x57\x00\xe4\xd8\x35\xdd\x65",
 		utf8:      "\x57\u00e4\U0001d565",
 	},
 	{
-		e:       encoding.UTF16(encoding.LittleEndian, encoding.IgnoreBOM),
+		e:       unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM),
 		encoded: "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
 		utf8:    "\x57\u00e4\U0001d565",
 	},
 	{
-		e:         encoding.UTF16(encoding.LittleEndian, encoding.ExpectBOM),
+		e:         unicode.UTF16(unicode.LittleEndian, unicode.ExpectBOM),
 		encPrefix: "\xff\xfe",
 		encoded:   "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
 		utf8:      "\x57\u00e4\U0001d565",
@@ -237,7 +239,7 @@ func TestEncodeInvalidUTF8(t *testing.T) {
 	// Each invalid source byte becomes '\x1a'.
 	want := strings.Replace("hello.wo?ld.ABC??????????D??E??????FGH\x80I??", "?", "\x1a", -1)
 
-	transformer := encoding.Windows1252.NewEncoder()
+	transformer := charmap.Windows1252.NewEncoder()
 	gotBuf := make([]byte, 0, 1024)
 	src := make([]byte, 0, 1024)
 	for i, input := range inputs {
@@ -395,14 +397,14 @@ func TestUTF8Validator(t *testing.T) {
 // - malformed input: an odd number of bytes (and atEOF), or unmatched
 //   surrogates. These should be replaced with U+FFFD.
 
-var utf16LEIB = encoding.UTF16(encoding.LittleEndian, encoding.IgnoreBOM)
+var utf16LEIB = unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM)
 
 // testdataFiles are files in testdata/*.txt.
 var testdataFiles = []struct {
 	enc           encoding.Encoding
 	basename, ext string
 }{
-	{encoding.Windows1252, "candide", "windows-1252"},
+	{charmap.Windows1252, "candide", "windows-1252"},
 	{japanese.EUCJP, "rashomon", "euc-jp"},
 	{japanese.ShiftJIS, "rashomon", "shift-jis"},
 	{simplifiedchinese.GBK, "sunzi-bingfa-simplified", "gbk"},
@@ -473,8 +475,8 @@ func benchmark(b *testing.B, direction string, enc encoding.Encoding) {
 	}
 }
 
-func BenchmarkCharmapDecoder(b *testing.B)  { benchmark(b, "Decode", encoding.Windows1252) }
-func BenchmarkCharmapEncoder(b *testing.B)  { benchmark(b, "Encode", encoding.Windows1252) }
+func BenchmarkCharmapDecoder(b *testing.B)  { benchmark(b, "Decode", charmap.Windows1252) }
+func BenchmarkCharmapEncoder(b *testing.B)  { benchmark(b, "Encode", charmap.Windows1252) }
 func BenchmarkEUCJPDecoder(b *testing.B)    { benchmark(b, "Decode", japanese.EUCJP) }
 func BenchmarkEUCJPEncoder(b *testing.B)    { benchmark(b, "Encode", japanese.EUCJP) }
 func BenchmarkGBKDecoder(b *testing.B)      { benchmark(b, "Decode", simplifiedchinese.GBK) }

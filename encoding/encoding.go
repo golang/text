@@ -2,10 +2,18 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package encoding provides mappings from simple character encodings, such as
-// IBM Code Page 437 and Windows 1252, to and from UTF-8. Mappings for rare or
-// large encodings are provided in other packages, such as
-// code.google.com/p/go.text/encoding/shiftjis.
+// Package encoding defines an interface for character encodings, such as Shift
+// JIS and Windows 1252, that can convert to and from UTF-8.
+//
+// To convert the bytes of an io.Reader r from the encoding e to UTF-8:
+//	rInUTF8 := transform.NewReader(r, e.NewDecoder())
+// and to convert from UTF-8 to the encoding e:
+//	wInUTF8 := transform.NewWriter(w, e.NewEncoder())
+// In both cases, import "code.google.com/p/go.text/transform".
+//
+// Encoding implementations are provided in other packages, such as
+// code.google.com/p/go.text/encoding/charmap and
+// code.google.com/p/go.text/encoding/japanese.
 package encoding
 
 import (

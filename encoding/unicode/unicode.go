@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package encoding
+// Package unicode provides Unicode encodings such as UTF-16.
+package unicode
 
 import (
 	"errors"
 	"unicode/utf16"
 	"unicode/utf8"
 
+	"code.google.com/p/go.text/encoding"
 	"code.google.com/p/go.text/transform"
 )
 
@@ -39,7 +41,7 @@ import (
 // corresponds to "Where the precise type of the data stream is known... the
 // BOM should not be used" and ExpectBOM corresponds to "A particular
 // protocol... may require use of the BOM".
-func UTF16(e Endianness, b BOMPolicy) Encoding {
+func UTF16(e Endianness, b BOMPolicy) encoding.Encoding {
 	return utf16Encoding{e, b}
 }
 

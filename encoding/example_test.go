@@ -11,19 +11,20 @@ import (
 	"strings"
 
 	"code.google.com/p/go.text/encoding"
+	"code.google.com/p/go.text/encoding/charmap"
 	"code.google.com/p/go.text/transform"
 )
 
 func ExampleDecodeWindows1252() {
 	sr := strings.NewReader("Gar\xe7on !")
-	tr := transform.NewReader(sr, encoding.Windows1252.NewDecoder())
+	tr := transform.NewReader(sr, charmap.Windows1252.NewDecoder())
 	io.Copy(os.Stdout, tr)
 	// Output: Garçon !
 }
 
 func ExampleUTF8Validator() {
 	for i := 0; i < 2; i++ {
-		transformer := encoding.Windows1252.NewEncoder()
+		transformer := charmap.Windows1252.NewEncoder()
 		if i == 1 {
 			transformer = transform.Chain(encoding.UTF8Validator, transformer)
 		}

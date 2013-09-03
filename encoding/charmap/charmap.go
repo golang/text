@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package encoding
+// Package charmap provides simple character encodings such as IBM Code Page 437
+// and Windows 1252.
+package charmap
 
 import (
 	"unicode/utf8"
