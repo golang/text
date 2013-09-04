@@ -156,8 +156,10 @@ func main() {
 		if asciiSuperset {
 			low = 0x80
 		}
+		lowerVarName := strings.ToLower(e.varName[:1]) + e.varName[1:]
 		fmt.Printf("// %s is the %s encoding.\n", e.varName, e.name)
-		fmt.Printf("var %s encoding.Encoding = &charmap{\nname: %q,\n", e.varName, e.name)
+		fmt.Printf("var %s encoding.Encoding = &%s\n\nvar %s = charmap{\nname: %q,\n",
+			e.varName, lowerVarName, lowerVarName, e.name)
 		fmt.Printf("asciiSuperset: %t,\n", asciiSuperset)
 		fmt.Printf("low: 0x%02x,\n", low)
 		fmt.Printf("replacement: 0x%02x,\n", e.replacement)

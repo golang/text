@@ -5,7 +5,9 @@ package charmap
 import "code.google.com/p/go.text/encoding"
 
 // CodePage437 is the IBM Code Page 437 encoding.
-var CodePage437 encoding.Encoding = &charmap{
+var CodePage437 encoding.Encoding = &codePage437
+
+var codePage437 = charmap{
 	name:          "IBM Code Page 437",
 	asciiSuperset: true,
 	low:           0x80,
@@ -177,7 +179,9 @@ var CodePage437 encoding.Encoding = &charmap{
 }
 
 // Windows874 is the Windows 874 encoding.
-var Windows874 encoding.Encoding = &charmap{
+var Windows874 encoding.Encoding = &windows874
+
+var windows874 = charmap{
 	name:          "Windows 874",
 	asciiSuperset: true,
 	low:           0x80,
@@ -349,7 +353,9 @@ var Windows874 encoding.Encoding = &charmap{
 }
 
 // Windows1250 is the Windows 1250 encoding.
-var Windows1250 encoding.Encoding = &charmap{
+var Windows1250 encoding.Encoding = &windows1250
+
+var windows1250 = charmap{
 	name:          "Windows 1250",
 	asciiSuperset: true,
 	low:           0x80,
@@ -521,7 +527,9 @@ var Windows1250 encoding.Encoding = &charmap{
 }
 
 // Windows1251 is the Windows 1251 encoding.
-var Windows1251 encoding.Encoding = &charmap{
+var Windows1251 encoding.Encoding = &windows1251
+
+var windows1251 = charmap{
 	name:          "Windows 1251",
 	asciiSuperset: true,
 	low:           0x80,
@@ -693,7 +701,9 @@ var Windows1251 encoding.Encoding = &charmap{
 }
 
 // Windows1252 is the Windows 1252 encoding.
-var Windows1252 encoding.Encoding = &charmap{
+var Windows1252 encoding.Encoding = &windows1252
+
+var windows1252 = charmap{
 	name:          "Windows 1252",
 	asciiSuperset: true,
 	low:           0x80,
@@ -865,7 +875,9 @@ var Windows1252 encoding.Encoding = &charmap{
 }
 
 // Windows1253 is the Windows 1253 encoding.
-var Windows1253 encoding.Encoding = &charmap{
+var Windows1253 encoding.Encoding = &windows1253
+
+var windows1253 = charmap{
 	name:          "Windows 1253",
 	asciiSuperset: true,
 	low:           0x80,
@@ -1037,7 +1049,9 @@ var Windows1253 encoding.Encoding = &charmap{
 }
 
 // Windows1254 is the Windows 1254 encoding.
-var Windows1254 encoding.Encoding = &charmap{
+var Windows1254 encoding.Encoding = &windows1254
+
+var windows1254 = charmap{
 	name:          "Windows 1254",
 	asciiSuperset: true,
 	low:           0x80,
@@ -1209,7 +1223,9 @@ var Windows1254 encoding.Encoding = &charmap{
 }
 
 // Windows1255 is the Windows 1255 encoding.
-var Windows1255 encoding.Encoding = &charmap{
+var Windows1255 encoding.Encoding = &windows1255
+
+var windows1255 = charmap{
 	name:          "Windows 1255",
 	asciiSuperset: true,
 	low:           0x80,
@@ -1381,7 +1397,9 @@ var Windows1255 encoding.Encoding = &charmap{
 }
 
 // Windows1256 is the Windows 1256 encoding.
-var Windows1256 encoding.Encoding = &charmap{
+var Windows1256 encoding.Encoding = &windows1256
+
+var windows1256 = charmap{
 	name:          "Windows 1256",
 	asciiSuperset: true,
 	low:           0x80,
@@ -1553,7 +1571,9 @@ var Windows1256 encoding.Encoding = &charmap{
 }
 
 // Windows1257 is the Windows 1257 encoding.
-var Windows1257 encoding.Encoding = &charmap{
+var Windows1257 encoding.Encoding = &windows1257
+
+var windows1257 = charmap{
 	name:          "Windows 1257",
 	asciiSuperset: true,
 	low:           0x80,
@@ -1725,7 +1745,9 @@ var Windows1257 encoding.Encoding = &charmap{
 }
 
 // Windows1258 is the Windows 1258 encoding.
-var Windows1258 encoding.Encoding = &charmap{
+var Windows1258 encoding.Encoding = &windows1258
+
+var windows1258 = charmap{
 	name:          "Windows 1258",
 	asciiSuperset: true,
 	low:           0x80,
