@@ -90,7 +90,7 @@ loop:
 			break loop
 		}
 
-		if nDst+utf8.RuneLen(r) >= len(dst) {
+		if nDst+utf8.RuneLen(r) > len(dst) {
 			err = transform.ErrShortDst
 			break loop
 		}

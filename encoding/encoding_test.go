@@ -189,10 +189,15 @@ func TestBasics(t *testing.T) {
 				wPrefix, sPrefix = tc.encPrefix, ""
 			}
 
-			dst := make([]byte, 1024)
+			dst := make([]byte, len(wPrefix)+len(want))
 			nDst, nSrc, err := newTransformer().Transform(dst, []byte(sPrefix+src), true)
 			if err != nil {
 				t.Errorf("%v: %s: %v", tc.e, direction, err)
+				continue
+			}
+			if nDst != len(wPrefix)+len(want) {
+				t.Errorf("%v: %s: nDst got %d, want %d",
+					tc.e, direction, nDst, len(wPrefix)+len(want))
 				continue
 			}
 			if nSrc != len(sPrefix)+len(src) {
@@ -200,7 +205,7 @@ func TestBasics(t *testing.T) {
 					tc.e, direction, nSrc, len(sPrefix)+len(src))
 				continue
 			}
-			if got := string(dst[:nDst]); got != wPrefix+want {
+			if got := string(dst); got != wPrefix+want {
 				t.Errorf("%v: %s:\ngot  %q\nwant %q",
 					tc.e, direction, got, wPrefix+want)
 				continue
