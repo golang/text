@@ -12,12 +12,12 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 
-	"code.google.com/p/go.text/locale"
+	"code.google.com/p/go.text/language"
 	"code.google.com/p/go.text/unicode/norm"
 )
 
-// TODO: replace with functionality in locale package.
-// parent computes the parent locale for the given locale.
+// TODO: replace with functionality in language package.
+// parent computes the parent language for the given language.
 // It returns false if the parent is already root.
 func parent(locale string) (parent string, ok bool) {
 	if locale == "und" {
@@ -82,7 +82,7 @@ type phraseGenerator struct {
 
 func (g *phraseGenerator) init(id string) {
 	ec := exemplarCharacters
-	loc := locale.Make(id).String()
+	loc := language.Make(id).String()
 	// get sets for locale or parent locale if the set is not defined.
 	for i := range g.sets {
 		for p, ok := loc, true; ok; p, ok = parent(p) {

@@ -5,37 +5,38 @@
 // NOTE: This package is still under development. Parts of it are not yet implemented,
 // and the API is subject to change.
 //
-// The locale package provides a type to represent BCP 47 locale identifiers.
+// The language package provides a type to represent language tags based on BCP 47.
 // It supports various canonicalizations defined in CLDR.
-package locale
+// See http://tools.ietf.org/html/bcp47 for more details.
+package language
 
 import "strings"
 
 var (
-	// Und represents the undefined langauge. It is also the root locale.
-	Und   = und
-	En    = en    // Default Locale for English.
-	En_US = en_US // Default locale for American English.
-	De    = de    // Default locale for German.
-	// TODO: list of most common language identifiers.
+	// Und represents the undertermined language. It is also the root language tag.
+	Und   Tag = und
+	En    Tag = en    // Default language tag for English.
+	En_US Tag = en_US // Default language tag for American English.
+	De    Tag = de    // Default language tag for German.
+	// TODO: list of most common language tags.
 )
 
 var (
-	Supported Set // All supported locales.
-	Common    Set // A selection of common locales.
+	Supported Set // All supported language indetifiers.
+	Common    Set // A selection of common language indetifiers.
 )
 
 var (
-	de    = ID{lang: lang_de}
-	en    = ID{lang: lang_en}
-	en_US = ID{lang: lang_en, region: regUS}
-	und   = ID{}
+	de    = Tag{lang: lang_de}
+	en    = Tag{lang: lang_en}
+	en_US = Tag{lang: lang_en, region: regUS}
+	und   = Tag{}
 )
 
-// ID represents a BCP 47 locale identifier. It can be used to
-// select an instance for a specific locale. All Locale values are guaranteed
-// to be well-formed.
-type ID struct {
+// Tag represents a BCP 47 language tag. It is used to specifify
+// an instance of a specific language or locale.
+// All language tag values are guaranteed to be well-formed.
+type Tag struct {
 	// In most cases, just lang, region and script will be needed.  In such cases
 	// str may be nil.
 	lang     langID
@@ -46,38 +47,38 @@ type ID struct {
 	str      *string
 }
 
-// Make calls Parse and Canonicalize and returns the resulting ID.
+// Make calls Parse and Canonicalize and returns the resulting Tag.
 // Any errors are ignored and a sensible default is returned.
-// In most cases, locale IDs should be created using this method.
-func Make(id string) ID {
+// In most cases, language tags should be created using this method.
+func Make(id string) Tag {
 	loc, _ := Parse(id)
 	loc, _ = loc.Canonicalize(Default)
 	return loc
 }
 
-// equalTags compares language, script and region identifiers only.
-func (loc ID) equalTags(id ID) bool {
-	return loc.lang == id.lang && loc.script == id.script && loc.region == id.region
+// equalTags compares language, script and region subtags only.
+func (t Tag) equalTags(a Tag) bool {
+	return t.lang == a.lang && t.script == a.script && t.region == a.region
 }
 
-// IsRoot returns true if loc is equal to locale "und".
-func (loc ID) IsRoot() bool {
-	if loc.str != nil {
-		n := len(*loc.str)
-		if int(loc.pVariant) < n {
+// IsRoot returns true if t is equal to language "und".
+func (t Tag) IsRoot() bool {
+	if t.str != nil {
+		n := len(*t.str)
+		if int(t.pVariant) < n {
 			return false
 		}
-		loc.str = nil
+		t.str = nil
 	}
-	return loc.equalTags(und)
+	return t.equalTags(und)
 }
 
-// private reports whether the ID consists solely of a private use tag.
-func (loc ID) private() bool {
-	return loc.str != nil && loc.pVariant == 0
+// private reports whether the Tag consists solely of a private use tag.
+func (t Tag) private() bool {
+	return t.str != nil && t.pVariant == 0
 }
 
-// CanonType is can be used to enable or disable various types of canonicalization.
+// CanonType can be used to enable or disable various types of canonicalization.
 type CanonType int
 
 const (
@@ -87,11 +88,11 @@ const (
 	SuppressScript
 	// Normalize legacy encodings, as defined by CLDR.
 	Legacy
-	// Map the dominant language of a macro language group to the macro language identifier.
+	// Map the dominant language of a macro language group to the macro language subtag.
 	// For example cmn -> zh.
 	Macro
 	// The CLDR flag should be used if full compatibility with CLDR is required.  There are
-	// a few cases where locale.ID may differ from CLDR.
+	// a few cases where language.Tag may differ from CLDR.
 	CLDR
 	// All canonicalizations prescribed by BCP 47.
 	BCP47   = Deprecated | SuppressScript
@@ -101,51 +102,51 @@ const (
 	// TODO: LikelyScript, LikelyRegion: supress similar to ICU.
 )
 
-// Canonicalize replaces the identifier with its canonical equivalent.
-func (loc ID) Canonicalize(t CanonType) (ID, error) {
+// Canonicalize replaces the tag with its canonical equivalent.
+func (t Tag) Canonicalize(c CanonType) (Tag, error) {
 	changed := false
-	if t&SuppressScript != 0 {
-		if loc.lang < langNoIndexOffset && uint8(loc.script) == suppressScript[loc.lang] {
-			loc.script = 0
+	if c&SuppressScript != 0 {
+		if t.lang < langNoIndexOffset && uint8(t.script) == suppressScript[t.lang] {
+			t.script = 0
 			changed = true
 		}
 	}
-	if t&Legacy != 0 {
+	if c&Legacy != 0 {
 		// We hard code this set as it is very small, unlikely to change and requires some
 		// handling that does not fit elsewhere.
-		switch loc.lang {
+		switch t.lang {
 		case lang_no:
-			if t&CLDR != 0 {
-				loc.lang = lang_nb
+			if c&CLDR != 0 {
+				t.lang = lang_nb
 				changed = true
 			}
 		case lang_tl:
-			loc.lang = lang_fil
+			t.lang = lang_fil
 			changed = true
 		case lang_sh:
-			if loc.script == 0 {
-				loc.script = scrLatn
+			if t.script == 0 {
+				t.script = scrLatn
 			}
-			loc.lang = lang_sr
+			t.lang = lang_sr
 			changed = true
 		}
 	}
-	if t&Deprecated != 0 {
-		l := normLang(langOldMap[:], loc.lang)
-		if l != loc.lang {
+	if c&Deprecated != 0 {
+		l := normLang(langOldMap[:], t.lang)
+		if l != t.lang {
 			// CLDR maps "mo" to "ro". This mapping loses the piece of information
 			// that "mo" very likely implies the region "MD". This may be important
 			// for applications that insist on making a difference between these
 			// two language codes.
-			if loc.lang == lang_mo && loc.region == 0 && t&CLDR == 0 {
-				loc.region = regMD
+			if t.lang == lang_mo && t.region == 0 && c&CLDR == 0 {
+				t.region = regMD
 			}
 			changed = true
-			loc.lang = l
+			t.lang = l
 		}
 	}
-	if t&Macro != 0 {
-		l := normLang(langMacroMap[:], loc.lang)
+	if c&Macro != 0 {
+		l := normLang(langMacroMap[:], t.lang)
 		// We deviate here from CLDR. The mapping "nb" -> "no" qualifies as a typical
 		// Macro language mapping.  However, for legacy reasons, CLDR maps "no,
 		// the macro language code for Norwegian, to the dominant variant "nb.
@@ -154,18 +155,18 @@ func (loc ID) Canonicalize(t CanonType) (ID, error) {
 		// http://unicode.org/cldr/trac/ticket/1790 for some of the practical
 		// implications.
 		// TODO: this code could be removed if CLDR adopts this change.
-		if l == lang_nb && t&CLDR == 0 {
+		if l == lang_nb && c&CLDR == 0 {
 			l = lang_no
 		}
-		if l != loc.lang {
+		if l != t.lang {
 			changed = true
-			loc.lang = l
+			t.lang = l
 		}
 	}
-	if changed && loc.str != nil {
-		loc.remakeString()
+	if changed && t.str != nil {
+		t.remakeString()
 	}
-	return loc, nil
+	return t, nil
 }
 
 // Confidence indicates the level of certainty for a given return value.
@@ -188,104 +189,104 @@ func (c Confidence) String() string {
 	return confName[c]
 }
 
-// remakeString is used to update loc.str in case lang, script or region changed.
+// remakeString is used to update t.str in case lang, script or region changed.
 // It is assumed that pExt and pVariant still point to the start of the
 // respective parts, if applicable.
-// remakeString can also be used to compute the string for IDs for which str
+// remakeString can also be used to compute the string for Tag for which str
 // is not defined.
-func (loc *ID) remakeString() {
+func (t *Tag) remakeString() {
 	extra := ""
-	if loc.str != nil && int(loc.pVariant) < len(*loc.str) {
-		extra = (*loc.str)[loc.pVariant:]
-		if loc.pVariant > 0 {
+	if t.str != nil && int(t.pVariant) < len(*t.str) {
+		extra = (*t.str)[t.pVariant:]
+		if t.pVariant > 0 {
 			extra = extra[1:]
 		}
 	}
 	buf := [128]byte{}
-	isUnd := loc.lang == 0
-	n := loc.lang.stringToBuf(buf[:])
-	if loc.script != 0 {
+	isUnd := t.lang == 0
+	n := t.lang.stringToBuf(buf[:])
+	if t.script != 0 {
 		n += copy(buf[n:], "-")
-		n += copy(buf[n:], loc.script.String())
+		n += copy(buf[n:], t.script.String())
 		isUnd = false
 	}
-	if loc.region != 0 {
+	if t.region != 0 {
 		n += copy(buf[n:], "-")
-		n += copy(buf[n:], loc.region.String())
+		n += copy(buf[n:], t.region.String())
 		isUnd = false
 	}
 	b := buf[:n]
 	if extra != "" {
 		if isUnd && strings.HasPrefix(extra, "x-") {
-			loc.str = &extra
-			loc.pVariant = 0
-			loc.pExt = 0
+			t.str = &extra
+			t.pVariant = 0
+			t.pExt = 0
 			return
 		} else {
-			diff := uint8(n) - loc.pVariant
+			diff := uint8(n) - t.pVariant
 			b = append(b, '-')
 			b = append(b, extra...)
-			loc.pVariant += diff
-			loc.pExt += uint16(diff)
+			t.pVariant += diff
+			t.pExt += uint16(diff)
 		}
 	} else {
-		loc.pVariant = uint8(len(b))
-		loc.pExt = uint16(len(b))
+		t.pVariant = uint8(len(b))
+		t.pExt = uint16(len(b))
 	}
 	s := string(b)
-	loc.str = &s
+	t.str = &s
 }
 
-// String returns the canonical string representation of the locale.
-func (loc ID) String() string {
-	if loc.str == nil {
-		loc.remakeString()
+// String returns the canonical string representation of the language tag.
+func (t Tag) String() string {
+	if t.str == nil {
+		t.remakeString()
 	}
-	return *loc.str
+	return *t.str
 }
 
-// Language returns the language for the locale. If the language is unspecified,
-// an attempt will be made to infer it from the context.
+// Base returns the base language of the language tag. If the base language is
+// unspecified, an attempt will be made to infer it from the context.
 // It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
-func (loc ID) Language() (Language, Confidence) {
-	if loc.lang != 0 {
-		return Language{loc.lang}, Exact
+func (t Tag) Base() (Base, Confidence) {
+	if t.lang != 0 {
+		return Base{t.lang}, Exact
 	}
 	c := High
-	if loc.script == 0 && !(Region{loc.region}).IsCountry() {
+	if t.script == 0 && !(Region{t.region}).IsCountry() {
 		c = Low
 	}
-	if id, err := addTags(loc); err == nil && id.lang != 0 {
-		return Language{id.lang}, c
+	if tag, err := addTags(t); err == nil && tag.lang != 0 {
+		return Base{tag.lang}, c
 	}
-	return Language{0}, No
+	return Base{0}, No
 }
 
-// Script infers the script for the locale. If it was not explictly given, it will infer
-// a most likely candidate from the parent locales.
+// Script infers the script for the language tag. If it was not explictly given, it will infer
+// a most likely candidate.
 // If more than one script is commonly used for a language, the most likely one
 // is returned with a low confidence indication. For example, it returns (Cyrl, Low)
 // for Serbian.
-// Note that an inferred script is never guaranteed to be the correct one. Latn is
+// Note that an inferred script is never guaranteed to be the correct one. Latin is
 // almost exclusively used for Afrikaans, but Arabic has been used for some texts
 // in the past.  Also, the script that is commonly used may change over time.
 // It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
-func (loc ID) Script() (Script, Confidence) {
-	if loc.script != 0 {
-		return Script{loc.script}, Exact
+func (t Tag) Script() (Script, Confidence) {
+	if t.script != 0 {
+		return Script{t.script}, Exact
 	}
-	if loc.lang < langNoIndexOffset {
-		if sc := suppressScript[loc.lang]; sc != 0 {
+	if t.lang < langNoIndexOffset {
+		if sc := suppressScript[t.lang]; sc != 0 {
 			return Script{scriptID(sc)}, High
 		}
 	}
 	sc, c := Script{scrZyyy}, No
-	if id, err := addTags(loc); err == nil {
-		sc, c = Script{id.script}, Low
+	if tag, err := addTags(t); err == nil {
+		sc, c = Script{tag.script}, Low
 	}
-	loc, _ = loc.Canonicalize(Deprecated | Macro)
-	if id, err := addTags(loc); err == nil {
-		sc, c = Script{id.script}, Low
+	t, _ = t.Canonicalize(Deprecated | Macro)
+	if tag, err := addTags(t); err == nil {
+		sc, c = Script{tag.script}, Low
 	}
 	// Translate srcZzzz (uncoded) to srcZyyy (undetermined).
 	if sc == (Script{scrZzzz}) {
@@ -294,61 +295,62 @@ func (loc ID) Script() (Script, Confidence) {
 	return sc, c
 }
 
-// Region returns the region for the locale. If it was not explicitly given, it will
+// Region returns the region for the language tag. If it was not explicitly given, it will
 // infer a most likely candidate from the context.
 // It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
-func (loc ID) Region() (Region, Confidence) {
-	if loc.region != 0 {
-		return Region{loc.region}, Exact
+func (t Tag) Region() (Region, Confidence) {
+	if t.region != 0 {
+		return Region{t.region}, Exact
 	}
-	if id, err := addTags(loc); err == nil {
-		return Region{id.region}, Low // TODO: differentiate between high and low.
+	if t, err := addTags(t); err == nil {
+		return Region{t.region}, Low // TODO: differentiate between high and low.
 	}
-	loc, _ = loc.Canonicalize(Deprecated | Macro)
-	if id, err := addTags(loc); err == nil {
-		return Region{id.region}, Low
+	t, _ = t.Canonicalize(Deprecated | Macro)
+	if tag, err := addTags(t); err == nil {
+		return Region{tag.region}, Low
 	}
 	return Region{regZZ}, No // TODO: return world instead of undetermined?
 }
 
-// Variant returns the variant specified explicitly for this locale
+// Variant returns the variants specified explicitly for this language tag.
 // or nil if no variant was specified.
-func (loc ID) Variant() Variant {
+func (t Tag) Variant() []Variant {
 	// TODO: implement
-	return Variant{""}
+	return nil
 }
 
 // TypeForKey returns the type associated with the given key, where key and type
 // are of the allowed values defined for the Unicode locale extension ('u') in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
 // TypeForKey will traverse the inheritance chain to get the correct value.
-func (loc ID) TypeForKey(key string) string {
+func (t Tag) TypeForKey(key string) string {
 	// TODO: implement
 	return ""
 }
 
-// SetTypeForKey returns a new ID with the key set to type, where key and type
+// SetTypeForKey returns a new Tag with the key set to type, where key and type
 // are of the allowed values defined for the Unicode locale extension ('u') in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
-func (loc ID) SetTypeForKey(key, value string) ID {
+func (t Tag) SetTypeForKey(key, value string) Tag {
 	// TODO: implement
-	return ID{}
+	return Tag{}
 }
 
-// Language is an ISO 639 language identifier.
-type Language struct {
+// Base is an ISO 639 language code, used for encoding the base language
+// of a language tag.
+type Base struct {
 	langID
 }
 
-// ParseLanguage parses a 2- or 3-letter ISO 639 code.
+// ParseBase parses a 2- or 3-letter ISO 639 code.
 // It returns an error if the given string is not a valid language code.
-func ParseLanguage(s string) (Language, error) {
+func ParseBase(s string) (Base, error) {
 	if n := len(s); n < 2 || 3 < n {
-		return Language{}, errInvalid
+		return Base{}, errInvalid
 	}
 	var buf [3]byte
 	l, err := getLangID(buf[:copy(buf[:], s)])
-	return Language{l}, err
+	return Base{l}, err
 }
 
 // Script is a 4-letter ISO 15924 code for representing scripts.
@@ -427,10 +429,10 @@ func ParseCurrency(s string) (Currency, error) {
 	return Currency{c}, err
 }
 
-// Set provides information about a set of locales.
+// Set provides information about a set of tags.
 type Set interface {
-	Locales() []ID
-	Languages() []Language
+	Tags() []Tag
+	BaseLanguages() []Base
 	Regions() []Region
 	Scripts() []Script
 	Currencies() []Currency

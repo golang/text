@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package locale_test
+package language_test
 
 import (
-	"code.google.com/p/go.text/locale"
+	"code.google.com/p/go.text/language"
 	"fmt"
 )
 
 func ExampleID_Canonicalize() {
 	p := func(id string) {
-		loc, _ := locale.Parse(id)
-		l, _ := loc.Canonicalize(locale.BCP47)
+		loc, _ := language.Parse(id)
+		l, _ := loc.Canonicalize(language.BCP47)
 		fmt.Printf("BCP47(%s) -> %s\n", id, l)
-		l, _ = loc.Canonicalize(locale.Macro)
+		l, _ = loc.Canonicalize(language.Macro)
 		fmt.Printf("Macro(%s) -> %s\n", id, l)
-		l, _ = loc.Canonicalize(locale.All)
+		l, _ = loc.Canonicalize(language.All)
 		fmt.Printf("All(%s) -> %s\n", id, l)
 	}
 	p("en-Latn")
@@ -42,12 +42,12 @@ func ExampleID_Canonicalize() {
 	// All(iw-Latn-fonipa-u-cu-usd) -> he-Latn-fonipa-u-cu-usd
 }
 
-func ExampleID_Language() {
-	fmt.Println(locale.Make("und").Language())
-	fmt.Println(locale.Make("und-US").Language())
-	fmt.Println(locale.Make("und-NL").Language())
-	fmt.Println(locale.Make("und-419").Language())
-	fmt.Println(locale.Make("und-ZZ").Language())
+func ExampleID_Base() {
+	fmt.Println(language.Make("und").Base())
+	fmt.Println(language.Make("und-US").Base())
+	fmt.Println(language.Make("und-NL").Base())
+	fmt.Println(language.Make("und-419").Base())
+	fmt.Println(language.Make("und-ZZ").Base())
 	// Output:
 	// en Low
 	// en High
@@ -57,16 +57,16 @@ func ExampleID_Language() {
 }
 
 func ExampleID_Script() {
-	en := locale.Make("en")
-	sr := locale.Make("sr")
-	sr_Latn := locale.Make("sr_Latn")
+	en := language.Make("en")
+	sr := language.Make("sr")
+	sr_Latn := language.Make("sr_Latn")
 	fmt.Println(en.Script())
 	fmt.Println(sr.Script())
 	// Was a script explicitly specified?
 	_, c := sr.Script()
-	fmt.Println(c == locale.Exact)
+	fmt.Println(c == language.Exact)
 	_, c = sr_Latn.Script()
-	fmt.Println(c == locale.Exact)
+	fmt.Println(c == language.Exact)
 	// Output:
 	// Latn High
 	// Cyrl Low
@@ -75,8 +75,8 @@ func ExampleID_Script() {
 }
 
 func ExampleID_Region() {
-	ru := locale.Make("ru")
-	en := locale.Make("en")
+	ru := language.Make("ru")
+	en := language.Make("en")
 	fmt.Println(ru.Region())
 	fmt.Println(en.Region())
 	// Output:
@@ -85,9 +85,9 @@ func ExampleID_Region() {
 }
 
 func ExampleID_Part() {
-	loc := locale.Make("sr-RS")
-	script := loc.Part(locale.ScriptPart)
-	region := loc.Part(locale.RegionPart)
+	loc := language.Make("sr-RS")
+	script := loc.Part(language.ScriptPart)
+	region := loc.Part(language.RegionPart)
 	fmt.Printf("%q %q", script, region)
 	// Output: "" "RS"
 }

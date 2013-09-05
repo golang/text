@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package locale
+package language
 
 import (
 	"fmt"
@@ -92,8 +92,8 @@ func fixCase(pat string, b []byte) bool {
 
 type langID uint16
 
-// getLangID returns the langID of s if s is a canonical ID
-// or langUnknown if s is not a canonical langID.
+// getLangID returns the langID of s if s is a canonical subtag
+// or langUnknown if s is not a canonical subtag.
 func getLangID(s []byte) (langID, error) {
 	if len(s) == 2 {
 		return getLangISO2(s)

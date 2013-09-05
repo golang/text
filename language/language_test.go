@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package locale
+package language
 
 import (
 	"fmt"
@@ -10,16 +10,16 @@ import (
 	"testing"
 )
 
-func TestIDSize(t *testing.T) {
-	id := ID{}
+func TestTagSize(t *testing.T) {
+	id := Tag{}
 	typ := reflect.TypeOf(id)
 	if typ.Size() > 16 {
-		t.Errorf("size of ID was %d; want 16", typ.Size())
+		t.Errorf("size of Tag was %d; want 16", typ.Size())
 	}
 }
 
 func TestIsRoot(t *testing.T) {
-	loc := ID{}
+	loc := Tag{}
 	if !loc.IsRoot() {
 		t.Errorf("unspecified should be root.")
 	}
@@ -56,7 +56,7 @@ func TestMakeString(t *testing.T) {
 	}
 }
 
-func TestLanguage(t *testing.T) {
+func TestBase(t *testing.T) {
 	tests := []struct {
 		loc, lang string
 		conf      Confidence
@@ -74,7 +74,7 @@ func TestLanguage(t *testing.T) {
 	for i, tt := range tests {
 		loc, _ := Parse(tt.loc)
 		loc, _ = loc.Canonicalize(0)
-		lang, conf := loc.Language()
+		lang, conf := loc.Base()
 		if lang.String() != tt.lang {
 			t.Errorf("%d: language was %s; want %s", i, lang, tt.lang)
 		}
@@ -84,7 +84,7 @@ func TestLanguage(t *testing.T) {
 	}
 }
 
-func TestParseLanguage(t *testing.T) {
+func TestParseBase(t *testing.T) {
 	tests := []struct {
 		in  string
 		out string
@@ -100,7 +100,7 @@ func TestParseLanguage(t *testing.T) {
 		{"aaaa", "und", false},
 	}
 	for i, tt := range tests {
-		if x, err := ParseLanguage(tt.in); x.String() != tt.out || err == nil != tt.ok {
+		if x, err := ParseBase(tt.in); x.String() != tt.out || err == nil != tt.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
 		}
 	}

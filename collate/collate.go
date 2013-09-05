@@ -11,7 +11,7 @@ import (
 	"bytes"
 
 	"code.google.com/p/go.text/collate/colltab"
-	"code.google.com/p/go.text/locale"
+	"code.google.com/p/go.text/language"
 	"code.google.com/p/go.text/unicode/norm"
 )
 
@@ -118,18 +118,18 @@ func Locales() []string {
 }
 
 // New returns a new Collator initialized for the given locale.
-func New(id locale.ID) *Collator {
+func New(t language.Tag) *Collator {
 	// TODO: handle locale selection according to spec.
-	var t tableIndex
-	loc := id.String()
+	var tab tableIndex
+	loc := t.String()
 	if loc != "" {
 		if idx, ok := locales[loc]; ok {
-			t = idx
+			tab = idx
 		} else {
-			t = locales["und"]
+			tab = locales["und"]
 		}
 	}
-	return NewFromTable(colltab.Init(t))
+	return NewFromTable(colltab.Init(tab))
 }
 
 func NewFromTable(t colltab.Weigher) *Collator {

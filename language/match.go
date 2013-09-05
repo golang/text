@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package locale
+package language
 
 import "errors"
 
@@ -14,21 +14,21 @@ const (
 	regionInFrom
 )
 
-func (loc *ID) setUndefinedLang(id langID) {
-	if loc.lang == 0 {
-		loc.lang = id
+func (t *Tag) setUndefinedLang(id langID) {
+	if t.lang == 0 {
+		t.lang = id
 	}
 }
 
-func (loc *ID) setUndefinedScript(id scriptID) {
-	if loc.script == 0 {
-		loc.script = id
+func (t *Tag) setUndefinedScript(id scriptID) {
+	if t.script == 0 {
+		t.script = id
 	}
 }
 
-func (loc *ID) setUndefinedRegion(id regionID) {
-	if loc.region == 0 {
-		loc.region = id
+func (t *Tag) setUndefinedRegion(id regionID) {
+	if t.region == 0 {
+		t.region = id
 	}
 }
 
@@ -40,66 +40,66 @@ var MissingLikelyTagsData = errors.New("missing likely tags data")
 // In most cases this means setting fields for unknown values, but in some
 // cases it may alter a value.  It returns a MissingLikelyTagsData error
 // if the given locale cannot be expaned.
-func (loc ID) addLikelySubtags() (ID, error) {
+func (t Tag) addLikelySubtags() (Tag, error) {
 	// Hard-coded exception.  This is currently the only exception to the rule
 	// that any defined value before expanding likely subtags remains the same.
 	// maketables verifies this is indeed the only case.
 	// We include this in addLikelySubtags instead of addTags to guarantee that
 	// Minimize does not alter any of the tags.
-	if loc.script == scrHani {
-		loc.script = scrHans
+	if t.script == scrHani {
+		t.script = scrHans
 	}
-	id, err := addTags(loc)
+	id, err := addTags(t)
 	if err != nil {
-		return loc, err
-	} else if id.equalTags(loc) {
-		return loc, nil
+		return t, err
+	} else if id.equalTags(t) {
+		return t, nil
 	}
 	id.remakeString()
 	return id, nil
 }
 
-func addTags(loc ID) (ID, error) {
+func addTags(t Tag) (Tag, error) {
 	// We leave private use identifiers alone.
-	if loc.private() {
-		return loc, nil
+	if t.private() {
+		return t, nil
 	}
-	if loc.script != 0 && loc.region != 0 {
-		if loc.lang != 0 {
+	if t.script != 0 && t.region != 0 {
+		if t.lang != 0 {
 			// already fully specified
-			return loc, nil
+			return t, nil
 		}
 		// Search matches for und-script-region.
-		list := likelyRegion[loc.region : loc.region+1]
+		list := likelyRegion[t.region : t.region+1]
 		if x := list[0]; x.flags&isList != 0 {
 			list = likelyRegionList[x.lang : x.lang+uint16(x.script)]
 		}
 		for _, x := range list {
 			// Deviating from the spec. See match_test.go for details.
-			if scriptID(x.script) == loc.script {
-				loc.setUndefinedLang(langID(x.lang))
-				return loc, nil
+			if scriptID(x.script) == t.script {
+				t.setUndefinedLang(langID(x.lang))
+				return t, nil
 			}
 		}
 	}
-	if loc.lang != 0 {
+	if t.lang != 0 {
 		// Search matches for lang-script and lang-region, where lang != und.
-		if loc.lang < langNoIndexOffset {
-			x := likelyLang[loc.lang]
+		if t.lang < langNoIndexOffset {
+			x := likelyLang[t.lang]
 			if x.flags&isList != 0 {
 				list := likelyLangList[x.region : x.region+uint16(x.script)]
-				if loc.script != 0 {
+				if t.script != 0 {
 					for _, x := range list {
-						if scriptID(x.script) == loc.script && x.flags&scriptInFrom != 0 {
-							loc.setUndefinedRegion(regionID(x.region))
-							return loc, nil
+						if scriptID(x.script) == t.script && x.flags&scriptInFrom != 0 {
+							t.setUndefinedRegion(regionID(x.region))
+							return t, nil
 						}
 					}
-				} else if loc.region != 0 {
+				} else if t.region != 0 {
 					for _, x := range list {
-						if regionID(x.region) == loc.region && x.flags&regionInFrom != 0 {
-							loc.setUndefinedScript(scriptID(x.script))
-							return loc, nil
+						if regionID(x.region) == t.region && x.flags&regionInFrom != 0 {
+							t.setUndefinedScript(scriptID(x.script))
+							return t, nil
 						}
 					}
 				}
@@ -107,82 +107,82 @@ func addTags(loc ID) (ID, error) {
 		}
 	} else {
 		// Search matches for und-script.
-		if loc.script != 0 {
-			x := likelyScript[loc.script]
+		if t.script != 0 {
+			x := likelyScript[t.script]
 			if x.region != 0 {
-				loc.setUndefinedRegion(regionID(x.region))
-				loc.setUndefinedLang(langID(x.lang))
-				return loc, nil
+				t.setUndefinedRegion(regionID(x.region))
+				t.setUndefinedLang(langID(x.lang))
+				return t, nil
 			}
 		}
 		// Search matches for und-region.
-		if loc.region != 0 {
-			x := likelyRegion[loc.region]
+		if t.region != 0 {
+			x := likelyRegion[t.region]
 			if x.flags&isList != 0 {
 				x = likelyRegionList[x.lang]
 			}
 			if x.script != 0 && x.flags != scriptInFrom {
-				loc.setUndefinedLang(langID(x.lang))
-				loc.setUndefinedScript(scriptID(x.script))
-				return loc, nil
+				t.setUndefinedLang(langID(x.lang))
+				t.setUndefinedScript(scriptID(x.script))
+				return t, nil
 			}
 		}
 	}
 	// Search matches for lang.
-	if loc.lang < langNoIndexOffset {
-		x := likelyLang[loc.lang]
+	if t.lang < langNoIndexOffset {
+		x := likelyLang[t.lang]
 		if x.flags&isList != 0 {
 			x = likelyLangList[x.region]
 		}
 		if x.region != 0 {
-			loc.setUndefinedScript(scriptID(x.script))
-			loc.setUndefinedRegion(regionID(x.region))
-			if loc.lang == 0 {
-				loc.lang = lang_en // default language
+			t.setUndefinedScript(scriptID(x.script))
+			t.setUndefinedRegion(regionID(x.region))
+			if t.lang == 0 {
+				t.lang = lang_en // default language
 			}
-			return loc, nil
+			return t, nil
 		}
 	}
-	return loc, MissingLikelyTagsData
+	return t, MissingLikelyTagsData
 }
 
-func (loc *ID) setTagsFrom(id ID) {
-	loc.lang = id.lang
-	loc.script = id.script
-	loc.region = id.region
+func (t *Tag) setTagsFrom(id Tag) {
+	t.lang = id.lang
+	t.script = id.script
+	t.region = id.region
 }
 
-// minimize removes the region or script subtags from loc such that
-// loc.addLikelySubtags() == loc.minimize().addLikelySubtags().
-func (loc ID) minimize() (ID, error) {
-	loc, err := minimizeTags(loc)
+// minimize removes the region or script subtags from t such that
+// t.addLikelySubtags() == t.minimize().addLikelySubtags().
+func (t Tag) minimize() (Tag, error) {
+	t, err := minimizeTags(t)
 	if err != nil {
-		return loc, err
+		return t, err
 	}
-	loc.remakeString()
-	return loc, nil
+	t.remakeString()
+	return t, nil
 }
 
 // minimizeTags mimics the behavior of the ICU 51 C implementation.
-func minimizeTags(loc ID) (ID, error) {
-	if loc.equalTags(und) {
-		return loc, nil
+func minimizeTags(t Tag) (Tag, error) {
+	if t.equalTags(und) {
+		return t, nil
 	}
-	max, err := addTags(loc)
+	max, err := addTags(t)
 	if err != nil {
-		return loc, err
+		return t, err
 	}
-	for _, id := range [...]ID{
-		{lang: loc.lang},
-		{lang: loc.lang, region: loc.region},
-		{lang: loc.lang, script: loc.script},
+	for _, id := range [...]Tag{
+		{lang: t.lang},
+		{lang: t.lang, region: t.region},
+		{lang: t.lang, script: t.script},
 	} {
 		if x, err := addTags(id); err == nil && max.equalTags(x) {
-			loc.setTagsFrom(id)
+			t.setTagsFrom(id)
 			break
 		}
 	}
-	return loc, nil
+	return t, nil
 }
 
 // regionDistance computes the distance between two regions based

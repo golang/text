@@ -17,7 +17,7 @@ import (
 	"code.google.com/p/go.text/collate"
 	"code.google.com/p/go.text/collate/build"
 	"code.google.com/p/go.text/collate/colltab"
-	"code.google.com/p/go.text/locale"
+	"code.google.com/p/go.text/language"
 	"flag"
 	"fmt"
 	"io"
@@ -378,7 +378,7 @@ func parseMain() {
 		}
 		if x.Characters != nil {
 			x, _ = data.LDML(loc)
-			loc = locale.Make(loc).String()
+			loc = language.Make(loc).String()
 			for _, ec := range x.Characters.ExemplarCharacters {
 				if ec.Draft != "" {
 					continue
@@ -466,12 +466,12 @@ func parseCollation(b *build.Builder) {
 		sl.SelectOnePerGroup("alt", altInclude())
 
 		for _, c := range cs {
-			m := make(map[locale.Part]string)
-			m[locale.TagPart] = loc
+			m := make(map[language.Part]string)
+			m[language.TagPart] = loc
 			if c.Type != x.Collations.Default() {
-				m[locale.Extension('u')] = "co-" + c.Type
+				m[language.Extension('u')] = "co-" + c.Type
 			}
-			id, err := locale.Compose(m)
+			id, err := language.Compose(m)
 			failOnError(err)
 			t := b.Tailoring(id)
 			c.Process(processor{t})
@@ -508,7 +508,7 @@ func (p processor) Index(id string) {
 }
 
 func testCollator(c *collate.Collator) {
-	c0 := collate.New(locale.Und)
+	c0 := collate.New(language.Und)
 
 	// iterator over all characters for all locales and check
 	// whether Key is equal.

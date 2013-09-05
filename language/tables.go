@@ -2,7 +2,7 @@
 //		maketables -url=http://www.unicode.org/Public/cldr/23/core.zip -iana=http://www.iana.org/assignments/language-subtag-registry
 // DO NOT EDIT
 
-package locale
+package language
 
 const nonCanonicalUnd = 415
 
@@ -22,8 +22,8 @@ const langPrivateStart = 11260
 
 const langPrivateEnd = 11779
 
-// lang holds an alphabetically sorted list of BCP 47 language identifiers.
-// All entries are 4 bytes. The index of the identifier (divided by 4) is the language ID.
+// lang holds an alphabetically sorted list of ISO-639 language identifiers.
+// All entries are 4 bytes. The index of the identifier (divided by 4) is the language tag.
 // For 2-byte language identifiers, the two successive bytes have the following meaning:
 //     - if the first letter of the 2- and 3-letter ISO codes are the same:
 //       the second and third letter of the 3-letter ISO code.
@@ -385,7 +385,7 @@ var langMacroMap = [62]fromTo{
 	{from: 0x4631, to: 0x1b6},
 }
 
-// tagAlias holds a mapping from legacy and grandfathered tags to their locale ID.
+// tagAlias holds a mapping from legacy and grandfathered tags to their language tag.
 // Size: 497 bytes
 var tagAlias = map[string]uint16{
 	"aa-SAAHO":   366,
@@ -425,7 +425,7 @@ const (
 )
 
 // script is an alphabetically sorted list of ISO 15924 codes. The index
-// of the script in the string, divided by 4, is the internal script ID.
+// of the script in the string, divided by 4, is the internal scriptID.
 // Size: 868 bytes
 var script string = "" +
 	"----AfakAghbArabArmiArmnAvstBaliBamuBassBatkBengBlisBopoBrah" +
@@ -1904,7 +1904,7 @@ var regionInclusion = [340]uint8{
 
 // regionInclusionBits is an array of bit vectors where every vector represents
 // a set of region groupings.  These sets are used to compute the distance
-// between two regions for the purpos of locale matching.
+// between two regions for the purpose of language matching.
 // Size: 300 bytes, 75 elements
 var regionInclusionBits = [75]uint32{
 	37750803, 1955, 14404, 536872968, 1077674001, 34, 536873028, 130, 258, 514, 1026, 536885325,
