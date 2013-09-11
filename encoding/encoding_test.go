@@ -17,6 +17,7 @@ import (
 	"code.google.com/p/go.text/encoding/japanese"
 	"code.google.com/p/go.text/encoding/korean"
 	"code.google.com/p/go.text/encoding/simplifiedchinese"
+	"code.google.com/p/go.text/encoding/traditionalchinese"
 	"code.google.com/p/go.text/encoding/unicode"
 	"code.google.com/p/go.text/transform"
 )
@@ -34,6 +35,9 @@ var basicTestCases = []struct {
 	encoded   string
 	utf8      string
 }{
+	// The encoded forms can be verified by the iconv program:
+	// $ echo 月日は百代 | iconv -f UTF-8 -t SHIFT-JIS | xxd
+
 	// Charmap tests.
 	{
 		e:       charmap.CodePage437,
@@ -115,26 +119,40 @@ var basicTestCases = []struct {
 		utf8:      "\x57\u00e4\U0001d565",
 	},
 
-	// CJK tests.
-	// The encoded forms can be verified by the iconv program:
-	// $ echo 月日は百代 | iconv -f UTF-8 -t SHIFT-JIS | xxd
-
 	// Chinese tests.
 	//
-	// "A\u3000\u554a\u4e02\u4e90\u72dc\u7349\u02ca\u2588Z" is a nonsense
-	// string that contains ASCII and GBK codepoints from Levels 1-5.
+	// "A\u3000\u554a\u4e02\u4e90\u72dc\u7349\u02ca\u2588Z€" is a nonsense
+	// string that contains ASCII and GBK codepoints from Levels 1-5 as well
+	// as the Euro sign.
 	//
-	// "花间一壶酒，独酌无相亲。" is from the 8th century poem "Yuè Xià Dú Zhuó".
+	// "A\u43f0\u4c32\U00027267\u3000\U0002910d\u79d4Z€" is a nonsense string
+	// that contains ASCII and Big5 codepoints from the Basic Multilingual
+	// Plane and the Supplementary Ideographic Plane as well as the Euro sign.
+	//
+	// "花间一壶酒，独酌无相亲。" (simplified) and
+	// "花間一壺酒，獨酌無相親。" (traditional)
+	// are from the 8th century poem "Yuè Xià Dú Zhuó".
 	{
 		e:       simplifiedchinese.GBK,
-		encoded: "A\xa1\xa1\xb0\xa1\x81\x40\x81\x80\xaa\x40\xaa\x80\xa8\x40\xa8\x80Z",
-		utf8:    "A\u3000\u554a\u4e02\u4e90\u72dc\u7349\u02ca\u2588Z",
+		encoded: "A\xa1\xa1\xb0\xa1\x81\x40\x81\x80\xaa\x40\xaa\x80\xa8\x40\xa8\x80Z\x80",
+		utf8:    "A\u3000\u554a\u4e02\u4e90\u72dc\u7349\u02ca\u2588Z€",
 	},
 	{
 		e: simplifiedchinese.GBK,
 		encoded: "\xbb\xa8\xbc\xe4\xd2\xbb\xba\xf8\xbe\xc6\xa3\xac\xb6\xc0\xd7\xc3" +
 			"\xce\xde\xcf\xe0\xc7\xd7\xa1\xa3",
 		utf8: "花间一壶酒，独酌无相亲。",
+	},
+	{
+		e:       traditionalchinese.Big5,
+		encoded: "A\x87\x40\x87\x41\x87\x45\xa1\x40\xfe\xfd\xfe\xfeZ\xa3\xe1",
+		utf8:    "A\u43f0\u4c32\U00027267\u3000\U0002910d\u79d4Z€",
+	},
+	{
+		e: traditionalchinese.Big5,
+		encoded: "\xaa\xe1\xb6\xa1\xa4\x40\xb3\xfd\xb0\x73\xa1\x41\xbf\x57\xb0\x75" +
+			"\xb5\x4c\xac\xdb\xbf\xcb\xa1\x43",
+		utf8: "花間一壺酒，獨酌無相親。",
 	},
 
 	// Japanese tests.
@@ -244,6 +262,27 @@ func TestBasics(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+// TestBig5CircumflexAndMacron tests the special cases listed in
+// http://encoding.spec.whatwg.org/#big5
+// Note that these special cases aren't preserved by round-tripping through
+// decoding and encoding (since
+// http://encoding.spec.whatwg.org/index-big5.txt does not have an entry for
+// U+0304 or U+030C), so we can't test this in TestBasics.
+func TestBig5CircumflexAndMacron(t *testing.T) {
+	src := "\x88\x5f\x88\x60\x88\x61\x88\x62\x88\x63\x88\x64\x88\x65\x88\x66 " +
+		"\x88\xa2\x88\xa3\x88\xa4\x88\xa5\x88\xa6"
+	want := "ÓǑÒ\u00ca\u0304Ế\u00ca\u030cỀÊ " +
+		"ü\u00ea\u0304ế\u00ea\u030cề"
+	dst, err := ioutil.ReadAll(transform.NewReader(
+		strings.NewReader(src), traditionalchinese.Big5.NewDecoder()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := string(dst); got != want {
+		t.Fatalf("\ngot  %q\nwant %q", got, want)
 	}
 }
 
@@ -432,6 +471,7 @@ var testdataFiles = []struct {
 	{japanese.ShiftJIS, "rashomon", "shift-jis"},
 	{korean.EUCKR, "unsu-joh-eun-nal", "euc-kr"},
 	{simplifiedchinese.GBK, "sunzi-bingfa-simplified", "gbk"},
+	{traditionalchinese.Big5, "sunzi-bingfa-traditional", "big5"},
 	{utf16LEIB, "candide", "utf-16le"},
 }
 
@@ -499,6 +539,8 @@ func benchmark(b *testing.B, direction string, enc encoding.Encoding) {
 	}
 }
 
+func BenchmarkBig5Decoder(b *testing.B)     { benchmark(b, "Decode", traditionalchinese.Big5) }
+func BenchmarkBig5Encoder(b *testing.B)     { benchmark(b, "Encode", traditionalchinese.Big5) }
 func BenchmarkCharmapDecoder(b *testing.B)  { benchmark(b, "Decode", charmap.Windows1252) }
 func BenchmarkCharmapEncoder(b *testing.B)  { benchmark(b, "Encode", charmap.Windows1252) }
 func BenchmarkEUCJPDecoder(b *testing.B)    { benchmark(b, "Decode", japanese.EUCJP) }
