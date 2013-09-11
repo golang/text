@@ -15,6 +15,7 @@ import (
 	"code.google.com/p/go.text/encoding"
 	"code.google.com/p/go.text/encoding/charmap"
 	"code.google.com/p/go.text/encoding/japanese"
+	"code.google.com/p/go.text/encoding/korean"
 	"code.google.com/p/go.text/encoding/simplifiedchinese"
 	"code.google.com/p/go.text/encoding/unicode"
 	"code.google.com/p/go.text/transform"
@@ -173,6 +174,23 @@ var basicTestCases = []struct {
 			"\x82\xc9\x82\xb5\x82\xc4\x81\x41\x8d\x73\x82\xa9\x82\xd3\x94\x4e" +
 			"\x82\xe0\x96\x94\x97\xb7\x90\x6c\x96\xe7\x81\x42",
 		utf8: "月日は百代の過客にして、行かふ年も又旅人也。",
+	},
+
+	// Korean tests.
+	//
+	// "A\uac02\uac35\uac56\ud401B\ud408\ud620\ud624C\u4f3d\u8a70D" is a
+	// nonsense string that contains ASCII, Hangul and CJK ideographs.
+	//
+	// "세계야, 안녕" translates as "Hello, world".
+	{
+		e:       korean.EUCKR,
+		encoded: "A\x81\x41\x81\x61\x81\x81\xc6\xfeB\xc7\xa1\xc7\xfe\xc8\xa1C\xca\xa1\xfd\xfeD",
+		utf8:    "A\uac02\uac35\uac56\ud401B\ud408\ud620\ud624C\u4f3d\u8a70D",
+	},
+	{
+		e:       korean.EUCKR,
+		encoded: "\xbc\xbc\xb0\xe8\xbe\xdf\x2c\x20\xbe\xc8\xb3\xe7",
+		utf8:    "세계야, 안녕",
 	},
 }
 
@@ -412,6 +430,7 @@ var testdataFiles = []struct {
 	{charmap.Windows1252, "candide", "windows-1252"},
 	{japanese.EUCJP, "rashomon", "euc-jp"},
 	{japanese.ShiftJIS, "rashomon", "shift-jis"},
+	{korean.EUCKR, "unsu-joh-eun-nal", "euc-kr"},
 	{simplifiedchinese.GBK, "sunzi-bingfa-simplified", "gbk"},
 	{utf16LEIB, "candide", "utf-16le"},
 }
@@ -484,6 +503,8 @@ func BenchmarkCharmapDecoder(b *testing.B)  { benchmark(b, "Decode", charmap.Win
 func BenchmarkCharmapEncoder(b *testing.B)  { benchmark(b, "Encode", charmap.Windows1252) }
 func BenchmarkEUCJPDecoder(b *testing.B)    { benchmark(b, "Decode", japanese.EUCJP) }
 func BenchmarkEUCJPEncoder(b *testing.B)    { benchmark(b, "Encode", japanese.EUCJP) }
+func BenchmarkEUCKRDecoder(b *testing.B)    { benchmark(b, "Decode", korean.EUCKR) }
+func BenchmarkEUCKREncoder(b *testing.B)    { benchmark(b, "Encode", korean.EUCKR) }
 func BenchmarkGBKDecoder(b *testing.B)      { benchmark(b, "Decode", simplifiedchinese.GBK) }
 func BenchmarkGBKEncoder(b *testing.B)      { benchmark(b, "Encode", simplifiedchinese.GBK) }
 func BenchmarkShiftJISDecoder(b *testing.B) { benchmark(b, "Decode", japanese.ShiftJIS) }
