@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
 )
 
@@ -67,12 +68,62 @@ func main() {
 	}
 	fmt.Printf("}\n\n")
 
-	fmt.Printf("// gbkEncode is the encoding table from Unicode to GBK code.\n")
-	fmt.Printf("var gbkEncode = [65536]uint16{\n")
+	// Any run of at least separation continuous zero entries in the reverse map will
+	// be a separate gbkEncode table.
+	const separation = 1024
+
+	intervals := []interval(nil)
+	low, high := -1, -1
 	for i, v := range reverse {
-		if v != 0 {
-			fmt.Printf("\t%d: 0x%04X,\n", i, v)
+		if v == 0 {
+			continue
 		}
+		if low < 0 {
+			low = i
+		} else if i-high >= separation {
+			if high >= 0 {
+				intervals = append(intervals, interval{low, high})
+			}
+			low = i
+		}
+		high = i + 1
 	}
-	fmt.Printf("}\n\n")
+	if high >= 0 {
+		intervals = append(intervals, interval{low, high})
+	}
+	sort.Sort(byDecreasingLength(intervals))
+
+	fmt.Printf("// gbkEncodeX are the encoding tables from Unicode to GBK code,\n")
+	fmt.Printf("// sorted by decreasing length.\n")
+	for i, v := range intervals {
+		fmt.Printf("// gbkEncode%d: %5d entries for runes in [%5d, %5d).\n", i, v.len(), v.low, v.high)
+	}
+	fmt.Printf("\n")
+
+	for i, v := range intervals {
+		fmt.Printf("const gbkEncode%dLow, gbkEncode%dHigh = %d, %d\n\n", i, i, v.low, v.high)
+		fmt.Printf("var gbkEncode%d = [...]uint16{\n", i)
+		for j := v.low; j < v.high; j++ {
+			x := reverse[j]
+			if x == 0 {
+				continue
+			}
+			fmt.Printf("\t%d-%d: 0x%04X,\n", j, v.low, x)
+		}
+		fmt.Printf("}\n\n")
+	}
 }
+
+// interval is a half-open interval [low, high).
+type interval struct {
+	low, high int
+}
+
+func (i interval) len() int { return i.high - i.low }
+
+// byDecreasingLength sorts intervals by decreasing length.
+type byDecreasingLength []interval
+
+func (b byDecreasingLength) Len() int           { return len(b) }
+func (b byDecreasingLength) Less(i, j int) bool { return b[i].len() > b[j].len() }
+func (b byDecreasingLength) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
