@@ -111,9 +111,7 @@ func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 					break
 				}
 			}
-		}
 
-		if r >= utf8.RuneSelf {
 			switch {
 			case gbkEncode0Low <= r && r < gbkEncode0High:
 				if r = rune(gbkEncode0[r-gbkEncode0Low]); r != 0 {
