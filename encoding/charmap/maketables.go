@@ -10,21 +10,16 @@ package main
 //	go run maketables.go | gofmt > tables.go
 
 import (
-	"bytes"
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"unicode/utf8"
-)
 
-// asciiSub is the ASCII substitute character, as recommended by
-// http://unicode.org/reports/tr36/#Text_Comparison
-const asciiSub = '\x1a'
+	"code.google.com/p/go.text/encoding"
+)
 
 const ascii = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f" +
 	"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f" +
@@ -41,7 +36,7 @@ var encodings = []struct {
 	{
 		"IBM Code Page 437",
 		"CodePage437",
-		asciiSub,
+		encoding.ASCIISub,
 		ascii +
 			"ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒ" +
 			"áíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐" +
@@ -49,97 +44,202 @@ var encodings = []struct {
 			"αßΓπΣσµτΦΘΩδ∞∅∈∩≡±≥≤⌠⌡÷≈°•·√ⁿ²∎\u00a0",
 	},
 	{
+		"IBM Code Page 866",
+		"CodePage866",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-ibm866.txt",
+	},
+	{
+		"ISO 8859-2",
+		"ISO8859_2",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-2.txt",
+	},
+	{
+		"ISO 8859-3",
+		"ISO8859_3",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-3.txt",
+	},
+	{
+		"ISO 8859-4",
+		"ISO8859_4",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-4.txt",
+	},
+	{
+		"ISO 8859-5",
+		"ISO8859_5",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-5.txt",
+	},
+	{
+		"ISO 8859-6",
+		"ISO8859_6",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-6.txt",
+	},
+	{
+		"ISO 8859-7",
+		"ISO8859_7",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-7.txt",
+	},
+	{
+		"ISO 8859-8",
+		"ISO8859_8",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-8.txt",
+	},
+	{
+		"ISO 8859-10",
+		"ISO8859_10",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-10.txt",
+	},
+	{
+		"ISO 8859-13",
+		"ISO8859_13",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-13.txt",
+	},
+	{
+		"ISO 8859-14",
+		"ISO8859_14",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-14.txt",
+	},
+	{
+		"ISO 8859-15",
+		"ISO8859_15",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-15.txt",
+	},
+	{
+		"ISO 8859-16",
+		"ISO8859_16",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-iso-8859-16.txt",
+	},
+	{
+		"KOI8-R",
+		"KOI8R",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-koi8-r.txt",
+	},
+	{
+		"KOI8-U",
+		"KOI8U",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-koi8-u.txt",
+	},
+	{
+		"Macintosh",
+		"Macintosh",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-macintosh.txt",
+	},
+	{
+		"Macintosh Cyrillic",
+		"MacintoshCyrillic",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-x-mac-cyrillic.txt",
+	},
+	{
 		"Windows 874",
 		"Windows874",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305142.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-874.txt",
 	},
 	{
 		"Windows 1250",
 		"Windows1250",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305143.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1250.txt",
 	},
 	{
 		"Windows 1251",
 		"Windows1251",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305144.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1251.txt",
 	},
 	{
 		"Windows 1252",
 		"Windows1252",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305145.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1252.txt",
 	},
 	{
 		"Windows 1253",
 		"Windows1253",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305146.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1253.txt",
 	},
 	{
 		"Windows 1254",
 		"Windows1254",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305147.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1254.txt",
 	},
 	{
 		"Windows 1255",
 		"Windows1255",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305148.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1255.txt",
 	},
 	{
 		"Windows 1256",
 		"Windows1256",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305149.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1256.txt",
 	},
 	{
 		"Windows 1257",
 		"Windows1257",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305150.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1257.txt",
 	},
 	{
 		"Windows 1258",
 		"Windows1258",
-		asciiSub,
-		"http://msdn.microsoft.com/en-us/goglobal/cc305151.aspx",
+		encoding.ASCIISub,
+		"http://encoding.spec.whatwg.org/index-windows-1258.txt",
 	},
 }
 
-func getWindows(url string) string {
+func getWHATWG(url string) string {
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatalf("%q: Get: %v", url, err)
 	}
 	defer res.Body.Close()
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Fatalf("%q: ReadAll: %v", url, err)
-	}
-	i := bytes.Index(b, []byte(`<div id="main"`))
-	if i < 0 {
-		log.Fatalf("%q: couldn't find main div", url)
-	}
-	s := string(b[i:])
-	n, mapping := 0, make([]rune, 256)
+
+	mapping := make([]rune, 128)
 	for i := range mapping {
 		mapping[i] = '\ufffd'
 	}
-	re := regexp.MustCompile(`([0-9A-F][0-9A-F]) = U\+([0-9A-F][0-9A-F][0-9A-F][0-9A-F])`)
-	for _, m := range re.FindAllStringSubmatch(s, -1) {
-		n++
-		x, _ := strconv.ParseInt(m[1], 16, 64)
-		y, _ := strconv.ParseInt(m[2], 16, 64)
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		s := strings.TrimSpace(scanner.Text())
+		if s == "" || s[0] == '#' {
+			continue
+		}
+		x, y := 0, 0
+		if _, err := fmt.Sscanf(s, "%d\t0x%x", &x, &y); err != nil {
+			log.Fatalf("could not parse %q", s)
+		}
+		if x < 0 || 128 <= x {
+			log.Fatalf("code %d is out of range", x)
+		}
+		if 0x80 <= y && y < 0xa0 {
+			// We diverge from the WHATWG spec by mapping control characters
+			// in the range [0x80, 0xa0) to U+FFFD.
+			continue
+		}
 		mapping[x] = rune(y)
 	}
-	if n < 128 {
-		log.Fatalf("%q: couldn't find enough mappings", url)
-	}
-	return string(mapping)
+	return ascii + string(mapping)
 }
 
 func main() {
@@ -148,8 +248,8 @@ func main() {
 	fmt.Printf("package charmap\n\n")
 	fmt.Printf("import \"code.google.com/p/go.text/encoding\"\n\n")
 	for _, e := range encodings {
-		if strings.HasPrefix(e.mapping, "http://msdn.microsoft.com/") {
-			e.mapping = getWindows(e.mapping)
+		if strings.HasPrefix(e.mapping, "http://encoding.spec.whatwg.org/") {
+			e.mapping = getWHATWG(e.mapping)
 		}
 
 		asciiSuperset, low := strings.HasPrefix(e.mapping, ascii), 0x00
@@ -157,6 +257,9 @@ func main() {
 			low = 0x80
 		}
 		lowerVarName := strings.ToLower(e.varName[:1]) + e.varName[1:]
+		if strings.HasPrefix(e.varName, "ISO") {
+			lowerVarName = "iso" + e.varName[3:]
+		}
 		fmt.Printf("// %s is the %s encoding.\n", e.varName, e.name)
 		fmt.Printf("var %s encoding.Encoding = &%s\n\nvar %s = charmap{\nname: %q,\n",
 			e.varName, lowerVarName, lowerVarName, e.name)

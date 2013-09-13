@@ -45,6 +45,91 @@ var basicTestCases = []struct {
 		utf8:    "Héllô ¥º⌠£╛",
 	},
 	{
+		e:       charmap.CodePage866,
+		encoded: "H\xf3\xd3o \x98\xfd\x9f\xdd\xa1",
+		utf8:    "Hє╙o Ш¤Я▌б",
+	},
+	{
+		e:       charmap.ISO8859_2,
+		encoded: "Hel\xe5\xf5",
+		utf8:    "Helĺő",
+	},
+	{
+		e:       charmap.ISO8859_3,
+		encoded: "He\xbd\xd4",
+		utf8:    "He½Ô",
+	},
+	{
+		e:       charmap.ISO8859_4,
+		encoded: "Hel\xb6\xf8",
+		utf8:    "Helļø",
+	},
+	{
+		e:       charmap.ISO8859_5,
+		encoded: "H\xd7\xc6o",
+		utf8:    "HзЦo",
+	},
+	{
+		e:       charmap.ISO8859_6,
+		encoded: "Hel\xc2\xc9",
+		utf8:    "Helآة",
+	},
+	{
+		e:       charmap.ISO8859_7,
+		encoded: "H\xeel\xebo",
+		utf8:    "Hξlλo",
+	},
+	{
+		e:       charmap.ISO8859_8,
+		encoded: "Hel\xf5\xed",
+		utf8:    "Helץם",
+	},
+	{
+		e:       charmap.ISO8859_10,
+		encoded: "H\xea\xbfo",
+		utf8:    "Hęŋo",
+	},
+	{
+		e:       charmap.ISO8859_13,
+		encoded: "H\xe6l\xf9o",
+		utf8:    "Hęlło",
+	},
+	{
+		e:       charmap.ISO8859_14,
+		encoded: "He\xfe\xd0o",
+		utf8:    "HeŷŴo",
+	},
+	{
+		e:       charmap.ISO8859_15,
+		encoded: "H\xa4ll\xd8",
+		utf8:    "H€llØ",
+	},
+	{
+		e:       charmap.ISO8859_16,
+		encoded: "H\xe6ll\xbd",
+		utf8:    "Hællœ",
+	},
+	{
+		e:       charmap.KOI8R,
+		encoded: "He\x93\xad\x9c",
+		utf8:    "He⌠╜°",
+	},
+	{
+		e:       charmap.KOI8U,
+		encoded: "He\x93\xad\x9c",
+		utf8:    "He⌠ґ°",
+	},
+	{
+		e:       charmap.Macintosh,
+		encoded: "He\xdf\xd7",
+		utf8:    "Heﬂ◊",
+	},
+	{
+		e:       charmap.MacintoshCyrillic,
+		encoded: "He\xbe\x94",
+		utf8:    "HeЊФ",
+	},
+	{
 		e:       charmap.Windows874,
 		encoded: "He\xb7\xf0",
 		utf8:    "Heท๐",
