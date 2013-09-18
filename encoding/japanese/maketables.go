@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
 )
 
@@ -84,6 +85,31 @@ func main() {
 		fmt.Printf("}\n\n")
 	}
 
+	// Any run of at least separation continuous zero entries in the reverse map will
+	// be a separate encode table.
+	const separation = 1024
+
+	intervals := []interval(nil)
+	low, high := -1, -1
+	for i, v := range reverse {
+		if v.table == -1 {
+			continue
+		}
+		if low < 0 {
+			low = i
+		} else if i-high >= separation {
+			if high >= 0 {
+				intervals = append(intervals, interval{low, high})
+			}
+			low = i
+		}
+		high = i + 1
+	}
+	if high >= 0 {
+		intervals = append(intervals, interval{low, high})
+	}
+	sort.Sort(byDecreasingLength(intervals))
+
 	fmt.Printf("const (\n")
 	fmt.Printf("\tjis0208    = 1\n")
 	fmt.Printf("\tjis0212    = 2\n")
@@ -92,18 +118,43 @@ func main() {
 	fmt.Printf("\ttableShift = 14\n")
 	fmt.Printf(")\n\n")
 
-	fmt.Printf("// jisEncode is the encoding table from Unicode to JIS code.\n")
+	fmt.Printf("// encodeX are the encoding tables from Unicode to JIS code,\n")
+	fmt.Printf("// sorted by decreasing length.\n")
+	for i, v := range intervals {
+		fmt.Printf("// encode%d: %5d entries for runes in [%5d, %5d).\n", i, v.len(), v.low, v.high)
+	}
+	fmt.Printf("//\n")
 	fmt.Printf("// The high two bits of the value record whether the JIS code comes from the\n")
 	fmt.Printf("// JIS0208 table (high bits == 1) or the JIS0212 table (high bits == 2).\n")
 	fmt.Printf("// The low 14 bits are two 7-bit unsigned integers j1 and j2 that form the\n")
 	fmt.Printf("// JIS code (94*j1 + j2) within that table.\n")
-	fmt.Printf("var jisEncode = [65536]uint16{\n")
-	for i, v := range reverse {
-		if v.table == -1 {
-			continue
+	fmt.Printf("\n")
+
+	for i, v := range intervals {
+		fmt.Printf("const encode%dLow, encode%dHigh = %d, %d\n\n", i, i, v.low, v.high)
+		fmt.Printf("var encode%d = [...]uint16{\n", i)
+		for j := v.low; j < v.high; j++ {
+			x := reverse[j]
+			if x.table == -1 {
+				continue
+			}
+			fmt.Printf("\t%d - %d: jis%s<<14 | 0x%02X<<7 | 0x%02X,\n",
+				j, v.low, tables[x.table].name, x.jisCode/94, x.jisCode%94)
 		}
-		fmt.Printf("\t0x%04X: jis%s<<14 | 0x%02X<<7 | 0x%02X,\n",
-			i, tables[v.table].name, v.jisCode/94, v.jisCode%94)
+		fmt.Printf("}\n\n")
 	}
-	fmt.Printf("}\n\n")
 }
+
+// interval is a half-open interval [low, high).
+type interval struct {
+	low, high int
+}
+
+func (i interval) len() int { return i.high - i.low }
+
+// byDecreasingLength sorts intervals by decreasing length.
+type byDecreasingLength []interval
+
+func (b byDecreasingLength) Len() int           { return len(b) }
+func (b byDecreasingLength) Less(i, j int) bool { return b[i].len() > b[j].len() }
+func (b byDecreasingLength) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }

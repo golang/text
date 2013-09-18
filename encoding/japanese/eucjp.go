@@ -12,7 +12,7 @@ import (
 	"code.google.com/p/go.text/transform"
 )
 
-// EUCJP is the EUC-JP (Extended Unix Code Japanese) encoding.
+// EUCJP is the EUC-JP encoding.
 var EUCJP encoding.Encoding = eucJP{}
 
 type eucJP struct{}
@@ -115,7 +115,6 @@ type eucJPEncoder struct{}
 
 func (eucJPEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
-loop:
 	for ; nSrc < len(src); nSrc += size {
 		r = rune(src[nSrc])
 
@@ -132,63 +131,78 @@ loop:
 				// full character yet.
 				if !atEOF && !utf8.FullRune(src[nSrc:]) {
 					err = transform.ErrShortSrc
-					break loop
+					break
 				}
 			}
-		}
 
-		switch {
-		case r < utf8.RuneSelf:
-			// No-op.
-
-		case 0xff61 <= r && r <= 0xff9f:
-			if nDst+2 > len(dst) {
-				err = transform.ErrShortDst
-				break loop
+			switch {
+			case encode0Low <= r && r < encode0High:
+				if r = rune(encode0[r-encode0Low]); r != 0 {
+					goto write2or3
+				}
+			case encode1Low <= r && r < encode1High:
+				if r = rune(encode1[r-encode1Low]); r != 0 {
+					goto write2or3
+				}
+			case encode2Low <= r && r < encode2High:
+				if r = rune(encode2[r-encode2Low]); r != 0 {
+					goto write2or3
+				}
+			case encode3Low <= r && r < encode3High:
+				if r = rune(encode3[r-encode3Low]); r != 0 {
+					goto write2or3
+				}
+			case encode4Low <= r && r < encode4High:
+				if r = rune(encode4[r-encode4Low]); r != 0 {
+					goto write2or3
+				}
+			case encode5Low <= r && r < encode5High:
+				if 0xff61 <= r && r < 0xffa0 {
+					goto write2
+				}
+				if r = rune(encode5[r-encode5Low]); r != 0 {
+					goto write2or3
+				}
 			}
-			dst[nDst+0] = 0x8e
-			dst[nDst+1] = uint8(r - (0xff61 - 0xa1))
-			nDst += 2
-			continue loop
-
-		case 0xffff < r:
 			r = encoding.ASCIISub
-
-		default:
-			e := jisEncode[uint16(r)]
-			if e == 0 {
-				r = encoding.ASCIISub
-				break
-			}
-			switch e >> tableShift {
-			case jis0208:
-				if nDst+2 > len(dst) {
-					err = transform.ErrShortDst
-					break loop
-				}
-				dst[nDst+0] = 0xa1 + uint8(e>>codeShift)&codeMask
-				dst[nDst+1] = 0xa1 + uint8(e)&codeMask
-				nDst += 2
-			case jis0212:
-				if nDst+3 > len(dst) {
-					err = transform.ErrShortDst
-					break loop
-				}
-				dst[nDst+0] = 0x8f
-				dst[nDst+1] = 0xa1 + uint8(e>>codeShift)&codeMask
-				dst[nDst+2] = 0xa1 + uint8(e)&codeMask
-				nDst += 3
-			}
-			continue loop
 		}
 
-		// r is encoded as a single byte.
 		if nDst >= len(dst) {
 			err = transform.ErrShortDst
-			break loop
+			break
 		}
 		dst[nDst] = uint8(r)
 		nDst++
+		continue
+
+	write2or3:
+		if r>>tableShift == jis0208 {
+			if nDst+2 > len(dst) {
+				err = transform.ErrShortDst
+				break
+			}
+		} else {
+			if nDst+3 > len(dst) {
+				err = transform.ErrShortDst
+				break
+			}
+			dst[nDst] = 0x8f
+			nDst++
+		}
+		dst[nDst+0] = 0xa1 + uint8(r>>codeShift)&codeMask
+		dst[nDst+1] = 0xa1 + uint8(r)&codeMask
+		nDst += 2
+		continue
+
+	write2:
+		if nDst+2 > len(dst) {
+			err = transform.ErrShortDst
+			break
+		}
+		dst[nDst+0] = 0x8e
+		dst[nDst+1] = uint8(r - (0xff61 - 0xa1))
+		nDst += 2
+		continue
 	}
 	return nDst, nSrc, err
 }

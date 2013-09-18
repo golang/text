@@ -12,8 +12,8 @@ import (
 	"code.google.com/p/go.text/transform"
 )
 
-// ShiftJIS is the Shift JIS (Japanese Industrial Standards) encoding, also
-// known as Code Page 932 and Windows-31J.
+// ShiftJIS is the Shift JIS encoding, also known as Code Page 932 and
+// Windows-31J.
 var ShiftJIS encoding.Encoding = shiftJIS{}
 
 type shiftJIS struct{}
@@ -126,55 +126,68 @@ loop:
 					break loop
 				}
 			}
-		}
 
-		switch {
-		case r < utf8.RuneSelf:
-			// r is an ASCII rune.
-
-		case 0xff61 <= r && r <= 0xff9f:
-			r -= 0xff61 - 0xa1
-
-		case 0xffff < r:
+			switch {
+			case encode0Low <= r && r < encode0High:
+				if r = rune(encode0[r-encode0Low]); r>>tableShift == jis0208 {
+					goto write2
+				}
+			case encode1Low <= r && r < encode1High:
+				if r = rune(encode1[r-encode1Low]); r>>tableShift == jis0208 {
+					goto write2
+				}
+			case encode2Low <= r && r < encode2High:
+				if r = rune(encode2[r-encode2Low]); r>>tableShift == jis0208 {
+					goto write2
+				}
+			case encode3Low <= r && r < encode3High:
+				if r = rune(encode3[r-encode3Low]); r>>tableShift == jis0208 {
+					goto write2
+				}
+			case encode4Low <= r && r < encode4High:
+				if r = rune(encode4[r-encode4Low]); r>>tableShift == jis0208 {
+					goto write2
+				}
+			case encode5Low <= r && r < encode5High:
+				if 0xff61 <= r && r < 0xffa0 {
+					r -= 0xff61 - 0xa1
+					goto write1
+				}
+				if r = rune(encode5[r-encode5Low]); r>>tableShift == jis0208 {
+					goto write2
+				}
+			}
 			r = encoding.ASCIISub
-
-		default:
-			e := jisEncode[uint16(r)]
-			if e == 0 {
-				r = encoding.ASCIISub
-				break
-			}
-			if e>>tableShift != jis0208 {
-				r = encoding.ASCIISub
-				break
-			}
-			j1 := uint8(e>>codeShift) & codeMask
-			j2 := uint8(e) & codeMask
-			if nDst+2 > len(dst) {
-				err = transform.ErrShortDst
-				break loop
-			}
-			if j1 <= 61 {
-				dst[nDst+0] = 129 + j1/2
-			} else {
-				dst[nDst+0] = 193 + j1/2
-			}
-			if j1&1 == 0 {
-				dst[nDst+1] = j2 + j2/63 + 64
-			} else {
-				dst[nDst+1] = j2 + 159
-			}
-			nDst += 2
-			continue loop
 		}
 
-		// r is encoded as a single byte.
+	write1:
 		if nDst >= len(dst) {
 			err = transform.ErrShortDst
-			break loop
+			break
 		}
 		dst[nDst] = uint8(r)
 		nDst++
+		continue
+
+	write2:
+		j1 := uint8(r>>codeShift) & codeMask
+		j2 := uint8(r) & codeMask
+		if nDst+2 > len(dst) {
+			err = transform.ErrShortDst
+			break loop
+		}
+		if j1 <= 61 {
+			dst[nDst+0] = 129 + j1/2
+		} else {
+			dst[nDst+0] = 193 + j1/2
+		}
+		if j1&1 == 0 {
+			dst[nDst+1] = j2 + j2/63 + 64
+		} else {
+			dst[nDst+1] = j2 + 159
+		}
+		nDst += 2
+		continue
 	}
 	return nDst, nSrc, err
 }

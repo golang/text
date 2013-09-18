@@ -3,9 +3,9 @@
 // Package traditionalchinese provides Traditional Chinese encodings such as Big5.
 package traditionalchinese
 
-// big5Decode is the decoding table from Big5 code to Unicode.
+// decode is the decoding table from Big5 code to Unicode.
 // It is defined at http://encoding.spec.whatwg.org/index-big5.txt
-var big5Decode = [...]uint32{
+var decode = [...]uint32{
 	942:   0x000043F0,
 	943:   0x00004C32,
 	944:   0x00004603,
@@ -18598,20 +18598,20 @@ var big5Decode = [...]uint32{
 	19781: 0x000079D4,
 }
 
-// big5EncodeX are the encoding tables from Unicode to Big5 code,
+// encodeX are the encoding tables from Unicode to Big5 code,
 // sorted by decreasing length.
-// big5Encode0: 42633 entries for runes in [131105, 173738).
-// big5Encode1: 29004 entries for runes in [ 11904,  40908).
-// big5Encode2:  2176 entries for runes in [  7870,  10046).
-// big5Encode3:   939 entries for runes in [   167,   1106).
-// big5Encode4:   446 entries for runes in [ 65072,  65518).
-// big5Encode5:   432 entries for runes in [194597, 195029).
-// big5Encode6:   263 entries for runes in [ 63751,  64014).
-// big5Encode7:     1 entries for runes in [175615, 175616).
+// encode0: 42633 entries for runes in [131105, 173738).
+// encode1: 29004 entries for runes in [ 11904,  40908).
+// encode2:  2176 entries for runes in [  7870,  10046).
+// encode3:   939 entries for runes in [   167,   1106).
+// encode4:   446 entries for runes in [ 65072,  65518).
+// encode5:   432 entries for runes in [194597, 195029).
+// encode6:   263 entries for runes in [ 63751,  64014).
+// encode7:     1 entries for runes in [175615, 175616).
 
-const big5Encode0Low, big5Encode0High = 131105, 173738
+const encode0Low, encode0High = 131105, 173738
 
-var big5Encode0 = [...]uint16{
+var encode0 = [...]uint16{
 	131105 - 131105: 0x9C71,
 	131134 - 131105: 0x9375,
 	131142 - 131105: 0x9376,
@@ -20315,9 +20315,9 @@ var big5Encode0 = [...]uint16{
 	173737 - 131105: 0x9E75,
 }
 
-const big5Encode1Low, big5Encode1High = 11904, 40908
+const encode1Low, encode1High = 11904, 40908
 
-var big5Encode1 = [...]uint16{
+var encode1 = [...]uint16{
 	11904 - 11904: 0xC8D6,
 	11908 - 11904: 0xC8D7,
 	11910 - 11904: 0xC8D8,
@@ -36548,9 +36548,9 @@ var big5Encode1 = [...]uint16{
 	40907 - 11904: 0x87DF,
 }
 
-const big5Encode2Low, big5Encode2High = 7870, 10046
+const encode2Low, encode2High = 7870, 10046
 
-var big5Encode2 = [...]uint16{
+var encode2 = [...]uint16{
 	7870 - 7870:  0x8863,
 	7871 - 7870:  0x88A4,
 	7872 - 7870:  0x8865,
@@ -36768,9 +36768,9 @@ var big5Encode2 = [...]uint16{
 	10045 - 7870: 0xC6E6,
 }
 
-const big5Encode3Low, big5Encode3High = 167, 1106
+const encode3Low, encode3High = 167, 1106
 
-var big5Encode3 = [...]uint16{
+var encode3 = [...]uint16{
 	167 - 167:  0xA1B1,
 	168 - 167:  0xC6D8,
 	175 - 167:  0xA1C2,
@@ -36953,9 +36953,9 @@ var big5Encode3 = [...]uint16{
 	1105 - 167: 0xC85B,
 }
 
-const big5Encode4Low, big5Encode4High = 65072, 65518
+const encode4Low, encode4High = 65072, 65518
 
-var big5Encode4 = [...]uint16{
+var encode4 = [...]uint16{
 	65072 - 65072: 0xA14A,
 	65073 - 65072: 0xA157,
 	65075 - 65072: 0xA159,
@@ -37109,9 +37109,9 @@ var big5Encode4 = [...]uint16{
 	65517 - 65072: 0xF9FE,
 }
 
-const big5Encode5Low, big5Encode5High = 194597, 195029
+const encode5Low, encode5High = 194597, 195029
 
-var big5Encode5 = [...]uint16{
+var encode5 = [...]uint16{
 	194597 - 194597: 0x9874,
 	194619 - 194597: 0x9AC8,
 	194624 - 194597: 0xA047,
@@ -37125,16 +37125,16 @@ var big5Encode5 = [...]uint16{
 	195028 - 194597: 0x8FF0,
 }
 
-const big5Encode6Low, big5Encode6High = 63751, 64014
+const encode6Low, encode6High = 63751, 64014
 
-var big5Encode6 = [...]uint16{
+var encode6 = [...]uint16{
 	63751 - 63751: 0x8BF8,
 	64012 - 63751: 0xC94A,
 	64013 - 63751: 0xDDFC,
 }
 
-const big5Encode7Low, big5Encode7High = 175615, 175616
+const encode7Low, encode7High = 175615, 175616
 
-var big5Encode7 = [...]uint16{
+var encode7 = [...]uint16{
 	175615 - 175615: 0x87DC,
 }

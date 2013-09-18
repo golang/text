@@ -57,7 +57,7 @@ loop:
 				break loop
 			}
 			r, size = encoding.ASCIISub, 2
-			if i := int(c0-0x81)*157 + int(c1); i < len(big5Decode) {
+			if i := int(c0-0x81)*157 + int(c1); i < len(decode) {
 				if 1133 <= i && i < 1167 {
 					// The two-rune special cases for LATIN CAPITAL / SMALL E WITH CIRCUMFLEX
 					// AND MACRON / CARON are from http://encoding.spec.whatwg.org/#big5
@@ -76,7 +76,7 @@ loop:
 						goto writeStr
 					}
 				}
-				r = rune(big5Decode[i])
+				r = rune(decode[i])
 				if r == 0 {
 					r = encoding.ASCIISub
 				}
@@ -135,36 +135,36 @@ func (big5Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err e
 
 		if r >= utf8.RuneSelf {
 			switch {
-			case big5Encode0Low <= r && r < big5Encode0High:
-				if r = rune(big5Encode0[r-big5Encode0Low]); r != 0 {
+			case encode0Low <= r && r < encode0High:
+				if r = rune(encode0[r-encode0Low]); r != 0 {
 					goto write2
 				}
-			case big5Encode1Low <= r && r < big5Encode1High:
-				if r = rune(big5Encode1[r-big5Encode1Low]); r != 0 {
+			case encode1Low <= r && r < encode1High:
+				if r = rune(encode1[r-encode1Low]); r != 0 {
 					goto write2
 				}
-			case big5Encode2Low <= r && r < big5Encode2High:
-				if r = rune(big5Encode2[r-big5Encode2Low]); r != 0 {
+			case encode2Low <= r && r < encode2High:
+				if r = rune(encode2[r-encode2Low]); r != 0 {
 					goto write2
 				}
-			case big5Encode3Low <= r && r < big5Encode3High:
-				if r = rune(big5Encode3[r-big5Encode3Low]); r != 0 {
+			case encode3Low <= r && r < encode3High:
+				if r = rune(encode3[r-encode3Low]); r != 0 {
 					goto write2
 				}
-			case big5Encode4Low <= r && r < big5Encode4High:
-				if r = rune(big5Encode4[r-big5Encode4Low]); r != 0 {
+			case encode4Low <= r && r < encode4High:
+				if r = rune(encode4[r-encode4Low]); r != 0 {
 					goto write2
 				}
-			case big5Encode5Low <= r && r < big5Encode5High:
-				if r = rune(big5Encode5[r-big5Encode5Low]); r != 0 {
+			case encode5Low <= r && r < encode5High:
+				if r = rune(encode5[r-encode5Low]); r != 0 {
 					goto write2
 				}
-			case big5Encode6Low <= r && r < big5Encode6High:
-				if r = rune(big5Encode6[r-big5Encode6Low]); r != 0 {
+			case encode6Low <= r && r < encode6High:
+				if r = rune(encode6[r-encode6Low]); r != 0 {
 					goto write2
 				}
-			case big5Encode7Low <= r && r < big5Encode7High:
-				if r = rune(big5Encode7[r-big5Encode7Low]); r != 0 {
+			case encode7Low <= r && r < encode7High:
+				if r = rune(encode7[r-encode7Low]); r != 0 {
 					goto write2
 				}
 			}

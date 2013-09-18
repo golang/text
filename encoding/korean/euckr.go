@@ -66,8 +66,8 @@ loop:
 				err = errInvalidEUCKR
 				break loop
 			}
-			if int(r) < len(eucKRDecode) {
-				r = rune(eucKRDecode[r])
+			if int(r) < len(decode) {
+				r = rune(decode[r])
 				if r == 0 {
 					r = encoding.ASCIISub
 				}
@@ -97,7 +97,6 @@ type eucKREncoder struct{}
 
 func (eucKREncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
-loop:
 	for ; nSrc < len(src); nSrc += size {
 		r = rune(src[nSrc])
 
@@ -114,41 +113,60 @@ loop:
 				// full character yet.
 				if !atEOF && !utf8.FullRune(src[nSrc:]) {
 					err = transform.ErrShortSrc
-					break loop
+					break
 				}
 			}
-		}
 
-		switch {
-		case r < utf8.RuneSelf:
-			// No-op.
-
-		case 0xffff < r:
+			switch {
+			case encode0Low <= r && r < encode0High:
+				if r = rune(encode0[r-encode0Low]); r != 0 {
+					goto write2
+				}
+			case encode1Low <= r && r < encode1High:
+				if r = rune(encode1[r-encode1Low]); r != 0 {
+					goto write2
+				}
+			case encode2Low <= r && r < encode2High:
+				if r = rune(encode2[r-encode2Low]); r != 0 {
+					goto write2
+				}
+			case encode3Low <= r && r < encode3High:
+				if r = rune(encode3[r-encode3Low]); r != 0 {
+					goto write2
+				}
+			case encode4Low <= r && r < encode4High:
+				if r = rune(encode4[r-encode4Low]); r != 0 {
+					goto write2
+				}
+			case encode5Low <= r && r < encode5High:
+				if r = rune(encode5[r-encode5Low]); r != 0 {
+					goto write2
+				}
+			case encode6Low <= r && r < encode6High:
+				if r = rune(encode6[r-encode6Low]); r != 0 {
+					goto write2
+				}
+			}
 			r = encoding.ASCIISub
-
-		default:
-			e := eucKREncode[uint16(r)]
-			if e == 0 {
-				r = encoding.ASCIISub
-				break
-			}
-			if nDst+2 > len(dst) {
-				err = transform.ErrShortDst
-				break loop
-			}
-			dst[nDst+0] = uint8(e >> 8)
-			dst[nDst+1] = uint8(e)
-			nDst += 2
-			continue loop
 		}
 
-		// r is encoded as a single byte.
 		if nDst >= len(dst) {
 			err = transform.ErrShortDst
-			break loop
+			break
 		}
 		dst[nDst] = uint8(r)
 		nDst++
+		continue
+
+	write2:
+		if nDst+2 > len(dst) {
+			err = transform.ErrShortDst
+			break
+		}
+		dst[nDst+0] = uint8(r >> 8)
+		dst[nDst+1] = uint8(r)
+		nDst += 2
+		continue
 	}
 	return nDst, nSrc, err
 }

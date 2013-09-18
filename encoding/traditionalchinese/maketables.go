@@ -68,9 +68,9 @@ func main() {
 		log.Fatalf("scanner error: %v", err)
 	}
 
-	fmt.Printf("// big5Decode is the decoding table from Big5 code to Unicode.\n")
+	fmt.Printf("// decode is the decoding table from Big5 code to Unicode.\n")
 	fmt.Printf("// It is defined at http://encoding.spec.whatwg.org/index-big5.txt\n")
-	fmt.Printf("var big5Decode = [...]uint32{\n")
+	fmt.Printf("var decode = [...]uint32{\n")
 	for i, v := range mapping {
 		if v != 0 {
 			fmt.Printf("\t%d: 0x%08X,\n", i, v)
@@ -79,7 +79,7 @@ func main() {
 	fmt.Printf("}\n\n")
 
 	// Any run of at least separation continuous zero entries in the reverse map will
-	// be a separate big5Encode table.
+	// be a separate encode table.
 	const separation = 1024
 
 	intervals := []interval(nil)
@@ -103,16 +103,16 @@ func main() {
 	}
 	sort.Sort(byDecreasingLength(intervals))
 
-	fmt.Printf("// big5EncodeX are the encoding tables from Unicode to Big5 code,\n")
+	fmt.Printf("// encodeX are the encoding tables from Unicode to Big5 code,\n")
 	fmt.Printf("// sorted by decreasing length.\n")
 	for i, v := range intervals {
-		fmt.Printf("// big5Encode%d: %5d entries for runes in [%6d, %6d).\n", i, v.len(), v.low, v.high)
+		fmt.Printf("// encode%d: %5d entries for runes in [%6d, %6d).\n", i, v.len(), v.low, v.high)
 	}
 	fmt.Printf("\n")
 
 	for i, v := range intervals {
-		fmt.Printf("const big5Encode%dLow, big5Encode%dHigh = %d, %d\n\n", i, i, v.low, v.high)
-		fmt.Printf("var big5Encode%d = [...]uint16{\n", i)
+		fmt.Printf("const encode%dLow, encode%dHigh = %d, %d\n\n", i, i, v.low, v.high)
+		fmt.Printf("var encode%d = [...]uint16{\n", i)
 		for j := v.low; j < v.high; j++ {
 			x := reverse[j]
 			if x == 0 {

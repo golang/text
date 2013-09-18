@@ -64,8 +64,8 @@ loop:
 				break loop
 			}
 			r, size = encoding.ASCIISub, 2
-			if i := int(c0-0x81)*190 + int(c1); i < len(gbkDecode) {
-				r = rune(gbkDecode[i])
+			if i := int(c0-0x81)*190 + int(c1); i < len(decode) {
+				r = rune(decode[i])
 				if r == 0 {
 					r = encoding.ASCIISub
 				}
@@ -113,11 +113,11 @@ func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 			}
 
 			switch {
-			case gbkEncode0Low <= r && r < gbkEncode0High:
-				if r = rune(gbkEncode0[r-gbkEncode0Low]); r != 0 {
+			case encode0Low <= r && r < encode0High:
+				if r = rune(encode0[r-encode0Low]); r != 0 {
 					goto write2
 				}
-			case gbkEncode1Low <= r && r < gbkEncode1High:
+			case encode1Low <= r && r < encode1High:
 				// Microsoft's Code Page 936 extends GBK 1.0 to encode the euro sign U+20AC
 				// as 0x80. The HTML5 specification at http://encoding.spec.whatwg.org/#gbk
 				// says to treat "gbk" as Code Page 936.
@@ -125,19 +125,19 @@ func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 					r = 0x80
 					goto write1
 				}
-				if r = rune(gbkEncode1[r-gbkEncode1Low]); r != 0 {
+				if r = rune(encode1[r-encode1Low]); r != 0 {
 					goto write2
 				}
-			case gbkEncode2Low <= r && r < gbkEncode2High:
-				if r = rune(gbkEncode2[r-gbkEncode2Low]); r != 0 {
+			case encode2Low <= r && r < encode2High:
+				if r = rune(encode2[r-encode2Low]); r != 0 {
 					goto write2
 				}
-			case gbkEncode3Low <= r && r < gbkEncode3High:
-				if r = rune(gbkEncode3[r-gbkEncode3Low]); r != 0 {
+			case encode3Low <= r && r < encode3High:
+				if r = rune(encode3[r-encode3Low]); r != 0 {
 					goto write2
 				}
-			case gbkEncode4Low <= r && r < gbkEncode4High:
-				if r = rune(gbkEncode4[r-gbkEncode4Low]); r != 0 {
+			case encode4Low <= r && r < encode4High:
+				if r = rune(encode4[r-encode4Low]); r != 0 {
 					goto write2
 				}
 			}

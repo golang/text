@@ -3,9 +3,9 @@
 // Package simplifiedchinese provides Simplified Chinese encodings such as GBK.
 package simplifiedchinese
 
-// gbkDecode is the decoding table from GBK code to Unicode.
+// decode is the decoding table from GBK code to Unicode.
 // It is defined at http://encoding.spec.whatwg.org/index-gbk.txt
-var gbkDecode = [...]uint16{
+var decode = [...]uint16{
 	0:     0x4E02,
 	1:     0x4E04,
 	2:     0x4E05,
@@ -21881,17 +21881,17 @@ var gbkDecode = [...]uint16{
 	23844: 0x4DAE,
 }
 
-// gbkEncodeX are the encoding tables from Unicode to GBK code,
+// encodeX are the encoding tables from Unicode to GBK code,
 // sorted by decreasing length.
-// gbkEncode0: 28965 entries for runes in [11905, 40870).
-// gbkEncode1:  1587 entries for runes in [ 8208,  9795).
-// gbkEncode2:   942 entries for runes in [  164,  1106).
-// gbkEncode3:   438 entries for runes in [65072, 65510).
-// gbkEncode4:   254 entries for runes in [63788, 64042).
+// encode0: 28965 entries for runes in [11905, 40870).
+// encode1:  1587 entries for runes in [ 8208,  9795).
+// encode2:   942 entries for runes in [  164,  1106).
+// encode3:   438 entries for runes in [65072, 65510).
+// encode4:   254 entries for runes in [63788, 64042).
 
-const gbkEncode0Low, gbkEncode0High = 11905, 40870
+const encode0Low, encode0High = 11905, 40870
 
-var gbkEncode0 = [...]uint16{
+var encode0 = [...]uint16{
 	11905 - 11905: 0xFE50,
 	11908 - 11905: 0xFE54,
 	11912 - 11905: 0xFE57,
@@ -43145,9 +43145,9 @@ var gbkEncode0 = [...]uint16{
 	40869 - 11905: 0xFD9B,
 }
 
-const gbkEncode1Low, gbkEncode1High = 8208, 9795
+const encode1Low, encode1High = 8208, 9795
 
-var gbkEncode1 = [...]uint16{
+var encode1 = [...]uint16{
 	8208 - 8208: 0xA95C,
 	8211 - 8208: 0xA843,
 	8212 - 8208: 0xA1AA,
@@ -43440,9 +43440,9 @@ var gbkEncode1 = [...]uint16{
 	9794 - 8208: 0xA1E1,
 }
 
-const gbkEncode2Low, gbkEncode2High = 164, 1106
+const encode2Low, encode2High = 164, 1106
 
-var gbkEncode2 = [...]uint16{
+var encode2 = [...]uint16{
 	164 - 164:  0xA1E8,
 	167 - 164:  0xA1EC,
 	168 - 164:  0xA1A7,
@@ -43603,9 +43603,9 @@ var gbkEncode2 = [...]uint16{
 	1105 - 164: 0xA7D7,
 }
 
-const gbkEncode3Low, gbkEncode3High = 65072, 65510
+const encode3Low, encode3High = 65072, 65510
 
-var gbkEncode3 = [...]uint16{
+var encode3 = [...]uint16{
 	65072 - 65072: 0xA955,
 	65073 - 65072: 0xA6F2,
 	65075 - 65072: 0xA6F4,
@@ -43760,9 +43760,9 @@ var gbkEncode3 = [...]uint16{
 	65509 - 65072: 0xA3A4,
 }
 
-const gbkEncode4Low, gbkEncode4High = 63788, 64042
+const encode4Low, encode4High = 63788, 64042
 
-var gbkEncode4 = [...]uint16{
+var encode4 = [...]uint16{
 	63788 - 63788: 0xFD9C,
 	63865 - 63788: 0xFD9D,
 	63893 - 63788: 0xFD9E,
