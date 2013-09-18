@@ -93,6 +93,7 @@ func main() {
 	}
 	sort.Sort(byDecreasingLength(intervals))
 
+	fmt.Printf("const numEncodeTables = %d\n\n", len(intervals))
 	fmt.Printf("// encodeX are the encoding tables from Unicode to GBK code,\n")
 	fmt.Printf("// sorted by decreasing length.\n")
 	for i, v := range intervals {

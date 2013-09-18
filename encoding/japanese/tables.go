@@ -13812,6 +13812,8 @@ const (
 	tableShift = 14
 )
 
+const numEncodeTables = 6
+
 // encodeX are the encoding tables from Unicode to JIS code,
 // sorted by decreasing length.
 // encode0: 20902 entries for runes in [19968, 40870).

@@ -135,6 +135,7 @@ func (eucJPEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err 
 				}
 			}
 
+			// func init checks that the switch covers all tables.
 			switch {
 			case encode0Low <= r && r < encode0High:
 				if r = rune(encode0[r-encode0Low]); r != 0 {
@@ -205,4 +206,11 @@ func (eucJPEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err 
 		continue
 	}
 	return nDst, nSrc, err
+}
+
+func init() {
+	// Check that the hard-coded encode switch covers all tables.
+	if numEncodeTables != 6 {
+		panic("bad numEncodeTables")
+	}
 }

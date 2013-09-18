@@ -112,6 +112,7 @@ func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 				}
 			}
 
+			// func init checks that the switch covers all tables.
 			switch {
 			case encode0Low <= r && r < encode0High:
 				if r = rune(encode0[r-encode0Low]); r != 0 {
@@ -164,4 +165,11 @@ func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 		continue
 	}
 	return nDst, nSrc, err
+}
+
+func init() {
+	// Check that the hard-coded encode switch covers all tables.
+	if numEncodeTables != 5 {
+		panic("bad numEncodeTables")
+	}
 }

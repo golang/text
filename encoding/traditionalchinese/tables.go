@@ -18598,6 +18598,8 @@ var decode = [...]uint32{
 	19781: 0x000079D4,
 }
 
+const numEncodeTables = 8
+
 // encodeX are the encoding tables from Unicode to Big5 code,
 // sorted by decreasing length.
 // encode0: 42633 entries for runes in [131105, 173738).

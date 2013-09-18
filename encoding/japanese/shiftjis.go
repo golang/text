@@ -127,6 +127,7 @@ loop:
 				}
 			}
 
+			// func init checks that the switch covers all tables.
 			switch {
 			case encode0Low <= r && r < encode0High:
 				if r = rune(encode0[r-encode0Low]); r>>tableShift == jis0208 {

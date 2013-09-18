@@ -118,6 +118,7 @@ func main() {
 	fmt.Printf("\ttableShift = 14\n")
 	fmt.Printf(")\n\n")
 
+	fmt.Printf("const numEncodeTables = %d\n\n", len(intervals))
 	fmt.Printf("// encodeX are the encoding tables from Unicode to JIS code,\n")
 	fmt.Printf("// sorted by decreasing length.\n")
 	for i, v := range intervals {
