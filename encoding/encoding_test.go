@@ -265,6 +265,21 @@ var basicTestCases = []struct {
 		utf8: "月日は百代の過客にして、行かふ年も又旅人也。",
 	},
 	{
+		e: japanese.ISO2022JP,
+		encoded: "\x1b(I\x21\x36\x5f\x1b(B " +
+			"0208: \x1b$B\x21\x21\x21\x22\x21\x5f\x21\x60\x21\x7d\x21\x7e\x22\x21\x22\x22\x74\x26",
+		utf8: "｡ｶﾟ " +
+			"0208: \u3000\u3001\u00d7\u00f7\u25ce\u25c7\u25c6\u25a1\u7199",
+	},
+	{
+		e:         japanese.ISO2022JP,
+		encPrefix: "\x1b\x24\x42",
+		encoded: "\x37\x6e\x46\x7c\x24\x4f\x49\x34\x42\x65\x24\x4e\x32\x61\x35\x52" +
+			"\x24\x4b\x24\x37\x24\x46\x21\x22\x39\x54\x24\x2b\x24\x55\x47\x2f" +
+			"\x24\x62\x4b\x74\x4e\x39\x3f\x4d\x4c\x69\x21\x23",
+		utf8: "月日は百代の過客にして、行かふ年も又旅人也。",
+	},
+	{
 		e: japanese.ShiftJIS,
 		encoded: "A\xa1\xb6\xdf " +
 			"0208: \x81\x40\x81\x41\x81\x7e\x81\x80\x81\x9d\x81\x9e\x81\x9f\x81\xa0\xea\xa4",
@@ -333,10 +348,16 @@ func TestBasics(t *testing.T) {
 			}
 
 			for _, n := range []int{0, 1, 2, 10, 123, 4567} {
-				sr := strings.NewReader(sPrefix + strings.Repeat(src, n))
+				input := sPrefix + strings.Repeat(src, n)
+				sr := strings.NewReader(input)
 				g, err := ioutil.ReadAll(transform.NewReader(sr, newTransformer()))
 				if err != nil {
 					t.Errorf("%v: %s: ReadAll: n=%d: %v", tc.e, direction, n, err)
+					continue
+				}
+				if len(g) == 0 && len(input) == 0 {
+					// If the input is empty then the output can be empty,
+					// regardless of whatever wPrefix is.
 					continue
 				}
 				got1, want1 := string(g), wPrefix+strings.Repeat(want, n)
@@ -553,6 +574,7 @@ var testdataFiles = []struct {
 }{
 	{charmap.Windows1252, "candide", "windows-1252"},
 	{japanese.EUCJP, "rashomon", "euc-jp"},
+	{japanese.ISO2022JP, "rashomon", "iso-2022-jp"},
 	{japanese.ShiftJIS, "rashomon", "shift-jis"},
 	{korean.EUCKR, "unsu-joh-eun-nal", "euc-kr"},
 	{simplifiedchinese.GBK, "sunzi-bingfa-simplified", "gbk"},
@@ -624,17 +646,19 @@ func benchmark(b *testing.B, direction string, enc encoding.Encoding) {
 	}
 }
 
-func BenchmarkBig5Decoder(b *testing.B)     { benchmark(b, "Decode", traditionalchinese.Big5) }
-func BenchmarkBig5Encoder(b *testing.B)     { benchmark(b, "Encode", traditionalchinese.Big5) }
-func BenchmarkCharmapDecoder(b *testing.B)  { benchmark(b, "Decode", charmap.Windows1252) }
-func BenchmarkCharmapEncoder(b *testing.B)  { benchmark(b, "Encode", charmap.Windows1252) }
-func BenchmarkEUCJPDecoder(b *testing.B)    { benchmark(b, "Decode", japanese.EUCJP) }
-func BenchmarkEUCJPEncoder(b *testing.B)    { benchmark(b, "Encode", japanese.EUCJP) }
-func BenchmarkEUCKRDecoder(b *testing.B)    { benchmark(b, "Decode", korean.EUCKR) }
-func BenchmarkEUCKREncoder(b *testing.B)    { benchmark(b, "Encode", korean.EUCKR) }
-func BenchmarkGBKDecoder(b *testing.B)      { benchmark(b, "Decode", simplifiedchinese.GBK) }
-func BenchmarkGBKEncoder(b *testing.B)      { benchmark(b, "Encode", simplifiedchinese.GBK) }
-func BenchmarkShiftJISDecoder(b *testing.B) { benchmark(b, "Decode", japanese.ShiftJIS) }
-func BenchmarkShiftJISEncoder(b *testing.B) { benchmark(b, "Encode", japanese.ShiftJIS) }
-func BenchmarkUTF16Decoder(b *testing.B)    { benchmark(b, "Decode", utf16LEIB) }
-func BenchmarkUTF16Encoder(b *testing.B)    { benchmark(b, "Encode", utf16LEIB) }
+func BenchmarkBig5Decoder(b *testing.B)      { benchmark(b, "Decode", traditionalchinese.Big5) }
+func BenchmarkBig5Encoder(b *testing.B)      { benchmark(b, "Encode", traditionalchinese.Big5) }
+func BenchmarkCharmapDecoder(b *testing.B)   { benchmark(b, "Decode", charmap.Windows1252) }
+func BenchmarkCharmapEncoder(b *testing.B)   { benchmark(b, "Encode", charmap.Windows1252) }
+func BenchmarkEUCJPDecoder(b *testing.B)     { benchmark(b, "Decode", japanese.EUCJP) }
+func BenchmarkEUCJPEncoder(b *testing.B)     { benchmark(b, "Encode", japanese.EUCJP) }
+func BenchmarkEUCKRDecoder(b *testing.B)     { benchmark(b, "Decode", korean.EUCKR) }
+func BenchmarkEUCKREncoder(b *testing.B)     { benchmark(b, "Encode", korean.EUCKR) }
+func BenchmarkGBKDecoder(b *testing.B)       { benchmark(b, "Decode", simplifiedchinese.GBK) }
+func BenchmarkGBKEncoder(b *testing.B)       { benchmark(b, "Encode", simplifiedchinese.GBK) }
+func BenchmarkISO2022JPDecoder(b *testing.B) { benchmark(b, "Decode", japanese.ISO2022JP) }
+func BenchmarkISO2022JPEncoder(b *testing.B) { benchmark(b, "Encode", japanese.ISO2022JP) }
+func BenchmarkShiftJISDecoder(b *testing.B)  { benchmark(b, "Decode", japanese.ShiftJIS) }
+func BenchmarkShiftJISEncoder(b *testing.B)  { benchmark(b, "Encode", japanese.ShiftJIS) }
+func BenchmarkUTF16Decoder(b *testing.B)     { benchmark(b, "Decode", utf16LEIB) }
+func BenchmarkUTF16Encoder(b *testing.B)     { benchmark(b, "Encode", utf16LEIB) }
