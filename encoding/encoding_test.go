@@ -371,6 +371,45 @@ func TestBasics(t *testing.T) {
 	}
 }
 
+// TestNonRepertoire tests that codes outside of an Encoding's repertoire are
+// converted:
+//   - to the Unicode replacement character '\ufffd' when decoding to UTF-8,
+//   - to the ASCII substitute character '\x1a' when encoding from UTF-8.
+func TestNonRepertoire(t *testing.T) {
+	testCases := []struct {
+		e          encoding.Encoding
+		dSrc, eSrc string
+	}{
+		{charmap.Windows1252, "\x81", "갂"},
+		{japanese.EUCJP, "\xfe\xfc", "갂"},
+		{japanese.ISO2022JP, "\x1b$B\x7e\x7e", "갂"},
+		{japanese.ShiftJIS, "\xef\xfc", "갂"},
+		{korean.EUCKR, "\xfe\xfe", "א"},
+		{simplifiedchinese.GBK, "\xfe\xfe", "갂"},
+		{traditionalchinese.Big5, "\x81\x40", "갂"},
+	}
+	for _, tc := range testCases {
+		for _, direction := range []string{"Decode", "Encode"} {
+			enc, want, src := (transform.Transformer)(nil), "", ""
+			if direction == "Decode" {
+				enc, want, src = tc.e.NewDecoder(), "\ufffd", tc.dSrc
+			} else {
+				enc, want, src = tc.e.NewEncoder(), "\x1a", tc.eSrc
+			}
+
+			dst, err := ioutil.ReadAll(transform.NewReader(strings.NewReader(src), enc))
+			if err != nil {
+				t.Errorf("%s %v: %v", direction, tc.e, err)
+				continue
+			}
+			if got := string(dst); got != want {
+				t.Errorf("%s %v:\ngot  %q\nwant %q", direction, tc.e, got, want)
+				continue
+			}
+		}
+	}
+}
+
 // TestBig5CircumflexAndMacron tests the special cases listed in
 // http://encoding.spec.whatwg.org/#big5
 // Note that these special cases aren't preserved by round-tripping through

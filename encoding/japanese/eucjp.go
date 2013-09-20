@@ -68,11 +68,11 @@ loop:
 				err = errInvalidEUCJP
 				break loop
 			}
-			r, size = encoding.ASCIISub, 3
+			r, size = '\ufffd', 3
 			if i := int(c1-0xa1)*94 + int(c2-0xa1); i < len(jis0212Decode) {
 				r = rune(jis0212Decode[i])
 				if r == 0 {
-					r = encoding.ASCIISub
+					r = '\ufffd'
 				}
 			}
 
@@ -86,11 +86,11 @@ loop:
 				err = errInvalidEUCJP
 				break loop
 			}
-			r, size = encoding.ASCIISub, 2
+			r, size = '\ufffd', 2
 			if i := int(c0-0xa1)*94 + int(c1-0xa1); i < len(jis0208Decode) {
 				r = rune(jis0208Decode[i])
 				if r == 0 {
-					r = encoding.ASCIISub
+					r = '\ufffd'
 				}
 			}
 

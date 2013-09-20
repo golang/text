@@ -69,10 +69,10 @@ loop:
 			if int(r) < len(decode) {
 				r = rune(decode[r])
 				if r == 0 {
-					r = encoding.ASCIISub
+					r = '\ufffd'
 				}
 			} else {
-				r = encoding.ASCIISub
+				r = '\ufffd'
 			}
 			size = 2
 

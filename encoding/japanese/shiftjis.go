@@ -42,10 +42,10 @@ loop:
 		case c0 < utf8.RuneSelf:
 			r, size = rune(c0), 1
 
-		case 0xa1 <= c0 && c0 <= 0xdf:
+		case 0xa1 <= c0 && c0 < 0xe0:
 			r, size = rune(c0)+(0xff61-0xa1), 1
 
-		case (0x81 <= c0 && c0 <= 0x9f) || (0xe0 <= c0 && c0 <= 0xef):
+		case (0x81 <= c0 && c0 < 0xa0) || (0xe0 <= c0 && c0 < 0xf0):
 			if c0 <= 0x9f {
 				c0 -= 0x70
 			} else {
@@ -77,11 +77,11 @@ loop:
 				err = errInvalidShiftJIS
 				break loop
 			}
-			r, size = encoding.ASCIISub, 2
+			r, size = '\ufffd', 2
 			if i := int(c0)*94 + int(c1); i < len(jis0208Decode) {
 				r = rune(jis0208Decode[i])
 				if r == 0 {
-					r = encoding.ASCIISub
+					r = '\ufffd'
 				}
 			}
 

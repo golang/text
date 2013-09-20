@@ -63,11 +63,11 @@ loop:
 				err = errInvalidGBK
 				break loop
 			}
-			r, size = encoding.ASCIISub, 2
+			r, size = '\ufffd', 2
 			if i := int(c0-0x81)*190 + int(c1); i < len(decode) {
 				r = rune(decode[i])
 				if r == 0 {
-					r = encoding.ASCIISub
+					r = '\ufffd'
 				}
 			}
 

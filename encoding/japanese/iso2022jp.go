@@ -114,11 +114,11 @@ loop:
 			} else if *d == jis0212State && i < len(jis0212Decode) {
 				r = rune(jis0212Decode[i])
 			} else {
-				r = encoding.ASCIISub
+				r = '\ufffd'
 				break
 			}
 			if r == 0 {
-				r = encoding.ASCIISub
+				r = '\ufffd'
 			}
 		}
 

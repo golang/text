@@ -56,7 +56,7 @@ loop:
 				err = errInvalidBig5
 				break loop
 			}
-			r, size = encoding.ASCIISub, 2
+			r, size = '\ufffd', 2
 			if i := int(c0-0x81)*157 + int(c1); i < len(decode) {
 				if 1133 <= i && i < 1167 {
 					// The two-rune special cases for LATIN CAPITAL / SMALL E WITH CIRCUMFLEX
@@ -78,7 +78,7 @@ loop:
 				}
 				r = rune(decode[i])
 				if r == 0 {
-					r = encoding.ASCIISub
+					r = '\ufffd'
 				}
 			}
 
