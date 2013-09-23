@@ -717,6 +717,11 @@ func (b *builder) writeLanguage() {
 			legacyTag[strings.Replace(a.Type, "_", "-", -1)] = repl
 		}
 	}
+	// Manually add the mapping of "nb" (Norwegian) to its macro language.
+	// This can be removed if CLDR adopts this change.
+	langMacroMap.add("nb")
+	langMacroMap.updateLater("nb", "no")
+
 	for k, v := range b.registry {
 		// Also add deprecated values for 3-letter ISO codes, which CLDR omits.
 		if v.typ == "language" && v.deprecated != "" && v.preferred != "" {

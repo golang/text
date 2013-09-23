@@ -100,8 +100,13 @@ func TestParseBase(t *testing.T) {
 		{"aaaa", "und", false},
 	}
 	for i, tt := range tests {
-		if x, err := ParseBase(tt.in); x.String() != tt.out || err == nil != tt.ok {
+		x, err := ParseBase(tt.in)
+		if x.String() != tt.out || err == nil != tt.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
+		}
+		tag, _ := Parse(tt.out)
+		if err == nil && !tag.equalTags(x.Tag()) {
+			t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, x.Tag(), tt.out)
 		}
 	}
 }
@@ -147,8 +152,13 @@ func TestParseScript(t *testing.T) {
 		{"Zzzxx", "Zyyy", false},
 	}
 	for i, tt := range tests {
-		if x, err := ParseScript(tt.in); x.String() != tt.out || err == nil != tt.ok {
+		x, err := ParseScript(tt.in)
+		if x.String() != tt.out || err == nil != tt.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
+		}
+		tag, _ := Parse("und-" + tt.in)
+		if err == nil && !tag.equalTags(x.Tag()) {
+			t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, x.Tag(), tt.out)
 		}
 	}
 }
@@ -214,8 +224,13 @@ func TestParseRegion(t *testing.T) {
 		{"01", "ZZ", false},
 	}
 	for i, tt := range tests {
-		if r, err := ParseRegion(tt.in); r.String() != tt.out || err == nil != tt.ok {
+		r, err := ParseRegion(tt.in)
+		if r.String() != tt.out || err == nil != tt.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, r, err == nil, tt.out, tt.ok)
+		}
+		tag, _ := Parse("und-" + tt.out)
+		if err == nil && !tag.equalTags(r.Tag()) {
+			t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, r.Tag(), tag)
 		}
 	}
 }

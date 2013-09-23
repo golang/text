@@ -196,16 +196,18 @@ func (id langID) stringToBuf(b []byte) int {
 }
 
 // String returns the BCP 47 representation of the langID.
-func (id langID) String() string {
-	if id == 0 {
+// Use b as variable name, instead of id, to ensure the variable
+// used is consistent with that of Base in which this type is embedded.
+func (b langID) String() string {
+	if b == 0 {
 		return "und"
-	} else if id >= langNoIndexOffset {
-		id -= langNoIndexOffset
+	} else if b >= langNoIndexOffset {
+		b -= langNoIndexOffset
 		buf := [3]byte{}
-		intToStr(uint(id), buf[:])
+		intToStr(uint(b), buf[:])
 		return string(buf[:])
 	}
-	l := lang[id<<2:]
+	l := lang[b<<2:]
 	if l[3] == 0 {
 		return l[:3]
 	}
@@ -213,11 +215,11 @@ func (id langID) String() string {
 }
 
 // ISO3 returns the ISO 639-3 language code.
-func (id langID) ISO3() string {
-	if id == 0 || id >= langNoIndexOffset {
-		return id.String()
+func (b langID) ISO3() string {
+	if b == 0 || b >= langNoIndexOffset {
+		return b.String()
 	}
-	l := lang[id<<2:]
+	l := lang[b<<2:]
 	if l[3] == 0 {
 		return l[:3]
 	} else if l[2] == 0 {
@@ -229,8 +231,8 @@ func (id langID) ISO3() string {
 }
 
 // IsPrivateUse reports whether this language code is reserved for private use.
-func (id langID) IsPrivateUse() bool {
-	return langPrivateStart <= id && id <= langPrivateEnd
+func (b langID) IsPrivateUse() bool {
+	return langPrivateStart <= b && b <= langPrivateEnd
 }
 
 type regionID uint16

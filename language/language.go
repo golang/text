@@ -102,8 +102,9 @@ const (
 	// TODO: LikelyScript, LikelyRegion: supress similar to ICU.
 )
 
-// Canonicalize replaces the tag with its canonical equivalent.
-func (t Tag) Canonicalize(c CanonType) (Tag, error) {
+// canonicalize returns the canonicalized equivalent of the tag and
+// whether there was any change.
+func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 	changed := false
 	if c&SuppressScript != 0 {
 		if t.lang < langNoIndexOffset && uint8(t.script) == suppressScript[t.lang] {
@@ -146,7 +147,6 @@ func (t Tag) Canonicalize(c CanonType) (Tag, error) {
 		}
 	}
 	if c&Macro != 0 {
-		l := normLang(langMacroMap[:], t.lang)
 		// We deviate here from CLDR. The mapping "nb" -> "no" qualifies as a typical
 		// Macro language mapping.  However, for legacy reasons, CLDR maps "no,
 		// the macro language code for Norwegian, to the dominant variant "nb.
@@ -154,15 +154,21 @@ func (t Tag) Canonicalize(c CanonType) (Tag, error) {
 		// See http://unicode.org/cldr/trac/ticket/2698 and also
 		// http://unicode.org/cldr/trac/ticket/1790 for some of the practical
 		// implications.
-		// TODO: this code could be removed if CLDR adopts this change.
-		if l == lang_nb && c&CLDR == 0 {
-			l = lang_no
-		}
-		if l != t.lang {
-			changed = true
-			t.lang = l
+		// TODO: this check could be removed if CLDR adopts this change.
+		if c&CLDR == 0 || t.lang != lang_nb {
+			l := normLang(langMacroMap[:], t.lang)
+			if l != t.lang {
+				changed = true
+				t.lang = l
+			}
 		}
 	}
+	return t, changed
+}
+
+// Canonicalize returns the canonicalized equivalent of the tag.
+func (t Tag) Canonicalize(c CanonType) (Tag, error) {
+	t, changed := t.canonicalize(c)
 	if changed && t.str != nil {
 		t.remakeString()
 	}
@@ -353,6 +359,11 @@ func ParseBase(s string) (Base, error) {
 	return Base{l}, err
 }
 
+// Tag returns a Tag with this base language as its only subtag.
+func (b Base) Tag() Tag {
+	return Tag{lang: b.langID}
+}
+
 // Script is a 4-letter ISO 15924 code for representing scripts.
 // It is idiomatically represented in title case.
 type Script struct {
@@ -368,6 +379,11 @@ func ParseScript(s string) (Script, error) {
 	var buf [4]byte
 	sc, err := getScriptID(script, buf[:copy(buf[:], s)])
 	return Script{sc}, err
+}
+
+// Tag returns a Tag with the undetermined language and this script as its only subtags.
+func (s Script) Tag() Tag {
+	return Tag{script: s.scriptID}
 }
 
 // Region is an ISO 3166-1 or UN M.49 code for representing countries and regions.
@@ -391,6 +407,11 @@ func ParseRegion(s string) (Region, error) {
 	var buf [3]byte
 	r, err := getRegionID(buf[:copy(buf[:], s)])
 	return Region{r}, err
+}
+
+// Tag returns a Tag with the undetermined language and this region as its only subtags.
+func (r Region) Tag() Tag {
+	return Tag{region: r.regionID}
 }
 
 // IsCountry returns whether this region is a country or autonomous area.

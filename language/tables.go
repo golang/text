@@ -319,8 +319,9 @@ var langOldMap = [27]fromTo{
 }
 
 // langMacroMap maps languages to their macro language replacement, if applicable.
-// Size: 248 bytes, 62 elements
-var langMacroMap = [62]fromTo{
+// Size: 252 bytes, 63 elements
+var langMacroMap = [63]fromTo{
+	{from: 0x117, to: 0x122},
 	{from: 0x195, to: 0x8},
 	{from: 0x2ba, to: 0x1b3b},
 	{from: 0x2ec, to: 0x169},
@@ -1929,4 +1930,4 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 14.5K (14895 bytes); Check: 1A91D521
+// Size: 14.5K (14899 bytes); Check: AF0F1D21
