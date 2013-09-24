@@ -206,17 +206,34 @@ var basicTestCases = []struct {
 
 	// Chinese tests.
 	//
+	// "\u0081\u00de\u00df\u00e0\u00e1\u00e2\u00e3\uffff\U00010000" is a
+	// nonsense string that contains GB18030 encodable codepoints of which
+	// only U+00E0 and U+00E1 are GBK encodable.
+	//
 	// "A\u3000\u554a\u4e02\u4e90\u72dc\u7349\u02ca\u2588Z€" is a nonsense
-	// string that contains ASCII and GBK codepoints from Levels 1-5 as well
-	// as the Euro sign.
+	// string that contains ASCII and GBK encodable codepoints from Levels
+	// 1-5 as well as the Euro sign.
 	//
 	// "A\u43f0\u4c32\U00027267\u3000\U0002910d\u79d4Z€" is a nonsense string
-	// that contains ASCII and Big5 codepoints from the Basic Multilingual
-	// Plane and the Supplementary Ideographic Plane as well as the Euro sign.
+	// that contains ASCII and Big5 encodable codepoints from the Basic
+	// Multilingual Plane and the Supplementary Ideographic Plane as well as
+	// the Euro sign.
 	//
 	// "花间一壶酒，独酌无相亲。" (simplified) and
 	// "花間一壺酒，獨酌無相親。" (traditional)
 	// are from the 8th century poem "Yuè Xià Dú Zhuó".
+	{
+		e: simplifiedchinese.GB18030,
+		encoded: "\x81\x30\x81\x31\x81\x30\x89\x37\x81\x30\x89\x38\xa8\xa4\xa8\xa2" +
+			"\x81\x30\x89\x39\x81\x30\x8a\x30\x84\x31\xa4\x39\x90\x30\x81\x30",
+		utf8: "\u0081\u00de\u00df\u00e0\u00e1\u00e2\u00e3\uffff\U00010000",
+	},
+	{
+		e: simplifiedchinese.GB18030,
+		encoded: "\xbb\xa8\xbc\xe4\xd2\xbb\xba\xf8\xbe\xc6\xa3\xac\xb6\xc0\xd7\xc3" +
+			"\xce\xde\xcf\xe0\xc7\xd7\xa1\xa3",
+		utf8: "花间一壶酒，独酌无相亲。",
+	},
 	{
 		e:       simplifiedchinese.GBK,
 		encoded: "A\xa1\xa1\xb0\xa1\x81\x40\x81\x80\xaa\x40\xaa\x80\xa8\x40\xa8\x80Z\x80",
@@ -244,7 +261,7 @@ var basicTestCases = []struct {
 	//
 	// "A｡ｶﾟ 0208: etc 0212: etc" is a nonsense string that contains ASCII, half-width
 	// kana, JIS X 0208 (including two near the kink in the Shift JIS second byte
-	// encoding) and JIS X 0212 codepoints.
+	// encoding) and JIS X 0212 encodable codepoints.
 	//
 	// "月日は百代の過客にして、行かふ年も又旅人也。" is from the 17th century poem
 	// "Oku no Hosomichi" and contains both hiragana and kanji.
@@ -619,18 +636,28 @@ var testdataFiles = []struct {
 	{simplifiedchinese.GBK, "sunzi-bingfa-simplified", "gbk"},
 	{traditionalchinese.Big5, "sunzi-bingfa-traditional", "big5"},
 	{utf16LEIB, "candide", "utf-16le"},
+
+	// GB18030 is a superset of GBK and is nominally a Simplified Chinese
+	// encoding, but it can also represent the entire Basic Multilingual
+	// Plane, including codepoints like 'â' that aren't encodable by GBK.
+	// GB18030 on Simplified Chinese should perform similarly to GBK on
+	// Simplified Chinese. GB18030 on "candide" is more interesting.
+	{simplifiedchinese.GB18030, "candide", "gb18030"},
 }
 
 func load(direction string, enc encoding.Encoding) ([]byte, []byte, func() transform.Transformer, error) {
-	basename, ext := "", ""
+	basename, ext, count := "", "", 0
 	for _, tf := range testdataFiles {
 		if tf.enc == enc {
 			basename, ext = tf.basename, tf.ext
-			break
+			count++
 		}
 	}
-	if basename == "" {
-		return nil, nil, nil, fmt.Errorf("no testdata found for %s", enc)
+	if count != 1 {
+		if count == 0 {
+			return nil, nil, nil, fmt.Errorf("no testdataFiles for %s", enc)
+		}
+		return nil, nil, nil, fmt.Errorf("too many testdataFiles for %s", enc)
 	}
 	dstFile := fmt.Sprintf("testdata/%s-%s.txt", basename, ext)
 	srcFile := fmt.Sprintf("testdata/%s-utf-8.txt", basename)
@@ -693,6 +720,8 @@ func BenchmarkEUCJPDecoder(b *testing.B)     { benchmark(b, "Decode", japanese.E
 func BenchmarkEUCJPEncoder(b *testing.B)     { benchmark(b, "Encode", japanese.EUCJP) }
 func BenchmarkEUCKRDecoder(b *testing.B)     { benchmark(b, "Decode", korean.EUCKR) }
 func BenchmarkEUCKREncoder(b *testing.B)     { benchmark(b, "Encode", korean.EUCKR) }
+func BenchmarkGB18030Decoder(b *testing.B)   { benchmark(b, "Decode", simplifiedchinese.GB18030) }
+func BenchmarkGB18030Encoder(b *testing.B)   { benchmark(b, "Encode", simplifiedchinese.GB18030) }
 func BenchmarkGBKDecoder(b *testing.B)       { benchmark(b, "Decode", simplifiedchinese.GBK) }
 func BenchmarkGBKEncoder(b *testing.B)       { benchmark(b, "Encode", simplifiedchinese.GBK) }
 func BenchmarkISO2022JPDecoder(b *testing.B) { benchmark(b, "Decode", japanese.ISO2022JP) }

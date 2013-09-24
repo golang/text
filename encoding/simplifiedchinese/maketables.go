@@ -23,6 +23,37 @@ func main() {
 	fmt.Printf("// Package simplifiedchinese provides Simplified Chinese encodings such as GBK.\n")
 	fmt.Printf("package simplifiedchinese\n\n")
 
+	printGB18030()
+	printGBK()
+}
+
+func printGB18030() {
+	res, err := http.Get("http://encoding.spec.whatwg.org/index-gb18030.txt")
+	if err != nil {
+		log.Fatalf("Get: %v", err)
+	}
+	defer res.Body.Close()
+
+	fmt.Printf("// gb18030 is the table from http://encoding.spec.whatwg.org/index-gb18030.txt\n")
+	fmt.Printf("var gb18030 = [...][2]uint16{\n")
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		s := strings.TrimSpace(scanner.Text())
+		if s == "" || s[0] == '#' {
+			continue
+		}
+		x, y := uint32(0), uint32(0)
+		if _, err := fmt.Sscanf(s, "%d 0x%x", &x, &y); err != nil {
+			log.Fatalf("could not parse %q", s)
+		}
+		if x < 0x10000 && y < 0x10000 {
+			fmt.Printf("\t{0x%04x, 0x%04x},\n", x, y)
+		}
+	}
+	fmt.Printf("}\n\n")
+}
+
+func printGBK() {
 	res, err := http.Get("http://encoding.spec.whatwg.org/index-gbk.txt")
 	if err != nil {
 		log.Fatalf("Get: %v", err)

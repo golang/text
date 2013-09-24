@@ -12,29 +12,43 @@ import (
 	"code.google.com/p/go.text/transform"
 )
 
-// GBK is the GBK encoding. It encodes an extension of the GB2312 character set
-// and is also known as Code Page 936.
-var GBK encoding.Encoding = gbk{}
+var (
+	// GB18030 is the GB18030 encoding.
+	GB18030 encoding.Encoding = gbk{gb18030: true}
+	// GBK is the GBK encoding. It encodes an extension of the GB2312 character set
+	// and is also known as Code Page 936.
+	GBK encoding.Encoding = gbk{gb18030: false}
+)
 
-type gbk struct{}
-
-func (gbk) NewDecoder() transform.Transformer {
-	return gbkDecoder{}
+type gbk struct {
+	gb18030 bool
 }
 
-func (gbk) NewEncoder() transform.Transformer {
-	return gbkEncoder{}
+func (g gbk) NewDecoder() transform.Transformer {
+	return gbkDecoder{gb18030: g.gb18030}
 }
 
-func (gbk) String() string {
+func (g gbk) NewEncoder() transform.Transformer {
+	return gbkEncoder{gb18030: g.gb18030}
+}
+
+func (g gbk) String() string {
+	if g.gb18030 {
+		return "GB18030"
+	}
 	return "GBK"
 }
 
-var errInvalidGBK = errors.New("simplifiedchinese: invalid GBK encoding")
+var (
+	errInvalidGB18030 = errors.New("simplifiedchinese: invalid GB18030 encoding")
+	errInvalidGBK     = errors.New("simplifiedchinese: invalid GBK encoding")
+)
 
-type gbkDecoder struct{}
+type gbkDecoder struct {
+	gb18030 bool
+}
 
-func (gbkDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+func (d gbkDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
 loop:
 	for ; nSrc < len(src); nSrc += size {
@@ -59,8 +73,50 @@ loop:
 				c1 -= 0x40
 			case 0x80 <= c1 && c1 < 0xff:
 				c1 -= 0x41
+			case d.gb18030 && 0x30 <= c1 && c1 < 0x40:
+				if nSrc+3 >= len(src) {
+					err = transform.ErrShortSrc
+					break loop
+				}
+				c2 := src[nSrc+2]
+				if c2 < 0x81 || 0xff <= c2 {
+					err = errInvalidGB18030
+					break loop
+				}
+				c3 := src[nSrc+3]
+				if c3 < 0x30 || 0x3a <= c3 {
+					err = errInvalidGB18030
+					break loop
+				}
+				size = 4
+				r = ((rune(c0-0x81)*10+rune(c1-0x30))*126+rune(c2-0x81))*10 + rune(c3-0x30)
+				if r < 39420 {
+					i, j := 0, len(gb18030)
+					for i < j {
+						h := i + (j-i)/2
+						if r >= rune(gb18030[h][0]) {
+							i = h + 1
+						} else {
+							j = h
+						}
+					}
+					dec := &gb18030[i-1]
+					r += rune(dec[1]) - rune(dec[0])
+					goto write
+				}
+				r -= 189000
+				if 0 <= r && r < 0x100000 {
+					r += 0x10000
+					goto write
+				}
+				err = errInvalidGB18030
+				break loop
 			default:
-				err = errInvalidGBK
+				if d.gb18030 {
+					err = errInvalidGB18030
+				} else {
+					err = errInvalidGBK
+				}
 				break loop
 			}
 			r, size = '\ufffd', 2
@@ -72,10 +128,15 @@ loop:
 			}
 
 		default:
-			err = errInvalidGBK
+			if d.gb18030 {
+				err = errInvalidGB18030
+			} else {
+				err = errInvalidGBK
+			}
 			break loop
 		}
 
+	write:
 		if nDst+utf8.RuneLen(r) > len(dst) {
 			err = transform.ErrShortDst
 			break loop
@@ -83,15 +144,21 @@ loop:
 		nDst += utf8.EncodeRune(dst[nDst:], r)
 	}
 	if atEOF && err == transform.ErrShortSrc {
-		err = errInvalidGBK
+		if d.gb18030 {
+			err = errInvalidGB18030
+		} else {
+			err = errInvalidGBK
+		}
 	}
 	return nDst, nSrc, err
 }
 
-type gbkEncoder struct{}
+type gbkEncoder struct {
+	gb18030 bool
+}
 
-func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
-	r, size := rune(0), 0
+func (e gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	r, r2, size := rune(0), rune(0), 0
 	for ; nSrc < len(src); nSrc += size {
 		r = rune(src[nSrc])
 
@@ -115,7 +182,7 @@ func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 			// func init checks that the switch covers all tables.
 			switch {
 			case encode0Low <= r && r < encode0High:
-				if r = rune(encode0[r-encode0Low]); r != 0 {
+				if r2 = rune(encode0[r-encode0Low]); r2 != 0 {
 					goto write2
 				}
 			case encode1Low <= r && r < encode1High:
@@ -126,20 +193,40 @@ func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 					r = 0x80
 					goto write1
 				}
-				if r = rune(encode1[r-encode1Low]); r != 0 {
+				if r2 = rune(encode1[r-encode1Low]); r2 != 0 {
 					goto write2
 				}
 			case encode2Low <= r && r < encode2High:
-				if r = rune(encode2[r-encode2Low]); r != 0 {
+				if r2 = rune(encode2[r-encode2Low]); r2 != 0 {
 					goto write2
 				}
 			case encode3Low <= r && r < encode3High:
-				if r = rune(encode3[r-encode3Low]); r != 0 {
+				if r2 = rune(encode3[r-encode3Low]); r2 != 0 {
 					goto write2
 				}
 			case encode4Low <= r && r < encode4High:
-				if r = rune(encode4[r-encode4Low]); r != 0 {
+				if r2 = rune(encode4[r-encode4Low]); r2 != 0 {
 					goto write2
+				}
+			}
+
+			if e.gb18030 {
+				if r < 0x10000 {
+					i, j := 0, len(gb18030)
+					for i < j {
+						h := i + (j-i)/2
+						if r >= rune(gb18030[h][1]) {
+							i = h + 1
+						} else {
+							j = h
+						}
+					}
+					dec := &gb18030[i-1]
+					r += rune(dec[0]) - rune(dec[1])
+					goto write4
+				} else if r < 0x110000 {
+					r += 189000 - 0x10000
+					goto write4
 				}
 			}
 			r = encoding.ASCIISub
@@ -159,9 +246,24 @@ func (gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 			err = transform.ErrShortDst
 			break
 		}
-		dst[nDst+0] = uint8(r >> 8)
-		dst[nDst+1] = uint8(r)
+		dst[nDst+0] = uint8(r2 >> 8)
+		dst[nDst+1] = uint8(r2)
 		nDst += 2
+		continue
+
+	write4:
+		if nDst+4 > len(dst) {
+			err = transform.ErrShortDst
+			break
+		}
+		dst[nDst+3] = uint8(r%10 + 0x30)
+		r /= 10
+		dst[nDst+2] = uint8(r%126 + 0x81)
+		r /= 126
+		dst[nDst+1] = uint8(r%10 + 0x30)
+		r /= 10
+		dst[nDst+0] = uint8(r + 0x81)
+		nDst += 4
 		continue
 	}
 	return nDst, nSrc, err
