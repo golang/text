@@ -246,6 +246,17 @@ var basicTestCases = []struct {
 		utf8: "花间一壶酒，独酌无相亲。",
 	},
 	{
+		e:       simplifiedchinese.HZGB2312,
+		encoded: "A~{\x21\x21~~\x30\x21~}Z~~",
+		utf8:    "A\u3000~\u554aZ~",
+	},
+	{
+		e:         simplifiedchinese.HZGB2312,
+		encPrefix: "~{",
+		encoded:   ";(<dR;:x>F#,6@WCN^O`GW!#",
+		utf8:      "花间一壶酒，独酌无相亲。",
+	},
+	{
 		e:       traditionalchinese.Big5,
 		encoded: "A\x87\x40\x87\x41\x87\x45\xa1\x40\xfe\xfd\xfe\xfeZ\xa3\xe1",
 		utf8:    "A\u43f0\u4c32\U00027267\u3000\U0002910d\u79d4Z€",
@@ -403,6 +414,7 @@ func TestNonRepertoire(t *testing.T) {
 		{japanese.ShiftJIS, "\xef\xfc", "갂"},
 		{korean.EUCKR, "\xfe\xfe", "א"},
 		{simplifiedchinese.GBK, "\xfe\xfe", "갂"},
+		{simplifiedchinese.HZGB2312, "~{z~", "갂"},
 		{traditionalchinese.Big5, "\x81\x40", "갂"},
 	}
 	for _, tc := range testCases {
@@ -634,6 +646,7 @@ var testdataFiles = []struct {
 	{japanese.ShiftJIS, "rashomon", "shift-jis"},
 	{korean.EUCKR, "unsu-joh-eun-nal", "euc-kr"},
 	{simplifiedchinese.GBK, "sunzi-bingfa-simplified", "gbk"},
+	{simplifiedchinese.HZGB2312, "sunzi-bingfa-gb-levels-1-and-2", "hz-gb2312"},
 	{traditionalchinese.Big5, "sunzi-bingfa-traditional", "big5"},
 	{utf16LEIB, "candide", "utf-16le"},
 
@@ -724,6 +737,8 @@ func BenchmarkGB18030Decoder(b *testing.B)   { benchmark(b, "Decode", simplified
 func BenchmarkGB18030Encoder(b *testing.B)   { benchmark(b, "Encode", simplifiedchinese.GB18030) }
 func BenchmarkGBKDecoder(b *testing.B)       { benchmark(b, "Decode", simplifiedchinese.GBK) }
 func BenchmarkGBKEncoder(b *testing.B)       { benchmark(b, "Encode", simplifiedchinese.GBK) }
+func BenchmarkHZGB2312Decoder(b *testing.B)  { benchmark(b, "Decode", simplifiedchinese.HZGB2312) }
+func BenchmarkHZGB2312Encoder(b *testing.B)  { benchmark(b, "Encode", simplifiedchinese.HZGB2312) }
 func BenchmarkISO2022JPDecoder(b *testing.B) { benchmark(b, "Decode", japanese.ISO2022JP) }
 func BenchmarkISO2022JPEncoder(b *testing.B) { benchmark(b, "Encode", japanese.ISO2022JP) }
 func BenchmarkShiftJISDecoder(b *testing.B)  { benchmark(b, "Decode", japanese.ShiftJIS) }
