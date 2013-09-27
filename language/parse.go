@@ -8,7 +8,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -549,4 +551,78 @@ func nextExtension(s string, p int) int {
 		}
 	}
 	return len(s)
+}
+
+var (
+	acceptErr = errors.New("ParseAcceptLanguage: syntax error")
+	acceptRe  = regexp.MustCompile(`^ *(?:([\w-]+|\*)(?: *; *q *= *([0-9\.]+))?)? *$`)
+)
+
+// ParseAcceptLanguage parses the contents of a Accept-Language header as
+// defined in http://www.google.com/url?q=http://www.ietf.org/rfc/rfc2616.txt
+// and returns a list of Tags and a list of corresponding quality weights.
+// The Tags will be sorted by highest weight first and then by first occurrence.
+// Tags with a weight of zero will be dropped. An error will be returned if the
+// input could not be parsed.
+func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
+	for start, end := 0, 0; start < len(s); start = end + 1 {
+		for end = start; end < len(s) && s[end] != ','; end++ {
+		}
+		m := acceptRe.FindStringSubmatch(s[start:end])
+		if m == nil {
+			return nil, nil, acceptErr
+		}
+		if len(m[1]) > 0 {
+			w := 1.0
+			if len(m[2]) > 0 {
+				if w, err = strconv.ParseFloat(m[2], 32); err != nil {
+					return nil, nil, err
+				}
+				// Drop tags with a quality weight of 0.
+				if w <= 0 {
+					continue
+				}
+			}
+			t, err := Parse(m[1])
+			if err != nil {
+				id, ok := acceptFallback[m[1]]
+				if !ok {
+					return nil, nil, err
+				}
+				t = Tag{lang: id}
+			}
+			tag = append(tag, t)
+			q = append(q, float32(w))
+		}
+	}
+	sort.Stable(&tagSort{tag, q})
+	return tag, q, nil
+}
+
+// Add hack mapping to deal with a small number of cases that that occur
+// in Accept-Language (with reasonable frequency).
+var acceptFallback = map[string]langID{
+	"english": lang_en,
+	"deutsch": lang_de,
+	"italian": lang_it,
+	"french":  lang_fr,
+	"*":       lang_mul, // defined in the spec to match all languages.
+}
+
+type tagSort struct {
+	tag []Tag
+	q   []float32
+}
+
+func (s *tagSort) Len() int {
+	return len(s.q)
+}
+
+func (s *tagSort) Less(i, j int) bool {
+	return s.q[i] > s.q[j]
+}
+
+func (s *tagSort) Swap(i, j int) {
+	s.tag[i], s.tag[j] = s.tag[j], s.tag[i]
+	s.q[i], s.q[j] = s.q[j], s.q[i]
 }

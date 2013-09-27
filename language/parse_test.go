@@ -354,3 +354,112 @@ func TestCompose2(t *testing.T) {
 		}
 	})
 }
+
+func mk(s string) Tag {
+	id, _ := Parse(s)
+	return id
+}
+
+func TestParseAcceptLanguage(t *testing.T) {
+	type res struct {
+		t Tag
+		q float32
+	}
+	en := []res{{mk("en"), 1.0}}
+	tests := []struct {
+		out []res
+		in  string
+		ok  bool
+	}{
+		{en, "en", true},
+		{en, "   en", true},
+		{en, "en   ", true},
+		{en, "  en  ", true},
+		{en, "en,", true},
+		{en, ",en", true},
+		{en, ",,,en,,,", true},
+		{en, ",en;q=1", true},
+		// We allow an empty input, contrary to spec.
+		{nil, "", true},
+
+		// errors
+		{nil, ";", false},
+		{nil, "$", false},
+		{nil, "e;", false},
+		{nil, "x;", false},
+		{nil, "x", false},
+		{nil, "ac", false}, // non-existing language
+		{nil, "aa;", false},
+		{nil, "aa;q", false},
+		{nil, "aa;q=", false},
+		{nil, "aa;q=.", false},
+
+		// odd fallbacks
+		{
+			[]res{{mk("en"), 0.1}},
+			" english ;q=.1",
+			true,
+		},
+		{
+			[]res{{mk("it"), 1.0}, {mk("de"), 1.0}, {mk("fr"), 1.0}},
+			" italian, deutsch, french",
+			true,
+		},
+
+		// lists
+		{
+			[]res{{mk("en"), 0.1}},
+			"en;q=.1",
+			true,
+		},
+		{
+			[]res{{mk("mul"), 1.0}},
+			"*",
+			true,
+		},
+		{
+			[]res{{mk("en"), 1.0}, {mk("de"), 1.0}},
+			"en,de",
+			true,
+		},
+		{
+			[]res{{mk("en"), 1.0}, {mk("de"), .5}},
+			"en,de;q=0.5",
+			true,
+		},
+		{
+			[]res{{mk("de"), 0.8}, {mk("en"), 0.5}},
+			"  en ;   q    =   0.5    ,  , de;q=0.8",
+			true,
+		},
+		{
+			[]res{{mk("en"), 1.0}, {mk("de"), 1.0}, {mk("fr"), 1.0}, {mk("tlh"), 1.0}},
+			"en,de,fr,i-klingon",
+			true,
+		},
+		// sorting
+		{
+			[]res{{mk("tlh"), 0.4}, {mk("de"), 0.2}, {mk("fr"), 0.2}, {mk("en"), 0.1}},
+			"en;q=0.1,de;q=0.2,fr;q=0.2,i-klingon;q=0.4",
+			true,
+		},
+		// dropping
+		{
+			[]res{{mk("fr"), 0.2}, {mk("en"), 0.1}},
+			"en;q=0.1,de;q=0,fr;q=0.2,i-klingon;q=0.0",
+			true,
+		},
+	}
+	for i, tt := range tests {
+		tags, qs, e := ParseAcceptLanguage(tt.in)
+		if e == nil != tt.ok {
+			t.Errorf("%d:%s:err: was %v; want %v", i, tt.in, e == nil, tt.ok)
+		}
+		for j, tag := range tags {
+			if out := tt.out[j]; !tag.equalTags(out.t) || qs[j] != out.q {
+				t.Errorf("%d:%s: was %s, %1f; want %s, %1f", i, tt.in, tag, qs[j], out.t, out.q)
+				break
+			}
+		}
+	}
+}

@@ -673,7 +673,7 @@ func (b *builder) writeLanguage() {
 	meta := b.supp.Metadata
 
 	b.writeConst("nonCanonicalUnd", b.lang.index("und"))
-	b.writeConsts("lang_", b.lang.index, "de", "en", "fil", "mo", "nb", "no", "sh", "sr", "tl")
+	b.writeConsts("lang_", b.lang.index, "de", "en", "fil", "fr", "it", "mo", "mul", "nb", "no", "sh", "sr", "tl")
 	b.writeConst("langPrivateStart", b.langIndex("qaa"))
 	b.writeConst("langPrivateEnd", b.langIndex("qtz"))
 
