@@ -49,6 +49,72 @@ type Encoding interface {
 // http://unicode.org/reports/tr36/#Text_Comparison
 const ASCIISub = '\x1a'
 
+// Replacement is the replacement encoding defined at
+// http://encoding.spec.whatwg.org/#replacement
+var Replacement Encoding = replacement{}
+
+type replacement struct{}
+
+func (replacement) NewDecoder() transform.Transformer {
+	return replacementDecoder{}
+}
+
+func (replacement) NewEncoder() transform.Transformer {
+	return replacementEncoder{}
+}
+
+type replacementDecoder struct{}
+
+func (replacementDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	if len(dst) < 3 {
+		return 0, 0, transform.ErrShortDst
+	}
+	if atEOF {
+		const fffd = "\ufffd"
+		dst[0] = fffd[0]
+		dst[1] = fffd[1]
+		dst[2] = fffd[2]
+		nDst = 3
+	}
+	return nDst, len(src), nil
+}
+
+type replacementEncoder struct{}
+
+func (replacementEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	r, size := rune(0), 0
+
+	for ; nSrc < len(src); nSrc += size {
+		r = rune(src[nSrc])
+
+		// Decode a 1-byte rune.
+		if r < utf8.RuneSelf {
+			size = 1
+
+		} else {
+			// Decode a multi-byte rune.
+			r, size = utf8.DecodeRune(src[nSrc:])
+			if size == 1 {
+				// All valid runes of size 1 (those below utf8.RuneSelf) were
+				// handled above. We have invalid UTF-8 or we haven't seen the
+				// full character yet.
+				if !atEOF && !utf8.FullRune(src[nSrc:]) {
+					err = transform.ErrShortSrc
+					break
+				}
+				r = '\ufffd'
+			}
+		}
+
+		if nDst+utf8.RuneLen(r) > len(dst) {
+			err = transform.ErrShortDst
+			break
+		}
+		nDst += utf8.EncodeRune(dst[nDst:], r)
+	}
+	return nDst, nSrc, err
+}
+
 // ErrInvalidUTF8 means that a transformer encountered invalid UTF-8.
 var ErrInvalidUTF8 = errors.New("encoding: invalid UTF-8")
 

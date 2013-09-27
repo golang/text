@@ -179,6 +179,11 @@ var basicTestCases = []struct {
 		encoded: "Hell\xf5",
 		utf8:    "Hellơ",
 	},
+	{
+		e:       charmap.XUserDefined,
+		encoded: "\x00\x40\x7f\x80\xab\xff",
+		utf8:    "\u0000\u0040\u007f\uf780\uf7ab\uf7ff",
+	},
 
 	// UTF-16 tests.
 	{
@@ -494,6 +499,29 @@ func TestEncodeInvalidUTF8(t *testing.T) {
 	}
 	if got := string(gotBuf); got != want {
 		t.Fatalf("\ngot  %+q\nwant %+q", got, want)
+	}
+}
+
+func TestReplacement(t *testing.T) {
+	for _, direction := range []string{"Decode", "Encode"} {
+		enc, want := (transform.Transformer)(nil), ""
+		if direction == "Decode" {
+			enc = encoding.Replacement.NewDecoder()
+			want = "\ufffd"
+		} else {
+			enc = encoding.Replacement.NewEncoder()
+			want = "AB\x00CD\ufffdYZ"
+		}
+		sr := strings.NewReader("AB\x00CD\x80YZ")
+		g, err := ioutil.ReadAll(transform.NewReader(sr, enc))
+		if err != nil {
+			t.Errorf("%s: ReadAll: %v", direction, err)
+			continue
+		}
+		if got := string(g); got != want {
+			t.Errorf("%s:\ngot  %q\nwant %q", direction, got, want)
+			continue
+		}
 	}
 }
 
