@@ -595,7 +595,7 @@ func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
 			q = append(q, float32(w))
 		}
 	}
-	sort.Stable(&tagSort{tag, q})
+	sortStable(&tagSort{tag, q})
 	return tag, q, nil
 }
 
