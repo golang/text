@@ -9,6 +9,7 @@ package collate
 
 import (
 	"bytes"
+	"strings"
 
 	"code.google.com/p/go.text/collate/colltab"
 	"code.google.com/p/go.text/language"
@@ -111,25 +112,22 @@ func (c *Collator) iter(i int) *iter {
 	return &c._iter[i]
 }
 
-// Locales returns the list of locales for which collating differs from its parent locale.
-// The returned value should not be modified.
-func Locales() []string {
-	return availableLocales
+// Supported returns the list of languages for which collating differs from its parent.
+func Supported() []language.Tag {
+	ids := strings.Split(availableLocales, ",")
+	tags := make([]language.Tag, len(ids))
+	for i, s := range ids {
+		tags[i] = language.Make(s)
+	}
+	return tags
 }
+
+var matcher = language.NewMatcher(Supported()...)
 
 // New returns a new Collator initialized for the given locale.
 func New(t language.Tag) *Collator {
-	// TODO: handle locale selection according to spec.
-	var tab tableIndex
-	loc := t.String()
-	if loc != "" {
-		if idx, ok := locales[loc]; ok {
-			tab = idx
-		} else {
-			tab = locales["und"]
-		}
-	}
-	return NewFromTable(colltab.Init(tab))
+	_, index, _ := matcher.Match(t)
+	return NewFromTable(colltab.Init(locales[index]))
 }
 
 func NewFromTable(t colltab.Weigher) *Collator {

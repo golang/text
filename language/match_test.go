@@ -4,7 +4,10 @@
 
 package language
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestAddLikelySubtags(t *testing.T) {
 	tests := []struct{ in, out string }{
@@ -161,5 +164,152 @@ func TestRegionDistance(t *testing.T) {
 		if d := regionDistance(ra, rb); d != tt.d {
 			t.Errorf("%d: d(%s, %s) = %v; want %v", i, tt.a, tt.b, d, tt.d)
 		}
+	}
+}
+
+// The test set for TestBestMatch is defined in data_test.go.
+func TestBestMatch(t *testing.T) {
+	parse := func(list string) (out []Tag) {
+		for _, s := range strings.Split(list, ",") {
+			out = append(out, mk(strings.TrimSpace(s)))
+		}
+		return out
+	}
+	for i, tt := range matchTests {
+		supported := parse(tt.supported)
+		m := newMatcher(supported)
+		for _, tm := range tt.test {
+			desired := parse(tm.desired)
+			id, conf := m.getBest(desired...)
+			tag := supported[0]
+			if id != nil {
+				tag = id.tag
+			}
+			if tag.String() != tm.match {
+				t.Errorf("%d:%s: find %s in %q: have %s; want %s (%v)\n", i, tt.comment, desired, tt.supported, tag, tm.match, conf)
+			}
+		}
+	}
+}
+
+var benchHave = []Tag{
+	mk("en"),
+	mk("en-GB"),
+	mk("za"),
+	mk("zh-Hant"),
+	mk("zh-Hans-CN"),
+	mk("zh"),
+	mk("zh-HK"),
+	mk("ar-MK"),
+	mk("en-CA"),
+	mk("fr-CA"),
+	mk("fr-US"),
+	mk("fr-CH"),
+	mk("fr"),
+	mk("lt"),
+	mk("lv"),
+	mk("iw"),
+	mk("iw-NL"),
+	mk("he"),
+	mk("he-IT"),
+	mk("tlh"),
+	mk("ja"),
+	mk("ja-Jpan"),
+	mk("ja-Jpan-JP"),
+	mk("de"),
+	mk("de-CH"),
+	mk("de-AT"),
+	mk("de-DE"),
+	mk("sr"),
+	mk("sr-Latn"),
+	mk("sr-Cyrl"),
+	mk("sr-ME"),
+}
+
+var benchWant = [][]Tag{
+	[]Tag{
+		mk("en"),
+	},
+	[]Tag{
+		mk("en-AU"),
+		mk("de-HK"),
+		mk("nl"),
+		mk("fy"),
+		mk("lv"),
+	},
+	[]Tag{
+		mk("en-AU"),
+		mk("de-HK"),
+		mk("nl"),
+		mk("fy"),
+	},
+	[]Tag{
+		mk("ja-Hant"),
+		mk("da-HK"),
+		mk("nl"),
+		mk("zh-TW"),
+	},
+	[]Tag{
+		mk("ja-Hant"),
+		mk("da-HK"),
+		mk("nl"),
+		mk("hr"),
+	},
+}
+
+func BenchmarkMatch(b *testing.B) {
+	m := newMatcher(benchHave)
+	for i := 0; i < b.N; i++ {
+		for _, want := range benchWant {
+			m.getBest(want...)
+		}
+	}
+}
+
+func BenchmarkMatchExact(b *testing.B) {
+	want := mk("en")
+	m := newMatcher(benchHave)
+	for i := 0; i < b.N; i++ {
+		m.getBest(want)
+	}
+}
+
+func BenchmarkMatchAltLanguagePresent(b *testing.B) {
+	want := mk("hr")
+	m := newMatcher(benchHave)
+	for i := 0; i < b.N; i++ {
+		m.getBest(want)
+	}
+}
+
+func BenchmarkMatchAltLanguageNotPresent(b *testing.B) {
+	want := mk("nn")
+	m := newMatcher(benchHave)
+	for i := 0; i < b.N; i++ {
+		m.getBest(want)
+	}
+}
+
+func BenchmarkMatchAltScriptPresent(b *testing.B) {
+	want := mk("zh-Hant-CN")
+	m := newMatcher(benchHave)
+	for i := 0; i < b.N; i++ {
+		m.getBest(want)
+	}
+}
+
+func BenchmarkMatchAltScriptNotPresent(b *testing.B) {
+	want := mk("fr-Cyrl")
+	m := newMatcher(benchHave)
+	for i := 0; i < b.N; i++ {
+		m.getBest(want)
+	}
+}
+
+func BenchmarkMatchLimitedExact(b *testing.B) {
+	want := []Tag{mk("he-NL"), mk("iw-NL")}
+	m := newMatcher(benchHave)
+	for i := 0; i < b.N; i++ {
+		m.getBest(want...)
 	}
 }

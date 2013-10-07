@@ -2,12 +2,23 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// NOTE: This package is still under development. Parts of it are not yet implemented,
-// and the API is subject to change.
+// Package language implements BCP 47 language tags and related functionality.
 //
-// The language package provides a type to represent language tags based on BCP 47.
-// It supports various canonicalizations defined in CLDR.
+// The Tag type, which is used to represent language tags, is agnostic to the
+// meaning of its subtags. Tags are not fully canonicalized to preserve
+// information that may be valuable in certain contexts. As a consequence, two
+// different tags may represent identical languages in certain contexts.
+//
+// To determine equivalence between tags, a user should typically use a Matcher
+// that is aware of the intricacies of equivalence within the given context.
+// The default Matcher implementation provided in this package takes into
+// account things such as deprecated subtags, legacy tags, and mutual
+// intelligibility between scripts and languages.
+//
 // See http://tools.ietf.org/html/bcp47 for more details.
+//
+// NOTE: This package is still under development. Parts of it are not yet
+// implemented, and the API is subject to change.
 package language
 
 import "strings"

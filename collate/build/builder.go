@@ -496,17 +496,24 @@ func (b *Builder) Print(w io.Writer) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	p(fmt.Fprintf(w, "var availableLocales = []string{"))
+	p(fmt.Fprintf(w, `var availableLocales = "und`))
 	for _, loc := range b.locale {
-		p(fmt.Fprintf(w, "%q, ", loc.id))
+		if loc.id != "und" {
+			p(fmt.Fprintf(w, ",%s", loc.id))
+		}
 	}
-	p(fmt.Fprintln(w, "}\n"))
+	p(fmt.Fprintln(w, "\"\n"))
 	p(fmt.Fprintf(w, "const varTop = 0x%x\n\n", b.varTop))
-	p(fmt.Fprintln(w, "var locales = map[string]tableIndex{"))
+	p(fmt.Fprintln(w, "var locales = [...]tableIndex{"))
 	for _, loc := range b.locale {
-		p(fmt.Fprintf(w, "\t%q: ", loc.id))
-		p(t.fprintIndex(w, loc.index.handle))
-		p(fmt.Fprintln(w, ","))
+		if loc.id == "und" {
+			p(t.fprintIndex(w, loc.index.handle, loc.id))
+		}
+	}
+	for _, loc := range b.locale {
+		if loc.id != "und" {
+			p(t.fprintIndex(w, loc.index.handle, loc.id))
+		}
 	}
 	p(fmt.Fprint(w, "}\n\n"))
 	n, _, err = t.fprint(w, "main")

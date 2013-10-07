@@ -115,6 +115,13 @@ likelyRegionList holds lists info associated with likelyRegion.`,
 likelyScript is a lookup table, indexed by scriptID, for the most likely
 languages and regions given a script.`,
 	`
+matchLang holds pairs of langIDs of base languages that are typically
+mutually intelligible. Each pair is associated with a confidence and
+whether the intelligibility goes one or both ways.`,
+	`
+matchScript holds pairs of scriptIDs where readers of one script
+can typically also read the other. Each is associated with a confidence.`,
+	`
 nRegionGroups is the number of region groups.  All regionIDs < nRegionGroups
 are groups.`,
 	`
@@ -1059,6 +1066,93 @@ func (b *builder) writeLikelyData() {
 	b.writeSlice("likelyRegionList", likelyRegionList)
 }
 
+type mutualIntelligibility struct {
+	want, have uint16
+	conf       uint8
+	oneway     bool
+}
+
+type scriptIntelligibility struct {
+	want, have uint8
+	conf       uint8
+}
+
+type sortByConf []mutualIntelligibility
+
+func (l sortByConf) Less(a, b int) bool {
+	return l[a].conf > l[b].conf
+}
+
+func (l sortByConf) Swap(a, b int) {
+	l[a], l[b] = l[b], l[a]
+}
+
+func (l sortByConf) Len() int {
+	return len(l)
+}
+
+// toConf converts a percentage value [0, 100] to a confidence class.
+func toConf(pct uint8) uint8 {
+	switch {
+	case pct == 100:
+		return 3 // Exact
+	case pct > 90:
+		return 2 // High
+	case pct > 50:
+		return 1 // Low
+	default:
+		return 0 // No
+	}
+}
+
+// writeMatchData writes tables with languages and scripts for which there is
+// mutual intelligibility. The data is based on CLDR's languageMatching data.
+// Note that we use a different algorithm than the one defined by CLDR and that
+// we slightly modify the data. For example, we convert scores to confidence levels.
+// We also drop all region-related data as we use a different algorithm to
+// determine region equivalence.
+func (b *builder) writeMatchData() {
+	b.writeType(mutualIntelligibility{})
+	b.writeType(scriptIntelligibility{})
+	lm := b.supp.LanguageMatching.LanguageMatches
+	cldr.MakeSlice(&lm).SelectAnyOf("type", "written")
+
+	matchLang := []mutualIntelligibility{}
+	matchScript := []scriptIntelligibility{}
+	// Convert the languageMatch entries in lists keyed by desired language.
+	for _, m := range lm[0].LanguageMatch {
+		d := strings.Split(m.Desired, "-")
+		s := strings.Split(m.Supported, "-")
+		if len(d) != len(s) || len(d) > 2 || s[0] == "nb" || d[0] == "nb" {
+			// Skip all entries with regions and work around CLDR bug.
+			// Also skip "nb", which maps to "no" by means of canonicalization.
+			continue
+		}
+		pct, _ := strconv.ParseInt(m.Percent, 10, 8)
+		if len(d) == 2 && d[0] == "*" && s[0] == "*" && d[1] != "*" {
+			matchScript = append(matchScript, scriptIntelligibility{
+				want: uint8(b.script.index(d[1])),
+				have: uint8(b.script.index(s[1])),
+				conf: toConf(uint8(pct)),
+			})
+		} else if len(d) == 1 && d[0] != "*" {
+			matchLang = append(matchLang, mutualIntelligibility{
+				want:   uint16(b.langIndex(d[0])),
+				have:   uint16(b.langIndex(s[0])),
+				conf:   uint8(pct),
+				oneway: m.Oneway == "true",
+			})
+		}
+	}
+	sort.Sort(sortByConf(matchLang))
+	// collapse percentage into confidence classes
+	for i, m := range matchLang {
+		matchLang[i].conf = toConf(m.conf)
+	}
+	b.writeSlice("matchLang", matchLang)
+	b.writeSlice("matchScript", matchScript)
+}
+
 func (b *builder) writeRegionInclusionData() {
 	type index uint
 	groups := make(map[int]index)
@@ -1158,6 +1252,7 @@ func main() {
 	// TODO: b.writeLocale()
 	b.writeCurrencies()
 	b.writeLikelyData()
+	b.writeMatchData()
 	b.writeRegionInclusionData()
 
 	fmt.Fprintf(b.out, "\n// Size: %.1fK (%d bytes); Check: %X\n", float32(b.size)/1024, b.size, b.hash32.Sum32())

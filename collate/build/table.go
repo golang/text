@@ -80,7 +80,7 @@ func (t *table) fprint(w io.Writer, name string) (n, size int, err error) {
 	return
 }
 
-func (t *table) fprintIndex(w io.Writer, h *trieHandle) (n int, err error) {
+func (t *table) fprintIndex(w io.Writer, h *trieHandle, id string) (n int, err error) {
 	p := func(f string, a ...interface{}) {
 		nn, e := fmt.Fprintf(w, f, a...)
 		n += nn
@@ -88,10 +88,10 @@ func (t *table) fprintIndex(w io.Writer, h *trieHandle) (n int, err error) {
 			err = e
 		}
 	}
-	p("tableIndex{\n")
+	p("\t{ // %s\n", id)
 	p("\t\tlookupOffset: 0x%x,\n", h.lookupStart)
 	p("\t\tvaluesOffset: 0x%x,\n", h.valueStart)
-	p("\t}")
+	p("\t},\n")
 	return
 }
 

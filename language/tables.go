@@ -1871,6 +1871,45 @@ var likelyRegionList = [104]likelyLangScript{
 	{lang: 0x175, script: 0x3, flags: 0x0},
 }
 
+type mutualIntelligibility struct {
+	want   uint16
+	have   uint16
+	conf   uint8
+	oneway bool
+}
+
+type scriptIntelligibility struct {
+	want uint8
+	have uint8
+	conf uint8
+}
+
+// matchLang holds pairs of langIDs of base languages that are typically
+// mutually intelligible. Each pair is associated with a confidence and
+// whether the intelligibility goes one or both ways.
+// Size: 66 bytes, 11 elements
+var matchLang = [11]mutualIntelligibility{
+	{want: 0x120, have: 0x122, conf: 0x2, oneway: false},
+	{want: 0x16a, have: 0x90, conf: 0x2, oneway: false},
+	{want: 0x15a, have: 0x16a, conf: 0x2, oneway: false},
+	{want: 0x16e, have: 0x1, conf: 0x2, oneway: false},
+	{want: 0x90, have: 0x31, conf: 0x2, oneway: false},
+	{want: 0x15a, have: 0x31, conf: 0x2, oneway: false},
+	{want: 0x16a, have: 0x31, conf: 0x2, oneway: false},
+	{want: 0x15a, have: 0x90, conf: 0x2, oneway: false},
+	{want: 0x4f, have: 0x122, conf: 0x1, oneway: false},
+	{want: 0x10d, have: 0x98, conf: 0x1, oneway: false},
+	{want: 0x81, have: 0x52, conf: 0x1, oneway: true},
+}
+
+// matchScript holds pairs of scriptIDs where readers of one script
+// can typically also read the other. Each is associated with a confidence.
+// Size: 6 bytes, 2 elements
+var matchScript = [2]scriptIntelligibility{
+	{want: 0x2f, have: 0x30, conf: 0x1},
+	{want: 0x30, have: 0x2f, conf: 0x1},
+}
+
 // nRegionGroups is the number of region groups.  All regionIDs < nRegionGroups
 // are groups.
 const nRegionGroups = 32
@@ -1938,4 +1977,4 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 14.6K (14919 bytes); Check: D4F2A697
+// Size: 14.6K (14991 bytes); Check: 6B2196F9
