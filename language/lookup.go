@@ -5,6 +5,7 @@
 package language
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 	"strconv"
@@ -119,9 +120,9 @@ func getLangISO2(s []byte) (langID, error) {
 		if i := index(lang, s); i != -1 && lang[i+3] != 0 {
 			return langID(i >> 2), nil
 		}
-		return 0, errUnknown
+		return 0, mkErrInvalid(s)
 	}
-	return 0, errInvalid
+	return 0, errSyntax
 }
 
 const base = 'z' - 'a' + 1
@@ -174,9 +175,9 @@ func getLangISO3(s []byte) (langID, error) {
 				return langID(i >> 2), nil
 			}
 		}
-		return 0, errUnknown
+		return 0, mkErrInvalid(s)
 	}
-	return 0, errInvalid
+	return 0, errSyntax
 }
 
 // stringToBuf writes the string to b and returns the number of bytes
@@ -258,9 +259,9 @@ func getRegionISO2(s []byte) (regionID, error) {
 		if i := index(regionISO, s); i != -1 {
 			return regionID(i>>2) + isoRegionOffset, nil
 		}
-		return 0, errUnknown
+		return 0, mkErrInvalid(s)
 	}
-	return 0, errInvalid
+	return 0, errSyntax
 }
 
 // getRegionISO3 returns the regionID for the given 3-letter ISO country code
@@ -277,24 +278,25 @@ func getRegionISO3(s []byte) (regionID, error) {
 				return regionID(altRegionIDs[i/3]), nil
 			}
 		}
-		return 0, errUnknown
+		return 0, mkErrInvalid(s)
 	}
-	return 0, errInvalid
+	return 0, errSyntax
 }
 
 func getRegionM49(n int) (regionID, error) {
 	// These will mostly be group IDs, which are at the start of the list.
 	// For other values this may be a bit slow, as there are over 300 entries.
 	// TODO: group id is sorted!
-	if n == 0 {
-		return 0, errUnknown
-	}
-	for i, v := range m49 {
-		if v == uint16(n) {
-			return regionID(i), nil
+	if n != 0 {
+		for i, v := range m49 {
+			if v == uint16(n) {
+				return regionID(i), nil
+			}
 		}
 	}
-	return 0, errUnknown
+	var e ValueError
+	fmt.Fprint(bytes.NewBuffer([]byte(e.v[:])), n)
+	return 0, e
 }
 
 // String returns the BCP 47 representation for the region.
@@ -349,9 +351,9 @@ func getScriptID(idx string, s []byte) (scriptID, error) {
 		if i := index(idx, s); i != -1 {
 			return scriptID(i >> 2), nil
 		}
-		return 0, errUnknown
+		return 0, mkErrInvalid(s)
 	}
-	return 0, errInvalid
+	return 0, errSyntax
 }
 
 // String returns the script code in title case.
@@ -375,9 +377,9 @@ func getCurrencyID(idx string, s []byte) (currencyID, error) {
 		if i := index(idx, s); i != -1 {
 			return currencyID(i >> 2), nil
 		}
-		return 0, errUnknown
+		return 0, mkErrInvalid(s)
 	}
-	return 0, errInvalid
+	return 0, errSyntax
 }
 
 // String returns the upper case representation of the currency.

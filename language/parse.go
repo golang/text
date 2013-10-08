@@ -30,12 +30,41 @@ func isAlphaNum(s []byte) bool {
 	return true
 }
 
-var (
-	errUnknown  = errors.New("language: unknown language, script, region or currency")
-	errEmpty    = errors.New("language: empty language tag")
-	errInvalid  = errors.New("language: invalid")
-	errTrailSep = errors.New("language: trailing separator")
-)
+// errSyntax is returned by any of the parsing functions when the
+// input is not well-formed, according to BCP 47.
+// TODO: return the position at which the syntax error occurred?
+var errSyntax = errors.New("language: tag is not well-formed")
+
+// ValueError is returned by any of the parsing functions when the
+// input is well-formed but the respective subtag is not recognized
+// as a valid value.
+type ValueError struct {
+	v [8]byte
+}
+
+func mkErrInvalid(s []byte) error {
+	var e ValueError
+	copy(e.v[:], s)
+	return e
+}
+
+func (e ValueError) tag() []byte {
+	n := bytes.IndexByte(e.v[:], 0)
+	if n == -1 {
+		n = 8
+	}
+	return e.v[:n]
+}
+
+// Error implements the error interface.
+func (e ValueError) Error() string {
+	return fmt.Sprintf("language: subtag %q is well-formed but unknown", e.tag())
+}
+
+// Subtag returns the subtag for which the error occurred.
+func (e ValueError) Subtag() string {
+	return string(e.tag())
+}
 
 // scanner is used to scan BCP 47 tokens, which are separated by _ or -.
 type scanner struct {
@@ -80,13 +109,9 @@ func (s *scanner) toLower(start, end int) {
 }
 
 func (s *scanner) setError(e error) {
-	if s.err == nil {
+	if s.err == nil || (e == errSyntax && s.err != errSyntax) {
 		s.err = e
 	}
-}
-
-func (s *scanner) setErrorf(f string, x ...interface{}) {
-	s.setError(fmt.Errorf(f, x...))
 }
 
 // replace replaces the current token with repl.
@@ -109,7 +134,8 @@ func (s *scanner) replace(repl string) {
 
 // gobble removes the current token from the input.
 // Caller must call scan after calling gobble.
-func (s *scanner) gobble() {
+func (s *scanner) gobble(e error) {
+	s.setError(e)
 	if s.start == 0 {
 		s.b = s.b[:+copy(s.b, s.b[s.next:])]
 		s.end = 0
@@ -118,6 +144,16 @@ func (s *scanner) gobble() {
 		s.end = s.start - 1
 	}
 	s.next = s.start
+}
+
+// deleteRange removes the given range and sets the scanning position to the first
+// token after the deleted range.
+func (s *scanner) deleteRange(start, end int) {
+	s.setError(errSyntax)
+	s.b = s.b[:start-1+copy(s.b[start-1:], s.b[end:])]
+	s.end = start - 1
+	s.start, s.next = start, start
+	s.scan()
 }
 
 // scan parses the next token of a BCP 47 string.  Tokens that are larger
@@ -139,15 +175,14 @@ func (s *scanner) scan() (end int) {
 		}
 		token := s.b[s.start:s.end]
 		if i < 1 || i > 8 || !isAlphaNum(token) {
-			s.setErrorf("language: invalid token %q", token)
-			s.gobble()
+			s.gobble(errSyntax)
 			continue
 		}
 		s.token = token
 		return end
 	}
 	if n := len(s.b); n > 0 && s.b[n-1] == '-' {
-		s.setError(errTrailSep)
+		s.setError(errSyntax)
 		s.b = s.b[:len(s.b)-1]
 	}
 	s.done = true
@@ -168,15 +203,16 @@ func (s *scanner) acceptMinSize(min int) (end int) {
 // Parse parses the given BCP 47 string and returns a valid Tag.
 // If parsing failed it returns an error and any part of the tag
 // that could be parsed.
-// If parsing succeeded but an unknown option was found, it
-// returns the valid Locale and an error.
+// If parsing succeeded but an unknown value was found, it returns
+// ValueError. The Tag returned in this case is just stripped of the unknown
+// value. All other values are preserved.
 // It accepts tags in the BCP 47 format and extensions to this standard
 // defined in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
 func Parse(s string) (t Tag, err error) {
 	// TODO: consider supporting old-style locale key-value pairs.
 	if s == "" {
-		return und, errEmpty
+		return und, errSyntax
 	}
 	t = und
 	if lang, ok := tagAlias[s]; ok {
@@ -186,7 +222,7 @@ func Parse(s string) (t Tag, err error) {
 	scan := makeScannerString(s)
 	if len(scan.token) >= 4 {
 		if !strings.EqualFold(s, "root") {
-			return und, errInvalid
+			return und, errSyntax
 		}
 		return und, nil
 	}
@@ -200,7 +236,7 @@ func parse(scan *scanner, s string) (t Tag, err error) {
 		scan.toLower(0, len(scan.b))
 		end = parsePrivate(scan)
 	} else if n >= 4 {
-		return und, errInvalid
+		return und, errSyntax
 	} else { // the usual case
 		t, end = parseTag(scan)
 		if n := len(scan.token); n == 1 {
@@ -209,7 +245,7 @@ func parse(scan *scanner, s string) (t Tag, err error) {
 		}
 	}
 	if end < len(scan.b) {
-		scan.setErrorf("language: invalid parts %q", scan.b[end:])
+		scan.setError(errSyntax)
 		scan.b = scan.b[:end]
 	}
 	if len(scan.b) < len(s) {
@@ -237,31 +273,27 @@ func parseTag(scan *scanner) (t Tag, end int) {
 	for len(scan.token) == 3 && isAlpha(scan.token[0]) {
 		// From http://tools.ietf.org/html/bcp47, <lang>-<extlang> tags are equivalent
 		// to a tag of the form <extlang>.
-		if lang, e := getLangID(scan.token); lang != 0 {
+		lang, e := getLangID(scan.token)
+		if lang != 0 {
 			t.lang = lang
-			scan.setError(e)
 			copy(scan.b[langStart:], lang.String())
 			scan.b[langStart+3] = '-'
 			scan.start = langStart + 4
-		} else {
-			scan.setError(e)
 		}
-		scan.gobble()
+		scan.gobble(e)
 		end = scan.scan()
 	}
 	if len(scan.token) == 4 && isAlpha(scan.token[0]) {
 		t.script, e = getScriptID(script, scan.token)
 		if t.script == 0 {
-			scan.setError(e)
-			scan.gobble()
+			scan.gobble(e)
 		}
 		end = scan.scan()
 	}
 	if n := len(scan.token); n >= 2 && n <= 3 {
 		t.region, e = getRegionID(scan.token)
 		if t.region == 0 {
-			scan.setError(e)
-			scan.gobble()
+			scan.gobble(e)
 		} else {
 			scan.replace(t.region.String())
 		}
@@ -281,7 +313,8 @@ func parseVariants(scan *scanner, end int) int {
 	for ; len(scan.token) >= 4; scan.scan() {
 		// TODO: validate and sort variants
 		if bytes.Index(scan.b[start:scan.start], scan.token) != -1 {
-			scan.gobble()
+			// TODO: should we return an error here?
+			scan.gobble(nil)
 			continue
 		}
 		end = scan.end
@@ -326,7 +359,12 @@ func parseExtensions(scan *scanner) int {
 			var key []byte
 			for last := []byte{}; len(scan.token) == 2; last = key {
 				key = scan.token
+				keyStart, keyEnd := scan.start, scan.end
 				end = scan.acceptMinSize(3)
+				if keyEnd == end {
+					scan.deleteRange(keyStart, end)
+					continue
+				}
 				// TODO: check key value validity
 				if bytes.Compare(key, last) != 1 {
 					p := attrEnd + 1
@@ -358,7 +396,7 @@ func parseExtensions(scan *scanner) int {
 		}
 		extension = scan.b[start:end]
 		if len(extension) < 3 {
-			scan.setErrorf("language: empty extension %q", string(ext))
+			scan.setError(errSyntax)
 			continue
 		} else if len(exts) == 0 && (ext == 'x' || scan.next >= len(scan.b)) {
 			return end
@@ -369,7 +407,7 @@ func parseExtensions(scan *scanner) int {
 		exts = append(exts, extension)
 	}
 	if scan.next < len(scan.b) {
-		scan.setErrorf("language: invalid trailing characters %q", scan.b[scan.end:])
+		scan.setError(errSyntax)
 	}
 	sort.Sort(bytesSort(exts))
 	if len(private) > 0 {
@@ -381,7 +419,7 @@ func parseExtensions(scan *scanner) int {
 
 func parsePrivate(scan *scanner) int {
 	if len(scan.token) == 0 || scan.token[0] != 'x' {
-		scan.setErrorf("language: invalid language tag %q", scan.b)
+		scan.setError(errSyntax)
 		return scan.start
 	}
 	return parseExtensions(scan)
@@ -452,7 +490,7 @@ func Compose(m map[Part]string) (t Tag, err error) {
 	scan.init()
 	if len(scan.token) >= 4 {
 		if !strings.EqualFold(string(scan.b), "root") {
-			return und, errInvalid
+			return und, errSyntax
 		}
 		return und, nil
 	}
@@ -554,8 +592,7 @@ func nextExtension(s string, p int) int {
 }
 
 var (
-	acceptErr = errors.New("ParseAcceptLanguage: syntax error")
-	acceptRe  = regexp.MustCompile(`^ *(?:([\w-]+|\*)(?: *; *q *= *([0-9\.]+))?)? *$`)
+	acceptRe = regexp.MustCompile(`^ *(?:([\w-]+|\*)(?: *; *q *= *([0-9\.]+))?)? *$`)
 )
 
 // ParseAcceptLanguage parses the contents of a Accept-Language header as
@@ -570,7 +607,7 @@ func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
 		}
 		m := acceptRe.FindStringSubmatch(s[start:end])
 		if m == nil {
-			return nil, nil, acceptErr
+			return nil, nil, errSyntax
 		}
 		if len(m[1]) > 0 {
 			w := 1.0

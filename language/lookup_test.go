@@ -87,11 +87,11 @@ func TestLangID(t *testing.T) {
 		id, bcp47, iso3, norm string
 		err                   error
 	}{
-		{id: "", bcp47: "und", iso3: "und", err: errInvalid},
-		{id: "  ", bcp47: "und", iso3: "und", err: errInvalid},
-		{id: "   ", bcp47: "und", iso3: "und", err: errInvalid},
-		{id: "    ", bcp47: "und", iso3: "und", err: errInvalid},
-		{id: "xxx", bcp47: "und", iso3: "und", err: errUnknown},
+		{id: "", bcp47: "und", iso3: "und", err: errSyntax},
+		{id: "  ", bcp47: "und", iso3: "und", err: errSyntax},
+		{id: "   ", bcp47: "und", iso3: "und", err: errSyntax},
+		{id: "    ", bcp47: "und", iso3: "und", err: errSyntax},
+		{id: "xxx", bcp47: "und", iso3: "und", err: mkErrInvalid([]byte("xxx"))},
 		{id: "und", bcp47: "und", iso3: "und"},
 		{id: "aju", bcp47: "aju", iso3: "aju", norm: "jrb"},
 		{id: "jrb", bcp47: "jrb", iso3: "jrb"},

@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-func ExampleID_Canonicalize() {
+func ExampleTag_Canonicalize() {
 	p := func(id string) {
 		loc, _ := language.Parse(id)
 		l, _ := loc.Canonicalize(language.BCP47)
@@ -42,7 +42,7 @@ func ExampleID_Canonicalize() {
 	// All(iw-Latn-fonipa-u-cu-usd) -> he-Latn-fonipa-u-cu-usd
 }
 
-func ExampleID_Base() {
+func ExampleTag_Base() {
 	fmt.Println(language.Make("und").Base())
 	fmt.Println(language.Make("und-US").Base())
 	fmt.Println(language.Make("und-NL").Base())
@@ -56,7 +56,7 @@ func ExampleID_Base() {
 	// en Low
 }
 
-func ExampleID_Script() {
+func ExampleTag_Script() {
 	en := language.Make("en")
 	sr := language.Make("sr")
 	sr_Latn := language.Make("sr_Latn")
@@ -74,7 +74,7 @@ func ExampleID_Script() {
 	// true
 }
 
-func ExampleID_Region() {
+func ExampleTag_Region() {
 	ru := language.Make("ru")
 	en := language.Make("en")
 	fmt.Println(ru.Region())
@@ -84,10 +84,41 @@ func ExampleID_Region() {
 	// US Low
 }
 
-func ExampleID_Part() {
+func ExampleTag_Part() {
 	loc := language.Make("sr-RS")
 	script := loc.Part(language.ScriptPart)
 	region := loc.Part(language.RegionPart)
 	fmt.Printf("%q %q", script, region)
 	// Output: "" "RS"
+}
+
+func ExampleParse_errors() {
+	for _, s := range []string{"Foo", "Bar", "Foobar"} {
+		_, err := language.Parse(s)
+		if err != nil {
+			if inv, ok := err.(language.ValueError); ok {
+				fmt.Println(inv.Subtag())
+			} else {
+				fmt.Println(s)
+			}
+		}
+	}
+	for _, s := range []string{"en", "aa-Uuuu", "AC", "ac-u"} {
+		_, err := language.Parse(s)
+		switch e := err.(type) {
+		case language.ValueError:
+			fmt.Printf("%s: culprit %q\n", s, e.Subtag())
+		case nil:
+			// No error.
+		default:
+			// A syntax error.
+			fmt.Printf("%s: ill-formed\n", s)
+		}
+	}
+	// Output:
+	// foo
+	// Foobar
+	// aa-Uuuu: culprit "Uuuu"
+	// AC: culprit "ac"
+	// ac-u: ill-formed
 }

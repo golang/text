@@ -137,6 +137,9 @@ func parseTests() []parseTest {
 		{in: "en-u-def-abc-cu-xua-co-phonebk", lang: "en", ext: "u-def-abc-co-phonebk-cu-xua", changed: true},
 		{in: "en-u-def-abc", lang: "en", ext: "u-def-abc"},
 		{in: "en-u-cu-xua-co-phonebk-a-cd", lang: "en", extList: []string{"a-cd", "u-co-phonebk-cu-xua"}, changed: true},
+		// Invalid "u" extension. Drop invalid parts.
+		{in: "en-u-cu-co-phonebk", lang: "en", extList: []string{"u-co-phonebk"}, invalid: true, changed: true},
+		{in: "en-u-cu-xau-co", lang: "en", extList: []string{"u-cu-xau"}, invalid: true},
 		{in: "en-t-en-Cyrl-NL-1994", lang: "en", ext: "t-en-cyrl-nl-1994", changed: true},
 		{in: "en-t-en-Cyrl-NL-1994-t0-abc-def", lang: "en", ext: "t-en-cyrl-nl-1994-t0-abc-def", changed: true},
 		{in: "en-t-t0-abcd", lang: "en", ext: "t-t0-abcd"},
@@ -200,10 +203,10 @@ func TestParseExtensions(t *testing.T) {
 		parseExtensions(&scan)
 		ext := string(scan.b[start:])
 		if ext != tt.ext {
-			t.Errorf("%d: ext was %v; want %v", i, ext, tt.ext)
+			t.Errorf("%d(%s): ext was %v; want %v", i, tt.in, ext, tt.ext)
 		}
 		if changed := !strings.HasPrefix(tt.in[start:], ext); changed != tt.changed {
-			t.Errorf("%d: changed was %v; want %v", i, changed, tt.changed)
+			t.Errorf("%d(%s): changed was %v; want %v", i, tt.in, changed, tt.changed)
 		}
 	}
 }
@@ -284,6 +287,33 @@ func TestParse(t *testing.T) {
 			return id.Part(p)
 		}
 	})
+}
+
+func TestErrors(t *testing.T) {
+	mkInvalid := func(s string) error {
+		return mkErrInvalid([]byte(s))
+	}
+	tests := []struct {
+		in  string
+		out error
+	}{
+		// invalid subtags.
+		{"ac", mkInvalid("ac")},
+		{"AC", mkInvalid("ac")},
+		{"aa-Uuuu", mkInvalid("Uuuu")},
+		{"aa-AB", mkInvalid("AB")},
+		// ill-formed wins over invalid.
+		{"ac-u", errSyntax},
+		{"ac-u-ca", errSyntax},
+		{"ac-u-ca-co-pinyin", errSyntax},
+		{"noob", errSyntax},
+	}
+	for _, tt := range tests {
+		_, err := Parse(tt.in)
+		if err != tt.out {
+			t.Errorf("%s: was %q; want %q", tt.in, err, tt.out)
+		}
+	}
 }
 
 func TestPart(t *testing.T) {

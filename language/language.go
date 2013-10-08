@@ -33,11 +33,6 @@ var (
 )
 
 var (
-	Supported Set // All supported language indetifiers.
-	Common    Set // A selection of common language indetifiers.
-)
-
-var (
 	de    = Tag{lang: lang_de}
 	en    = Tag{lang: lang_en}
 	en_US = Tag{lang: lang_en, region: regUS}
@@ -360,10 +355,11 @@ type Base struct {
 }
 
 // ParseBase parses a 2- or 3-letter ISO 639 code.
-// It returns an error if the given string is not a valid language code.
+// It returns a ValueError if s is a well-formed but unknown language identifier
+// or another error if another error occurred.
 func ParseBase(s string) (Base, error) {
 	if n := len(s); n < 2 || 3 < n {
-		return Base{}, errInvalid
+		return Base{}, errSyntax
 	}
 	var buf [3]byte
 	l, err := getLangID(buf[:copy(buf[:], s)])
@@ -382,10 +378,11 @@ type Script struct {
 }
 
 // ParseScript parses a 4-letter ISO 15924 code.
-// It returns an error if the given string is not a valid script code.
+// It returns a ValueError if s is a well-formed but unknown script identifier
+// or another error if another error occurred.
 func ParseScript(s string) (Script, error) {
 	if len(s) != 4 {
-		return Script{}, errInvalid
+		return Script{}, errSyntax
 	}
 	var buf [4]byte
 	sc, err := getScriptID(script, buf[:copy(buf[:], s)])
@@ -410,10 +407,11 @@ func EncodeM49(r int) (Region, error) {
 }
 
 // ParseRegion parses a 2- or 3-letter ISO 3166-1 or a UN M.49 code.
-// It returns an error if the given string is not a valid region code.
+// It returns a ValueError if s is a well-formed but unknown region identifier
+// or another error if another error occurred.
 func ParseRegion(s string) (Region, error) {
 	if n := len(s); n < 2 || 3 < n {
-		return Region{}, errInvalid
+		return Region{}, errSyntax
 	}
 	var buf [3]byte
 	r, err := getRegionID(buf[:copy(buf[:], s)])
@@ -451,21 +449,13 @@ type Currency struct {
 }
 
 // ParseCurrency parses a 3-letter ISO 4217 code.
-// It returns an error if the given string is not a valid currency code.
+// It returns a ValueError if s is a well-formed but unknown currency identifier
+// or another error if another error occurred.
 func ParseCurrency(s string) (Currency, error) {
 	if len(s) != 3 {
-		return Currency{}, errInvalid
+		return Currency{}, errSyntax
 	}
 	var buf [3]byte
 	c, err := getCurrencyID(currency, buf[:copy(buf[:], s)])
 	return Currency{c}, err
-}
-
-// Set provides information about a set of tags.
-type Set interface {
-	Tags() []Tag
-	BaseLanguages() []Base
-	Regions() []Region
-	Scripts() []Script
-	Currencies() []Currency
 }

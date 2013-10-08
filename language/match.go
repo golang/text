@@ -62,13 +62,13 @@ func (t *Tag) setUndefinedRegion(id regionID) {
 	}
 }
 
-// MissingLikelyTagsData indicates no information was available
+// ErrMissingLikelyTagsData indicates no information was available
 // to compute likely values of missing tags.
-var MissingLikelyTagsData = errors.New("missing likely tags data")
+var ErrMissingLikelyTagsData = errors.New("missing likely tags data")
 
 // addLikelySubtags sets subtags to their most likely value, given the locale.
 // In most cases this means setting fields for unknown values, but in some
-// cases it may alter a value.  It returns a MissingLikelyTagsData error
+// cases it may alter a value.  It returns a ErrMissingLikelyTagsData error
 // if the given locale cannot be expaned.
 func (t Tag) addLikelySubtags() (Tag, error) {
 	// Hard-coded exception.  This is currently the only exception to the rule
@@ -173,7 +173,7 @@ func addTags(t Tag) (Tag, error) {
 			return t, nil
 		}
 	}
-	return t, MissingLikelyTagsData
+	return t, ErrMissingLikelyTagsData
 }
 
 func (t *Tag) setTagsFrom(id Tag) {

@@ -316,3 +316,104 @@ func TestCanonicalize(t *testing.T) {
 		}
 	}
 }
+
+var (
+	// Tags without error that don't need to be changed.
+	benchBasic = []string{
+		"en",
+		"en-Latn",
+		"en-GB",
+		"za",
+		"zh-Hant",
+		"zh",
+		"zh-HK",
+		"ar-MK",
+		"en-CA",
+		"fr-CA",
+		"fr-CH",
+		"fr",
+		"lv",
+		"he-IT",
+		"tlh",
+		"ja",
+		"ja-Jpan",
+		"ja-Jpan-JP",
+		"de-1996",
+		"de-CH",
+		"sr",
+		"sr-Latn",
+	}
+	// Tags with extensions, not changes required.
+	benchExt = []string{
+		"x-a-b-c-d",
+		"x-aa-bbbb-cccccccc-d",
+		"en-x_cc-b-bbb-a-aaa",
+		"en-c_cc-b-bbb-a-aaa-x-x",
+		"en-u-co-phonebk",
+		"en-Cyrl-u-co-phonebk",
+		"en-US-u-co-phonebk-cu-xau",
+		"en-nedix-u-co-phonebk",
+		"en-t-t0-abcd",
+		"en-t-nl-latn",
+		"en-t-t0-abcd-x-a",
+	}
+	// Change, but not memory allocation required.
+	benchSimpleChange = []string{
+		"EN",
+		"i-klingon",
+		"en-latn",
+		"zh-cmn-Hans-CN",
+		"iw-NL",
+	}
+	// Change and memory allocation required.
+	benchChangeAlloc = []string{
+		"en-c_cc-b-bbb-a-aaa",
+		"en-u-cu-xua-co-phonebk",
+		"en-u-cu-xua-co-phonebk-a-cd",
+		"en-u-def-abc-cu-xua-co-phonebk",
+		"en-t-en-Cyrl-NL-1994",
+		"en-t-en-Cyrl-NL-1994-t0-abc-def",
+	}
+	// Tags that result in errors.
+	benchErr = []string{
+		// IllFormed
+		"x_A.-B-C_D",
+		"en-u-cu-co-phonebk",
+		"en-u-cu-xau-co",
+		"en-t-nl-abcd",
+		// Invalid
+		"xx",
+		"nl-Uuuu",
+		"nl-QB",
+	}
+	benchChange = append(benchSimpleChange, benchChangeAlloc...)
+	benchAll    = append(append(append(benchBasic, benchExt...), benchChange...), benchErr...)
+)
+
+func doParse(b *testing.B, tag []string) {
+	for i := 0; i < b.N; i++ {
+		// Use the modulo instead of looping over all tags so that we get a somewhat
+		// meaningful ns/op.
+		Parse(tag[i%len(tag)])
+	}
+}
+
+func BenchmarkParse(b *testing.B) {
+	doParse(b, benchAll)
+}
+
+func BenchmarkParseBasic(b *testing.B) {
+	doParse(b, benchBasic)
+}
+
+func BenchmarkParseError(b *testing.B) {
+	doParse(b, benchErr)
+}
+
+func BenchmarkParseSimpleChange(b *testing.B) {
+	doParse(b, benchSimpleChange)
+}
+
+func BenchmarkParseChangeAlloc(b *testing.B) {
+	doParse(b, benchChangeAlloc)
+}
