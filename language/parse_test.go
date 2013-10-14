@@ -116,10 +116,30 @@ func parseTests() []parseTest {
 		{in: "es-419", lang: "es", region: "419"},
 		{in: "und-001", lang: "und", region: "001"},
 		{in: "de-latn-be", lang: "de", script: "Latn", region: "BE", changed: true},
-		{in: "de-1994", lang: "de", variants: "1994"},
-		{in: "nl-abcde-abcde", lang: "nl", variants: "abcde"},
-		{in: "nl" + manyVars, lang: "nl", variants: manyVars[1:]},
-		{in: "nl" + manyVars + manyVars, lang: "nl", variants: manyVars[1:]},
+		// Variants
+		{in: "de-1901", lang: "de", variants: "1901"},
+		{in: "nl-fonupa-fonupa", lang: "nl", variants: "fonupa", invalid: true},
+		// Accept with unsuppressed script.
+		{in: "de-Latn-1901", lang: "de", script: "Latn", variants: "1901"},
+		// Do not accept with incorrect script
+		{in: "de-Cyrl-1901", lang: "de", script: "Cyrl", variants: "", invalid: true},
+		// Specialized.
+		{in: "sl-rozaj", lang: "sl", variants: "rozaj"},
+		{in: "sl-rozaj-lipaw", lang: "sl", variants: "rozaj-lipaw"},
+		{in: "sl-rozaj-biske", lang: "sl", variants: "rozaj-biske"},
+		{in: "sl-rozaj-lipaw-1994", lang: "sl", variants: "rozaj-lipaw", invalid: true},
+		{in: "sl-rozaj-biske-1994", lang: "sl", variants: "rozaj-biske-1994"},
+		{in: "sl-rozaj-1994", lang: "sl", variants: "rozaj-1994"},
+		// Maximum number of variants.
+		{in: "sl-rozaj-biske-1994-alalc97-fonipa-fonupa-fonxsamp", lang: "sl", variants: "rozaj-biske-1994-alalc97-fonipa-fonupa-fonxsamp"},
+		// Sorting.
+		{in: "sl-1994-biske-rozaj", lang: "sl", variants: "rozaj-biske-1994", changed: true},
+		{in: "sl-1994-biske-rozaj-1994-biske-rozaj", lang: "sl", variants: "rozaj-biske-1994", invalid: true, changed: true},
+		{in: "sl-rozaj-biske-1994-alalc97-fonupa-fonipa-fonxsamp", lang: "sl", variants: "rozaj-biske-1994-alalc97-fonipa-fonupa-fonxsamp", changed: true},
+		{in: "nl-fonxsamp-alalc97-fonipa-fonupa", lang: "nl", variants: "alalc97-fonipa-fonupa-fonxsamp", changed: true},
+
+		//{in: "nl" + manyVars, lang: "nl", variants: manyVars[1:]},
+		//{in: "nl" + manyVars + manyVars, lang: "nl", variants: manyVars[1:]},
 		{in: "EN_CYRL", lang: "en", script: "Cyrl", changed: true},
 		// private use and extensions
 		{in: "x-a-b-c-d", ext: "x-a-b-c-d"},
@@ -132,7 +152,7 @@ func parseTests() []parseTest {
 		{in: "en-Cyrl-u-co-phonebk", lang: "en", script: "Cyrl", ext: "u-co-phonebk"},
 		{in: "en-US-u-co-phonebk", lang: "en", region: "US", ext: "u-co-phonebk"},
 		{in: "en-US-u-co-phonebk-cu-xau", lang: "en", region: "US", ext: "u-co-phonebk-cu-xau"},
-		{in: "en-nedix-u-co-phonebk", lang: "en", variants: "nedix", ext: "u-co-phonebk"},
+		{in: "en-scotland-u-co-phonebk", lang: "en", variants: "scotland", ext: "u-co-phonebk"},
 		{in: "en-u-cu-xua-co-phonebk", lang: "en", ext: "u-co-phonebk-cu-xua", changed: true},
 		{in: "en-u-def-abc-cu-xua-co-phonebk", lang: "en", ext: "u-def-abc-co-phonebk-cu-xua", changed: true},
 		{in: "en-u-def-abc", lang: "en", ext: "u-def-abc"},
@@ -140,8 +160,8 @@ func parseTests() []parseTest {
 		// Invalid "u" extension. Drop invalid parts.
 		{in: "en-u-cu-co-phonebk", lang: "en", extList: []string{"u-co-phonebk"}, invalid: true, changed: true},
 		{in: "en-u-cu-xau-co", lang: "en", extList: []string{"u-cu-xau"}, invalid: true},
-		{in: "en-t-en-Cyrl-NL-1994", lang: "en", ext: "t-en-cyrl-nl-1994", changed: true},
-		{in: "en-t-en-Cyrl-NL-1994-t0-abc-def", lang: "en", ext: "t-en-cyrl-nl-1994-t0-abc-def", changed: true},
+		{in: "en-t-en-Cyrl-NL-fonipa", lang: "en", ext: "t-en-cyrl-nl-fonipa", changed: true},
+		{in: "en-t-en-Cyrl-NL-fonipa-t0-abc-def", lang: "en", ext: "t-en-cyrl-nl-fonipa-t0-abc-def", changed: true},
 		{in: "en-t-t0-abcd", lang: "en", ext: "t-t0-abcd"},
 		// Not necessary to have changed here.
 		{in: "en-t-nl-abcd", lang: "en", ext: "t-nl", invalid: true},

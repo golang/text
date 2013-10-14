@@ -114,21 +114,29 @@ func (s *scanner) setError(e error) {
 	}
 }
 
-// replace replaces the current token with repl.
-func (s *scanner) replace(repl string) {
-	if end := s.start + len(repl); end != s.end {
-		diff := end - s.end
+// resizeRange shrinks or grows the array at position oldStart such that
+// a new string of size newSize can fit between oldStart and oldEnd.
+// Sets the scan point to after the resized range.
+func (s *scanner) resizeRange(oldStart, oldEnd, newSize int) {
+	s.start = oldStart
+	if end := oldStart + newSize; end != oldEnd {
+		diff := end - oldEnd
 		if end < cap(s.b) {
 			b := make([]byte, len(s.b)+diff)
-			copy(b, s.b[:s.start])
-			copy(b[end:], s.b[s.end:])
+			copy(b, s.b[:oldStart])
+			copy(b[end:], s.b[oldEnd:])
 			s.b = b
 		} else {
-			s.b = append(s.b[end:], s.b[s.end:]...)
+			s.b = append(s.b[end:], s.b[oldEnd:]...)
 		}
-		s.next += diff
+		s.next = end + (s.next - s.end)
 		s.end = end
 	}
+}
+
+// replace replaces the current token with repl.
+func (s *scanner) replace(repl string) {
+	s.resizeRange(s.start, s.end, len(repl))
 	copy(s.b[s.start:], repl)
 }
 
@@ -301,29 +309,133 @@ func parseTag(scan *scanner) (t Tag, end int) {
 	}
 	scan.toLower(scan.start, len(scan.b))
 	t.pVariant = byte(end)
-	end = parseVariants(scan, end)
+	end = parseVariants(scan, end, t)
 	t.pExt = uint16(end)
 	return t, end
 }
 
+var separator = []byte{'-'}
+
 // parseVariants scans tokens as long as each token is a valid variant string.
 // Duplicate variants are removed.
-func parseVariants(scan *scanner, end int) int {
+func parseVariants(scan *scanner, end int, t Tag) int {
 	start := scan.start
+	varIDBuf := [4]uint8{}
+	variantBuf := [4][]byte{}
+	varID := varIDBuf[:0]
+	variant := variantBuf[:0]
+	last := -1
+	needSort := false
 	for ; len(scan.token) >= 4; scan.scan() {
-		// TODO: validate and sort variants
-		if bytes.Index(scan.b[start:scan.start], scan.token) != -1 {
-			// TODO: should we return an error here?
-			scan.gobble(nil)
+		// TODO: measure the impact of needing this conversion and redesign
+		// the data structure if there is an issue.
+		v, ok := variantIndex[string(scan.token)]
+		if !ok {
+			// unknown variant
+			// TODO: allow user-defined variants?
+			scan.gobble(mkErrInvalid(scan.token))
 			continue
 		}
-		end = scan.end
-		const maxVariantSize = 60000 // more than enough, ensures pExt will be valid.
-		if end > maxVariantSize {
-			break
+		varID = append(varID, v)
+		variant = append(variant, scan.token)
+		if !needSort {
+			if last < int(v) && variantMayFollow(last, int(v), t) {
+				last = int(v)
+			} else {
+				needSort = true
+				// There is no legal combinations of more than 7 variants
+				// (and this is by no means a useful sequence).
+				const maxVariants = 8
+				if len(varID) > maxVariants {
+					break
+				}
+			}
 		}
+		end = scan.end
+	}
+	if needSort {
+		sort.Sort(variantsSort{varID, variant})
+		k, l := 0, -1
+		for i, v := range varID {
+			w := int(v)
+			if !variantMayFollow(l, w, t) {
+				scan.setError(errSyntax)
+				continue
+			}
+			varID[k] = varID[i]
+			variant[k] = variant[i]
+			k++
+			l = w
+		}
+		str := bytes.Join(variant[:k], separator)
+		scan.resizeRange(start, end, len(str))
+		copy(scan.b[scan.start:], str)
+		end = scan.end
 	}
 	return end
+}
+
+type variantsSort struct {
+	i []uint8
+	v [][]byte
+}
+
+func (s variantsSort) Len() int {
+	return len(s.i)
+}
+
+func (s variantsSort) Swap(i, j int) {
+	s.i[i], s.i[j] = s.i[j], s.i[i]
+	s.v[i], s.v[j] = s.v[j], s.v[i]
+}
+
+func (s variantsSort) Less(i, j int) bool {
+	return s.i[i] < s.i[j]
+}
+
+// variantMayFollow returns whether variant b may follow variant a.
+// a == -1 means that b is the first variant.
+func variantMayFollow(a, b int, t Tag) bool {
+	if a == b {
+		// Duplicates are not allowed.
+		return false
+	}
+	if b >= variantNumSpecialized {
+		// Generalized variants may follow anything.
+		return true
+	}
+	info := variants[b]
+	if a == -1 {
+		// Variant must be restricted by language.
+		infoScript := scriptID(info.value)
+		suppScript := scriptID(suppressScript[info.lang])
+		if info.lang == 0 || (infoScript != t.script && suppScript != t.script) {
+			return false
+		}
+		if info.end == 0 {
+			return langID(info.lang) == t.lang
+		}
+		for _, l := range prefixLangs[info.lang:info.end] {
+			if langID(l) == t.lang {
+				return true
+			}
+		}
+		return false
+	}
+	// Variant must be preceded by another variant.
+	if info.lang != 0 {
+		// Not an extended variant.
+		return false
+	}
+	if info.end == 0 {
+		return int(info.value) == a
+	}
+	for _, x := range prefixVariants[info.value:info.end] {
+		if a == int(x) {
+			return true
+		}
+	}
+	return false
 }
 
 type bytesSort [][]byte
@@ -376,7 +488,7 @@ func parseExtensions(scan *scanner) int {
 						keys = append(keys, scan.b[keyStart:end])
 					}
 					sort.Sort(bytesSort(keys))
-					copy(scan.b[p:], bytes.Join(keys, []byte{'-'}))
+					copy(scan.b[p:], bytes.Join(keys, separator))
 					break
 				}
 			}
@@ -413,7 +525,7 @@ func parseExtensions(scan *scanner) int {
 	if len(private) > 0 {
 		exts = append(exts, private)
 	}
-	scan.b = append(scan.b[:start], bytes.Join(exts, []byte{'-'})...)
+	scan.b = append(scan.b[:start], bytes.Join(exts, separator)...)
 	return len(scan.b)
 }
 

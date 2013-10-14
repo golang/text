@@ -586,6 +586,171 @@ var m49 = [340]uint16{
 	894, 180, 716, 999,
 }
 
+// Size: 1178 bytes
+var variantIndex = map[string]uint8{
+	"1606nict": 0x0,
+	"1694acad": 0x1,
+	"1901":     0x2,
+	"1959acad": 0x3,
+	"1994":     0x39,
+	"1996":     0x4,
+	"alalc97":  0x3a,
+	"aluku":    0x5,
+	"arevela":  0x6,
+	"arevmda":  0x7,
+	"baku1926": 0x8,
+	"bauddha":  0x9,
+	"biscayan": 0xa,
+	"biske":    0x34,
+	"bohoric":  0xb,
+	"boont":    0xc,
+	"dajnko":   0xd,
+	"emodeng":  0xe,
+	"fonipa":   0x3b,
+	"fonupa":   0x3c,
+	"fonxsamp": 0x3d,
+	"hepburn":  0xf,
+	"heploc":   0x33,
+	"hognorsk": 0x10,
+	"itihasa":  0x11,
+	"jauer":    0x12,
+	"jyutping": 0x13,
+	"kkcor":    0x14,
+	"kscor":    0x15,
+	"laukika":  0x16,
+	"lipaw":    0x35,
+	"luna1918": 0x17,
+	"metelko":  0x18,
+	"monoton":  0x19,
+	"ndyuka":   0x1a,
+	"nedis":    0x1b,
+	"njiva":    0x36,
+	"nulik":    0x1c,
+	"osojs":    0x37,
+	"pamaka":   0x1d,
+	"petr1708": 0x1e,
+	"pinyin":   0x1f,
+	"polyton":  0x20,
+	"puter":    0x21,
+	"rigik":    0x22,
+	"rozaj":    0x23,
+	"rumgr":    0x24,
+	"scotland": 0x25,
+	"scouse":   0x26,
+	"solba":    0x38,
+	"surmiran": 0x27,
+	"sursilv":  0x28,
+	"sutsilv":  0x29,
+	"tarask":   0x2a,
+	"uccor":    0x2b,
+	"ucrcor":   0x2c,
+	"ulster":   0x2d,
+	"unifon":   0x2e,
+	"vaidika":  0x2f,
+	"valencia": 0x30,
+	"vallader": 0x31,
+	"wadegile": 0x32,
+}
+
+// variantNumSpecialized is the number of specialized variants in variants.
+const variantNumSpecialized = 58
+
+type variantInfo struct {
+	lang  uint16
+	value uint8
+	end   uint8
+}
+
+// variants holds information about a variant indexed by variant ID.
+// If all fields are 0, the variant is a generalized variant.
+// If lang > 0, the variant is a specialized variant that must be the first variant.
+// In this case, value contains the scriptID that script of the tag must have.
+// If end == 0, lang is the langID of the language it must follow, otherwise
+// the variant must follow any of the langIDs in prefixLangs[lang:end].
+// In all other cases, the variant is a specialized variant that must follow
+// another variant. If end == 0, value contains the ID of the variant it must follow.
+// Otherwise, the variant must follow an of the variants in prefixVariants[value:end].
+// Size: 248 bytes, 62 elements
+var variants = [62]variantInfo{
+	{lang: 0x10b6, value: 0x0, end: 0x0},
+	{lang: 0x6f, value: 0x0, end: 0x0},
+	{lang: 0x52, value: 0x0, end: 0x0},
+	{lang: 0x1b, value: 0x0, end: 0x0},
+	{lang: 0x52, value: 0x0, end: 0x0},
+	{lang: 0xa9c, value: 0x0, end: 0x0},
+	{lang: 0x94, value: 0x0, end: 0x0},
+	{lang: 0x94, value: 0x0, end: 0x0},
+	{lang: 0x1, value: 0x0, end: 0xb},
+	{lang: 0x149, value: 0x0, end: 0x0},
+	{lang: 0x65, value: 0x0, end: 0x0},
+	{lang: 0x160, value: 0x0, end: 0x0},
+	{lang: 0x61, value: 0x0, end: 0x0},
+	{lang: 0x160, value: 0x0, end: 0x0},
+	{lang: 0x61, value: 0x0, end: 0x0},
+	{lang: 0xa5, value: 0x49, end: 0x0},
+	{lang: 0x120, value: 0x0, end: 0x0},
+	{lang: 0x149, value: 0x0, end: 0x0},
+	{lang: 0x142, value: 0x0, end: 0x0},
+	{lang: 0x4328, value: 0x0, end: 0x0},
+	{lang: 0xd7, value: 0x0, end: 0x0},
+	{lang: 0xd7, value: 0x0, end: 0x0},
+	{lang: 0x149, value: 0x0, end: 0x0},
+	{lang: 0x146, value: 0x0, end: 0x0},
+	{lang: 0x160, value: 0x0, end: 0x0},
+	{lang: 0x60, value: 0x0, end: 0x0},
+	{lang: 0xa9c, value: 0x0, end: 0x0},
+	{lang: 0x160, value: 0x0, end: 0x0},
+	{lang: 0x1a7, value: 0x0, end: 0x0},
+	{lang: 0xa9c, value: 0x0, end: 0x0},
+	{lang: 0x146, value: 0x0, end: 0x0},
+	{lang: 0xb, value: 0x49, end: 0xd},
+	{lang: 0x60, value: 0x0, end: 0x0},
+	{lang: 0x142, value: 0x0, end: 0x0},
+	{lang: 0x1a7, value: 0x0, end: 0x0},
+	{lang: 0x160, value: 0x0, end: 0x0},
+	{lang: 0x142, value: 0x0, end: 0x0},
+	{lang: 0x61, value: 0x0, end: 0x0},
+	{lang: 0x61, value: 0x0, end: 0x0},
+	{lang: 0x142, value: 0x0, end: 0x0},
+	{lang: 0x142, value: 0x0, end: 0x0},
+	{lang: 0x142, value: 0x0, end: 0x0},
+	{lang: 0x1b, value: 0x0, end: 0x0},
+	{lang: 0xd7, value: 0x0, end: 0x0},
+	{lang: 0xd7, value: 0x0, end: 0x0},
+	{lang: 0x153, value: 0x0, end: 0x0},
+	{lang: 0xd, value: 0x0, end: 0x12},
+	{lang: 0x149, value: 0x0, end: 0x0},
+	{lang: 0x39, value: 0x0, end: 0x0},
+	{lang: 0x142, value: 0x0, end: 0x0},
+	{lang: 0x1b8, value: 0x49, end: 0x0},
+	{lang: 0x0, value: 0xf, end: 0x0},
+	{lang: 0x0, value: 0x23, end: 0x0},
+	{lang: 0x0, value: 0x23, end: 0x0},
+	{lang: 0x0, value: 0x23, end: 0x0},
+	{lang: 0x0, value: 0x23, end: 0x0},
+	{lang: 0x0, value: 0x23, end: 0x0},
+	{lang: 0x0, value: 0x0, end: 0x5},
+	{lang: 0x0, value: 0x0, end: 0x0},
+	{lang: 0x0, value: 0x0, end: 0x0},
+	{lang: 0x0, value: 0x0, end: 0x0},
+	{lang: 0x0, value: 0x0, end: 0x0},
+}
+
+// prefixLangs contains lists of langIDs for variants that may follow a variety
+// of languages
+// Size: 36 bytes, 18 elements
+var prefixLangs = [18]uint16{
+	0, 20, 21, 2245, 191, 204, 216, 331, 390, 401, 419, 440,
+	44, 97, 5711, 7835, 13663, 17205,
+}
+
+// prefixVariants contains a list of variant IDs for variants that may follow
+// a variety of other variants.
+// Size: 5 bytes, 5 elements
+var prefixVariants = [5]uint8{
+	35, 52, 54, 55, 56,
+}
+
 const (
 	curXTS = 280
 	curXXX = 282
@@ -1977,4 +2142,4 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 14.6K (14991 bytes); Check: 6B2196F9
+// Size: 16.1K (16458 bytes); Check: CD37B299
