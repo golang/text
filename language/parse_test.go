@@ -123,6 +123,7 @@ func parseTests() []parseTest {
 		{in: "de-Latn-1901", lang: "de", script: "Latn", variants: "1901"},
 		// Do not accept with incorrect script
 		{in: "de-Cyrl-1901", lang: "de", script: "Cyrl", variants: "", invalid: true},
+		{in: "de-Cyrl-1902", lang: "de", script: "Cyrl", variants: "", invalid: true},
 		// Specialized.
 		{in: "sl-rozaj", lang: "sl", variants: "rozaj"},
 		{in: "sl-rozaj-lipaw", lang: "sl", variants: "rozaj-lipaw"},
@@ -148,18 +149,40 @@ func parseTests() []parseTest {
 		{in: "en-c_cc-b-bbb-a-aaa", lang: "en", changed: true, extList: []string{"a-aaa", "b-bbb", "c-cc"}},
 		{in: "en-x_cc-b-bbb-a-aaa", lang: "en", ext: "x-cc-b-bbb-a-aaa", changed: true},
 		{in: "en-c_cc-b-bbb-a-aaa-x-x", lang: "en", changed: true, extList: []string{"a-aaa", "b-bbb", "c-cc", "x-x"}},
+		{in: "en-v-c", lang: "en", ext: "", invalid: true},
+		{in: "en-v-abcdefghi", lang: "en", ext: "", invalid: true},
+		{in: "en-v-abc-x", lang: "en", ext: "v-abc", invalid: true},
+		{in: "en-v-abc-x-", lang: "en", ext: "v-abc", invalid: true},
+		{in: "en-v-abc-w-x-xx", lang: "en", extList: []string{"v-abc", "x-xx"}, invalid: true, changed: true},
+		{in: "en-v-abc-w-y-yx", lang: "en", extList: []string{"v-abc", "y-yx"}, invalid: true, changed: true},
+		{in: "en-v-c-abc", lang: "en", ext: "c-abc", invalid: true, changed: true},
+		{in: "en-v-w-abc", lang: "en", ext: "w-abc", invalid: true, changed: true},
+		{in: "en-v-x-abc", lang: "en", ext: "x-abc", invalid: true, changed: true},
+		{in: "en-v-x-a", lang: "en", ext: "x-a", invalid: true, changed: true},
+		{in: "en-9-aa-0-aa-z-bb-x-a", lang: "en", extList: []string{"0-aa", "9-aa", "z-bb", "x-a"}, changed: true},
+		{in: "en-u-c", lang: "en", ext: "", invalid: true},
 		{in: "en-u-co-phonebk", lang: "en", ext: "u-co-phonebk"},
+		{in: "en-u-co-phonebk-ca", lang: "en", ext: "u-co-phonebk", invalid: true},
+		{in: "en-u-nu-arabic-co-phonebk-ca", lang: "en", ext: "u-co-phonebk-nu-arabic", invalid: true, changed: true},
+		{in: "en-u-nu-arabic-co-phonebk-ca-x", lang: "en", ext: "u-co-phonebk-nu-arabic", invalid: true, changed: true},
+		{in: "en-u-nu-arabic-co-phonebk-ca-s", lang: "en", ext: "u-co-phonebk-nu-arabic", invalid: true, changed: true},
+		{in: "en-u-nu-arabic-co-phonebk-ca-a12345678", lang: "en", ext: "u-co-phonebk-nu-arabic", invalid: true, changed: true},
+		{in: "en-u-co-phonebook", lang: "en", ext: "", invalid: true},
+		{in: "en-u-co-phonebook-cu-xau", lang: "en", ext: "u-cu-xau", invalid: true, changed: true},
 		{in: "en-Cyrl-u-co-phonebk", lang: "en", script: "Cyrl", ext: "u-co-phonebk"},
 		{in: "en-US-u-co-phonebk", lang: "en", region: "US", ext: "u-co-phonebk"},
 		{in: "en-US-u-co-phonebk-cu-xau", lang: "en", region: "US", ext: "u-co-phonebk-cu-xau"},
 		{in: "en-scotland-u-co-phonebk", lang: "en", variants: "scotland", ext: "u-co-phonebk"},
 		{in: "en-u-cu-xua-co-phonebk", lang: "en", ext: "u-co-phonebk-cu-xua", changed: true},
-		{in: "en-u-def-abc-cu-xua-co-phonebk", lang: "en", ext: "u-def-abc-co-phonebk-cu-xua", changed: true},
-		{in: "en-u-def-abc", lang: "en", ext: "u-def-abc"},
+		{in: "en-u-def-abc-cu-xua-co-phonebk", lang: "en", ext: "u-abc-def-co-phonebk-cu-xua", changed: true},
+		{in: "en-u-def-abc", lang: "en", ext: "u-abc-def", changed: true},
 		{in: "en-u-cu-xua-co-phonebk-a-cd", lang: "en", extList: []string{"a-cd", "u-co-phonebk-cu-xua"}, changed: true},
 		// Invalid "u" extension. Drop invalid parts.
 		{in: "en-u-cu-co-phonebk", lang: "en", extList: []string{"u-co-phonebk"}, invalid: true, changed: true},
 		{in: "en-u-cu-xau-co", lang: "en", extList: []string{"u-cu-xau"}, invalid: true},
+		// We allow duplicate keys as the LDML spec does not explicitly prohibit it.
+		// TODO: Consider eliminating duplicates and returning an error.
+		{in: "en-u-cu-xau-co-phonebk-cu-xau", lang: "en", ext: "u-co-phonebk-cu-xau-cu-xau", changed: true},
 		{in: "en-t-en-Cyrl-NL-fonipa", lang: "en", ext: "t-en-cyrl-nl-fonipa", changed: true},
 		{in: "en-t-en-Cyrl-NL-fonipa-t0-abc-def", lang: "en", ext: "t-en-cyrl-nl-fonipa-t0-abc-def", changed: true},
 		{in: "en-t-t0-abcd", lang: "en", ext: "t-t0-abcd"},
@@ -292,6 +315,9 @@ func TestParse(t *testing.T) {
 			} else if int(id.pExt) < len(*id.str) && id.pExt > 0 {
 				ext = (*id.str)[id.pExt+1:]
 			}
+		}
+		if tag, _ := Parse(id.String()); tag.String() != id.String() {
+			t.Errorf("%d: reparse was %q; want %q", tt.i, id.String(), tag.String())
 		}
 		if ext != tt.ext {
 			t.Errorf("%d: ext was %q; want %q", tt.i, ext, tt.ext)

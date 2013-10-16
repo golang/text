@@ -154,14 +154,14 @@ func (s *scanner) gobble(e error) {
 	s.next = s.start
 }
 
-// deleteRange removes the given range and sets the scanning position to the first
-// token after the deleted range.
+// deleteRange removes the given range from s.b before the current token.
 func (s *scanner) deleteRange(start, end int) {
 	s.setError(errSyntax)
-	s.b = s.b[:start-1+copy(s.b[start-1:], s.b[end:])]
-	s.end = start - 1
-	s.start, s.next = start, start
-	s.scan()
+	s.b = s.b[:start+copy(s.b[start:], s.b[end:])]
+	diff := end - start
+	s.next -= diff
+	s.start -= diff
+	s.end -= diff
 }
 
 // scan parses the next token of a BCP 47 string.  Tokens that are larger
@@ -242,7 +242,10 @@ func parse(scan *scanner, s string) (t Tag, err error) {
 	var end int
 	if n := len(scan.token); n <= 1 {
 		scan.toLower(0, len(scan.b))
-		end = parsePrivate(scan)
+		if n == 0 || scan.token[0] != 'x' {
+			return t, errSyntax
+		}
+		end = parseExtensions(scan)
 	} else if n >= 4 {
 		return und, errSyntax
 	} else { // the usual case
@@ -250,14 +253,13 @@ func parse(scan *scanner, s string) (t Tag, err error) {
 		if n := len(scan.token); n == 1 {
 			t.pExt = uint16(end)
 			end = parseExtensions(scan)
+		} else if end < len(scan.b) {
+			scan.setError(errSyntax)
+			scan.b = scan.b[:end]
 		}
 	}
-	if end < len(scan.b) {
-		scan.setError(errSyntax)
-		scan.b = scan.b[:end]
-	}
-	if len(scan.b) < len(s) {
-		s = s[:len(scan.b)]
+	if end < len(s) {
+		s = s[:end]
 	}
 	if len(s) > 0 && cmp(s, scan.b) == 0 {
 		t.str = &s
@@ -367,10 +369,13 @@ func parseVariants(scan *scanner, end int, t Tag) int {
 			k++
 			l = w
 		}
-		str := bytes.Join(variant[:k], separator)
-		scan.resizeRange(start, end, len(str))
-		copy(scan.b[scan.start:], str)
-		end = scan.end
+		if str := bytes.Join(variant[:k], separator); len(str) == 0 {
+			end = start - 1
+		} else {
+			scan.resizeRange(start, end, len(str))
+			copy(scan.b[scan.start:], str)
+			end = scan.end
+		}
 	}
 	return end
 }
@@ -454,40 +459,64 @@ func (b bytesSort) Less(i, j int) bool {
 
 // parseExtensions parses and normalizes the extensions in the buffer.
 // It returns the last position of scan.b that is part of any extension.
-// TODO: return errors.
+// It also trims scan.b to remove excess parts accordingly.
 func parseExtensions(scan *scanner) int {
 	start := scan.start
 	exts := [][]byte{}
 	private := []byte{}
 	end := scan.end
 	for len(scan.token) == 1 {
-		start := scan.start
-		extension := []byte{}
+		extStart := scan.start
 		ext := scan.token[0]
 		switch ext {
 		case 'u':
-			attrEnd := scan.acceptMinSize(3)
-			end = attrEnd
-			var key []byte
-			for last := []byte{}; len(scan.token) == 2; last = key {
-				key = scan.token
-				keyStart, keyEnd := scan.start, scan.end
-				end = scan.acceptMinSize(3)
-				if keyEnd == end {
-					scan.deleteRange(keyStart, end)
-					continue
+			attrStart := end
+			scan.scan()
+			for last := []byte{}; len(scan.token) > 2; scan.scan() {
+				if bytes.Compare(scan.token, last) != -1 {
+					// Attributes are unsorted. Start over from scratch.
+					p := attrStart + 1
+					scan.next = p
+					attrs := [][]byte{}
+					for scan.scan(); len(scan.token) > 2; scan.scan() {
+						attrs = append(attrs, scan.token)
+						end = scan.end
+					}
+					sort.Sort(bytesSort(attrs))
+					copy(scan.b[p:], bytes.Join(attrs, separator))
+					break
 				}
+				last = scan.token
+				end = scan.end
+			}
+			var last, key []byte
+			for attrEnd := end; len(scan.token) == 2; last = key {
+				key = scan.token
+				keyEnd := scan.end
+				end = scan.acceptMinSize(3)
 				// TODO: check key value validity
-				if bytes.Compare(key, last) != 1 {
+				if keyEnd == end || bytes.Compare(key, last) != 1 {
+					// We have an invalid key or the keys are not sorted.
+					// Start scanning keys from scratch and reorder.
 					p := attrEnd + 1
 					scan.next = p
 					keys := [][]byte{}
 					for scan.scan(); len(scan.token) == 2; {
-						keyStart := scan.start
+						keyStart, keyEnd := scan.start, scan.end
 						end = scan.acceptMinSize(3)
-						keys = append(keys, scan.b[keyStart:end])
+						if keyEnd != end {
+							keys = append(keys, scan.b[keyStart:end])
+						} else {
+							scan.setError(errSyntax)
+							end = keyStart
+						}
 					}
 					sort.Sort(bytesSort(keys))
+					reordered := bytes.Join(keys, separator)
+					if e := p + len(reordered); e < end {
+						scan.deleteRange(e, end)
+						end = e
+					}
 					copy(scan.b[p:], bytes.Join(keys, separator))
 					break
 				}
@@ -496,7 +525,7 @@ func parseExtensions(scan *scanner) int {
 			scan.scan()
 			if n := len(scan.token); n >= 2 && n <= 3 && isAlpha(scan.token[1]) {
 				_, end = parseTag(scan)
-				scan.toLower(start, end)
+				scan.toLower(extStart, end)
 			}
 			for len(scan.token) == 2 && !isAlpha(scan.token[1]) {
 				end = scan.acceptMinSize(3)
@@ -506,11 +535,13 @@ func parseExtensions(scan *scanner) int {
 		default:
 			end = scan.acceptMinSize(2)
 		}
-		extension = scan.b[start:end]
-		if len(extension) < 3 {
+		extension := scan.b[extStart:end]
+		if len(extension) < 3 || (ext != 'x' && len(extension) < 4) {
 			scan.setError(errSyntax)
+			end = extStart
 			continue
-		} else if len(exts) == 0 && (ext == 'x' || scan.next >= len(scan.b)) {
+		} else if start == extStart && (ext == 'x' || scan.start == len(scan.b)) {
+			scan.b = scan.b[:end]
 			return end
 		} else if ext == 'x' {
 			private = extension
@@ -518,23 +549,18 @@ func parseExtensions(scan *scanner) int {
 		}
 		exts = append(exts, extension)
 	}
-	if scan.next < len(scan.b) {
-		scan.setError(errSyntax)
-	}
 	sort.Sort(bytesSort(exts))
 	if len(private) > 0 {
 		exts = append(exts, private)
 	}
-	scan.b = append(scan.b[:start], bytes.Join(exts, separator)...)
-	return len(scan.b)
-}
-
-func parsePrivate(scan *scanner) int {
-	if len(scan.token) == 0 || scan.token[0] != 'x' {
-		scan.setError(errSyntax)
-		return scan.start
+	scan.b = scan.b[:start]
+	if len(exts) > 0 {
+		scan.b = append(scan.b, bytes.Join(exts, separator)...)
+	} else if start > 0 {
+		// Strip trailing '-'.
+		scan.b = scan.b[:start-1]
 	}
-	return parseExtensions(scan)
+	return end
 }
 
 // A Part identifies a part of the language tag.
@@ -589,13 +615,13 @@ func Compose(m map[Part]string) (t Tag, err error) {
 		}
 		add(p)
 	}
-	for p := Part('0'); p < Part('9'); p++ {
+	for p := Part('0'); p <= Part('9'); p++ {
 		add(p)
 	}
-	for p := Part('a'); p < Part('w'); p++ {
+	for p := Part('a'); p <= Part('w'); p++ {
 		add(p)
 	}
-	for p := Part('y'); p < Part('z'); p++ {
+	for p := Part('y'); p <= Part('z'); p++ {
 		add(p)
 	}
 	add(Part('x'))
