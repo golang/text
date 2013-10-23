@@ -689,7 +689,7 @@ var (
 )
 
 // ParseAcceptLanguage parses the contents of a Accept-Language header as
-// defined in http://www.google.com/url?q=http://www.ietf.org/rfc/rfc2616.txt
+// defined in http://www.ietf.org/rfc/rfc2616.txt
 // and returns a list of Tags and a list of corresponding quality weights.
 // The Tags will be sorted by highest weight first and then by first occurrence.
 // Tags with a weight of zero will be dropped. An error will be returned if the
