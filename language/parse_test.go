@@ -6,7 +6,6 @@ package language
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -99,10 +98,6 @@ type parseTest struct {
 }
 
 func parseTests() []parseTest {
-	var manyVars string
-	for i := 0; i < 50; i++ {
-		manyVars += fmt.Sprintf("-abc%02d", i)
-	}
 	tests := []parseTest{
 		{in: "root", lang: "und", changed: true},
 		{in: "und", lang: "und"},
@@ -118,29 +113,34 @@ func parseTests() []parseTest {
 		{in: "de-latn-be", lang: "de", script: "Latn", region: "BE", changed: true},
 		// Variants
 		{in: "de-1901", lang: "de", variants: "1901"},
-		{in: "nl-fonupa-fonupa", lang: "nl", variants: "fonupa", invalid: true},
 		// Accept with unsuppressed script.
 		{in: "de-Latn-1901", lang: "de", script: "Latn", variants: "1901"},
-		// Do not accept with incorrect script
-		{in: "de-Cyrl-1901", lang: "de", script: "Cyrl", variants: "", invalid: true},
-		{in: "de-Cyrl-1902", lang: "de", script: "Cyrl", variants: "", invalid: true},
 		// Specialized.
 		{in: "sl-rozaj", lang: "sl", variants: "rozaj"},
 		{in: "sl-rozaj-lipaw", lang: "sl", variants: "rozaj-lipaw"},
 		{in: "sl-rozaj-biske", lang: "sl", variants: "rozaj-biske"},
-		{in: "sl-rozaj-lipaw-1994", lang: "sl", variants: "rozaj-lipaw", invalid: true},
 		{in: "sl-rozaj-biske-1994", lang: "sl", variants: "rozaj-biske-1994"},
 		{in: "sl-rozaj-1994", lang: "sl", variants: "rozaj-1994"},
-		// Maximum number of variants.
+		// Maximum number of variants while adhering to prefix rules.
 		{in: "sl-rozaj-biske-1994-alalc97-fonipa-fonupa-fonxsamp", lang: "sl", variants: "rozaj-biske-1994-alalc97-fonipa-fonupa-fonxsamp"},
+
 		// Sorting.
 		{in: "sl-1994-biske-rozaj", lang: "sl", variants: "rozaj-biske-1994", changed: true},
-		{in: "sl-1994-biske-rozaj-1994-biske-rozaj", lang: "sl", variants: "rozaj-biske-1994", invalid: true, changed: true},
 		{in: "sl-rozaj-biske-1994-alalc97-fonupa-fonipa-fonxsamp", lang: "sl", variants: "rozaj-biske-1994-alalc97-fonipa-fonupa-fonxsamp", changed: true},
 		{in: "nl-fonxsamp-alalc97-fonipa-fonupa", lang: "nl", variants: "alalc97-fonipa-fonupa-fonxsamp", changed: true},
 
-		//{in: "nl" + manyVars, lang: "nl", variants: manyVars[1:]},
-		//{in: "nl" + manyVars + manyVars, lang: "nl", variants: manyVars[1:]},
+		// Duplicates variants are removed, but not an error.
+		{in: "nl-fonupa-fonupa", lang: "nl", variants: "fonupa"},
+
+		// Variants that do not have correct prefixes. We still accept these.
+		{in: "de-Cyrl-1901", lang: "de", script: "Cyrl", variants: "1901"},
+		{in: "sl-rozaj-lipaw-1994", lang: "sl", variants: "rozaj-lipaw-1994"},
+		{in: "sl-1994-biske-rozaj-1994-biske-rozaj", lang: "sl", variants: "rozaj-biske-1994", changed: true},
+		{in: "de-Cyrl-1901", lang: "de", script: "Cyrl", variants: "1901"},
+
+		// Invalid variant.
+		{in: "de-1902", lang: "de", variants: "", invalid: true},
+
 		{in: "EN_CYRL", lang: "en", script: "Cyrl", changed: true},
 		// private use and extensions
 		{in: "x-a-b-c-d", ext: "x-a-b-c-d"},
@@ -280,7 +280,7 @@ func partChecks(t *testing.T, f func(*parseTest) func(Part) string) {
 			}
 		}
 		if s := get(Extension('q')); s != "" {
-			t.Errorf(`%d: unused extension 'q' was %q; want ""`, s)
+			t.Errorf(`%d: unused extension 'q' was %q; want ""`, i, s)
 		}
 	}
 }

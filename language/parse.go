@@ -341,7 +341,7 @@ func parseVariants(scan *scanner, end int, t Tag) int {
 		varID = append(varID, v)
 		variant = append(variant, scan.token)
 		if !needSort {
-			if last < int(v) && variantMayFollow(last, int(v), t) {
+			if last < int(v) {
 				last = int(v)
 			} else {
 				needSort = true
@@ -360,8 +360,8 @@ func parseVariants(scan *scanner, end int, t Tag) int {
 		k, l := 0, -1
 		for i, v := range varID {
 			w := int(v)
-			if !variantMayFollow(l, w, t) {
-				scan.setError(errSyntax)
+			if l == w {
+				// Remove duplicates.
 				continue
 			}
 			varID[k] = varID[i]
@@ -396,51 +396,6 @@ func (s variantsSort) Swap(i, j int) {
 
 func (s variantsSort) Less(i, j int) bool {
 	return s.i[i] < s.i[j]
-}
-
-// variantMayFollow returns whether variant b may follow variant a.
-// a == -1 means that b is the first variant.
-func variantMayFollow(a, b int, t Tag) bool {
-	if a == b {
-		// Duplicates are not allowed.
-		return false
-	}
-	if b >= variantNumSpecialized {
-		// Generalized variants may follow anything.
-		return true
-	}
-	info := variants[b]
-	if a == -1 {
-		// Variant must be restricted by language.
-		infoScript := scriptID(info.value)
-		suppScript := scriptID(suppressScript[info.lang])
-		if info.lang == 0 || (infoScript != t.script && suppScript != t.script) {
-			return false
-		}
-		if info.end == 0 {
-			return langID(info.lang) == t.lang
-		}
-		for _, l := range prefixLangs[info.lang:info.end] {
-			if langID(l) == t.lang {
-				return true
-			}
-		}
-		return false
-	}
-	// Variant must be preceded by another variant.
-	if info.lang != 0 {
-		// Not an extended variant.
-		return false
-	}
-	if info.end == 0 {
-		return int(info.value) == a
-	}
-	for _, x := range prefixVariants[info.value:info.end] {
-		if a == int(x) {
-			return true
-		}
-	}
-	return false
 }
 
 type bytesSort [][]byte

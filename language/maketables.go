@@ -91,22 +91,6 @@ of the 3-letter ISO codes in altRegionISO3.`,
 	`
 variantNumSpecialized is the number of specialized variants in variants.`,
 	`
-variants holds information about a variant indexed by variant ID.
-If all fields are 0, the variant is a generalized variant.
-If lang > 0, the variant is a specialized variant that must be the first variant.
-In this case, value contains the scriptID that script of the tag must have.
-If end == 0, lang is the langID of the language it must follow, otherwise
-the variant must follow any of the langIDs in prefixLangs[lang:end].
-In all other cases, the variant is a specialized variant that must follow
-another variant. If end == 0, value contains the ID of the variant it must follow.
-Otherwise, the variant must follow an of the variants in prefixVariants[value:end].`,
-	`
-prefixLangs contains lists of langIDs for variants that may follow a variety
-of languages`,
-	`
-prefixVariants contains a list of variant IDs for variants that may follow
-a variety of other variants.`,
-	`
 currency holds an alphabetically sorted list of canonical 3-letter currency identifiers.
 Each identifier is followed by a byte of which the 6 most significant bits
 indicated the rounding and the least 2 significant bits indicate the
@@ -944,34 +928,21 @@ func find(list []string, s string) int {
 // specialized variants.  We will therefore always assign a higher index value
 // to a generalized variant than any other variant. Generalized variants are
 // sorted alphabetically among themselves.
-// Specialized variants are mutually exclusive unless it is explicitly specified
-// that a variant may be combined with another variant. We assume that if a
-// specialized variant may be followed by another specialized variant, it can
-// only be used for a single language. This is currently the case in the IANA
-// registry. This allows us to, for each variant, only to record what it's
-// allowed predecessors are, instead of maintaining a sequence. We thereby also
-// further split the group of specialized variants in 1) specialized variants
-// that are combined directly with a language or specialized variants that
-// are used to further qualify other specialized variants.
+// Specialized variants may also sort after other specialized variants. Such
+// variants will be ordered after any of the variants they may follow.
+// We assume that if a variant x is followed by a variant y, then for any prefix
+// p of x, p-x is a prefix of y. This allows us to order tags based on the
+// maximum of the length of any of its prefixes.
+// TODO: it is possible to define a set of Prefix values on variants such that
+// a total order cannot be defined to the point that this algorithm breaks.
+// In other words, we cannot guarantee the same order of variants for the
+// future using the same algorithm or for non-compliant combinations of
+// variants. For this reason, consider using simple alphabetic sorting
+// of variants and ignore Prefix restrictions altogether.
 func (b *builder) writeVariant() {
-	type variantInfo struct {
-		// Variant may only be used with this language.
-		// lang is used as an index if n != 0.
-		lang uint16
-		// Restricts the script that must precede it, if script != 0.
-		value uint8
-		// if end > 0 and lang == 0, value and end are respectively the start
-		// and end indices into prefixVariants.
-		// if end > 0 and lang != 0, lang and end are respectively the start
-		// and end indices into prefixLangs.
-		end uint8
-	}
-	index := make(map[string]*variantInfo)
 	generalized := stringSet{}
 	specialized := stringSet{}
 	specializedExtend := stringSet{}
-	prefixLangs := []uint16{0}
-	prefixVariants := []uint8{}
 	// Collate the variants by type and check assumptions.
 	for _, v := range b.variant.slice() {
 		e := b.registry[v]
@@ -979,39 +950,20 @@ func (b *builder) writeVariant() {
 			generalized.add(v)
 			continue
 		}
-		info := variantInfo{}
-		index[v] = &info
 		c := strings.Split(e.prefix[0], "-")
-		info.lang = b.langIndex(c[0])
-		script := 0
+		hasScript := false
 		if len(c) > 1 {
-			if sc, ok := b.script.find(c[1]); ok {
-				script = sc
-			}
+			_, hasScript = b.script.find(c[1])
 		}
-		if len(c) == 1 || len(c) == 2 && script != 0 {
+		if len(c) == 1 || len(c) == 2 && hasScript {
 			// Variant is preceded by a language.
 			specialized.add(v)
-			info.value = uint8(script)
-			if len(e.prefix) > 1 {
-				info.lang = uint16(len(prefixLangs))
-				info.end = uint8(len(prefixLangs) + len(e.prefix))
-				for _, p := range e.prefix {
-					c := strings.Split(p, "-")
-					prefixLangs = append(prefixLangs, b.langIndex(c[0]))
-					if len(c) > 1 {
-						if sc, _ := b.script.find(c[1]); sc != script {
-							log.Fatalf("differing scripts found in prefixes of variant %q", v)
-						}
-					}
-				}
-			}
 			continue
 		}
 		// Variant is preceded by another variant.
 		specializedExtend.add(v)
 		prefix := c[0] + "-"
-		if script != 0 {
+		if hasScript {
 			prefix += c[1]
 		}
 		for _, p := range e.prefix {
@@ -1040,10 +992,6 @@ func (b *builder) writeVariant() {
 	// Sort extended variants.
 	a := specializedExtend.s
 	less := func(v, w string) bool {
-		// Group by language first
-		if lv, lw := index[v].lang, index[w].lang; lv != lw {
-			return lv < lw
-		}
 		// Sort by the maximum number of elements.
 		maxCount := func(s string) (max int) {
 			for _, p := range b.registry[s].prefix {
@@ -1077,36 +1025,7 @@ func (b *builder) writeVariant() {
 		log.Fatalf("maximum number of variants exceeded: was %d; want <= 255", n)
 	}
 	b.writeMap("variantIndex", variantIndex)
-
-	// Complete extended specialized variants.
-	for _, v := range specializedExtend.s {
-		e := b.registry[v]
-		info := index[v]
-		info.lang = 0
-		if len(e.prefix) == 1 {
-			p := e.prefix[0]
-			info.value = variantIndex[p[strings.LastIndex(p, "-")+1:]]
-		} else {
-			info.value = uint8(len(prefixVariants))
-			info.end = uint8(len(prefixVariants) + len(e.prefix))
-			for _, p := range e.prefix {
-				prefixVariants = append(prefixVariants, variantIndex[p[strings.LastIndex(p, "-")+1:]])
-			}
-		}
-	}
-
-	// Put the per-variant information in a list.
-	variants := make([]variantInfo, len(variantIndex))
-	for v, i := range variantIndex {
-		if i < uint8(numSpecialized) {
-			variants[i] = *index[v]
-		}
-	}
 	b.writeConst("variantNumSpecialized", numSpecialized)
-	b.writeType(variantInfo{})
-	b.writeSlice("variants", variants)
-	b.writeSlice("prefixLangs", prefixLangs)
-	b.writeSlice("prefixVariants", prefixVariants)
 }
 
 func (b *builder) writeLocale() {
