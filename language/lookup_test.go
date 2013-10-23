@@ -77,7 +77,7 @@ func TestFixCase(t *testing.T) {
 		b := buf[:copy(buf[:], tt[1])]
 		res := fixCase(tt[0], b)
 		if res && cmp(tt[2], b) != 0 || !res && tt[0] != tt[2] {
-			t.Errorf("%s+%s: found %q; want %q", tt[0], tt[1], res, tt[2])
+			t.Errorf("%s+%s: found %q; want %q", tt[0], tt[1], b, tt[2])
 		}
 	}
 }
@@ -170,7 +170,7 @@ func TestRegionID(t *testing.T) {
 		if tt.id[0] == '_' {
 			id := tt.id[1:]
 			if _, err := getRegionID(b(id)); err == nil {
-				t.Errorf("%d:err(%s): found nil; want error", i, id, err)
+				t.Errorf("%d:err(%s): found nil; want error", i, id)
 			}
 			continue
 		}
@@ -294,7 +294,7 @@ func TestIsPrivateUse(t *testing.T) {
 	for i, tt := range tests {
 		x, _ := getLangID([]byte(tt.s))
 		if b := x.IsPrivateUse(); b != tt.private {
-			t.Errorf("%d: langID.IsPrivateUse(%s) was %v; want %v", i, tt.s, b, tt.private, int(x))
+			t.Errorf("%d: langID.IsPrivateUse(%s) was %v; want %v", i, tt.s, b, tt.private)
 		}
 	}
 	tests = []test{
