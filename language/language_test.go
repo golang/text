@@ -27,7 +27,7 @@ func TestIsRoot(t *testing.T) {
 		loc, _ := Parse(tt.in)
 		undef := tt.lang == "und" && tt.script == "" && tt.region == "" && tt.ext == ""
 		if loc.IsRoot() != undef {
-			fmt.Printf("%d: %#v %s %s\n", i, loc, tt.lang, undef)
+			fmt.Printf("%d: %#v %s %v\n", i, loc, tt.lang, undef)
 			t.Errorf("%d: was %v; want %v", i, loc.IsRoot(), undef)
 		}
 	}
@@ -315,6 +315,132 @@ func TestCanonicalize(t *testing.T) {
 		in, _ = in.Canonicalize(tt.option)
 		if in.String() != tt.out {
 			t.Errorf("%d:%s: was %s; want %s", i, tt.in, in.String(), tt.out)
+		}
+	}
+}
+
+func TestTypeForKey(t *testing.T) {
+	tests := []struct{ key, in, out string }{
+		{"co", "en", ""},
+		{"co", "en-u-abc", ""},
+		{"co", "en-u-co-phonebk", "phonebk"},
+		{"co", "en-u-co-phonebk-cu-aud", "phonebk"},
+		{"co", "x-foo-u-co-phonebk", ""},
+		{"nu", "en-u-co-phonebk-nu-arabic", "arabic"},
+	}
+	for _, tt := range tests {
+		if v := Make(tt.in).TypeForKey(tt.key); v != tt.out {
+			t.Errorf("%q[%q]: was %q; want %q", tt.in, tt.key, v, tt.out)
+		}
+	}
+}
+
+func TestSetTypeForKey(t *testing.T) {
+	tests := []struct {
+		key, value, in, out string
+		err                 bool
+	}{
+		// replace existing value
+		{"co", "pinyin", "en-u-co-phonebk", "en-u-co-pinyin", false},
+		{"co", "pinyin", "en-u-co-phonebk-cu-xau", "en-u-co-pinyin-cu-xau", false},
+		{"co", "pinyin", "en-u-co-phonebk-v-xx", "en-u-co-pinyin-v-xx", false},
+		{"co", "pinyin", "en-u-co-phonebk-x-x", "en-u-co-pinyin-x-x", false},
+		{"nu", "arabic", "en-u-co-phonebk-nu-vaai", "en-u-co-phonebk-nu-arabic", false},
+		// add to existing -u extension
+		{"co", "pinyin", "en-u-ca-gregory", "en-u-ca-gregory-co-pinyin", false},
+		{"co", "pinyin", "en-u-ca-gregory-nu-vaai", "en-u-ca-gregory-co-pinyin-nu-vaai", false},
+		{"co", "pinyin", "en-u-ca-gregory-v-va", "en-u-ca-gregory-co-pinyin-v-va", false},
+		{"co", "pinyin", "en-u-ca-gregory-x-a", "en-u-ca-gregory-co-pinyin-x-a", false},
+		{"ca", "gregory", "en-u-co-pinyin", "en-u-ca-gregory-co-pinyin", false},
+		// add -u extension
+		{"co", "pinyin", "en", "en-u-co-pinyin", false},
+		{"co", "pinyin", "und", "und-u-co-pinyin", false},
+		{"co", "pinyin", "en-a-aaa", "en-a-aaa-u-co-pinyin", false},
+		{"co", "pinyin", "en-x-aaa", "en-u-co-pinyin-x-aaa", false},
+		{"co", "pinyin", "en-v-aa", "en-u-co-pinyin-v-aa", false},
+		{"co", "pinyin", "en-a-aaa-x-x", "en-a-aaa-u-co-pinyin-x-x", false},
+		{"co", "pinyin", "en-a-aaa-v-va", "en-a-aaa-u-co-pinyin-v-va", false},
+		// error on invalid values
+		{"co", "pinyinxxx", "en", "en", true},
+		{"co", "piny.n", "en", "en", true},
+		{"co", "pinyinxxx", "en-a-aaa", "en-a-aaa", true},
+		{"co", "pinyinxxx", "en-u-aaa", "en-u-aaa", true},
+		{"co", "pinyinxxx", "en-u-aaa-co-pinyin", "en-u-aaa-co-pinyin", true},
+		{"co", "pinyi.", "en-u-aaa-co-pinyin", "en-u-aaa-co-pinyin", true},
+		{"col", "pinyin", "en", "en", true},
+		{"co", "cu", "en", "en", true},
+		// error when setting on a private use tag
+		{"co", "phonebook", "x-foo", "x-foo", true},
+	}
+	for i, tt := range tests {
+		tag := Make(tt.in)
+		if v, err := tag.SetTypeForKey(tt.key, tt.value); v.String() != tt.out {
+			t.Errorf("%d:%q[%q]=%q: was %q; want %q", i, tt.in, tt.key, tt.value, v, tt.out)
+		} else if (err != nil) != tt.err {
+			t.Errorf("%d:%q[%q]=%q: error was %v; want %v", i, tt.in, tt.key, tt.value, err != nil, tt.err)
+		} else if val := v.TypeForKey(tt.key); err == nil && val != tt.value {
+			t.Errorf("%d:%q[%q]==%q: was %v; want %v", i, tt.out, tt.key, tt.value, val, tt.value)
+		}
+		if len(tag.String()) <= 3 {
+			// Simulate a tag for which the string has not been set.
+			tag.str, tag.pExt, tag.pVariant = nil, 0, 0
+			if tag, err := tag.SetTypeForKey(tt.key, tt.value); err == nil {
+				if val := tag.TypeForKey(tt.key); err == nil && val != tt.value {
+					t.Errorf("%d:%q[%q]==%q: was %v; want %v", i, tt.out, tt.key, tt.value, val, tt.value)
+				}
+			}
+		}
+	}
+}
+
+func TestFindKeyAndType(t *testing.T) {
+	// out is either the matched type in case of a match or the original
+	// string up till the insertion point.
+	tests := []struct {
+		key     string
+		hasExt  bool
+		in, out string
+	}{
+		// Don't search past a private use extension.
+		{"co", false, "en-x-foo-u-co-pinyin", "en"},
+		{"co", false, "x-foo-u-co-pinyin", ""},
+		{"co", false, "en-s-fff-x-foo", "en-s-fff"},
+		// Insertion points in absence of -u extension.
+		{"cu", false, "en", "en"},
+		{"cu", false, "en-v-va", "en"},
+		{"cu", false, "en-a-va", "en-a-va"},
+		{"cu", false, "en-a-va-v-va", "en-a-va"},
+		{"cu", false, "en-x-a", "en"},
+		// Tags with the -u extension.
+		{"co", true, "en-u-co-standard", "standard"},
+		{"co", true, "yue-u-co-pinyin", "pinyin"},
+		{"co", true, "en-u-co-abc", "abc"},
+		{"co", true, "en-u-co-abc-def", "abc-def"},
+		{"co", true, "en-u-co-abc-def-x-foo", "abc-def"},
+		{"co", true, "en-u-co-standard-nu-arab", "standard"},
+		{"co", true, "yue-u-co-pinyin-nu-arab", "pinyin"},
+		// Insertion points.
+		{"cu", true, "en-u-co-standard", "en-u-co-standard"},
+		{"cu", true, "yue-u-co-pinyin-x-foo", "yue-u-co-pinyin"},
+		{"cu", true, "en-u-co-abc", "en-u-co-abc"},
+		{"cu", true, "en-u-nu-arabic", "en-u"},
+		{"cu", true, "en-u-co-abc-def-nu-arabic", "en-u-co-abc-def"},
+	}
+	for i, tt := range tests {
+		start, end, hasExt := Make(tt.in).findTypeForKey(tt.key)
+		if start != end {
+			res := tt.in[start:end]
+			if res != tt.out {
+				t.Errorf("%d:%s: was %q; want %q", i, tt.in, res, tt.out)
+			}
+		} else {
+			if hasExt != tt.hasExt {
+				t.Errorf("%d:%s: hasExt was %v; want %v", i, tt.in, hasExt, tt.hasExt)
+				continue
+			}
+			if tt.in[:start] != tt.out {
+				t.Errorf("%d:%s: insertion point was %q; want %q", i, tt.in, tt.in[:start], tt.out)
+			}
 		}
 	}
 }

@@ -21,7 +21,11 @@
 // implemented, and the API is subject to change.
 package language
 
-import "strings"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 var (
 	// Und represents the undertermined language. It is also the root language tag.
@@ -213,34 +217,21 @@ func (t *Tag) remakeString() {
 		if t.pVariant > 0 {
 			extra = extra[1:]
 		}
-	}
-	buf := [128]byte{}
-	isUnd := t.lang == 0
-	n := t.lang.stringToBuf(buf[:])
-	if t.script != 0 {
-		n += copy(buf[n:], "-")
-		n += copy(buf[n:], t.script.String())
-		isUnd = false
-	}
-	if t.region != 0 {
-		n += copy(buf[n:], "-")
-		n += copy(buf[n:], t.region.String())
-		isUnd = false
-	}
-	b := buf[:n]
-	if extra != "" {
-		if isUnd && strings.HasPrefix(extra, "x-") {
+		if t.equalTags(und) && strings.HasPrefix(extra, "x-") {
 			t.str = &extra
 			t.pVariant = 0
 			t.pExt = 0
 			return
-		} else {
-			diff := uint8(n) - t.pVariant
-			b = append(b, '-')
-			b = append(b, extra...)
-			t.pVariant += diff
-			t.pExt += uint16(diff)
 		}
+	}
+	var buf [128]byte // avoid memory allocation for the vast majority of tags.
+	b := buf[:t.genCoreBytes(buf[:])]
+	if extra != "" {
+		diff := uint8(len(b)) - t.pVariant
+		b = append(b, '-')
+		b = append(b, extra...)
+		t.pVariant += diff
+		t.pExt += uint16(diff)
 	} else {
 		t.pVariant = uint8(len(b))
 		t.pExt = uint16(len(b))
@@ -249,10 +240,27 @@ func (t *Tag) remakeString() {
 	t.str = &s
 }
 
+func (t *Tag) genCoreBytes(buf []byte) int {
+	n := t.lang.stringToBuf(buf[:])
+	if t.script != 0 {
+		n += copy(buf[n:], "-")
+		n += copy(buf[n:], t.script.String())
+	}
+	if t.region != 0 {
+		n += copy(buf[n:], "-")
+		n += copy(buf[n:], t.region.String())
+	}
+	return n
+}
+
 // String returns the canonical string representation of the language tag.
 func (t Tag) String() string {
 	if t.str == nil {
-		t.remakeString()
+		if t.script == 0 && t.region == 0 {
+			return t.lang.String()
+		}
+		buf := [16]byte{}
+		return string(buf[:t.genCoreBytes(buf[:])])
 	}
 	return *t.str
 }
@@ -337,16 +345,137 @@ func (t Tag) Variant() []Variant {
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
 // TypeForKey will traverse the inheritance chain to get the correct value.
 func (t Tag) TypeForKey(key string) string {
-	// TODO: implement
+	if start, end, _ := t.findTypeForKey(key); end != start {
+		return (*t.str)[start:end]
+	}
 	return ""
 }
+
+var (
+	errPrivateUse       = errors.New("cannot set a key on a private use tag")
+	errInvalidArguments = errors.New("invalid key or type")
+)
 
 // SetTypeForKey returns a new Tag with the key set to type, where key and type
 // are of the allowed values defined for the Unicode locale extension ('u') in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
-func (t Tag) SetTypeForKey(key, value string) Tag {
-	// TODO: implement
-	return Tag{}
+func (t Tag) SetTypeForKey(key, value string) (Tag, error) {
+	if t.private() {
+		return t, errPrivateUse
+	}
+	if len(key) != 2 || len(value) < 3 || len(value) > 8 {
+		return t, errInvalidArguments
+	}
+	var (
+		buf    [26]byte // enough to hold a core tag and simple -u extension
+		uStart int      // start of the -u extension.
+	)
+
+	// Generate the tag string if needed.
+	if t.str == nil {
+		uStart = t.genCoreBytes(buf[:])
+		buf[uStart] = '-'
+		t.pVariant, t.pExt = byte(uStart), uint16(uStart)
+		uStart++
+	}
+
+	// Create new key-type pair and parse it to verify.
+	b := buf[uStart:]
+	copy(b, "u-")
+	copy(b[2:], key)
+	b[4] = '-'
+	b = b[:5+copy(b[5:], value)]
+	scan := makeScanner(b)
+	if parseExtensions(&scan); scan.err != nil {
+		return t, scan.err
+	}
+
+	// Assemble the replacement string.
+	s := ""
+	if t.str == nil {
+		s = string(buf[:uStart+len(b)])
+	} else {
+		s = *t.str
+		start, end, hasExt := t.findTypeForKey(key)
+		if start == end {
+			if hasExt {
+				b = b[2:]
+			}
+			s = fmt.Sprintf("%s-%s%s", s[:start], b, s[end:])
+		} else {
+			s = fmt.Sprintf("%s%s%s", s[:start], value, s[end:])
+		}
+	}
+	t.str = &s
+	return t, nil
+}
+
+// findKeyAndType returns the start and end position for the type corresponding
+// to key or the point at which to insert the key-value pair if the type
+// wasn't found. The hasExt return value reports whether an -u extension was present.
+// Note: the extensions are typically very small and are likely to contain
+// only one key-type pair.
+func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
+	p := int(t.pExt)
+	if t.str == nil || len(key) != 2 || p == 0 || p == len(*t.str) {
+		return p, p, false
+	}
+	s := *t.str
+
+	// Find the correct extension.
+	for p++; s[p] != 'u'; p++ {
+		if s[p] > 'u' {
+			p--
+			return p, p, false
+		}
+		if p = nextExtension(s, p); p == len(s) {
+			return len(s), len(s), false
+		}
+	}
+	// Proceed to the hyphen following the extension name.
+	p++
+
+	// curKey is the key currently being processed.
+	curKey := ""
+
+	// Iterate over keys until we get the end of a section.
+	for {
+		// p points to the hyphen preceeding the current token.
+		if p3 := p + 3; s[p3] == '-' {
+			// Found a key.
+			// Check whether we just processed the key that was requested.
+			if curKey == key {
+				return start, p, true
+			}
+			// Set to the next key and continue scanning type tokens.
+			curKey = s[p+1 : p3]
+			if curKey > key {
+				return p, p, true
+			}
+			// Start of the type token sequence.
+			start = p + 4
+			// A type is at least 3 characters long.
+			p += 7 // 4 + 3
+		} else {
+			// Attribute or type, which is at least 3 characters long.
+			p += 4
+		}
+		// p points past the third character of a type or attribute.
+		max := p + 5 // maximum length of token plus hyphen.
+		if len(s) < max {
+			max = len(s)
+		}
+		for ; p < max && s[p] != '-'; p++ {
+		}
+		// Bail if we have exhausted all tokens or if the next token starts
+		// a new extension.
+		if p == len(s) || s[p+2] == '-' {
+			if curKey == key {
+				return start, p, true
+			}
+			return p, p, true
+		}
+	}
 }
 
 // Base is an ISO 639 language code, used for encoding the base language

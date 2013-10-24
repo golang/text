@@ -89,6 +89,14 @@ func makeScannerString(s string) scanner {
 	return scan
 }
 
+// makeScanner returns a scanner using b as the input buffer.
+// b is not copied and may be modified by the scanner routines.
+func makeScanner(b []byte) scanner {
+	scan := scanner{b: b}
+	scan.init()
+	return scan
+}
+
 func (s *scanner) init() {
 	for i, c := range s.b {
 		if c == '_' {
