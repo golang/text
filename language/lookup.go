@@ -357,10 +357,10 @@ func getScriptID(idx string, s []byte) (scriptID, error) {
 }
 
 // String returns the script code in title case.
-// It returns "Zyyy" for an unspecified script.
+// It returns "Zzzz" for an unspecified script.
 func (s scriptID) String() string {
 	if s == 0 {
-		return "Zyyy"
+		return "Zzzz"
 	}
 	return get(script, int(s), 4)
 }

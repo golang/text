@@ -122,8 +122,9 @@ func TestScript(t *testing.T) {
 		{"sr", "Cyrl", Low},
 		{"cmn", "Hans", Low},
 		{"ru", "Cyrl", High},
-		{"yue", "Zyyy", No},
-		{"x-abc", "Zyyy", Low},
+		{"yue", "Zzzz", No},
+		{"x-abc", "Zzzz", Low},
+		{"und-zyyy", "Zyyy", Exact},
 	}
 	for i, tt := range tests {
 		loc, _ := Parse(tt.loc)
@@ -146,10 +147,11 @@ func TestParseScript(t *testing.T) {
 	}{
 		{"Latn", "Latn", true},
 		{"zzzz", "Zzzz", true},
-		{"Latm", "Zyyy", false},
-		{"Zzz", "Zyyy", false},
-		{"", "Zyyy", false},
-		{"Zzzxx", "Zyyy", false},
+		{"zyyy", "Zyyy", true},
+		{"Latm", "Zzzz", false},
+		{"Zzz", "Zzzz", false},
+		{"", "Zzzz", false},
+		{"Zzzxx", "Zzzz", false},
 	}
 	for i, tt := range tests {
 		x, err := ParseScript(tt.in)

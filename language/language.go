@@ -279,6 +279,11 @@ func (t Tag) Base() (Base, Confidence) {
 // If more than one script is commonly used for a language, the most likely one
 // is returned with a low confidence indication. For example, it returns (Cyrl, Low)
 // for Serbian.
+// If a script cannot be inferred (Zzzz, No) is returned. We do not use Zyyy (undertermined)
+// as one would suspect from the IANA registry for BCP 47. In a Unicode context Zyyy marks
+// common characters (like 1, 2, 3, '.', etc.) and is therefore more like multiple scripts.
+// See http://www.unicode.org/reports/tr24/#Values for more details. Zzzz is also used for
+// unknown value in CLDR.  (Zzzz, Exact) is returned is Zzzz was explicitly specified.
 // Note that an inferred script is never guaranteed to be the correct one. Latin is
 // almost exclusively used for Afrikaans, but Arabic has been used for some texts
 // in the past.  Also, the script that is commonly used may change over time.
@@ -292,17 +297,13 @@ func (t Tag) Script() (Script, Confidence) {
 			return Script{scriptID(sc)}, High
 		}
 	}
-	sc, c := Script{scrZyyy}, No
+	sc, c := Script{scrZzzz}, No
 	if tag, err := addTags(t); err == nil {
 		sc, c = Script{tag.script}, Low
 	}
 	t, _ = t.Canonicalize(Deprecated | Macro)
 	if tag, err := addTags(t); err == nil {
 		sc, c = Script{tag.script}, Low
-	}
-	// Translate srcZzzz (uncoded) to srcZyyy (undetermined).
-	if sc == (Script{scrZzzz}) {
-		return Script{scrZyyy}, No
 	}
 	return sc, c
 }
