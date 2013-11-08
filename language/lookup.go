@@ -299,6 +299,20 @@ func getRegionM49(n int) (regionID, error) {
 	return 0, e
 }
 
+// normRegion returns a region if r is deprecated or 0 otherwise.
+// TODO: consider supporting BYS (-> BLR), CSK (-> 200 or CZ), PHI (-> PHL) and AFI (-> DJ).
+// TODO: consider mapping split up regions to new most populous one (like CLDR).
+func normRegion(r regionID) regionID {
+	m := regionOldMap
+	k := sort.Search(len(m), func(i int) bool {
+		return m[i].from >= uint16(r)
+	})
+	if k < len(m) && m[k].from == uint16(r) {
+		return regionID(m[k].to)
+	}
+	return 0
+}
+
 // String returns the BCP 47 representation for the region.
 // It returns "ZZ" for an unspecified region.
 func (r regionID) String() string {

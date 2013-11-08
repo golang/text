@@ -286,7 +286,7 @@ func (ss *stringSet) join() string {
 	n := len(ss.s[0])
 	for _, s := range ss.s {
 		if len(s) != n {
-			log.Panic("join: not all entries are of the same length")
+			log.Panicf("join: not all entries are of the same length: %q", s)
 		}
 	}
 	ss.s = append(ss.s, strings.Repeat("\xff", n))
@@ -524,6 +524,21 @@ func (b *builder) writeStringSlice(name string, ss []string) {
 	b.p("}")
 }
 
+type fromTo struct {
+	from, to uint16
+}
+
+func (b *builder) writeSortedMap(name string, ss *stringSet, index func(s string) uint16) {
+	ss.sortFunc(func(a, b string) bool {
+		return index(a) < index(b)
+	})
+	m := []fromTo{}
+	for _, s := range ss.s {
+		m = append(m, fromTo{index(s), index(ss.update[s])})
+	}
+	b.writeSlice(name, m)
+}
+
 func (b *builder) writeString(name, s string) {
 	b.comment(name)
 	b.addSize(len(s) + int(reflect.TypeOf(s).Size()))
@@ -680,6 +695,12 @@ func (b *builder) parseIndices() {
 		from := strings.Split(m.From, "_")
 		b.lang.add(from[0])
 	}
+	// Include regions in territoryAlias (not all are in the IANA registry!)
+	for _, reg := range b.supp.Metadata.Alias.TerritoryAlias {
+		if len(reg.Type) == 2 {
+			b.region.add(reg.Type)
+		}
+	}
 	// currency codes
 	for _, reg := range b.supp.CurrencyData.Region {
 		for _, cur := range reg.Currency {
@@ -819,23 +840,11 @@ func (b *builder) writeLanguage() {
 	b.writeString("altLangISO3", altLangISO3.join())
 	b.writeSlice("altLangIndex", altLangIndex)
 
-	type fromTo struct{ from, to uint16 }
-	b.writeType(fromTo{})
-	makeMap := func(name string, ss *stringSet) {
-		ss.sortFunc(func(i, j string) bool {
-			return b.langIndex(i) < b.langIndex(j)
-		})
-		m := []fromTo{}
-		for _, s := range ss.s {
-			m = append(m, fromTo{
-				b.langIndex(s),
-				b.langIndex(ss.update[s]),
-			})
-		}
-		b.writeSlice(name, m)
+	index := func(s string) uint16 {
+		return b.langIndex(s)
 	}
-	makeMap("langOldMap", &langOldMap)
-	makeMap("langMacroMap", &langMacroMap)
+	b.writeSortedMap("langOldMap", &langOldMap, index)
+	b.writeSortedMap("langMacroMap", &langMacroMap, index)
 
 	b.writeMapFunc("tagAlias", legacyTag, func(s string) uint16 {
 		return uint16(b.langIndex(s))
@@ -843,7 +852,7 @@ func (b *builder) writeLanguage() {
 }
 
 func (b *builder) writeScript() {
-	b.writeConsts("scr", b.script.index, "Latn", "Hani", "Hans", "Qaaa", "Qabx", "Zyyy", "Zzzz")
+	b.writeConsts("scr", b.script.index, "Latn", "Hani", "Hans", "Qaaa", "Qaai", "Qabx", "Zinh", "Zyyy", "Zzzz")
 	b.writeString("script", b.script.join())
 
 	supp := make([]uint8, len(b.lang.slice()))
@@ -853,6 +862,14 @@ func (b *builder) writeScript() {
 		}
 	}
 	b.writeSlice("suppressScript", supp)
+
+	// There is only one deprecated script in CLDR. This value is hard-coded.
+	// We check here if the code must be updated.
+	for _, a := range b.supp.Metadata.Alias.ScriptAlias {
+		if a.Type != "Qaai" {
+			log.Panicf("unexpected deprecated stript %q", a.Type)
+		}
+	}
 }
 
 func parseM49(s string) uint16 {
@@ -878,21 +895,54 @@ func (b *builder) writeRegion() {
 	regionISO := b.region.clone()
 	regionISO.s = regionISO.s[isoOffset:]
 	regionISO.sorted = false
+	iso3Set := make(map[string]int)
+	update := func(iso2, iso3 string) {
+		i := regionISO.index(iso2)
+		if j, ok := iso3Set[iso3]; !ok && iso3[0] == iso2[0] {
+			regionISO.s[i] += iso3[1:]
+			iso3Set[iso3] = -1
+		} else {
+			if ok && j >= 0 {
+				regionISO.s[i] += string([]byte{0, byte(j)})
+			} else {
+				iso3Set[iso3] = len(altRegionISO3)
+				regionISO.s[i] += string([]byte{0, byte(len(altRegionISO3))})
+				altRegionISO3 += iso3
+				altRegionIDs = append(altRegionIDs, uint16(isoOffset+i))
+			}
+		}
+	}
 	for _, tc := range b.supp.CodeMappings.TerritoryCodes {
 		i := regionISO.index(tc.Type)
 		if len(tc.Alpha3) == 3 {
-			if tc.Alpha3[0] == tc.Type[0] {
-				regionISO.s[i] += tc.Alpha3[1:]
-			} else {
-				regionISO.s[i] += string([]byte{0, byte(len(altRegionISO3))})
-				altRegionISO3 += tc.Alpha3
-				altRegionIDs = append(altRegionIDs, uint16(isoOffset+i))
-			}
+			update(tc.Type, tc.Alpha3)
 		}
 		if d := m49map[isoOffset+i]; d != 0 {
 			log.Panicf("%s found as a duplicate UN.M49 code of %03d", tc.Numeric, d)
 		}
 		m49map[isoOffset+i] = parseM49(tc.Numeric)
+	}
+	// This entries are not included in territoryCodes. Mostly 3-letter variants
+	// of deleted codes and an entry for QU.
+	for _, m := range []struct{ iso2, iso3 string }{
+		{"CT", "CTE"},
+		{"DY", "DHY"},
+		{"HV", "HVO"},
+		{"JT", "JTN"},
+		{"MI", "MID"},
+		{"NH", "NHB"},
+		{"NQ", "ATN"},
+		{"PC", "PCI"},
+		{"PU", "PUS"},
+		{"PZ", "PCZ"},
+		{"RH", "RHO"},
+		{"VD", "VDR"},
+		{"WK", "WAK"},
+		// These three-letter codes are used for others as well.
+		{"FQ", "ATF"},
+		{"QU", "QUU"},
+	} {
+		update(m.iso2, m.iso3)
 	}
 	for i, s := range regionISO.s {
 		if len(s) != 4 {
@@ -903,6 +953,23 @@ func (b *builder) writeRegion() {
 	b.writeString("altRegionISO3", altRegionISO3)
 	b.writeSlice("altRegionIDs", altRegionIDs)
 
+	// Create list of deprecated regions.
+	regionOldMap := stringSet{}
+	// Include regions in territoryAlias (not all are in the IANA registry!)
+	for _, reg := range b.supp.Metadata.Alias.TerritoryAlias {
+		if len(reg.Type) == 2 && reg.Reason == "deprecated" && len(reg.Replacement) == 2 {
+			regionOldMap.add(reg.Type)
+			regionOldMap.updateLater(reg.Type, reg.Replacement)
+			i, _ := regionISO.find(reg.Type)
+			j, _ := regionISO.find(reg.Replacement)
+			if k := m49map[i+isoOffset]; k == 0 {
+				m49map[i+isoOffset] = m49map[j+isoOffset]
+			}
+		}
+	}
+	b.writeSortedMap("regionOldMap", &regionOldMap, func(s string) uint16 {
+		return uint16(b.region.index(s))
+	})
 	// 3-digit region lookup, groupings.
 	for i := 1; i < isoOffset; i++ {
 		m49map[i] = parseM49(b.region.s[i])
@@ -1385,6 +1452,7 @@ func main() {
 	fmt.Fprintf(b.out, header, *url, *iana)
 
 	b.parseIndices()
+	b.writeType(fromTo{})
 	b.writeLanguage()
 	b.writeScript()
 	b.writeRegion()

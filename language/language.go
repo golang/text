@@ -155,6 +155,14 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 			changed = true
 			t.lang = l
 		}
+		if t.script == scrQaai {
+			changed = true
+			t.script = scrZinh
+		}
+		if r := normRegion(t.region); r != 0 {
+			changed = true
+			t.region = r
+		}
 	}
 	if c&Macro != 0 {
 		// We deviate here from CLDR. The mapping "nb" -> "no" qualifies as a typical

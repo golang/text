@@ -5,7 +5,6 @@
 package language
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -154,54 +153,160 @@ func TestLangID(t *testing.T) {
 
 func TestRegionID(t *testing.T) {
 	tests := []struct {
-		id, iso2, iso3 string
-		m49            int
+		in, out string
 	}{
-		{"_  ", "AA", "AAA", 958},
-		{"_000", "AA", "AAA", 958},
-		{"AA", "AA", "AAA", 958},
-		{"IC", "IC", "", 0},
-		{"ZZ", "ZZ", "ZZZ", 999},
-		{"EU", "EU", "QUU", 967},
-		{"QO", "QO", "QOO", 961},
-		{"419", "", "", 419},
+		{"_  ", ""},
+		{"_000", ""},
+		{"419", "419"},
+		{"AA", "AA"},
+		{"ATF", "TF"},
+		{"HV", "HV"},
+		{"CT", "CT"},
+		{"DY", "DY"},
+		{"IC", "IC"},
+		{"FQ", "FQ"},
+		{"JT", "JT"},
+		{"ZZ", "ZZ"},
+		{"EU", "EU"},
+		{"QO", "QO"},
+		{"FX", "FX"},
 	}
 	for i, tt := range tests {
-		if tt.id[0] == '_' {
-			id := tt.id[1:]
+		if tt.in[0] == '_' {
+			id := tt.in[1:]
 			if _, err := getRegionID(b(id)); err == nil {
 				t.Errorf("%d:err(%s): found nil; want error", i, id)
 			}
 			continue
 		}
-		want, _ := getRegionID(b(tt.id))
-		if id, _ := getRegionISO2(b(tt.iso2)); len(tt.iso2) == 2 && want != id {
-			t.Errorf("%d:getISO2(%s): found %d; want %d", i, tt.iso2, id, want)
+		want, _ := getRegionID(b(tt.in))
+		if s := want.String(); s != tt.out {
+			t.Errorf("%d:%s: found %q; want %q", i, tt.in, s, tt.out)
 		}
-		if id, _ := getRegionISO3(b(tt.iso3)); len(tt.iso3) == 3 && want != id {
-			t.Errorf("%d:getISO3(%s): found %d; want %d", i, tt.iso3, id, want)
-		}
-		if id, _ := getRegionID(b(tt.iso3)); len(tt.iso3) == 3 && want != id {
-			t.Errorf("%d:getID3(%s): found %d; want %d", i, tt.iso3, id, want)
-		}
-		if id, _ := getRegionM49(tt.m49); tt.m49 != 0 && want != id {
-			t.Errorf("%d:getM49(%d): found %d; want %d", i, tt.m49, id, want)
-		}
-		if len(tt.iso2) == 2 {
-			if id := want.String(); tt.iso2 != id {
-				t.Errorf("%d:String(): found %s; want %s", i, id, tt.iso2)
-			}
-		} else {
-			if id := want.String(); fmt.Sprintf("%03d", tt.m49) != id {
-				t.Errorf("%d:String(): found %s; want %03d", i, id, tt.m49)
+		if len(tt.in) == 2 {
+			want, _ := getRegionISO2(b(tt.in))
+			if s := want.String(); s != tt.out {
+				t.Errorf("%d:getISO2(%s): found %q; want %q", i, tt.in, s, tt.out)
 			}
 		}
-		if id := want.ISO3(); tt.iso3 != id {
-			t.Errorf("%d:iso3(): found %s; want %s", i, id, tt.iso3)
+	}
+}
+
+func TestRegionISO3(t *testing.T) {
+	tests := []struct {
+		from, iso3, to string
+	}{
+		{"  ", "", ""},
+		{"000", "", ""},
+		{"AA", "AAA", ""},
+		{"CT", "CTE", ""},
+		{"DY", "DHY", ""},
+		{"EU", "QUU", ""},
+		{"HV", "HVO", ""},
+		{"IC", "", ""},
+		{"JT", "JTN", ""},
+		{"PZ", "PCZ", ""},
+		{"QU", "QUU", "EU"},
+		{"QO", "QOO", ""},
+		{"YD", "YMD", ""},
+		{"FQ", "ATF", "TF"},
+		{"TF", "ATF", ""},
+		{"FX", "FXX", ""},
+		{"ZZ", "ZZZ", ""},
+		{"419", "", ""},
+	}
+	for _, tt := range tests {
+		r, _ := getRegionID(b(tt.from))
+		if s := r.ISO3(); s != tt.iso3 {
+			t.Errorf("iso3(%q): found %q; want %q", tt.from, s, tt.iso3)
 		}
-		if id := int(want.M49()); tt.m49 != id {
-			t.Errorf("%d:m49(): found %d; want %d", i, id, tt.m49)
+		if tt.iso3 == "" {
+			continue
 		}
+		want := tt.to
+		if tt.to == "" {
+			want = tt.from
+		}
+		r, _ = getRegionID(b(want))
+		if id, _ := getRegionISO3(b(tt.iso3)); id != r {
+			t.Errorf("%s: found %q; want %q", tt.iso3, id, want)
+		}
+	}
+}
+
+func TestRegionM49(t *testing.T) {
+	tests := []struct {
+		id, remap string
+		m49       int
+	}{
+		{"  ", "", 0},
+		{"AA", "", 958},
+		{"ZZ", "", 999},
+		{"419", "", 419},
+		{"EU", "", 967},
+		{"FR", "", 250},
+		{"FX", "", 249},
+		{"QT", "", 966},
+		{"QU", "EU", 967},
+		{"BF", "", 854},
+		{"CD", "", 180},
+		// For codes that don't have an M49 code use the replacement value,
+		// if available.
+		{"HV", "BF", 854}, // maps to Burkino Faso
+		{"ZR", "CD", 180},
+		// Some codes don't have an ID
+		{"IC", "", 0},
+	}
+	for _, tt := range tests {
+		r, _ := getRegionID(b(tt.id))
+		if r.M49() != tt.m49 {
+			t.Errorf("%s: found %d; want %d", tt.id, r.M49(), tt.m49)
+		}
+		if tt.remap != "" {
+			r, _ = getRegionID(b(tt.remap))
+		}
+		if id, _ := getRegionM49(tt.m49); tt.m49 != 0 && r != id {
+			t.Errorf("%d: found %s; want %s", tt.m49, id, r)
+		}
+	}
+}
+
+func TestRegionDeprecation(t *testing.T) {
+	tests := []struct{ in, out string }{
+		{"BU", "MM"},
+		{"BUR", "MM"},
+		{"CT", "KI"},
+		{"DD", "DE"},
+		{"DDR", "DE"},
+		{"DY", "BJ"},
+		{"FX", "FR"},
+		{"HV", "BF"},
+		{"JT", "UM"},
+		{"MI", "UM"},
+		{"NH", "VU"},
+		{"NQ", "AQ"},
+		{"PU", "UM"},
+		{"PZ", "PA"},
+		{"QU", "EU"},
+		{"RH", "ZW"},
+		{"TP", "TL"},
+		{"UK", "GB"},
+		{"VD", "VN"},
+		{"WK", "UM"},
+		{"YD", "YE"},
+		{"NL", "NL"},
+	}
+	for _, tt := range tests {
+		rIn, _ := getRegionID([]byte(tt.in))
+		rOut, _ := getRegionISO2([]byte(tt.out))
+		r := normRegion(rIn)
+		if rOut == rIn && r != 0 {
+			t.Errorf("%s: was %q; want %q", tt.in, r, tt.in)
+		}
+		if rOut != rIn && r != rOut {
+			t.Errorf("%s: was %q; want %q", tt.in, r, tt.out)
+		}
+
 	}
 }
 

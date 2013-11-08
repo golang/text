@@ -309,6 +309,9 @@ func TestCanonicalize(t *testing.T) {
 		{"iw", "he", Deprecated | CLDR},
 		{"mo", "ro-MD", Deprecated},
 		{"mo", "ro", Deprecated | CLDR},
+		{"und-AN", "und-AN", Deprecated},
+		{"und-YD", "und-YE", Deprecated},
+		{"und-Qaai", "und-Zinh", Deprecated},
 	}
 	for i, tt := range tests {
 		in, _ := Parse(tt.in)
