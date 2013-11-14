@@ -36,8 +36,8 @@ const (
 func (f Form) Bytes(b []byte) []byte {
 	rb := reorderBuffer{}
 	rb.init(f, b)
-	n := quickSpan(&rb, 0)
-	if n == len(b) {
+	n, ok := rb.f.quickSpan(rb.src, 0, len(b), true)
+	if ok {
 		return b
 	}
 	out := make([]byte, n, len(b))
@@ -49,8 +49,8 @@ func (f Form) Bytes(b []byte) []byte {
 func (f Form) String(s string) string {
 	rb := reorderBuffer{}
 	rb.initString(f, s)
-	n := quickSpan(&rb, 0)
-	if n == len(s) {
+	n, ok := rb.f.quickSpan(rb.src, 0, len(s), true)
+	if ok {
 		return s
 	}
 	out := make([]byte, n, len(s))
@@ -62,8 +62,8 @@ func (f Form) String(s string) string {
 func (f Form) IsNormal(b []byte) bool {
 	rb := reorderBuffer{}
 	rb.init(f, b)
-	bp := quickSpan(&rb, 0)
-	if bp == len(b) {
+	bp, ok := rb.f.quickSpan(rb.src, 0, len(b), true)
+	if ok {
 		return true
 	}
 	for bp < len(b) {
@@ -86,7 +86,7 @@ func (f Form) IsNormal(b []byte) bool {
 			}
 		}
 		rb.reset()
-		bp = quickSpan(&rb, bp)
+		bp, _ = rb.f.quickSpan(rb.src, bp, len(b), true)
 	}
 	return true
 }
@@ -95,8 +95,8 @@ func (f Form) IsNormal(b []byte) bool {
 func (f Form) IsNormalString(s string) bool {
 	rb := reorderBuffer{}
 	rb.initString(f, s)
-	bp := quickSpan(&rb, 0)
-	if bp == len(s) {
+	bp, ok := rb.f.quickSpan(rb.src, 0, len(s), true)
+	if ok {
 		return true
 	}
 	for bp < len(s) {
@@ -119,7 +119,7 @@ func (f Form) IsNormalString(s string) bool {
 			}
 		}
 		rb.reset()
-		bp = quickSpan(&rb, bp)
+		bp, _ = rb.f.quickSpan(rb.src, bp, len(s), true)
 	}
 	return true
 }
@@ -153,7 +153,7 @@ func appendQuick(rb *reorderBuffer, dst []byte, i int) ([]byte, int) {
 	if rb.nsrc == i {
 		return dst, i
 	}
-	end := quickSpan(rb, i)
+	end, _ := rb.f.quickSpan(rb.src, i, rb.nsrc, true)
 	return rb.src.appendSlice(dst, i, end), end
 }
 
@@ -231,18 +231,19 @@ func (f Form) AppendString(out []byte, src string) []byte {
 // QuickSpan returns a boundary n such that b[0:n] == f(b[0:n]).
 // It is not guaranteed to return the largest such n.
 func (f Form) QuickSpan(b []byte) int {
-	rb := reorderBuffer{}
-	rb.init(f, b)
-	n := quickSpan(&rb, 0)
+	n, _ := formTable[f].quickSpan(inputBytes(b), 0, len(b), true)
 	return n
 }
 
-func quickSpan(rb *reorderBuffer, i int) int {
+// quickSpan returns a boundary n such that src[0:n] == f(src[0:n]) and
+// whether any non-normalized parts were found. If atEOF is false, n will
+// not point past the last segment if this segment might be become
+// non-normalized by appending other runes.
+func (f *formInfo) quickSpan(src input, i, end int, atEOF bool) (n int, ok bool) {
 	var lastCC uint8
 	var nc int
 	lastSegStart := i
-	src, n := rb.src, rb.nsrc
-	for i < n {
+	for n = end; i < n; {
 		if j := src.skipASCII(i, n); i != j {
 			i = j
 			lastSegStart = i - 1
@@ -250,13 +251,16 @@ func quickSpan(rb *reorderBuffer, i int) int {
 			nc = 0
 			continue
 		}
-		info := rb.f.info(src, i)
+		info := f.info(src, i)
 		if info.size == 0 {
-			// include incomplete runes
-			return n
+			if atEOF {
+				// include incomplete runes
+				return n, true
+			}
+			return lastSegStart, true
 		}
 		cc := info.ccc
-		if rb.f.composing {
+		if f.composing {
 			if !info.isYesC() {
 				break
 			}
@@ -268,36 +272,35 @@ func quickSpan(rb *reorderBuffer, i int) int {
 		if cc == 0 {
 			lastSegStart = i
 			nc = 0
+		} else if nc >= maxCombiningChars {
+			lastSegStart = i
+			nc = 1
 		} else {
-			if nc >= maxCombiningChars {
-				lastSegStart = i
-				lastCC = cc
-				nc = 1
-			} else {
-				if lastCC > cc {
-					return lastSegStart
-				}
-				nc++
+			if lastCC > cc {
+				return lastSegStart, false
 			}
+			nc++
 		}
 		lastCC = cc
 		i += int(info.size)
 	}
 	if i == n {
-		return n
+		if !atEOF {
+			n = lastSegStart
+		}
+		return n, true
 	}
-	if rb.f.composing {
-		return lastSegStart
+	if f.composing {
+		return lastSegStart, false
 	}
-	return i
+	return i, false
 }
 
 // QuickSpanString returns a boundary n such that b[0:n] == f(s[0:n]).
 // It is not guaranteed to return the largest such n.
 func (f Form) QuickSpanString(s string) int {
-	rb := reorderBuffer{}
-	rb.initString(f, s)
-	return quickSpan(&rb, 0)
+	n, _ := formTable[f].quickSpan(inputString(s), 0, len(s), true)
+	return n
 }
 
 // FirstBoundary returns the position i of the first boundary in b

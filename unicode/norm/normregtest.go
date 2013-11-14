@@ -216,10 +216,13 @@ func cmpIsNormal(t *Test, name string, f norm.Form, test string, result, want bo
 }
 
 func doTest(t *Test, f norm.Form, gold, test string) {
-	result := f.Bytes([]byte(test))
+	testb := []byte(test)
+	result := f.Bytes(testb)
 	cmpResult(t, "Bytes", f, gold, test, string(result))
+
 	sresult := f.String(test)
 	cmpResult(t, "String", f, gold, test, sresult)
+
 	acc := []byte{}
 	i := norm.Iter{}
 	i.InitString(f, test)
@@ -227,6 +230,16 @@ func doTest(t *Test, f norm.Form, gold, test string) {
 		acc = append(acc, i.Next()...)
 	}
 	cmpResult(t, "Iter.Next", f, gold, test, string(acc))
+
+	buf := make([]byte, 128)
+	acc = nil
+	for p := 0; p < len(testb); {
+		nDst, nSrc, _ := f.Transform(buf, testb[p:], true)
+		acc = append(acc, buf[:nDst]...)
+		p += nSrc
+	}
+	cmpResult(t, "Transform", f, gold, test, string(acc))
+
 	for i := range test {
 		out := f.Append(f.Bytes([]byte(test[:i])), []byte(test[i:])...)
 		cmpResult(t, fmt.Sprintf(":Append:%d", i), f, gold, test, string(out))

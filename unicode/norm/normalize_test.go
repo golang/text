@@ -7,6 +7,7 @@ package norm
 import (
 	"bytes"
 	"io"
+	"log"
 	"strings"
 	"testing"
 )
@@ -514,6 +515,15 @@ func iterBench(f Form, in []byte) func() {
 	}
 }
 
+func transformBench(f Form, in []byte) func() {
+	buf := make([]byte, 4*len(in))
+	return func() {
+		if _, n, err := f.Transform(buf, in, true); err != nil || len(in) != n {
+			log.Panic(n, len(in), err)
+		}
+	}
+}
+
 func readerBench(f Form, in []byte) func() {
 	buf := make([]byte, 4*len(in))
 	return func() {
@@ -539,10 +549,11 @@ func writerBench(f Form, in []byte) func() {
 }
 
 func appendBenchmarks(bm []func(), f Form, in []byte) []func() {
-	//bm = append(bm, appendBench(f, in))
+	bm = append(bm, appendBench(f, in))
 	bm = append(bm, iterBench(f, in))
-	//bm = append(bm, readerBench(f, in))
-	//bm = append(bm, writerBench(f, in))
+	bm = append(bm, transformBench(f, in))
+	bm = append(bm, readerBench(f, in))
+	bm = append(bm, writerBench(f, in))
 	return bm
 }
 
@@ -559,7 +570,67 @@ func doFormBenchmark(b *testing.B, inf, f Form, s string) {
 	}
 }
 
-var ascii = strings.Repeat("There is nothing to change here! ", 500)
+func doSingle(b *testing.B, f func(Form, []byte) func(), s []byte) {
+	b.StopTimer()
+	fn := f(NFC, s)
+	b.SetBytes(int64(len(s)))
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		fn()
+	}
+}
+
+var (
+	smallNoChange = []byte("nörmalization")
+	smallChange   = []byte("No\u0308rmalization")
+	ascii         = strings.Repeat("There is nothing to change here! ", 500)
+)
+
+func lowerBench(f Form, in []byte) func() {
+	// Use package strings instead of bytes as it doesn't allocate memory
+	// if there aren't any changes.
+	s := string(in)
+	return func() {
+		strings.ToLower(s)
+	}
+}
+
+func BenchmarkLowerCaseNoChange(b *testing.B) {
+	doSingle(b, lowerBench, smallNoChange)
+}
+func BenchmarkLowerCaseChange(b *testing.B) {
+	doSingle(b, lowerBench, smallChange)
+}
+
+func BenchmarkAppendNoChangeNFC(b *testing.B) {
+	doSingle(b, appendBench, smallNoChange)
+}
+func BenchmarkAppendChangeNFC(b *testing.B) {
+	doSingle(b, appendBench, smallChange)
+}
+func BenchmarkAppendLargeNFC(b *testing.B) {
+	doSingle(b, appendBench, txt_all_bytes)
+}
+
+func BenchmarkIterNoChangeNFC(b *testing.B) {
+	doSingle(b, iterBench, smallNoChange)
+}
+func BenchmarkIterChangeNFC(b *testing.B) {
+	doSingle(b, iterBench, smallChange)
+}
+func BenchmarkIterLargeNFC(b *testing.B) {
+	doSingle(b, iterBench, txt_all_bytes)
+}
+
+func BenchmarkTransformNoChangeNFC(b *testing.B) {
+	doSingle(b, transformBench, smallNoChange)
+}
+func BenchmarkTransformChangeNFC(b *testing.B) {
+	doSingle(b, transformBench, smallChange)
+}
+func BenchmarkTransformLargeNFC(b *testing.B) {
+	doSingle(b, transformBench, txt_all_bytes)
+}
 
 func BenchmarkNormalizeAsciiNFC(b *testing.B) {
 	doFormBenchmark(b, NFC, NFC, ascii)
@@ -748,3 +819,5 @@ const txt_cn = `您可以自由： 复制、发行、展览、表演、放映、
 
 const txt_cjk = txt_cn + txt_jp + txt_kr
 const txt_all = txt_vn + twoByteUtf8 + threeByteUtf8 + txt_cjk
+
+var txt_all_bytes = []byte(txt_all)
