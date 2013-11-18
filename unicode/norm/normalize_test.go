@@ -505,6 +505,12 @@ func appendBench(f Form, in []byte) func() {
 	}
 }
 
+func bytesBench(f Form, in []byte) func() {
+	return func() {
+		f.Bytes(in)
+	}
+}
+
 func iterBench(f Form, in []byte) func() {
 	iter := Iter{}
 	return func() {
@@ -600,6 +606,23 @@ func BenchmarkLowerCaseNoChange(b *testing.B) {
 }
 func BenchmarkLowerCaseChange(b *testing.B) {
 	doSingle(b, lowerBench, smallChange)
+}
+
+func quickSpanBench(f Form, in []byte) func() {
+	return func() {
+		f.QuickSpan(in)
+	}
+}
+
+func BenchmarkQuickSpanChangeNFC(b *testing.B) {
+	doSingle(b, quickSpanBench, smallNoChange)
+}
+
+func BenchmarkBytesNoChangeNFC(b *testing.B) {
+	doSingle(b, bytesBench, smallNoChange)
+}
+func BenchmarkBytesChangeNFC(b *testing.B) {
+	doSingle(b, bytesBench, smallChange)
 }
 
 func BenchmarkAppendNoChangeNFC(b *testing.B) {

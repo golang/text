@@ -34,38 +34,41 @@ const (
 
 // Bytes returns f(b). May return b if f(b) = b.
 func (f Form) Bytes(b []byte) []byte {
-	rb := reorderBuffer{}
-	rb.init(f, b)
-	n, ok := rb.f.quickSpan(rb.src, 0, len(b), true)
+	src := inputBytes(b)
+	ft := formTable[f]
+	n, ok := ft.quickSpan(src, 0, len(b), true)
 	if ok {
 		return b
 	}
 	out := make([]byte, n, len(b))
 	copy(out, b[0:n])
+	rb := reorderBuffer{f: *ft, src: src, nsrc: len(b)}
 	return doAppend(&rb, out, n)
 }
 
 // String returns f(s).
 func (f Form) String(s string) string {
-	rb := reorderBuffer{}
-	rb.initString(f, s)
-	n, ok := rb.f.quickSpan(rb.src, 0, len(s), true)
+	src := inputString(s)
+	ft := formTable[f]
+	n, ok := ft.quickSpan(src, 0, len(s), true)
 	if ok {
 		return s
 	}
 	out := make([]byte, n, len(s))
 	copy(out, s[0:n])
+	rb := reorderBuffer{f: *ft, src: src, nsrc: len(s)}
 	return string(doAppend(&rb, out, n))
 }
 
 // IsNormal returns true if b == f(b).
 func (f Form) IsNormal(b []byte) bool {
-	rb := reorderBuffer{}
-	rb.init(f, b)
-	bp, ok := rb.f.quickSpan(rb.src, 0, len(b), true)
+	src := inputBytes(b)
+	ft := formTable[f]
+	bp, ok := ft.quickSpan(src, 0, len(b), true)
 	if ok {
 		return true
 	}
+	rb := reorderBuffer{f: *ft, src: src, nsrc: len(b)}
 	for bp < len(b) {
 		decomposeSegment(&rb, bp)
 		if rb.f.composing {
@@ -93,12 +96,13 @@ func (f Form) IsNormal(b []byte) bool {
 
 // IsNormalString returns true if s == f(s).
 func (f Form) IsNormalString(s string) bool {
-	rb := reorderBuffer{}
-	rb.initString(f, s)
-	bp, ok := rb.f.quickSpan(rb.src, 0, len(s), true)
+	src := inputString(s)
+	ft := formTable[f]
+	bp, ok := ft.quickSpan(src, 0, len(s), true)
 	if ok {
 		return true
 	}
+	rb := reorderBuffer{f: *ft, src: src, nsrc: len(s)}
 	for bp < len(s) {
 		decomposeSegment(&rb, bp)
 		if rb.f.composing {
@@ -160,11 +164,25 @@ func appendQuick(rb *reorderBuffer, dst []byte, i int) ([]byte, int) {
 // Append returns f(append(out, b...)).
 // The buffer out must be nil, empty, or equal to f(out).
 func (f Form) Append(out []byte, src ...byte) []byte {
-	if len(src) == 0 {
+	return f.doAppend(out, inputBytes(src), len(src))
+}
+
+func (f Form) doAppend(out []byte, src input, n int) []byte {
+	if n == 0 {
 		return out
 	}
-	rb := reorderBuffer{}
-	rb.init(f, src)
+	ft := formTable[f]
+	// Attempt to do a quickSpan first so we can avoid initializing the reorderBuffer.
+	if len(out) == 0 {
+		p, _ := ft.quickSpan(src, 0, n, true)
+		out = src.appendSlice(out, 0, p)
+		if p == n {
+			return out
+		}
+		rb := reorderBuffer{f: *ft, src: src, nsrc: n}
+		return doAppendInner(&rb, out, p)
+	}
+	rb := reorderBuffer{f: *ft, src: src, nsrc: n}
 	return doAppend(&rb, out, 0)
 }
 
@@ -206,7 +224,12 @@ func doAppend(rb *reorderBuffer, out []byte, p int) []byte {
 	if rb.nrune == 0 {
 		out, p = appendQuick(rb, out, p)
 	}
-	for p < n {
+	return doAppendInner(rb, out, p)
+}
+
+func doAppendInner(rb *reorderBuffer, out []byte, p int) []byte {
+	fd := &rb.f
+	for n := rb.nsrc; p < n; {
 		p = decomposeSegment(rb, p)
 		if fd.composing {
 			rb.compose()
@@ -220,12 +243,7 @@ func doAppend(rb *reorderBuffer, out []byte, p int) []byte {
 // AppendString returns f(append(out, []byte(s))).
 // The buffer out must be nil, empty, or equal to f(out).
 func (f Form) AppendString(out []byte, src string) []byte {
-	if len(src) == 0 {
-		return out
-	}
-	rb := reorderBuffer{}
-	rb.initString(f, src)
-	return doAppend(&rb, out, 0)
+	return f.doAppend(out, inputString(src), len(src))
 }
 
 // QuickSpan returns a boundary n such that b[0:n] == f(b[0:n]).
@@ -306,18 +324,15 @@ func (f Form) QuickSpanString(s string) int {
 // FirstBoundary returns the position i of the first boundary in b
 // or -1 if b contains no boundary.
 func (f Form) FirstBoundary(b []byte) int {
-	rb := reorderBuffer{}
-	rb.init(f, b)
-	return firstBoundary(&rb)
+	return f.firstBoundary(inputBytes(b), len(b))
 }
 
-func firstBoundary(rb *reorderBuffer) int {
-	src, nsrc := rb.src, rb.nsrc
+func (f Form) firstBoundary(src input, nsrc int) int {
 	i := src.skipNonStarter(0)
 	if i >= nsrc {
 		return -1
 	}
-	fd := &rb.f
+	fd := formTable[f]
 	info := fd.info(src, i)
 	for n := 0; info.size != 0 && !info.BoundaryBefore(); {
 		i += int(info.size)
@@ -341,9 +356,7 @@ func firstBoundary(rb *reorderBuffer) int {
 // FirstBoundaryInString returns the position i of the first boundary in s
 // or -1 if s contains no boundary.
 func (f Form) FirstBoundaryInString(s string) int {
-	rb := reorderBuffer{}
-	rb.initString(f, s)
-	return firstBoundary(&rb)
+	return f.firstBoundary(inputString(s), len(s))
 }
 
 // LastBoundary returns the position i of the last boundary in b
