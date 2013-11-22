@@ -49,8 +49,26 @@ type Encoding interface {
 // http://unicode.org/reports/tr36/#Text_Comparison
 const ASCIISub = '\x1a'
 
-// Replacement is the replacement encoding defined at
-// http://encoding.spec.whatwg.org/#replacement
+// Nop is the nop encoding. Its transformed bytes are the same as the source
+// bytes; it does not replace invalid UTF-8 sequences.
+var Nop Encoding = nop{}
+
+type nop struct{}
+
+func (nop) NewDecoder() transform.Transformer {
+	return transform.Nop
+}
+
+func (nop) NewEncoder() transform.Transformer {
+	return transform.Nop
+}
+
+// Replacement is the replacement encoding. Decoding from the replacement
+// encoding yields a single '\uFFFD' replacement rune. Encoding from UTF-8 to
+// the replacement encoding yields the same as the source bytes except that
+// invalid UTF-8 is converted to '\uFFFD'.
+//
+// It is defined at http://encoding.spec.whatwg.org/#replacement
 var Replacement Encoding = replacement{}
 
 type replacement struct{}
