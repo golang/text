@@ -3,13 +3,15 @@
 // license that can be found in the LICENSE file.
 
 // Package transform provides reader and writer wrappers that transform the
-// bytes passing through. Example transformations, provided by other packages,
-// include text collation, normalization and conversion between character sets.
+// bytes passing through as well as various transformations. Example
+// transformations provided by other packages include normalization and
+// conversion between character sets.
 package transform
 
 import (
 	"errors"
 	"io"
+	"unicode/utf8"
 )
 
 var (
@@ -412,4 +414,55 @@ func (c *chain) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err erro
 		err, c.errStart, c.err = c.err, 0, nil
 	}
 	return dstL.n, srcL.p, err
+}
+
+// RemoveFunc returns a Transformer that removes from the input all runes r for
+// which f(r) is true. Illegal bytes in the input are replaced by RuneError.
+func RemoveFunc(f func(r rune) bool) Transformer {
+	return removeF(f)
+}
+
+type removeF func(r rune) bool
+
+// Transform implements the Transformer interface.
+func (t removeF) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	for r, sz := rune(0), 0; len(src) > 0; src = src[sz:] {
+
+		if r = rune(src[0]); r < utf8.RuneSelf {
+			sz = 1
+		} else {
+			r, sz = utf8.DecodeRune(src)
+
+			if sz == 1 {
+				// Invalid rune.
+				if !atEOF && !utf8.FullRune(src[nSrc:]) {
+					err = ErrShortSrc
+					break
+				}
+				// We replace illegal bytes with RuneError. Not doing so might
+				// otherwise turn a sequence of invalid UTF-8 into valid UTF-8.
+				// The resulting byte sequence may subsequently contain runes
+				// for which t(r) is true that were passed unnoticed.
+				if !t(r) {
+					if nDst+3 > len(dst) {
+						err = ErrShortDst
+						break
+					}
+					nDst += copy(dst[nDst:], "\uFFFD")
+				}
+				nSrc++
+				continue
+			}
+		}
+
+		if !t(r) {
+			if nDst+sz > len(dst) {
+				err = ErrShortDst
+				break
+			}
+			nDst += copy(dst[nDst:], src[:sz])
+		}
+		nSrc += sz
+	}
+	return
 }

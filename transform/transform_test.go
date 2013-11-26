@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"unicode/utf8"
 )
 
 type lowerCaseASCII struct{}
@@ -766,5 +767,110 @@ func TestChain(t *testing.T) {
 			t.Errorf("%s:\ngot  iter:%d, %q, %v\nwant iter:%d, %q, %v", tc, iter, str, err, tc.wantIter, tc.wantStr, tc.wantErr)
 		}
 		break
+	}
+}
+
+func TestRemoveFunc(t *testing.T) {
+	filter := RemoveFunc(func(r rune) bool {
+		return strings.IndexRune("ab\u0300\u1234,", r) != -1
+	})
+	tests := []testCase{
+		{
+			src:     ",",
+			wantStr: "",
+		},
+
+		{
+			src:     "c",
+			wantStr: "c",
+		},
+
+		{
+			src:     "\u2345",
+			wantStr: "\u2345",
+		},
+
+		{
+			src:     "tschüß",
+			wantStr: "tschüß",
+		},
+
+		{
+			src:     ",до,свидания,",
+			wantStr: "досвидания",
+		},
+
+		{
+			src:     "a\xbd\xb2=\xbc ⌘",
+			wantStr: "\uFFFD\uFFFD=\uFFFD ⌘",
+		},
+
+		{
+			// If we didn't replace illegal bytes with RuneError, the result
+			// would be \u0300 or the code would need to be more complex.
+			src:     "\xcc\u0300\x80",
+			wantStr: "\uFFFD\uFFFD",
+		},
+
+		{
+			src:      "\xcc\u0300\x80",
+			dstSize:  3,
+			wantStr:  "\uFFFD\uFFFD",
+			wantIter: 2,
+		},
+
+		{
+			src:     "\u2345",
+			dstSize: 2,
+			wantStr: "",
+			wantErr: ErrShortDst,
+		},
+
+		{
+			src:     "\xcc",
+			dstSize: 2,
+			wantStr: "",
+			wantErr: ErrShortDst,
+		},
+
+		{
+			src:     "\u0300",
+			dstSize: 2,
+			srcSize: 1,
+			wantStr: "",
+			wantErr: ErrShortSrc,
+		},
+
+		{
+			t: RemoveFunc(func(r rune) bool {
+				return r == utf8.RuneError
+			}),
+			src:     "\xcc\u0300\x80",
+			wantStr: "\u0300",
+		},
+	}
+
+	for _, tc := range tests {
+		tc.desc = tc.src
+		if tc.t == nil {
+			tc.t = filter
+		}
+		if tc.dstSize == 0 {
+			tc.dstSize = 100
+		}
+		if tc.srcSize == 0 {
+			tc.srcSize = 100
+		}
+		str, iter, err := doTransform(tc)
+		mi := tc.wantIter != 0 && tc.wantIter != iter
+		if str != tc.wantStr || err != tc.wantErr || mi {
+			t.Errorf("%+q:\ngot  iter:%d, %+q, %v\nwant iter:%d, %+q, %v", tc.src, iter, str, err, tc.wantIter, tc.wantStr, tc.wantErr)
+		}
+
+		tc.src = str
+		idem, _, _ := doTransform(tc)
+		if str != idem {
+			t.Errorf("%+q: found %+q; want %+q", tc.src, idem, str)
+		}
 	}
 }
