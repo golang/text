@@ -166,8 +166,8 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 	}
 	if c&Macro != 0 {
 		// We deviate here from CLDR. The mapping "nb" -> "no" qualifies as a typical
-		// Macro language mapping.  However, for legacy reasons, CLDR maps "no,
-		// the macro language code for Norwegian, to the dominant variant "nb.
+		// Macro language mapping.  However, for legacy reasons, CLDR maps "no",
+		// the macro language code for Norwegian, to the dominant variant "nb".
 		// This change is currently under consideration for CLDR as well.
 		// See http://unicode.org/cldr/trac/ticket/2698 and also
 		// http://unicode.org/cldr/trac/ticket/1790 for some of the practical
@@ -299,7 +299,7 @@ func (t Tag) Base() (Base, Confidence) {
 // as one would suspect from the IANA registry for BCP 47. In a Unicode context Zyyy marks
 // common characters (like 1, 2, 3, '.', etc.) and is therefore more like multiple scripts.
 // See http://www.unicode.org/reports/tr24/#Values for more details. Zzzz is also used for
-// unknown value in CLDR.  (Zzzz, Exact) is returned is Zzzz was explicitly specified.
+// unknown value in CLDR.  (Zzzz, Exact) is returned if Zzzz was explicitly specified.
 // Note that an inferred script is never guaranteed to be the correct one. Latin is
 // almost exclusively used for Afrikaans, but Arabic has been used for some texts
 // in the past.  Also, the script that is commonly used may change over time.
