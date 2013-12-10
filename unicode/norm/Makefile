@@ -24,7 +24,7 @@ trietesttables: maketesttables
 test: testtables regtest
 
 testtables: maketables
-	./maketables -test -tables=
+	./maketables -test > data_test.go && go test -tags=test
 
 regtest: normregtest
 	./normregtest
