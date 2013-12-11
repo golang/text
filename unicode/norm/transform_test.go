@@ -73,11 +73,11 @@ func TestTransform(t *testing.T) {
 }
 
 var transBufSizes = []int{
-	MaxSegmentSize,
-	1.5 * MaxSegmentSize,
-	2 * MaxSegmentSize,
-	3 * MaxSegmentSize,
-	100 * MaxSegmentSize,
+	MaxTransformChunkSize,
+	3 * MaxTransformChunkSize / 2,
+	2 * MaxTransformChunkSize,
+	3 * MaxTransformChunkSize,
+	100 * MaxTransformChunkSize,
 }
 
 func doTransNorm(f Form, buf []byte, s string) []byte {
@@ -106,23 +106,8 @@ func runTransformTests(t *testing.T, name string, f Form, tests []AppendTest, no
 				t.Errorf(msg, name, i, sz, len(out), len(gold))
 			}
 			if out != gold {
-				// Find first rune that differs and show context.
-				ir := []rune(out)
-				ig := []rune(gold)
-				t.Errorf("\n%X != \n%X", ir, ig)
-				for j := 0; j < len(ir) && j < len(ig); j++ {
-					if ir[j] == ig[j] {
-						continue
-					}
-					if j -= 3; j < 0 {
-						j = 0
-					}
-					for e := j + 7; j < e && j < len(ir) && j < len(ig); j++ {
-						const msg = "%s:%d:%d: runeAt(%d) = %U; want %U"
-						t.Errorf(msg, name, i, sz, j, ir[j], ig[j])
-					}
-					break
-				}
+				k, pf := pidx(out, gold)
+				t.Errorf("%s:%d: \nwas  %s%+q; \nwant %s%+q", name, i, pf, pc(out[k:]), pf, pc(gold[k:]))
 			}
 		}
 	}

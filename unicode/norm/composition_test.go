@@ -12,83 +12,63 @@ type TestCase struct {
 	out []rune
 }
 
-type insertFunc func(rb *reorderBuffer, r rune) bool
-
-func insert(rb *reorderBuffer, r rune) bool {
-	src := inputString(string(r))
-	return rb.insert(src, 0, rb.f.info(src, 0))
-}
-
-func runTests(t *testing.T, name string, fm Form, f insertFunc, tests []TestCase) {
+func runTests(t *testing.T, name string, fm Form, tests []TestCase) {
 	rb := reorderBuffer{}
 	rb.init(fm, nil)
 	for i, test := range tests {
-		rb.reset()
+		rb.setFlusher(nil, appendFlush)
 		for j, rune := range test.in {
 			b := []byte(string(rune))
 			src := inputBytes(b)
-			if !rb.insert(src, 0, rb.f.info(src, 0)) {
+			if rb.insert(src, 0, rb.f.info(src, 0)) < 0 {
 				t.Errorf("%s:%d: insert failed for rune %d", name, i, j)
 			}
 		}
-		if rb.f.composing {
-			rb.compose()
+		rb.doFlush()
+		was := string(rb.out)
+		want := string(test.out)
+		if len(was) != len(want) {
+			t.Errorf("%s:%d: length = %d; want %d", name, i, len(was), len(want))
 		}
-		if rb.nrune != len(test.out) {
-			t.Errorf("%s:%d: length = %d; want %d", name, i, rb.nrune, len(test.out))
-			continue
-		}
-		for j, want := range test.out {
-			found := rune(rb.runeAt(j))
-			if found != want {
-				t.Errorf("%s:%d: runeAt(%d) = %U; want %U", name, i, j, found, want)
-			}
+		if was != want {
+			k, pfx := pidx(was, want)
+			t.Errorf("%s:%d: \nwas  %s%+q; \nwant %s%+q", name, i, pfx, was[k:], pfx, want[k:])
 		}
 	}
-}
-
-type flushFunc func(rb *reorderBuffer) []byte
-
-func testFlush(t *testing.T, name string, fn flushFunc) {
-	rb := reorderBuffer{}
-	rb.init(NFC, nil)
-	out := fn(&rb)
-	if len(out) != 0 {
-		t.Errorf("%s: wrote bytes on flush of empty buffer. (len(out) = %d)", name, len(out))
-	}
-
-	for _, r := range []rune("world!") {
-		insert(&rb, r)
-	}
-
-	out = []byte("Hello ")
-	out = rb.flush(out)
-	want := "Hello world!"
-	if string(out) != want {
-		t.Errorf(`%s: output after flush was "%s"; want "%s"`, name, string(out), want)
-	}
-	if rb.nrune != 0 {
-		t.Errorf("%s: non-null size of info buffer (rb.nrune == %d)", name, rb.nrune)
-	}
-	if rb.nbyte != 0 {
-		t.Errorf("%s: non-null size of byte buffer (rb.nbyte == %d)", name, rb.nbyte)
-	}
-}
-
-func flushF(rb *reorderBuffer) []byte {
-	out := make([]byte, 0)
-	return rb.flush(out)
-}
-
-func flushCopyF(rb *reorderBuffer) []byte {
-	out := make([]byte, maxByteBufferSize)
-	n := rb.flushCopy(out)
-	return out[:n]
 }
 
 func TestFlush(t *testing.T) {
-	testFlush(t, "flush", flushF)
-	testFlush(t, "flushCopy", flushCopyF)
+	const (
+		hello = "Hello "
+		world = "world!"
+	)
+	buf := make([]byte, maxByteBufferSize)
+	p := copy(buf, hello)
+	out := buf[p:]
+	rb := reorderBuffer{}
+	rb.initString(NFC, world)
+	if i := rb.flushCopy(out); i != 0 {
+		t.Errorf("wrote bytes on flush of empty buffer. (len(out) = %d)", i)
+	}
+
+	for i := range world {
+		rb.insert(rb.src, i, rb.f.info(rb.src, i))
+		n := rb.flushCopy(out)
+		out = out[n:]
+		p += n
+	}
+
+	was := buf[:p]
+	want := hello + world
+	if string(was) != want {
+		t.Errorf(`output after flush was "%s"; want "%s"`, string(was), want)
+	}
+	if rb.nrune != 0 {
+		t.Errorf("non-null size of info buffer (rb.nrune == %d)", rb.nrune)
+	}
+	if rb.nbyte != 0 {
+		t.Errorf("non-null size of byte buffer (rb.nbyte == %d)", rb.nbyte)
+	}
 }
 
 var insertTests = []TestCase{
@@ -103,7 +83,7 @@ var insertTests = []TestCase{
 }
 
 func TestInsert(t *testing.T) {
-	runTests(t, "TestInsert", NFD, insert, insertTests)
+	runTests(t, "TestInsert", NFD, insertTests)
 }
 
 var decompositionNFDTest = []TestCase{
@@ -122,8 +102,8 @@ var decompositionNFKDTest = []TestCase{
 }
 
 func TestDecomposition(t *testing.T) {
-	runTests(t, "TestDecompositionNFD", NFD, insert, decompositionNFDTest)
-	runTests(t, "TestDecompositionNFKD", NFKD, insert, decompositionNFKDTest)
+	runTests(t, "TestDecompositionNFD", NFD, decompositionNFDTest)
+	runTests(t, "TestDecompositionNFKD", NFKD, decompositionNFKDTest)
 }
 
 var compositionTest = []TestCase{
@@ -139,5 +119,5 @@ var compositionTest = []TestCase{
 }
 
 func TestComposition(t *testing.T) {
-	runTests(t, "TestComposition", NFC, insert, compositionTest)
+	runTests(t, "TestComposition", NFC, compositionTest)
 }

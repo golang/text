@@ -180,7 +180,7 @@ func nextMulti(i *Iter) []byte {
 	}
 	for j < len(d) {
 		info := i.rb.f.info(input{bytes: d}, j)
-		if info.ccc == 0 {
+		if info.BoundaryBefore() {
 			i.multiSeg = d[j:]
 			return d[:j]
 		}
@@ -196,30 +196,28 @@ func nextMulti(i *Iter) []byte {
 func nextMultiNorm(i *Iter) []byte {
 	j := 0
 	d := i.multiSeg
-	// skip first rune
-	for j = 1; j < len(d) && !utf8.RuneStart(d[j]); j++ {
-	}
 	for j < len(d) {
 		info := i.rb.f.info(input{bytes: d}, j)
-		if info.ccc == 0 {
-			i.multiSeg = d[j:]
-			return d[:j]
+		if info.BoundaryBefore() {
+			i.rb.compose()
+			seg := i.buf[:i.rb.flushCopy(i.buf[:])]
+			i.rb.insert(input{bytes: d}, j, info)
+			i.multiSeg = d[j+int(info.size):]
+			return seg
 		}
+		i.rb.insert(input{bytes: d}, j, info)
 		j += int(info.size)
 	}
 	i.multiSeg = nil
 	i.next = nextComposed
-	i.p++ // restore old valud of i.p. See nextComposed.
-	if i.p >= i.rb.nsrc {
-		i.setDone()
-	}
-	return d
+	return doNormComposed(i)
 }
 
 // nextDecomposed is the implementation of Next for forms NFD and NFKD.
 func nextDecomposed(i *Iter) (next []byte) {
 	startp, outp := i.p, 0
 	inCopyStart, outCopyStart := i.p, 0
+	n := 0
 	for {
 		if sz := int(i.info.size); sz <= 1 {
 			p := i.p
@@ -298,7 +296,7 @@ func nextDecomposed(i *Iter) (next []byte) {
 		}
 		prevCC := i.info.tccc
 		i.info = i.rb.f.info(i.rb.src, i.p)
-		if i.info.BoundaryBefore() {
+		if n++; i.info.BoundaryBefore() || n > maxCombiningChars {
 			break
 		} else if i.info.ccc < prevCC {
 			goto doNorm
@@ -314,14 +312,14 @@ doNorm:
 	// Insert what we have decomposed so far in the reorderBuffer.
 	// As we will only reorder, there will always be enough room.
 	i.rb.src.copySlice(i.buf[outCopyStart:], inCopyStart, i.p)
-	if !i.rb.insertDecomposed(i.buf[0:outp]) {
+	if err := i.rb.insertDecomposed(i.buf[0:outp]); err != 0 {
 		// Start over to prevent decompositions from crossing segment boundaries.
 		// This is a rare occurrence.
 		i.p = startp
 		i.info = i.rb.f.info(i.rb.src, i.p)
 	}
 	for {
-		if !i.rb.insert(i.rb.src, i.p, i.info) {
+		if i.rb.insert(i.rb.src, i.p, i.info) != 0 {
 			break
 		}
 		if i.p += int(i.info.size); i.p >= i.rb.nsrc {
@@ -372,14 +370,22 @@ func nextComposed(i *Iter) []byte {
 	}
 	return i.returnSlice(startp, i.p)
 doNorm:
-	multi := false
 	i.p = startp
 	i.info = i.rb.f.info(i.rb.src, i.p)
+	if i.info.multiSegment() {
+		d := i.info.Decomposition()
+		info := i.rb.f.info(input{bytes: d}, 0)
+		i.rb.insert(input{bytes: d}, 0, info)
+		i.multiSeg = d[int(info.size):]
+		i.next = nextMultiNorm
+		return nextMultiNorm(i)
+	}
+	i.rb.insert(i.rb.src, i.p, i.info)
+	return doNormComposed(i)
+}
+
+func doNormComposed(i *Iter) []byte {
 	for {
-		if !i.rb.insert(i.rb.src, i.p, i.info) {
-			break
-		}
-		multi = multi || i.info.multiSegment()
 		if i.p += int(i.info.size); i.p >= i.rb.nsrc {
 			i.setDone()
 			break
@@ -388,14 +394,11 @@ doNorm:
 		if i.info.BoundaryBefore() {
 			break
 		}
+		if i.rb.insert(i.rb.src, i.p, i.info) != 0 {
+			break
+		}
 	}
 	i.rb.compose()
 	seg := i.buf[:i.rb.flushCopy(i.buf[:])]
-	if multi {
-		i.p-- // fake not being done yet
-		i.multiSeg = seg
-		i.next = nextMultiNorm
-		return nextMultiNorm(i)
-	}
 	return seg
 }

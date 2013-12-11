@@ -10,10 +10,16 @@ import (
 	"code.google.com/p/go.text/transform"
 )
 
+// MaxTransformChunkSize indicates the maximum number of bytes that Transform
+// may need to write atomically for any Form. Making a destination buffer at
+// least this size ensures that Transform can always make progress and that the
+// user does not need to grow the buffer on an ErrShortDst.
+const MaxTransformChunkSize = 33 + maxCombiningChars*utf8.UTFMax + 2 // TODO: compute in maketables.
+
 // Transform implements the transform.Transformer interface. It may need to
 // write segments of up to MaxSegmentSize at once. Users should either catch
 // ErrShortDst and allow dst to grow or have dst be at least of size
-// MaxSegmentSize to be guaranteed of progress.
+// MaxTransformChunkSize to be guaranteed of progress.
 func (f Form) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	n := 0
 	// Cap the maximum number of src bytes to check.
@@ -36,6 +42,17 @@ func (f Form) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error)
 	return n, n, err
 }
 
+func flushTransform(rb *reorderBuffer) bool {
+	// Write out (must fully fit in dst, or else it is a ErrShortDst).
+	if len(rb.out) < rb.nrune*utf8.UTFMax {
+		return false
+	}
+	rb.out = rb.out[rb.flushCopy(rb.out):]
+	return true
+}
+
+var errs = []error{nil, transform.ErrShortDst, transform.ErrShortSrc}
+
 // transform implements the transform.Transformer interface. It is only called
 // when quickSpan does not pass for a given string.
 func (f Form) transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
@@ -44,20 +61,13 @@ func (f Form) transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error)
 	rb.init(f, src)
 	for {
 		// Load segment into reorder buffer.
-		end := decomposeSegment(&rb, nSrc)
-		if end == rb.nsrc && !atEOF {
-			return nDst, nSrc, transform.ErrShortSrc
+		rb.setFlusher(dst[nDst:], flushTransform)
+		end := decomposeSegment(&rb, nSrc, atEOF)
+		if end < 0 {
+			return nDst, nSrc, errs[-end]
 		}
-		if rb.f.composing {
-			rb.compose()
-		}
-
-		// Write out (must fully fit in dst, or else it is a ErrShortDst).
-		if len(dst[nDst:]) < rb.nrune*utf8.UTFMax {
-			return nDst, nSrc, transform.ErrShortDst
-		}
+		nDst = len(dst) - len(rb.out)
 		nSrc = end
-		nDst += rb.flushCopy(dst[nDst:])
 
 		// Next quickSpan.
 		end = rb.nsrc

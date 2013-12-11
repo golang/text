@@ -6,11 +6,54 @@ package norm
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"strings"
 	"testing"
+	"unicode/utf8"
 )
+
+// pc replaces any rune r that is repeated n times, for n > 1, with r{n}.
+func pc(s string) []byte {
+	b := bytes.NewBuffer(make([]byte, 0, len(s)))
+	for i := 0; i < len(s); {
+		r, sz := utf8.DecodeRuneInString(s[i:])
+		n := 0
+		if sz == 1 {
+			// Special-case one-byte case to handle repetition for invalid UTF-8.
+			for c := s[i]; i+n < len(s) && s[i+n] == c; n++ {
+			}
+		} else {
+			for _, r2 := range s[i:] {
+				if r2 != r {
+					break
+				}
+				n++
+			}
+		}
+		b.WriteString(s[i : i+sz])
+		if n > 1 {
+			fmt.Fprintf(b, "{%d}", n)
+		}
+		i += sz * n
+	}
+	return b.Bytes()
+}
+
+// pidx finds the index from which two strings start to differ, plus context.
+// It returns the index and ellipsis if the index is greater than 0.
+func pidx(a, b string) (i int, prefix string) {
+	for ; i < len(a) && i < len(b) && a[i] == b[i]; i++ {
+	}
+	if i < 8 {
+		return 0, ""
+	}
+	i -= 3 // ensure taking at least one full rune before the difference.
+	for k := i - 7; i > k && !utf8.RuneStart(a[i]); i-- {
+	}
+	return i, "..."
+}
 
 type PositionTest struct {
 	input  string
@@ -18,7 +61,7 @@ type PositionTest struct {
 	buffer string // expected contents of reorderBuffer, if applicable
 }
 
-type positionFunc func(rb *reorderBuffer, s string) int
+type positionFunc func(rb *reorderBuffer, s string) (int, []byte)
 
 func runPosTests(t *testing.T, name string, f Form, fn positionFunc, tests []PositionTest) {
 	rb := reorderBuffer{}
@@ -27,22 +70,19 @@ func runPosTests(t *testing.T, name string, f Form, fn positionFunc, tests []Pos
 		rb.reset()
 		rb.src = inputString(test.input)
 		rb.nsrc = len(test.input)
-		pos := fn(&rb, test.input)
+		pos, out := fn(&rb, test.input)
 		if pos != test.pos {
 			t.Errorf("%s:%d: position is %d; want %d", name, i, pos, test.pos)
 		}
-		runes := []rune(test.buffer)
-		if rb.nrune != len(runes) {
-			t.Errorf("%s:%d: reorder buffer length is %d; want %d", name, i, rb.nrune, len(runes))
-			continue
-		}
-		for j, want := range runes {
-			found := rune(rb.runeAt(j))
-			if found != want {
-				t.Errorf("%s:%d: rune at %d is %U; want %U", name, i, j, found, want)
-			}
+		if outs := string(out); outs != test.buffer {
+			k, pfx := pidx(outs, test.buffer)
+			t.Errorf("%s:%d: buffer \nwas  %s%+q; \nwant %s%+q", name, i, pfx, pc(outs[k:]), pfx, pc(test.buffer[k:]))
 		}
 	}
+}
+
+func grave(n int) string {
+	return rep(0x0300, n)
 }
 
 var decomposeSegmentTests = []PositionTest{
@@ -59,16 +99,17 @@ var decomposeSegmentTests = []PositionTest{
 	{"\u00C0", 2, "A\u0300"},
 	{"\u00C0b", 2, "A\u0300"},
 	// long
-	{strings.Repeat("\u0300", 31), 62, strings.Repeat("\u0300", 31)},
+	{grave(31), 62, grave(31)},
 	// ends with incomplete UTF-8 encoding
 	{"\xCC", 0, ""},
 	{"\u0300\xCC", 2, "\u0300"},
 }
 
-func decomposeSegmentF(rb *reorderBuffer, s string) int {
-	rb.src = inputString(s)
-	rb.nsrc = len(s)
-	return decomposeSegment(rb, 0)
+func decomposeSegmentF(rb *reorderBuffer, s string) (int, []byte) {
+	rb.initString(NFD, s)
+	rb.setFlusher(nil, appendFlush)
+	p := decomposeSegment(rb, 0, true)
+	return p, rb.out
 }
 
 func TestDecomposeSegment(t *testing.T) {
@@ -93,17 +134,17 @@ var firstBoundaryTests = []PositionTest{
 	{"\u1161\u110B\u1173\u11B7", 3, ""},
 	{"\u1173\u11B7\u1103\u1161", 6, ""},
 	// too many combining characters.
-	{strings.Repeat("\u0300", maxCombiningChars-1), -1, ""},
-	{strings.Repeat("\u0300", maxCombiningChars), 60, ""},
-	{strings.Repeat("\u0300", maxCombiningChars+1), 60, ""},
+	{grave(maxCombiningChars - 1), -1, ""},
+	{grave(maxCombiningChars), 60, ""},
+	{grave(maxCombiningChars + 1), 60, ""},
 }
 
-func firstBoundaryF(rb *reorderBuffer, s string) int {
-	return rb.f.form.FirstBoundary([]byte(s))
+func firstBoundaryF(rb *reorderBuffer, s string) (int, []byte) {
+	return rb.f.form.FirstBoundary([]byte(s)), nil
 }
 
-func firstBoundaryStringF(rb *reorderBuffer, s string) int {
-	return rb.f.form.FirstBoundaryInString(s)
+func firstBoundaryStringF(rb *reorderBuffer, s string) (int, []byte) {
+	return rb.f.form.FirstBoundaryInString(s), nil
 }
 
 func TestFirstBoundary(t *testing.T) {
@@ -137,9 +178,12 @@ var decomposeToLastTests = []PositionTest{
 	{"\u0300a\u0300\u0301", 2, "a\u0300\u0301"},
 	{"\u00C0", 0, "A\u0300"},
 	{"a\u00C0", 1, "A\u0300"},
-	// decomposing
-	{"a\u0300\uFDC0", 3, "\u0645\u062C\u064A"},
-	{"\uFDC0" + strings.Repeat("\u0300", 26), 0, "\u0645\u062C\u064A" + strings.Repeat("\u0300", 26)},
+	// multisegment decompositions (flushes leading segments)
+	{"a\u0300\uFDC0", 7, "\u064A"},
+	{"\uFDC0" + grave(29), 4, "\u064A" + grave(29)},
+	{"\uFDC0" + grave(30), 4, "\u064A" + grave(30)},
+	{"\uFDC0" + grave(31), 3, grave(31)}, // TODO: should be 5, grave(30)
+	{"\uFDFA" + grave(14), 31, "\u0645" + grave(14)},
 	// Hangul
 	{"a\u1103", 1, "\u1103"},
 	{"a\u110B", 1, "\u110B"},
@@ -153,16 +197,15 @@ var decomposeToLastTests = []PositionTest{
 	{"\u110B\u1173\u11B7\u1103\u1161", 9, "\u1103\u1161"},
 	{"다음음", 6, "\u110B\u1173\u11B7"},
 	{"음다다", 6, "\u1103\u1161"},
-	// buffer overflow
-	{"a" + strings.Repeat("\u0300", 30), 3, strings.Repeat("\u0300", 29)},
-	{"\uFDFA" + strings.Repeat("\u0300", 14), 3, strings.Repeat("\u0300", 14)},
 	// weird UTF-8
 	{"a\u0300\u11B7", 0, "a\u0300\u11B7"},
 }
 
-func decomposeToLast(rb *reorderBuffer, s string) int {
-	buf := decomposeToLastBoundary(rb, []byte(s))
-	return len(buf)
+func decomposeToLast(rb *reorderBuffer, s string) (int, []byte) {
+	rb.setFlusher([]byte(s), appendFlush)
+	decomposeToLastBoundary(rb)
+	buf := rb.flush(nil)
+	return len(rb.out), buf
 }
 
 func TestDecomposeToLastBoundary(t *testing.T) {
@@ -208,13 +251,13 @@ var lastBoundaryTests = []PositionTest{
 	{"\u1103\u1161\u110B\u1173\u11B7", 6, ""},
 	{"\u110B\u1173\u11B7\u1103\u1161", 9, ""},
 	// too many combining characters.
-	{strings.Repeat("\u0300", maxCombiningChars-1), -1, ""},
-	{strings.Repeat("\u0300", maxCombiningChars), 60, ""},
-	{strings.Repeat("\u0300", maxCombiningChars+1), 62, ""},
+	{grave(maxCombiningChars - 1), -1, ""},
+	{grave(maxCombiningChars), 60, ""},
+	{grave(maxCombiningChars + 1), 62, ""},
 }
 
-func lastBoundaryF(rb *reorderBuffer, s string) int {
-	return rb.f.form.LastBoundary([]byte(s))
+func lastBoundaryF(rb *reorderBuffer, s string) (int, []byte) {
+	return rb.f.form.LastBoundary([]byte(s)), nil
 }
 
 func TestLastBoundary(t *testing.T) {
@@ -284,12 +327,12 @@ var quickSpanNFCTests = []PositionTest{
 	{"같은", 6, ""},
 }
 
-func doQuickSpan(rb *reorderBuffer, s string) int {
-	return rb.f.form.QuickSpan([]byte(s))
+func doQuickSpan(rb *reorderBuffer, s string) (int, []byte) {
+	return rb.f.form.QuickSpan([]byte(s)), nil
 }
 
-func doQuickSpanString(rb *reorderBuffer, s string) int {
-	return rb.f.form.QuickSpanString(s)
+func doQuickSpanString(rb *reorderBuffer, s string) (int, []byte) {
+	return rb.f.form.QuickSpanString(s), nil
 }
 
 func TestQuickSpan(t *testing.T) {
@@ -356,11 +399,18 @@ var isNormalNFCTests = []PositionTest{
 	{"같은", 1, ""},
 }
 
-func isNormalF(rb *reorderBuffer, s string) int {
+func isNormalF(rb *reorderBuffer, s string) (int, []byte) {
 	if rb.f.form.IsNormal([]byte(s)) {
-		return 1
+		return 1, nil
 	}
-	return 0
+	return 0, nil
+}
+
+func isNormalStringF(rb *reorderBuffer, s string) (int, []byte) {
+	if rb.f.form.IsNormalString(s) {
+		return 1, nil
+	}
+	return 0, nil
 }
 
 func TestIsNormal(t *testing.T) {
@@ -368,6 +418,13 @@ func TestIsNormal(t *testing.T) {
 	runPosTests(t, "TestIsNormalNFD2", NFD, isNormalF, isNormalNFDTests)
 	runPosTests(t, "TestIsNormalNFC1", NFC, isNormalF, isNormalTests)
 	runPosTests(t, "TestIsNormalNFC2", NFC, isNormalF, isNormalNFCTests)
+}
+
+func TestIsNormalString(t *testing.T) {
+	runPosTests(t, "TestIsNormalNFD1", NFD, isNormalStringF, isNormalTests)
+	runPosTests(t, "TestIsNormalNFD2", NFD, isNormalStringF, isNormalNFDTests)
+	runPosTests(t, "TestIsNormalNFC1", NFC, isNormalStringF, isNormalTests)
+	runPosTests(t, "TestIsNormalNFC2", NFC, isNormalStringF, isNormalNFCTests)
 }
 
 type AppendTest struct {
@@ -387,21 +444,9 @@ func runAppendTests(t *testing.T, name string, f Form, fn appendFunc, tests []Ap
 			t.Errorf("%s:%d: length is %d; want %d", name, i, len(outs), len(test.out))
 		}
 		if outs != test.out {
-			// Find first rune that differs and show context.
-			ir := []rune(outs)
-			ig := []rune(test.out)
-			for j := 0; j < len(ir) && j < len(ig); j++ {
-				if ir[j] == ig[j] {
-					continue
-				}
-				if j -= 3; j < 0 {
-					j = 0
-				}
-				for e := j + 7; j < e && j < len(ir) && j < len(ig); j++ {
-					t.Errorf("%s:%d: runeAt(%d) = %U; want %U", name, i, j, ir[j], ig[j])
-				}
-				break
-			}
+			k, pf := pidx(outs, test.out)
+			t.Errorf("%s:%d: \nwas  %s%+q; \nwant %s%+q", name, i, pf, pc(outs[k:]), pf, pc(test.out[k:]))
+			break
 		}
 	}
 }
@@ -459,7 +504,9 @@ var appendTests = []AppendTest{
 	{strings.Repeat("\x80", 33), "", strings.Repeat("\x80", 33)},
 	{strings.Repeat("\x80", 33), strings.Repeat("\x80", 33), strings.Repeat("\x80", 66)},
 	// overflow of combining characters
-	{strings.Repeat("\u0300", 33), "", strings.Repeat("\u0300", 33)},
+	{grave(33), "", grave(33)},
+	{"", "\uFDFA" + grave(14), "\u0635\u0644\u0649 \u0627\u0644\u0644\u0647 \u0639\u0644\u064a\u0647 \u0648\u0633\u0644\u0645" + grave(14)},
+	{"", "\uFDFA" + grave(28) + "\u0316", "\u0635\u0644\u0649 \u0627\u0644\u0644\u0647 \u0639\u0644\u064a\u0647 \u0648\u0633\u0644\u0645\u0316" + grave(28)},
 	// weird UTF-8
 	{"\u00E0\xE1", "\x86", "\u00E0\xE1\x86"},
 	{"a\u0300\u11B7", "\u0300", "\u00E0\u11B7\u0300"},

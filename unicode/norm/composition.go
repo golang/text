@@ -8,8 +8,8 @@ import "unicode/utf8"
 
 const (
 	maxCombiningChars = 30
-	maxBufferSize     = maxCombiningChars + 2 // +1 to hold starter +1 to hold CGJ
-	maxBackRunes      = maxCombiningChars - 1
+	maxBufferSize     = maxCombiningChars + 1 // +1 to hold starter +1 to hold CGJ
+	maxBackRunes      = maxCombiningChars + 1
 	maxNFCExpansion   = 3  // NFC(0x1D160)
 	maxNFKCExpansion  = 18 // NFKC(0xFDFA)
 
@@ -24,13 +24,16 @@ const (
 type reorderBuffer struct {
 	rune  [maxBufferSize]Properties // Per character info.
 	byte  [maxByteBufferSize]byte   // UTF-8 buffer. Referenced by runeInfo.pos.
-	nrune int                       // Number of runeInfos.
 	nbyte uint8                     // Number or bytes.
+	nrune int                       // Number of runeInfos.
 	f     formInfo
 
 	src      input
 	nsrc     int
 	tmpBytes input
+
+	out    []byte
+	flushF func(*reorderBuffer) bool
 }
 
 func (rb *reorderBuffer) init(f Form, src []byte) {
@@ -45,10 +48,34 @@ func (rb *reorderBuffer) initString(f Form, src string) {
 	rb.nsrc = len(src)
 }
 
+func (rb *reorderBuffer) setFlusher(out []byte, f func(*reorderBuffer) bool) {
+	rb.out = out
+	rb.flushF = f
+}
+
 // reset discards all characters from the buffer.
 func (rb *reorderBuffer) reset() {
 	rb.nrune = 0
 	rb.nbyte = 0
+}
+
+func (rb *reorderBuffer) doFlush() bool {
+	if rb.f.composing {
+		rb.compose()
+	}
+	res := rb.flushF(rb)
+	rb.reset()
+	return res
+}
+
+// appendFlush appends the normalized segment to rb.out.
+func appendFlush(rb *reorderBuffer) bool {
+	for i := 0; i < rb.nrune; i++ {
+		start := rb.rune[i].pos
+		end := start + rb.rune[i].size
+		rb.out = append(rb.out, rb.byte[start:end]...)
+	}
+	return true
 }
 
 // flush appends the normalized segment to out and resets rb.
@@ -101,11 +128,23 @@ func (rb *reorderBuffer) insertOrdered(info Properties) bool {
 	return true
 }
 
+// insertErr is an error code returned by insert. Using this type instead
+// of error improves performance up to 20% for many of the benchmarks.
+type insertErr int
+
+const (
+	iSuccess insertErr = -iota
+	iShortDst
+	iShortSrc
+	iOverflow
+)
+
 // insert inserts the given rune in the buffer ordered by CCC.
-// It returns true if the buffer was large enough to hold the decomposed rune.
-func (rb *reorderBuffer) insert(src input, i int, info Properties) bool {
+// It returns a non-zero error code if the rune was not inserted.
+func (rb *reorderBuffer) insert(src input, i int, info Properties) insertErr {
 	if rune := src.hangul(i); rune != 0 {
-		return rb.decomposeHangul(rune)
+		rb.decomposeHangul(rune)
+		return iSuccess
 	}
 	if info.hasDecomposition() {
 		return rb.insertDecomposed(info.Decomposition())
@@ -114,32 +153,37 @@ func (rb *reorderBuffer) insert(src input, i int, info Properties) bool {
 }
 
 // insertDecomposed inserts an entry in to the reorderBuffer for each rune
-// in dcomp.  dcomp must be a sequence of decomposed UTF-8-encoded runes.
-func (rb *reorderBuffer) insertDecomposed(dcomp []byte) bool {
-	saveNrune, saveNbyte := rb.nrune, rb.nbyte
+// in dcomp. dcomp must be a sequence of decomposed UTF-8-encoded runes.
+// It flushes the buffer on each new segment start.
+func (rb *reorderBuffer) insertDecomposed(dcomp []byte) insertErr {
 	rb.tmpBytes.setBytes(dcomp)
 	for i := 0; i < len(dcomp); {
 		info := rb.f.info(rb.tmpBytes, i)
+		if info.BoundaryBefore() && rb.nrune > 0 && !rb.doFlush() {
+			return iShortDst
+		}
 		pos := rb.nbyte
-		if !rb.insertOrdered(info) {
-			rb.nrune, rb.nbyte = saveNrune, saveNbyte
-			return false
+		if !rb.insertOrdered(info) { //&& !rb.doFlush() {
+			// This block is only reached if the decomposition starts with
+			// combining characters that do not fit in the buffer.
+			//return iShortDst
+			return iOverflow
 		}
 		i += copy(rb.byte[pos:], dcomp[i:i+int(info.size)])
 	}
-	return true
+	return iSuccess
 }
 
 // insertSingle inserts an entry in the reorderBuffer for the rune at
 // position i. info is the runeInfo for the rune at position i.
-func (rb *reorderBuffer) insertSingle(src input, i int, info Properties) bool {
+func (rb *reorderBuffer) insertSingle(src input, i int, info Properties) insertErr {
 	// insertOrder changes nbyte
 	pos := rb.nbyte
 	if !rb.insertOrdered(info) {
-		return false
+		return iOverflow
 	}
 	src.copySlice(rb.byte[pos:], i, i+int(info.size))
-	return true
+	return iSuccess
 }
 
 // appendRune inserts a rune at the end of the buffer. It is used for Hangul.
@@ -276,12 +320,7 @@ func decomposeHangul(buf []byte, r rune) int {
 // decomposeHangul algorithmically decomposes a Hangul rune into
 // its Jamo components.
 // See http://unicode.org/reports/tr15/#Hangul for details on decomposing Hangul.
-func (rb *reorderBuffer) decomposeHangul(r rune) bool {
-	b := rb.rune[:]
-	n := rb.nrune
-	if n+3 > len(b) {
-		return false
-	}
+func (rb *reorderBuffer) decomposeHangul(r rune) {
 	r -= hangulBase
 	x := r % jamoTCount
 	r /= jamoTCount
@@ -290,7 +329,6 @@ func (rb *reorderBuffer) decomposeHangul(r rune) bool {
 	if x != 0 {
 		rb.appendRune(jamoTBase + x)
 	}
-	return true
 }
 
 // combineHangul algorithmically combines Jamo character components into Hangul.

@@ -69,27 +69,32 @@ func (f Form) IsNormal(b []byte) bool {
 		return true
 	}
 	rb := reorderBuffer{f: *ft, src: src, nsrc: len(b)}
+	rb.setFlusher(nil, cmpNormalBytes)
 	for bp < len(b) {
-		decomposeSegment(&rb, bp)
-		if rb.f.composing {
-			rb.compose()
+		rb.out = b[bp:]
+		if bp = decomposeSegment(&rb, bp, true); bp < 0 {
+			return false
 		}
-		for i := 0; i < rb.nrune; i++ {
-			info := rb.rune[i]
-			if bp+int(info.size) > len(b) {
+		bp, _ = rb.f.quickSpan(rb.src, bp, len(b), true)
+	}
+	return true
+}
+
+func cmpNormalBytes(rb *reorderBuffer) bool {
+	b := rb.out
+	for i := 0; i < rb.nrune; i++ {
+		info := rb.rune[i]
+		if int(info.size) > len(b) {
+			return false
+		}
+		p := info.pos
+		pe := p + info.size
+		for ; p < pe; p++ {
+			if b[0] != rb.byte[p] {
 				return false
 			}
-			p := info.pos
-			pe := p + info.size
-			for ; p < pe; p++ {
-				if b[bp] != rb.byte[p] {
-					return false
-				}
-				bp++
-			}
+			b = b[1:]
 		}
-		rb.reset()
-		bp, _ = rb.f.quickSpan(rb.src, bp, len(b), true)
 	}
 	return true
 }
@@ -103,11 +108,7 @@ func (f Form) IsNormalString(s string) bool {
 		return true
 	}
 	rb := reorderBuffer{f: *ft, src: src, nsrc: len(s)}
-	for bp < len(s) {
-		decomposeSegment(&rb, bp)
-		if rb.f.composing {
-			rb.compose()
-		}
+	rb.setFlusher(nil, func(rb *reorderBuffer) bool {
 		for i := 0; i < rb.nrune; i++ {
 			info := rb.rune[i]
 			if bp+int(info.size) > len(s) {
@@ -122,7 +123,12 @@ func (f Form) IsNormalString(s string) bool {
 				bp++
 			}
 		}
-		rb.reset()
+		return true
+	})
+	for bp < len(s) {
+		if e := decomposeSegment(&rb, bp, true); e < 0 {
+			return false
+		}
 		bp, _ = rb.f.quickSpan(rb.src, bp, len(s), true)
 	}
 	return true
@@ -131,34 +137,34 @@ func (f Form) IsNormalString(s string) bool {
 // patchTail fixes a case where a rune may be incorrectly normalized
 // if it is followed by illegal continuation bytes. It returns the
 // patched buffer and whether there were trailing continuation bytes.
-func patchTail(rb *reorderBuffer, buf []byte) ([]byte, bool) {
-	info, p := lastRuneStart(&rb.f, buf)
+func patchTail(rb *reorderBuffer) bool {
+	info, p := lastRuneStart(&rb.f, rb.out)
 	if p == -1 || info.size == 0 {
-		return buf, false
+		return false
 	}
 	end := p + int(info.size)
-	extra := len(buf) - end
+	extra := len(rb.out) - end
 	if extra > 0 {
 		// Potentially allocating memory. However, this only
 		// happens with ill-formed UTF-8.
 		x := make([]byte, 0)
-		x = append(x, buf[len(buf)-extra:]...)
-		buf = decomposeToLastBoundary(rb, buf[:end])
-		if rb.f.composing {
-			rb.compose()
-		}
-		buf = rb.flush(buf)
-		return append(buf, x...), true
+		x = append(x, rb.out[len(rb.out)-extra:]...)
+		rb.out = rb.out[:end]
+		decomposeToLastBoundary(rb)
+		rb.doFlush()
+		rb.out = append(rb.out, x...)
+		return true
 	}
-	return buf, false
+	return false
 }
 
-func appendQuick(rb *reorderBuffer, dst []byte, i int) ([]byte, int) {
+func appendQuick(rb *reorderBuffer, i int) int {
 	if rb.nsrc == i {
-		return dst, i
+		return i
 	}
 	end, _ := rb.f.quickSpan(rb.src, i, rb.nsrc, true)
-	return rb.src.appendSlice(dst, i, end), end
+	rb.out = rb.src.appendSlice(rb.out, i, end)
+	return end
 }
 
 // Append returns f(append(out, b...)).
@@ -179,25 +185,24 @@ func (f Form) doAppend(out []byte, src input, n int) []byte {
 		if p == n {
 			return out
 		}
-		rb := reorderBuffer{f: *ft, src: src, nsrc: n}
-		return doAppendInner(&rb, out, p)
+		rb := reorderBuffer{f: *ft, src: src, nsrc: n, out: out, flushF: appendFlush}
+		return doAppendInner(&rb, p)
 	}
 	rb := reorderBuffer{f: *ft, src: src, nsrc: n}
 	return doAppend(&rb, out, 0)
 }
 
 func doAppend(rb *reorderBuffer, out []byte, p int) []byte {
+	rb.setFlusher(out, appendFlush)
 	src, n := rb.src, rb.nsrc
 	doMerge := len(out) > 0
 	if q := src.skipNonStarter(p); q > p {
 		// Move leading non-starters to destination.
-		out = src.appendSlice(out, p, q)
-		buf, endsInError := patchTail(rb, out)
-		if endsInError {
-			out = buf
+		rb.out = src.appendSlice(rb.out, p, q)
+		if patchTail(rb) {
 			doMerge = false // no need to merge, ends with illegal UTF-8
 		} else {
-			out = decomposeToLastBoundary(rb, buf) // force decomposition
+			decomposeToLastBoundary(rb) // force decomposition
 		}
 		p = q
 	}
@@ -207,37 +212,30 @@ func doAppend(rb *reorderBuffer, out []byte, p int) []byte {
 		if p < n {
 			info = fd.info(src, p)
 			if p == 0 && !info.BoundaryBefore() {
-				out = decomposeToLastBoundary(rb, out)
+				decomposeToLastBoundary(rb)
 			}
 		}
 		if info.size == 0 || info.BoundaryBefore() {
-			if fd.composing {
-				rb.compose()
-			}
-			out = rb.flush(out)
+			rb.doFlush()
 			if info.size == 0 {
 				// Append incomplete UTF-8 encoding.
-				return src.appendSlice(out, p, n)
+				return src.appendSlice(rb.out, p, n)
 			}
 		}
 	}
 	if rb.nrune == 0 {
-		out, p = appendQuick(rb, out, p)
+		p = appendQuick(rb, p)
 	}
-	return doAppendInner(rb, out, p)
+	return doAppendInner(rb, p)
 }
 
-func doAppendInner(rb *reorderBuffer, out []byte, p int) []byte {
-	fd := &rb.f
+func doAppendInner(rb *reorderBuffer, p int) []byte {
 	for n := rb.nsrc; p < n; {
-		p = decomposeSegment(rb, p)
-		if fd.composing {
-			rb.compose()
-		}
-		out = rb.flush(out)
-		out, p = appendQuick(rb, out, p)
+		// do we need to check for short src?
+		p = decomposeSegment(rb, p, true)
+		p = appendQuick(rb, p)
 	}
-	return out
+	return rb.out
 }
 
 // AppendString returns f(append(out, []byte(s))).
@@ -405,25 +403,43 @@ func lastBoundary(fd *formInfo, b []byte) int {
 }
 
 // decomposeSegment scans the first segment in src into rb.
-// It returns the number of bytes consumed from src.
+// It returns the number of bytes consumed from src or iShortDst
+// or iShortSrc.
 // TODO(mpvl): consider inserting U+034f (Combining Grapheme Joiner)
 // when we detect a sequence of 30+ non-starter chars.
-func decomposeSegment(rb *reorderBuffer, sp int) int {
+func decomposeSegment(rb *reorderBuffer, sp int, atEOF bool) int {
 	// Force one character to be consumed.
 	info := rb.f.info(rb.src, sp)
 	if info.size == 0 {
 		return 0
 	}
-	for rb.insert(rb.src, sp, info) {
+	for {
+		if err := rb.insert(rb.src, sp, info); err != 0 {
+			if err != iOverflow {
+				return int(err)
+			}
+			break
+		}
 		sp += int(info.size)
 		if sp >= rb.nsrc {
+			if !atEOF && !info.BoundaryAfter() {
+				return int(iShortSrc)
+			}
 			break
 		}
 		info = rb.f.info(rb.src, sp)
-		bound := info.BoundaryBefore()
-		if bound || info.size == 0 {
+		if info.size == 0 {
+			if !atEOF {
+				return int(iShortSrc)
+			}
 			break
 		}
+		if info.BoundaryBefore() {
+			break
+		}
+	}
+	if !rb.doFlush() {
+		return int(iShortDst)
 	}
 	return sp
 }
@@ -442,53 +458,37 @@ func lastRuneStart(fd *formInfo, buf []byte) (Properties, int) {
 
 // decomposeToLastBoundary finds an open segment at the end of the buffer
 // and scans it into rb. Returns the buffer minus the last segment.
-func decomposeToLastBoundary(rb *reorderBuffer, buf []byte) []byte {
+func decomposeToLastBoundary(rb *reorderBuffer) {
 	fd := &rb.f
-	info, i := lastRuneStart(fd, buf)
-	if int(info.size) != len(buf)-i {
+	info, i := lastRuneStart(fd, rb.out)
+	if int(info.size) != len(rb.out)-i {
 		// illegal trailing continuation bytes
-		return buf
+		return
 	}
 	if info.BoundaryAfter() {
-		return buf
+		return
 	}
 	var add [maxBackRunes]Properties // stores runeInfo in reverse order
 	add[0] = info
 	padd := 1
-	n := 1
-	p := len(buf) - int(info.size)
-	for ; p >= 0 && !info.BoundaryBefore(); p -= int(info.size) {
-		info, i = lastRuneStart(fd, buf[:p])
+	p := len(rb.out) - int(info.size)
+	for ; p >= 0 && padd < maxBackRunes && !info.BoundaryBefore(); p -= int(info.size) {
+		info, i = lastRuneStart(fd, rb.out[:p])
 		if int(info.size) != p-i {
-			break
-		}
-		// Check that decomposition doesn't result in overflow.
-		if info.hasDecomposition() {
-			if isHangul(buf) {
-				i += int(info.size)
-				n++
-			} else {
-				dcomp := info.Decomposition()
-				for i := 0; i < len(dcomp); {
-					inf := rb.f.info(inputBytes(dcomp), i)
-					i += int(inf.size)
-					n++
-				}
-			}
-		} else {
-			n++
-		}
-		if n > maxBackRunes {
 			break
 		}
 		add[padd] = info
 		padd++
 	}
-	pp := p
+	// Copy bytes for insertion as we may need to overwrite rb.out.
+	var buf [maxBackRunes * utf8.UTFMax]byte
+	cp := buf[:copy(buf[:], rb.out[p:])]
+	rb.out = rb.out[:p]
 	for padd--; padd >= 0; padd-- {
 		info = add[padd]
-		rb.insert(inputBytes(buf), pp, info)
-		pp += int(info.size)
+		if rb.insert(inputBytes(cp), 0, info) == iOverflow {
+			rb.doFlush()
+		}
+		cp = cp[info.size:]
 	}
-	return buf[:p]
 }

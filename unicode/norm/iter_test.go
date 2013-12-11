@@ -32,23 +32,8 @@ func runIterTests(t *testing.T, name string, f Form, tests []AppendTest, norm bo
 			t.Errorf(msg, name, i, len(out), len(gold))
 		}
 		if out != gold {
-			// Find first rune that differs and show context.
-			ir := []rune(out)
-			ig := []rune(gold)
-			t.Errorf("\n%X != \n%X", ir, ig)
-			for j := 0; j < len(ir) && j < len(ig); j++ {
-				if ir[j] == ig[j] {
-					continue
-				}
-				if j -= 3; j < 0 {
-					j = 0
-				}
-				for e := j + 7; j < e && j < len(ir) && j < len(ig); j++ {
-					const msg = "%s:%d: runeAt(%d) = %U; want %U"
-					t.Errorf(msg, name, i, j, ir[j], ig[j])
-				}
-				break
-			}
+			k, pf := pidx(out, gold)
+			t.Errorf("%s:%d: \nwas  %s%+q; \nwant %s%+q", name, i, pf, pc(out[k:]), pf, pc(gold[k:]))
 		}
 	}
 }
@@ -68,33 +53,36 @@ var iterTests = []AppendTest{
 var iterTestsD = []AppendTest{
 	{ // segment overflow on unchanged character
 		"",
-		"a" + rep(0x0300, segSize/2) + "\u0316",
-		"a" + rep(0x0300, segSize/2-1) + "\u0316\u0300",
+		"a" + grave(64) + "\u0316",
+		"a" + grave(61) + "\u0316" + grave(3),
+		// TODO: should be: "a" + grave(2*maxCombiningChars) + "\u0316" + grave(4),
 	},
 	{ // segment overflow on unchanged character + start value
 		"",
-		"a" + rep(0x0300, segSize/2+maxCombiningChars+4) + "\u0316",
-		"a" + rep(0x0300, segSize/2+maxCombiningChars) + "\u0316" + rep(0x300, 4),
+		"a" + grave(98) + "\u0316",
+		"a" + grave(92) + "\u0316" + grave(6),
+		// TODO: should be "a" + grave(3*maxCombiningChars) + "\u0316" + grave(8),
 	},
-	{ // segment overflow on decomposition
+	{ // segment overflow on decomposition (U+0340 decomposes to U+0300)
 		"",
-		"a" + rep(0x0300, segSize/2-1) + "\u0340",
-		"a" + rep(0x0300, segSize/2),
+		"a" + grave(59) + "\u0340",
+		"a" + grave(60),
 	},
 	{ // segment overflow on decomposition + start value
 		"",
-		"a" + rep(0x0300, segSize/2-1) + "\u0340" + rep(0x300, maxCombiningChars+4) + "\u0320",
-		"a" + rep(0x0300, segSize/2-1) + rep(0x300, maxCombiningChars+1) + "\u0320" + rep(0x300, 4),
+		"a" + grave(33) + "\u0340" + grave(30) + "\u0320",
+		"a" + grave(62) + "\u0320" + grave(2),
+		// TODO: should be "a" + grave(60) + "\u0320" + grave(4),
 	},
 	{ // start value after ASCII overflow
 		"",
-		rep('a', segSize) + rep(0x300, maxCombiningChars+2) + "\u0320",
-		rep('a', segSize) + rep(0x300, maxCombiningChars) + "\u0320\u0300\u0300",
+		rep('a', segSize) + grave(maxCombiningChars+2) + "\u0320",
+		rep('a', segSize) + grave(maxCombiningChars) + "\u0320\u0300\u0300",
 	},
 	{ // start value after Hangul overflow
 		"",
-		rep(0xAC00, segSize/6) + rep(0x300, maxCombiningChars+2) + "\u0320",
-		strings.Repeat("\u1100\u1161", segSize/6) + rep(0x300, maxCombiningChars+1) + "\u0320" + rep(0x300, 1),
+		rep(0xAC00, segSize/6) + grave(maxCombiningChars+2) + "\u0320",
+		strings.Repeat("\u1100\u1161", segSize/6) + grave(maxCombiningChars+1) + "\u0320" + rep(0x300, 1),
 	},
 	{ // start value after cc=0
 		"",
