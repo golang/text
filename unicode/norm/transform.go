@@ -10,12 +10,6 @@ import (
 	"code.google.com/p/go.text/transform"
 )
 
-// MaxTransformChunkSize indicates the maximum number of bytes that Transform
-// may need to write atomically for any Form. Making a destination buffer at
-// least this size ensures that Transform can always make progress and that the
-// user does not need to grow the buffer on an ErrShortDst.
-const MaxTransformChunkSize = 33 + maxCombiningChars*utf8.UTFMax + 2 // TODO: compute in maketables.
-
 // Transform implements the transform.Transformer interface. It may need to
 // write segments of up to MaxSegmentSize at once. Users should either catch
 // ErrShortDst and allow dst to grow or have dst be at least of size

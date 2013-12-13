@@ -10,24 +10,26 @@ package norm
 // and its corresponding decomposing form share the same trie.  Each trie maps
 // a rune to a uint16. The values take two forms.  For v >= 0x8000:
 //   bits
-//   0..8:   ccc
-//   9..12:  qcInfo (see below). isYesD is always true (no decompostion).
-//   16:     1
+//   15:    1 (inverse of NFD_QD bit of qcInfo)
+//   13..7: qcInfo (see below). isYesD is always true (no decompostion).
+//    6..0: ccc (compressed CCC value).
 // For v < 0x8000, the respective rune has a decomposition and v is an index
 // into a byte array of UTF-8 decomposition sequences and additional info and
 // has the form:
 //    <header> <decomp_byte>* [<tccc> [<lccc>]]
 // The header contains the number of bytes in the decomposition (excluding this
 // length byte). The two most significant bits of this length byte correspond
-// to bit 2 and 3 of qcIfo (see below).  The byte sequence itself starts at v+1.
+// to bit 5 and 4 of qcInfo (see below).  The byte sequence itself starts at v+1.
 // The byte sequence is followed by a trailing and leading CCC if the values
 // for these are not zero.  The value of v determines which ccc are appended
 // to the sequences.  For v < firstCCC, there are none, for v >= firstCCC,
 // the sequence is followed by a trailing ccc, and for v >= firstLeadingCC
-// there is an additional leading ccc.
+// there is an additional leading ccc. The value of tccc itself is the
+// trailing CCC shifted left 2 bits. The two least-significant bits of tccc
+// are the number of trailing non-starters.
 
 const (
-	qcInfoMask      = 0xF  // to clear all but the relevant bits in a qcInfo
+	qcInfoMask      = 0x3F // to clear all but the relevant bits in a qcInfo
 	headerLenMask   = 0x3F // extract the length value from the header byte
 	headerFlagsMask = 0xC0 // extract the qcInfo bits from the header byte
 )
@@ -94,39 +96,55 @@ func (p Properties) BoundaryBefore() bool {
 	return false
 }
 
-// BoundaryAfter returns true if this rune cannot combine with runes to the right
-// and always denotes the end of a segment.
+// BoundaryAfter returns true if runes cannot combine with or otherwise
+// interact with this or previous runes.
 func (p Properties) BoundaryAfter() bool {
+	// TODO: loosen these conditions.
 	return p.isInert()
 }
 
 // We pack quick check data in 4 bits:
-//   0:    NFD_QC Yes (0) or No (1). No also means there is a decomposition.
-//   1..2: NFC_QC Yes(00), No (10), or Maybe (11)
-//   3:    Combines forward  (0 == false, 1 == true)
+//   5:    Combines forward  (0 == false, 1 == true)
+//   4..3: NFC_QC Yes(00), No (10), or Maybe (11)
+//   2:    NFD_QC Yes (0) or No (1). No also means there is a decomposition.
+//   1..0: Number of trailing non-starters.
 //
 // When all 4 bits are zero, the character is inert, meaning it is never
 // influenced by normalization.
 type qcInfo uint8
 
-func (p Properties) isYesC() bool { return p.flags&0x4 == 0 }
-func (p Properties) isYesD() bool { return p.flags&0x1 == 0 }
+func (p Properties) isYesC() bool { return p.flags&0x10 == 0 }
+func (p Properties) isYesD() bool { return p.flags&0x4 == 0 }
 
-func (p Properties) combinesForward() bool  { return p.flags&0x8 != 0 }
-func (p Properties) combinesBackward() bool { return p.flags&0x2 != 0 } // == isMaybe
-func (p Properties) hasDecomposition() bool { return p.flags&0x1 != 0 } // == isNoD
+func (p Properties) combinesForward() bool  { return p.flags&0x20 != 0 }
+func (p Properties) combinesBackward() bool { return p.flags&0x8 != 0 } // == isMaybe
+func (p Properties) hasDecomposition() bool { return p.flags&0x4 != 0 } // == isNoD
 
 func (p Properties) isInert() bool {
-	return p.flags&0xf == 0 && p.ccc == 0
+	return p.flags&qcInfoMask == 0 && p.ccc == 0
 }
 
 func (p Properties) multiSegment() bool {
 	return p.index >= firstMulti && p.index < endMulti
 }
 
+func (p Properties) nLeadingCombining() uint8 {
+	// If a rune or decomposition starts with ccc > 0, all runes will be
+	// nonstarters,  so nLeadingCombining will be the same as nTrailingCombining.
+	if p.ccc > 0 {
+		return uint8(p.flags & 0x03)
+	}
+	return 0
+}
+
+func (p Properties) nTrailingCombining() uint8 {
+	return uint8(p.flags & 0x03)
+}
+
 // Decomposition returns the decomposition for the underlying rune
 // or nil if there is none.
 func (p Properties) Decomposition() []byte {
+	// TODO: create the decomposition for Hangul?
 	if p.index == 0 {
 		return nil
 	}
@@ -143,22 +161,22 @@ func (p Properties) Size() int {
 
 // CCC returns the canonical combining class of the underlying rune.
 func (p Properties) CCC() uint8 {
-	if p.index > firstCCCZeroExcept {
+	if p.index >= firstCCCZeroExcept {
 		return 0
 	}
-	return p.ccc
+	return ccc[p.ccc]
 }
 
 // LeadCCC returns the CCC of the first rune in the decomposition.
 // If there is no decomposition, LeadCCC equals CCC.
 func (p Properties) LeadCCC() uint8 {
-	return p.ccc
+	return ccc[p.ccc]
 }
 
 // TrailCCC returns the CCC of the last rune in the decomposition.
 // If there is no decomposition, TrailCCC equals CCC.
 func (p Properties) TrailCCC() uint8 {
-	return p.tccc
+	return ccc[p.tccc]
 }
 
 // Recomposition
@@ -211,16 +229,18 @@ func compInfo(v uint16, sz int) Properties {
 			size:  uint8(sz),
 			ccc:   uint8(v),
 			tccc:  uint8(v),
-			flags: qcInfo(v>>8) & qcInfoMask,
+			flags: qcInfo(v >> 8),
 		}
 	}
 	// has decomposition
 	h := decomps[v]
-	f := (qcInfo(h&headerFlagsMask) >> 4) | 0x1
+	f := (qcInfo(h&headerFlagsMask) >> 2) | 0x4
 	ri := Properties{size: uint8(sz), flags: f, index: v}
 	if v >= firstCCC {
 		v += uint16(h&headerLenMask) + 1
-		ri.tccc = decomps[v]
+		c := decomps[v]
+		ri.tccc = c >> 2
+		ri.flags |= qcInfo(c & 0x3)
 		if v >= firstLeadingCCC {
 			ri.ccc = decomps[v+1]
 		}

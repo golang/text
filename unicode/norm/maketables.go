@@ -29,9 +29,11 @@ import (
 func main() {
 	flag.Parse()
 	loadUnicodeData()
+	compactCCC()
 	loadCompositionExclusions()
 	completeCharFields(FCanonical)
 	completeCharFields(FCompatibility)
+	computeNonStarterCounts()
 	verifyComputed()
 	printChars()
 	if *test {
@@ -130,8 +132,12 @@ type Char struct {
 	name          string
 	codePoint     rune  // if zero, this index is not a valid code point.
 	ccc           uint8 // canonical combining class
-	excludeInComp bool  // from CompositionExclusions.txt
-	compatDecomp  bool  // it has a compatibility expansion
+	origCCC       uint8
+	excludeInComp bool // from CompositionExclusions.txt
+	compatDecomp  bool // it has a compatibility expansion
+
+	nTrailingNonStarters uint8
+	nLeadingNonStarters  uint8 // must be equal to trailing if non-zero
 
 	forms [FNumberOfFormTypes]FormInfo // For FCanonical and FCompatibility
 
@@ -139,6 +145,7 @@ type Char struct {
 }
 
 var chars = make([]Char, MaxChar+1)
+var cccMap = make(map[uint8]uint8)
 
 func (c Char) String() string {
 	buf := new(bytes.Buffer)
@@ -320,6 +327,33 @@ func loadUnicodeData() {
 	}
 }
 
+// compactCCC converts the sparse set of CCC values to a continguous one,
+// reducing the number of bits needed from 8 to 6.
+func compactCCC() {
+	m := make(map[uint8]uint8)
+	for i := range chars {
+		c := &chars[i]
+		m[c.ccc] = 0
+	}
+	cccs := []int{}
+	for v, _ := range m {
+		cccs = append(cccs, int(v))
+	}
+	sort.Ints(cccs)
+	for i, c := range cccs {
+		cccMap[uint8(i)] = uint8(c)
+		m[uint8(c)] = uint8(i)
+	}
+	for i := range chars {
+		c := &chars[i]
+		c.origCCC = c.ccc
+		c.ccc = m[c.ccc]
+	}
+	if len(m) >= 1<<6 {
+		log.Fatalf("too many difference CCC values: %d >= 64", len(m))
+	}
+}
+
 var singlePointRe = regexp.MustCompile(`^([0-9A-F]+) *$`)
 
 // CompositionExclusions.txt has form:
@@ -391,10 +425,21 @@ const (
 	JamoVEnd  = 0x1176
 	JamoTBase = 0x11A8
 	JamoTEnd  = 0x11C3
+
+	JamoLVTCount = 19 * 21 * 28
+	JamoTCount   = 28
 )
 
 func isHangul(r rune) bool {
 	return HangulBase <= r && r < HangulEnd
+}
+
+func isHangulWithoutJamoT(r rune) bool {
+	if !isHangul(r) {
+		return false
+	}
+	r -= HangulBase
+	return r < JamoLVTCount && r%JamoTCount == 0
 }
 
 func ccc(r rune) uint8 {
@@ -421,9 +466,6 @@ func insertOrdered(b Decomposition, r rune) Decomposition {
 
 // Recursively decompose.
 func decomposeRecursive(form int, r rune, d Decomposition) Decomposition {
-	if isHangul(r) {
-		return d
-	}
 	dcomp := chars[r].forms[form].decomp
 	if len(dcomp) == 0 {
 		return insertOrdered(d, r)
@@ -492,6 +534,12 @@ func completeCharFields(form int) {
 				f1.combinesBackward = true
 			}
 		}
+		if isHangulWithoutJamoT(rune(i)) {
+			// TODO: we can insert this flag for Hangul at minimal cost.
+			// However, this will only be useful if we use this value to
+			// compute BoundaryAfter, for example.
+			// f.combinesForward = true
+		}
 	}
 
 	// Phase 3: quick check values.
@@ -532,6 +580,39 @@ func completeCharFields(form int) {
 	}
 }
 
+func computeNonStarterCounts() {
+	// Phase 4: leading and trailing nonstarter count
+	for i := range chars {
+		c := &chars[i]
+
+		runes := []rune{rune(i)}
+		// We always use FCompatibility so that the CGJ insertion points do not
+		// change for repeated normalizations with different forms.
+		if exp := c.forms[FCompatibility].expandedDecomp; len(exp) > 0 {
+			runes = exp
+		}
+		for _, r := range runes {
+			if chars[r].ccc == 0 {
+				break
+			}
+			c.nLeadingNonStarters++
+		}
+		for i := len(runes) - 1; i >= 0; i-- {
+			if chars[runes[i]].ccc == 0 {
+				break
+			}
+			c.nTrailingNonStarters++
+		}
+
+		if l, t := c.nLeadingNonStarters, c.nTrailingNonStarters; l > 0 && l != t {
+			log.Fatalf("%U: number of leading and trailing nonstarters should be equal (%d vs %d)", i, l, t)
+		}
+		if t := c.nTrailingNonStarters; t > 3 {
+			log.Fatalf("%U: number of trailing nonstarters is %d > 3", t)
+		}
+	}
+}
+
 func printBytes(b []byte, name string) {
 	fmt.Printf("// %s: %d bytes\n", name, len(b))
 	fmt.Printf("var %s = [...]byte {", name)
@@ -548,23 +629,27 @@ func printBytes(b []byte, name string) {
 }
 
 // See forminfo.go for format.
-func makeEntry(f *FormInfo) uint16 {
+func makeEntry(f *FormInfo, c *Char) uint16 {
 	e := uint16(0)
+	if r := c.codePoint; HangulBase <= r && r < HangulEnd {
+		e |= 0x40
+	}
 	if f.combinesForward {
-		e |= 0x8
+		e |= 0x20
 	}
 	if f.quickCheck[MDecomposed] == QCNo {
-		e |= 0x1
+		e |= 0x4
 	}
 	switch f.quickCheck[MComposed] {
 	case QCYes:
 	case QCNo:
-		e |= 0x4
+		e |= 0x10
 	case QCMaybe:
-		e |= 0x6
+		e |= 0x18
 	default:
 		log.Fatalf("Illegal quickcheck value %v.", f.quickCheck[MComposed])
 	}
+	e |= uint16(c.nTrailingNonStarters)
 	return e
 }
 
@@ -623,7 +708,10 @@ func printCharInfoTables() int {
 			logger.Fatalf(msg, r, lccc, tccc)
 		}
 		index := normalDecomp
-		if tccc > 0 || lccc > 0 {
+		nTrail := chars[r].nTrailingNonStarters
+		if tccc > 0 || lccc > 0 || nTrail > 0 {
+			tccc <<= 2
+			tccc |= nTrail
 			s += string([]byte{tccc})
 			index = endMulti
 			for _, r := range d[1:] {
@@ -708,7 +796,7 @@ func printCharInfoTables() int {
 						logger.Fatalf("Expected leading CCC to be non-zero; ccc is %d", c.ccc)
 					}
 				}
-			} else if v := makeEntry(&f)<<8 | uint16(c.ccc); v != 0 {
+			} else if v := makeEntry(&f, &c)<<8 | uint16(c.ccc); v != 0 {
 				trie.insert(c.codePoint, 0x8000|v)
 			}
 		}
@@ -760,8 +848,35 @@ func makeTables() {
 	}
 	fmt.Printf(fileHeader, *tablelist, *url)
 
-	fmt.Println("// Version is the Unicode edition from which the tables are derived.")
-	fmt.Printf("const Version = %q\n\n", version())
+	// Compute maximum decomposition size.
+	max := 0
+	for _, c := range chars {
+		if n := len(string(c.forms[FCompatibility].expandedDecomp)); n > max {
+			max = n
+		}
+	}
+
+	fmt.Println("const (")
+	fmt.Println("\t// Version is the Unicode edition from which the tables are derived.")
+	fmt.Printf("\tVersion = %q\n", version())
+	fmt.Println()
+	fmt.Println("\t// MaxTransformChunkSize indicates the maximum number of bytes that Transform")
+	fmt.Println("\t// may need to write atomically for any Form. Making a destination buffer at")
+	fmt.Println("\t// least this size ensures that Transform can always make progress and that")
+	fmt.Println("\t// the user does not need to grow the buffer on an ErrShortDst.")
+	fmt.Printf("\tMaxTransformChunkSize = %d+maxCombiningChars*4\n", len(string(0x034F))+max)
+	fmt.Println(")\n")
+
+	// Print the CCC remap table.
+	size += len(cccMap)
+	fmt.Printf("var ccc = [%d]uint8{", len(cccMap))
+	for i := 0; i < len(cccMap); i++ {
+		if i%8 == 0 {
+			fmt.Println()
+		}
+		fmt.Printf("%3d, ", cccMap[uint8(i)])
+	}
+	fmt.Println("\n}\n")
 
 	if contains(list, "info") {
 		size += printCharInfoTables()
@@ -819,12 +934,15 @@ func verifyComputed() {
 		for _, f := range c.forms {
 			isNo := (f.quickCheck[MDecomposed] == QCNo)
 			if (len(f.decomp) > 0) != isNo && !isHangul(rune(i)) {
-				log.Fatalf("%U: NF*D must be no if rune decomposes", i)
+				log.Fatalf("%U: NF*D QC must be No if rune decomposes", i)
 			}
 
 			isMaybe := f.quickCheck[MComposed] == QCMaybe
 			if f.combinesBackward != isMaybe {
-				log.Fatalf("%U: NF*C must be maybe if combinesBackward", i)
+				log.Fatalf("%U: NF*C QC must be Maybe if combinesBackward", i)
+			}
+			if len(f.decomp) > 0 && f.combinesForward && isMaybe {
+				log.Fatalf("%U: NF*C QC must be Yes or No if combinesForward and decomposes", i)
 			}
 		}
 		nfc := c.forms[FCanonical]
@@ -925,6 +1043,7 @@ func testDerived() {
 
 var testHeader = `// Generated by running
 //   maketables --test --url=%s
+// +build test
 
 package norm
 
@@ -941,9 +1060,11 @@ type formData struct {
 }
 
 type runeData struct {
-	r   rune
-	ccc uint8
-	f   [2]formData // 0: canonical; 1: compatibility
+	r      rune
+	ccc    uint8
+	nLead  uint8
+	nTrail uint8
+	f      [2]formData // 0: canonical; 1: compatibility
 }
 
 func f(qc uint8, cf bool, dec string) [2]formData {
@@ -958,8 +1079,13 @@ var testData = []runeData{
 `
 
 func printTestdata() {
-	last := ""
-	lastCCC := uint8(255)
+	type lastInfo struct {
+		ccc    uint8
+		nLead  uint8
+		nTrail uint8
+		f      string
+	}
+	last := lastInfo{}
 	fmt.Printf(testHeader, *url)
 	for r, c := range chars {
 		f := c.forms[FCanonical]
@@ -972,11 +1098,11 @@ func printTestdata() {
 		} else {
 			s = fmt.Sprintf("g(%s, %s, %v, %v, %q, %q)", qc, qck, cf, cfk, d, dk)
 		}
-		if s != last || c.ccc != lastCCC {
-			fmt.Printf("\t{0x%x, %d, %s},\n", r, c.ccc, s)
+		current := lastInfo{c.ccc, c.nLeadingNonStarters, c.nTrailingNonStarters, s}
+		if last != current {
+			fmt.Printf("\t{0x%x, %d, %d, %d, %s},\n", r, c.origCCC, c.nLeadingNonStarters, c.nTrailingNonStarters, s)
+			last = current
 		}
-		last = s
-		lastCCC = c.ccc
 	}
 	fmt.Println("}")
 }
