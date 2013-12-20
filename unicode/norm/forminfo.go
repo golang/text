@@ -40,6 +40,7 @@ type Properties struct {
 	size  uint8  // length of UTF-8 encoding of this rune
 	ccc   uint8  // leading canonical combining class (ccc if not decomposition)
 	tccc  uint8  // trailing canonical combining class (ccc if not decomposition)
+	nLead uint8  // number of leading non-starters.
 	flags qcInfo // quick check flags
 	index uint16
 }
@@ -128,16 +129,11 @@ func (p Properties) multiSegment() bool {
 	return p.index >= firstMulti && p.index < endMulti
 }
 
-func (p Properties) nLeadingCombining() uint8 {
-	// If a rune or decomposition starts with ccc > 0, all runes will be
-	// nonstarters,  so nLeadingCombining will be the same as nTrailingCombining.
-	if p.ccc > 0 {
-		return uint8(p.flags & 0x03)
-	}
-	return 0
+func (p Properties) nLeadingNonStarters() uint8 {
+	return p.nLead
 }
 
-func (p Properties) nTrailingCombining() uint8 {
+func (p Properties) nTrailingNonStarters() uint8 {
 	return uint8(p.flags & 0x03)
 }
 
@@ -225,25 +221,36 @@ func compInfo(v uint16, sz int) Properties {
 	if v == 0 {
 		return Properties{size: uint8(sz)}
 	} else if v >= 0x8000 {
-		return Properties{
+		p := Properties{
 			size:  uint8(sz),
 			ccc:   uint8(v),
 			tccc:  uint8(v),
 			flags: qcInfo(v >> 8),
 		}
+		if p.ccc > 0 || p.combinesBackward() {
+			p.nLead = uint8(p.flags & 0x3)
+		}
+		return p
 	}
 	// has decomposition
 	h := decomps[v]
 	f := (qcInfo(h&headerFlagsMask) >> 2) | 0x4
-	ri := Properties{size: uint8(sz), flags: f, index: v}
+	p := Properties{size: uint8(sz), flags: f, index: v}
 	if v >= firstCCC {
 		v += uint16(h&headerLenMask) + 1
 		c := decomps[v]
-		ri.tccc = c >> 2
-		ri.flags |= qcInfo(c & 0x3)
+		p.tccc = c >> 2
+		p.flags |= qcInfo(c & 0x3)
 		if v >= firstLeadingCCC {
-			ri.ccc = decomps[v+1]
+			p.nLead = c & 0x3
+			if v >= firstStarterWithNLead {
+				// We were tricked. Remove the decomposition.
+				p.flags &= 0x03
+				p.index = 0
+				return p
+			}
+			p.ccc = decomps[v+1]
 		}
 	}
-	return ri
+	return p
 }

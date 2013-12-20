@@ -5,6 +5,7 @@
 package norm
 
 import (
+	"fmt"
 	"testing"
 
 	"code.google.com/p/go.text/transform"
@@ -80,9 +81,8 @@ var transBufSizes = []int{
 	100 * MaxTransformChunkSize,
 }
 
-func doTransNorm(f Form, buf []byte, s string) []byte {
+func doTransNorm(f Form, buf []byte, b []byte) []byte {
 	acc := []byte{}
-	b := []byte(s)
 	for p := 0; p < len(b); {
 		nd, ns, _ := f.Transform(buf[:], b[p:], true)
 		p += ns
@@ -91,34 +91,11 @@ func doTransNorm(f Form, buf []byte, s string) []byte {
 	return acc
 }
 
-func runTransformTests(t *testing.T, name string, f Form, tests []AppendTest, norm bool) {
-	for i, test := range tests {
-		in := test.left + test.right
-		gold := test.out
-		if norm {
-			gold = string(f.AppendString(nil, test.out))
-		}
-		for _, sz := range transBufSizes {
-			buf := make([]byte, sz)
-			out := string(doTransNorm(f, buf, in))
-			if len(out) != len(gold) {
-				const msg = "%s:%d:%d: length is %d; want %d"
-				t.Errorf(msg, name, i, sz, len(out), len(gold))
-			}
-			if out != gold {
-				k, pf := pidx(out, gold)
-				t.Errorf("%s:%d: \nwas  %s%+q; \nwant %s%+q", name, i, pf, pc(out[k:]), pf, pc(gold[k:]))
-			}
-		}
+func TestTransformNorm(t *testing.T) {
+	for _, sz := range transBufSizes {
+		buf := make([]byte, sz)
+		runNormTests(t, fmt.Sprintf("Transform:%d", sz), func(f Form, out []byte, s string) []byte {
+			return doTransNorm(f, buf, append(out, s...))
+		})
 	}
-}
-
-func TestTransformD(t *testing.T) {
-	runTransformTests(t, "TransformD1", NFKD, appendTests, true)
-	runTransformTests(t, "TransformD2", NFKD, iterTests, true)
-}
-
-func TestTransformC(t *testing.T) {
-	runTransformTests(t, "TransformC1", NFKC, appendTests, true)
-	runTransformTests(t, "TransformC2", NFKC, iterTests, true)
 }

@@ -19,106 +19,10 @@ func doIterNorm(f Form, s string) []byte {
 	return acc
 }
 
-func runIterTests(t *testing.T, name string, f Form, tests []AppendTest, norm bool) {
-	for i, test := range tests {
-		in := test.left + test.right
-		gold := test.out
-		if norm {
-			gold = string(f.AppendString(nil, test.out))
-		}
-		out := string(doIterNorm(f, in))
-		if len(out) != len(gold) {
-			const msg = "%s:%d: length is %d; want %d"
-			t.Errorf(msg, name, i, len(out), len(gold))
-		}
-		if out != gold {
-			k, pf := pidx(out, gold)
-			t.Errorf("%s:%d: \nwas  %s%+q; \nwant %s%+q", name, i, pf, pc(out[k:]), pf, pc(gold[k:]))
-		}
-	}
-}
-
-func rep(r rune, n int) string {
-	return strings.Repeat(string(r), n)
-}
-
-const segSize = maxByteBufferSize
-
-var iterTests = []AppendTest{
-	{"", ascii, ascii},
-	{"", txt_all, txt_all},
-	{"", "a" + rep(0x0300, segSize/2), "a" + rep(0x0300, segSize/2)},
-}
-
-var iterTestsD = []AppendTest{
-	{ // segment overflow on unchanged character
-		"",
-		"a" + grave(64) + "\u0316",
-		"a" + grave(61) + "\u0316" + grave(3),
-		// TODO: should be: "a" + grave(2*maxCombiningChars) + "\u0316" + grave(4),
-	},
-	{ // segment overflow on unchanged character + start value
-		"",
-		"a" + grave(98) + "\u0316",
-		"a" + grave(92) + "\u0316" + grave(6),
-		// TODO: should be "a" + grave(3*maxCombiningChars) + "\u0316" + grave(8),
-	},
-	{ // segment overflow on decomposition (U+0340 decomposes to U+0300)
-		"",
-		"a" + grave(59) + "\u0340",
-		"a" + grave(60),
-	},
-	{ // segment overflow on decomposition + start value
-		"",
-		"a" + grave(33) + "\u0340" + grave(30) + "\u0320",
-		"a" + grave(62) + "\u0320" + grave(2),
-		// TODO: should be "a" + grave(60) + "\u0320" + grave(4),
-	},
-	{ // start value after ASCII overflow
-		"",
-		rep('a', segSize) + grave(maxCombiningChars+2) + "\u0320",
-		rep('a', segSize) + grave(maxCombiningChars) + "\u0320\u0300\u0300",
-	},
-	{ // start value after Hangul overflow
-		"",
-		rep(0xAC00, segSize/6) + grave(maxCombiningChars+2) + "\u0320",
-		strings.Repeat("\u1100\u1161", segSize/6) + grave(maxCombiningChars+1) + "\u0320" + rep(0x300, 1),
-	},
-	{ // start value after cc=0
-		"",
-		"您您" + rep(0x300, maxCombiningChars+4) + "\u0320",
-		"您您" + rep(0x300, maxCombiningChars) + "\u0320" + rep(0x300, 4),
-	},
-	{ // start value after normalization
-		"",
-		"\u0300\u0320a" + rep(0x300, maxCombiningChars+4) + "\u0320",
-		"\u0320\u0300a" + rep(0x300, maxCombiningChars) + "\u0320" + rep(0x300, 4),
-	},
-}
-
-var iterTestsC = []AppendTest{
-	{ // ordering of non-composing combining characters
-		"",
-		"\u0305\u0316",
-		"\u0316\u0305",
-	},
-	{ // segment overflow
-		"",
-		"a" + rep(0x0305, segSize/2+4) + "\u0316",
-		"a" + rep(0x0305, segSize/2-1) + "\u0316" + rep(0x305, 5),
-	},
-}
-
-func TestIterNextD(t *testing.T) {
-	runIterTests(t, "IterNextD1", NFKD, appendTests, true)
-	runIterTests(t, "IterNextD2", NFKD, iterTests, true)
-	runIterTests(t, "IterNextD3", NFKD, iterTestsD, false)
-}
-
-func TestIterNextC(t *testing.T) {
-	runIterTests(t, "IterNextC1", NFKC, appendTests, true)
-	runIterTests(t, "IterNextC2", NFKC, iterTests, true)
-	runIterTests(t, "IterNextC3", NFKC, iterTestsC, false)
+func TestIterNext(t *testing.T) {
+	runNormTests(t, "IterNext", func(f Form, out []byte, s string) []byte {
+		return doIterNorm(f, string(append(out, s...)))
+	})
 }
 
 type SegmentTest struct {
@@ -132,12 +36,30 @@ var segmentTests = []SegmentTest{
 	{rep('a', segSize+2), append(strings.Split(rep('a', segSize+2), ""), "")},
 	{rep('a', segSize) + "\u0300aa",
 		append(strings.Split(rep('a', segSize-1), ""), "a\u0300", "a", "a", "")},
+
+	// U+0f73 is NOT treated as a starter as it is a modifier
+	{"a" + grave(29) + "\u0f73", []string{"a" + grave(29), cgj + "\u0f73"}},
+	{"a\u0f73", []string{"a\u0f73"}},
+
+	// U+ff9e is treated as a non-starter.
+	// TODO: should we? Note that this will only affect iteration, as whether
+	// or not we do so does not affect the normalization output and will either
+	// way result in consistent iteration output.
+	{"a" + grave(30) + "\uff9e", []string{"a" + grave(30), cgj + "\uff9e"}},
+	{"a\uff9e", []string{"a\uff9e"}},
 }
 
 var segmentTestsK = []SegmentTest{
 	{"\u3332", []string{"\u30D5", "\u30A1", "\u30E9", "\u30C3", "\u30C8\u3099", ""}},
 	// last segment of multi-segment decomposition needs normalization
 	{"\u3332\u093C", []string{"\u30D5", "\u30A1", "\u30E9", "\u30C3", "\u30C8\u093C\u3099", ""}},
+	{"\u320E", []string{"\x28", "\uAC00", "\x29"}},
+
+	// last segment should be copied to start of buffer.
+	{"\ufdfa", []string{"\u0635", "\u0644", "\u0649", " ", "\u0627", "\u0644", "\u0644", "\u0647", " ", "\u0639", "\u0644", "\u064a", "\u0647", " ", "\u0648", "\u0633", "\u0644", "\u0645", ""}},
+	{"\ufdfa" + grave(30), []string{"\u0635", "\u0644", "\u0649", " ", "\u0627", "\u0644", "\u0644", "\u0647", " ", "\u0639", "\u0644", "\u064a", "\u0647", " ", "\u0648", "\u0633", "\u0644", "\u0645" + grave(30), ""}},
+	{"\uFDFA" + grave(64), []string{"\u0635", "\u0644", "\u0649", " ", "\u0627", "\u0644", "\u0644", "\u0647", " ", "\u0639", "\u0644", "\u064a", "\u0647", " ", "\u0648", "\u0633", "\u0644", "\u0645" + grave(30), cgj + grave(30), cgj + grave(4), ""}},
+
 	// Hangul and Jamo are grouped togeter.
 	{"\uAC00", []string{"\u1100\u1161", ""}},
 	{"\uAC01", []string{"\u1100\u1161\u11A8", ""}},
@@ -148,8 +70,8 @@ var segmentTestsK = []SegmentTest{
 func TestIterSegmentation(t *testing.T) {
 	segmentTest(t, "SegmentTestD", NFD, segmentTests)
 	segmentTest(t, "SegmentTestC", NFC, segmentTests)
-	segmentTest(t, "SegmentTestD", NFKD, segmentTestsK)
-	segmentTest(t, "SegmentTestC", NFKC, segmentTestsK)
+	segmentTest(t, "SegmentTestKD", NFKD, segmentTestsK)
+	segmentTest(t, "SegmentTestKC", NFKC, segmentTestsK)
 }
 
 func segmentTest(t *testing.T, name string, f Form, tests []SegmentTest) {
@@ -160,7 +82,7 @@ func segmentTest(t *testing.T, name string, f Form, tests []SegmentTest) {
 			if seg == "" {
 				if !iter.Done() {
 					res := string(iter.Next())
-					t.Errorf(`%s:%d:%d: expected Done()==true, found segment "%s"`, name, i, j, res)
+					t.Errorf(`%s:%d:%d: expected Done()==true, found segment %+q`, name, i, j, res)
 				}
 				continue
 			}
@@ -169,7 +91,7 @@ func segmentTest(t *testing.T, name string, f Form, tests []SegmentTest) {
 			}
 			seg = f.String(seg)
 			if res := string(iter.Next()); res != seg {
-				t.Errorf(`%s:%d:%d" segment was "%s" (%d); want "%s" (%d) %X %X`, name, i, j, res, len(res), seg, len(seg), []rune(res), []rune(seg))
+				t.Errorf(`%s:%d:%d" segment was %+q (%d); want %+q (%d)`, name, i, j, pc(res), len(res), pc(seg), len(seg))
 			}
 		}
 	}

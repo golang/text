@@ -535,10 +535,7 @@ func completeCharFields(form int) {
 			}
 		}
 		if isHangulWithoutJamoT(rune(i)) {
-			// TODO: we can insert this flag for Hangul at minimal cost.
-			// However, this will only be useful if we use this value to
-			// compute BoundaryAfter, for example.
-			// f.combinesForward = true
+			f.combinesForward = true
 		}
 	}
 
@@ -581,7 +578,7 @@ func completeCharFields(form int) {
 }
 
 func computeNonStarterCounts() {
-	// Phase 4: leading and trailing nonstarter count
+	// Phase 4: leading and trailing non-starter count
 	for i := range chars {
 		c := &chars[i]
 
@@ -604,11 +601,30 @@ func computeNonStarterCounts() {
 			c.nTrailingNonStarters++
 		}
 
+		// We consider runes that combine backwards to be non-starters for the
+		// purpose of Stream-Safe Text Processing.
+		for _, f := range c.forms {
+			if c.ccc == 0 && f.combinesBackward {
+				if len(c.forms[FCompatibility].expandedDecomp) > 0 {
+					log.Fatalf("%U: CCC==0 modifier with an expansion is not supported.", i)
+				}
+				c.nTrailingNonStarters = 1
+				c.nLeadingNonStarters = 1
+			}
+		}
+
+		if isHangul(rune(i)) {
+			c.nTrailingNonStarters = 2
+			if isHangulWithoutJamoT(rune(i)) {
+				c.nTrailingNonStarters = 1
+			}
+		}
+
 		if l, t := c.nLeadingNonStarters, c.nTrailingNonStarters; l > 0 && l != t {
-			log.Fatalf("%U: number of leading and trailing nonstarters should be equal (%d vs %d)", i, l, t)
+			log.Fatalf("%U: number of leading and trailing non-starters should be equal (%d vs %d)", i, l, t)
 		}
 		if t := c.nTrailingNonStarters; t > 3 {
-			log.Fatalf("%U: number of trailing nonstarters is %d > 3", t)
+			log.Fatalf("%U: number of trailing non-starters is %d > 3", t)
 		}
 	}
 }
@@ -655,7 +671,7 @@ func makeEntry(f *FormInfo, c *Char) uint16 {
 
 // decompSet keeps track of unique decompositions, grouped by whether
 // the decomposition is followed by a trailing and/or leading CCC.
-type decompSet [6]map[string]bool
+type decompSet [7]map[string]bool
 
 const (
 	normalDecomp = iota
@@ -664,10 +680,11 @@ const (
 	endMulti
 	firstLeadingCCC
 	firstCCCZeroExcept
+	firstStarterWithNLead
 	lastDecomp
 )
 
-var cname = []string{"firstMulti", "firstCCC", "endMulti", "firstLeadingCCC", "firstCCCZeroExcept", "lastDecomp"}
+var cname = []string{"firstMulti", "firstCCC", "endMulti", "firstLeadingCCC", "firstCCCZeroExcept", "firstStarterWithNLead", "lastDecomp"}
 
 func makeDecompSet() decompSet {
 	m := decompSet{}
@@ -739,6 +756,8 @@ func printCharInfoTables() int {
 	}
 
 	decompSet := makeDecompSet()
+	const nLeadStr = "\x00\x01" // 0-byte length and tccc with nTrail.
+	decompSet.insert(firstStarterWithNLead, nLeadStr)
 
 	// Store the uniqued decompositions in a byte buffer,
 	// preceded by their byte length.
@@ -796,6 +815,10 @@ func printCharInfoTables() int {
 						logger.Fatalf("Expected leading CCC to be non-zero; ccc is %d", c.ccc)
 					}
 				}
+			} else if c.nLeadingNonStarters > 0 && len(f.expandedDecomp) == 0 && c.ccc == 0 && !f.combinesBackward {
+				// Handle cases where it can't be detected that the nLead should be equal
+				// to nTrail.
+				trie.insert(c.codePoint, positionMap[nLeadStr])
 			} else if v := makeEntry(&f, &c)<<8 | uint16(c.ccc); v != 0 {
 				trie.insert(c.codePoint, 0x8000|v)
 			}
@@ -864,7 +887,7 @@ func makeTables() {
 	fmt.Println("\t// may need to write atomically for any Form. Making a destination buffer at")
 	fmt.Println("\t// least this size ensures that Transform can always make progress and that")
 	fmt.Println("\t// the user does not need to grow the buffer on an ErrShortDst.")
-	fmt.Printf("\tMaxTransformChunkSize = %d+maxCombiningChars*4\n", len(string(0x034F))+max)
+	fmt.Printf("\tMaxTransformChunkSize = %d+maxNonStarters*4\n", len(string(0x034F))+max)
 	fmt.Println(")\n")
 
 	// Print the CCC remap table.
@@ -943,6 +966,18 @@ func verifyComputed() {
 			}
 			if len(f.decomp) > 0 && f.combinesForward && isMaybe {
 				log.Fatalf("%U: NF*C QC must be Yes or No if combinesForward and decomposes", i)
+			}
+
+			if len(f.expandedDecomp) != 0 {
+				continue
+			}
+			if a, b := c.nLeadingNonStarters > 0, (c.ccc > 0 || f.combinesBackward); a != b {
+				// We accept these two runes to be treated differently (it only affects
+				// segment breaking in iteration, most likely on inproper use), but
+				// reconsider if more characters are added.
+				if i != 0xFF9E && i != 0xFF9F {
+					log.Fatalf("%U: nLead was %v; want %v", i, a, b)
+				}
 			}
 		}
 		nfc := c.forms[FCanonical]

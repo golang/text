@@ -47,7 +47,7 @@ func (in *input) skipASCII(p, max int) int {
 	return p
 }
 
-func (in *input) skipNonStarter(p int) int {
+func (in *input) skipContinuationBytes(p int) int {
 	if in.bytes == nil {
 		for ; p < len(in.str) && !utf8.RuneStart(in.str[p]); p++ {
 		}

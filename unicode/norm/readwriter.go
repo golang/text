@@ -32,7 +32,7 @@ func (w *normWriter) Write(data []byte) (n int, err error) {
 		n += m
 
 		// Write out complete prefix, save remainder.
-		// Note that lastBoundary looks back at most 30 runes.
+		// Note that lastBoundary looks back at most 31 runes.
 		i := lastBoundary(&w.rb.f, w.buf)
 		if i == -1 {
 			i = 0

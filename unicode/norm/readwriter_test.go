@@ -7,16 +7,8 @@ package norm
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"testing"
 )
-
-var ioTests = []AppendTest{
-	{"", strings.Repeat("a\u0316\u0300", 6), strings.Repeat("\u00E0\u0316", 6)},
-	{"", strings.Repeat("a\u0300\u0316", 4000), strings.Repeat("\u00E0\u0316", 4000)},
-	{"", strings.Repeat("\x80\x80", 4000), strings.Repeat("\x80\x80", 4000)},
-	{"", "\u0041\u0307\u0304", "\u01E0"},
-}
 
 var bufSizes = []int{1, 2, 3, 4, 5, 6, 7, 8, 100, 101, 102, 103, 4000, 4001, 4002, 4003}
 
@@ -36,10 +28,8 @@ func readFunc(size int) appendFunc {
 
 func TestReader(t *testing.T) {
 	for _, s := range bufSizes {
-		name := fmt.Sprintf("TestReader%da", s)
-		runAppendTests(t, name, NFKC, readFunc(s), appendTests)
-		name = fmt.Sprintf("TestReader%db", s)
-		runAppendTests(t, name, NFKC, readFunc(s), ioTests)
+		name := fmt.Sprintf("TestReader%d", s)
+		runNormTests(t, name, readFunc(s))
 	}
 }
 
@@ -60,9 +50,7 @@ func writeFunc(size int) appendFunc {
 
 func TestWriter(t *testing.T) {
 	for _, s := range bufSizes {
-		name := fmt.Sprintf("TestWriter%da", s)
-		runAppendTests(t, name, NFKC, writeFunc(s), appendTests)
-		name = fmt.Sprintf("TestWriter%db", s)
-		runAppendTests(t, name, NFKC, writeFunc(s), ioTests)
+		name := fmt.Sprintf("TestWriter%d", s)
+		runNormTests(t, name, writeFunc(s))
 	}
 }

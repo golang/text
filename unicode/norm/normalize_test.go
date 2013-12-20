@@ -6,12 +6,17 @@ package norm
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"strings"
 	"testing"
 	"unicode/utf8"
+)
+
+var (
+	testn = flag.Int("testn", -1, "specific test number to run or -1 for all")
 )
 
 // pc replaces any rune r that is repeated n times, for n > 1, with r{n}.
@@ -85,6 +90,14 @@ func grave(n int) string {
 	return rep(0x0300, n)
 }
 
+func rep(r rune, n int) string {
+	return strings.Repeat(string(r), n)
+}
+
+const segSize = maxByteBufferSize
+
+var cgj = GraphemeJoiner
+
 var decomposeSegmentTests = []PositionTest{
 	// illegal runes
 	{"\xC0", 0, ""},
@@ -99,7 +112,9 @@ var decomposeSegmentTests = []PositionTest{
 	{"\u00C0", 2, "A\u0300"},
 	{"\u00C0b", 2, "A\u0300"},
 	// long
-	{grave(31), 62, grave(31)},
+	{grave(31), 60, grave(30) + cgj},
+	{grave(30), 60, grave(30)},
+	{grave(30) + "\uff9e", 60, grave(30) + cgj},
 	// ends with incomplete UTF-8 encoding
 	{"\xCC", 0, ""},
 	{"\u0300\xCC", 2, "\u0300"},
@@ -134,9 +149,9 @@ var firstBoundaryTests = []PositionTest{
 	{"\u1161\u110B\u1173\u11B7", 3, ""},
 	{"\u1173\u11B7\u1103\u1161", 6, ""},
 	// too many combining characters.
-	{grave(maxCombiningChars - 1), -1, ""},
-	{grave(maxCombiningChars), 60, ""},
-	{grave(maxCombiningChars + 1), 60, ""},
+	{grave(maxNonStarters - 1), -1, ""},
+	{grave(maxNonStarters), 60, ""},
+	{grave(maxNonStarters + 1), 60, ""},
 }
 
 func firstBoundaryF(rb *reorderBuffer, s string) (int, []byte) {
@@ -178,12 +193,17 @@ var decomposeToLastTests = []PositionTest{
 	{"\u0300a\u0300\u0301", 2, "a\u0300\u0301"},
 	{"\u00C0", 0, "A\u0300"},
 	{"a\u00C0", 1, "A\u0300"},
+	// decomposing
+	{"a\u0300\u00E0", 3, "a\u0300"},
 	// multisegment decompositions (flushes leading segments)
 	{"a\u0300\uFDC0", 7, "\u064A"},
 	{"\uFDC0" + grave(29), 4, "\u064A" + grave(29)},
 	{"\uFDC0" + grave(30), 4, "\u064A" + grave(30)},
-	{"\uFDC0" + grave(31), 3, grave(31)}, // TODO: should be 5, grave(30)
+	{"\uFDC0" + grave(31), 5, grave(30)},
 	{"\uFDFA" + grave(14), 31, "\u0645" + grave(14)},
+	// Overflow
+	{"\u00E0" + grave(29), 0, "a" + grave(30)},
+	{"\u00E0" + grave(30), 2, grave(30)},
 	// Hangul
 	{"a\u1103", 1, "\u1103"},
 	{"a\u110B", 1, "\u110B"},
@@ -197,6 +217,10 @@ var decomposeToLastTests = []PositionTest{
 	{"\u110B\u1173\u11B7\u1103\u1161", 9, "\u1103\u1161"},
 	{"다음음", 6, "\u110B\u1173\u11B7"},
 	{"음다다", 6, "\u1103\u1161"},
+	// maximized buffer
+	{"a" + grave(30), 0, "a" + grave(30)},
+	// Buffer overflow
+	{"a" + grave(31), 3, grave(30)},
 	// weird UTF-8
 	{"a\u0300\u11B7", 0, "a\u0300\u11B7"},
 }
@@ -251,9 +275,18 @@ var lastBoundaryTests = []PositionTest{
 	{"\u1103\u1161\u110B\u1173\u11B7", 6, ""},
 	{"\u110B\u1173\u11B7\u1103\u1161", 9, ""},
 	// too many combining characters.
-	{grave(maxCombiningChars - 1), -1, ""},
-	{grave(maxCombiningChars), 60, ""},
-	{grave(maxCombiningChars + 1), 62, ""},
+	{grave(maxNonStarters - 1), -1, ""},
+	// May still be preceded with a non-starter.
+	{grave(maxNonStarters), -1, ""},
+	// May still need to insert a cgj after the last combiner.
+	{grave(maxNonStarters + 1), 2, ""},
+	{grave(maxNonStarters + 2), 4, ""},
+
+	{"a" + grave(maxNonStarters-1), 0, ""},
+	{"a" + grave(maxNonStarters), 0, ""},
+	// May still need to insert a cgj after the last combiner.
+	{"a" + grave(maxNonStarters+1), 3, ""},
+	{"a" + grave(maxNonStarters+2), 5, ""},
 }
 
 func lastBoundaryF(rb *reorderBuffer, s string) (int, []byte) {
@@ -277,10 +310,14 @@ var quickSpanTests = []PositionTest{
 	{"\u0300\u0316", 0, ""},
 	{"\u0300\u0316cd", 0, ""},
 	// have a maximum number of combining characters.
-	{strings.Repeat("\u035D", 30) + "\u035B", 62, ""},
-	{"a" + strings.Repeat("\u035D", 30) + "\u035B", 63, ""},
-	{"Ɵ" + strings.Repeat("\u035D", 30) + "\u035B", 64, ""},
-	{"aa" + strings.Repeat("\u035D", 30) + "\u035B", 64, ""},
+	{rep(0x035D, 30) + "\u035B", 0, ""},
+	{"a" + rep(0x035D, 30) + "\u035B", 0, ""},
+	{"Ɵ" + rep(0x035D, 30) + "\u035B", 0, ""},
+	{"aa" + rep(0x035D, 30) + "\u035B", 1, ""},
+	{rep(0x035D, 30) + cgj + "\u035B", 64, ""},
+	{"a" + rep(0x035D, 30) + cgj + "\u035B", 65, ""},
+	{"Ɵ" + rep(0x035D, 30) + cgj + "\u035B", 66, ""},
+	{"aa" + rep(0x035D, 30) + cgj + "\u035B", 66, ""},
 }
 
 var quickSpanNFDTests = []PositionTest{
@@ -325,6 +362,9 @@ var quickSpanNFCTests = []PositionTest{
 	{"ab\u0300\u0316cd", 1, ""},
 	// Hangul
 	{"같은", 6, ""},
+	// We return the start of the violating segment in case of overflow.
+	{grave(30) + "\uff9e", 0, ""},
+	{grave(30), 0, ""},
 }
 
 func doQuickSpan(rb *reorderBuffer, s string) (int, []byte) {
@@ -399,6 +439,11 @@ var isNormalNFCTests = []PositionTest{
 	{"같은", 1, ""},
 }
 
+var isNormalNFKXTests = []PositionTest{
+	// Special case.
+	{"\u00BC", 0, ""},
+}
+
 func isNormalF(rb *reorderBuffer, s string) (int, []byte) {
 	if rb.f.form.IsNormal([]byte(s)) {
 		return 1, nil
@@ -418,6 +463,12 @@ func TestIsNormal(t *testing.T) {
 	runPosTests(t, "TestIsNormalNFD2", NFD, isNormalF, isNormalNFDTests)
 	runPosTests(t, "TestIsNormalNFC1", NFC, isNormalF, isNormalTests)
 	runPosTests(t, "TestIsNormalNFC2", NFC, isNormalF, isNormalNFCTests)
+	runPosTests(t, "TestIsNormalNFKD1", NFKD, isNormalF, isNormalTests)
+	runPosTests(t, "TestIsNormalNFKD2", NFKD, isNormalF, isNormalNFDTests)
+	runPosTests(t, "TestIsNormalNFKD3", NFKD, isNormalF, isNormalNFKXTests)
+	runPosTests(t, "TestIsNormalNFKC1", NFKC, isNormalF, isNormalTests)
+	runPosTests(t, "TestIsNormalNFKC2", NFKC, isNormalF, isNormalNFCTests)
+	runPosTests(t, "TestIsNormalNFKC3", NFKC, isNormalF, isNormalNFKXTests)
 }
 
 func TestIsNormalString(t *testing.T) {
@@ -435,23 +486,79 @@ type AppendTest struct {
 
 type appendFunc func(f Form, out []byte, s string) []byte
 
+var fstr = []string{"NFC", "NFD", "NFKC", "NFKD"}
+
+func runNormTests(t *testing.T, name string, fn appendFunc) {
+	for f := NFC; f <= NFKD; f++ {
+		runAppendTests(t, name, f, fn, normTests[f])
+	}
+}
+
 func runAppendTests(t *testing.T, name string, f Form, fn appendFunc, tests []AppendTest) {
 	for i, test := range tests {
-		out := []byte(test.left)
-		out = fn(f, out, test.right)
-		outs := string(out)
-		if len(outs) != len(test.out) {
-			t.Errorf("%s:%d: length is %d; want %d", name, i, len(outs), len(test.out))
+		if *testn >= 0 && i != *testn {
+			continue
 		}
-		if outs != test.out {
-			k, pf := pidx(outs, test.out)
-			t.Errorf("%s:%d: \nwas  %s%+q; \nwant %s%+q", name, i, pf, pc(outs[k:]), pf, pc(test.out[k:]))
-			break
+		out := []byte(test.left)
+		have := string(fn(f, out, test.right))
+		if len(have) != len(test.out) {
+			t.Errorf("%s.%s:%d: length is %d; want %d (%+q vs %+q)", fstr[f], name, i, len(have), len(test.out), pc(have), pc(test.out))
+		}
+		if have != test.out {
+			k, pf := pidx(have, test.out)
+			t.Errorf("%s.%s:%d: \nwas  %s%+q; \nwant %s%+q", fstr[f], name, i, pf, pc(have[k:]), pf, pc(test.out[k:]))
+		}
+
+		// Bootstrap by normalizing input. Ensures that the various variants
+		// behave the same.
+		for g := NFC; g <= NFKD; g++ {
+			if f == g {
+				continue
+			}
+			want := g.String(test.left + test.right)
+			have := string(fn(g, g.AppendString(nil, test.left), test.right))
+			if len(have) != len(want) {
+				t.Errorf("%s(%s.%s):%d: length is %d; want %d (%+q vs %+q)", fstr[g], fstr[f], name, i, len(have), len(want), pc(have), pc(want))
+			}
+			if have != want {
+				k, pf := pidx(have, want)
+				t.Errorf("%s(%s.%s):%d: \nwas  %s%+q; \nwant %s%+q", fstr[g], fstr[f], name, i, pf, pc(have[k:]), pf, pc(want[k:]))
+			}
 		}
 	}
 }
 
-var appendTests = []AppendTest{
+var normTests = [][]AppendTest{
+	appendTestsNFC,
+	appendTestsNFD,
+	appendTestsNFKC,
+	appendTestsNFKD,
+}
+
+var appendTestsNFC = []AppendTest{
+	{"", ascii, ascii},
+	{"", txt_all, txt_all},
+	{"\uff9e", grave(30), "\uff9e" + grave(29) + cgj + grave(1)},
+	{grave(30), "\uff9e", grave(30) + cgj + "\uff9e"},
+
+	// Tests designed for Iter.
+	{ // ordering of non-composing combining characters
+		"",
+		"\u0305\u0316",
+		"\u0316\u0305",
+	},
+	{ // segment overflow
+		"",
+		"a" + rep(0x0305, maxNonStarters+4) + "\u0316",
+		"a" + rep(0x0305, maxNonStarters) + cgj + "\u0316" + rep(0x305, 4),
+	},
+}
+
+var appendTestsNFD = []AppendTest{
+// TODO: Move some of the tests here.
+}
+
+var appendTestsNFKC = []AppendTest{
 	// empty buffers
 	{"", "", ""},
 	{"a", "", "a"},
@@ -504,9 +611,23 @@ var appendTests = []AppendTest{
 	{strings.Repeat("\x80", 33), "", strings.Repeat("\x80", 33)},
 	{strings.Repeat("\x80", 33), strings.Repeat("\x80", 33), strings.Repeat("\x80", 66)},
 	// overflow of combining characters
-	{grave(33), "", grave(33)},
+	{"", grave(34), grave(30) + cgj + grave(4)},
+	{"", grave(36), grave(30) + cgj + grave(6)},
+	{grave(29), grave(5), grave(30) + cgj + grave(4)},
+	{grave(30), grave(4), grave(30) + cgj + grave(4)},
+	{grave(30), grave(3), grave(30) + cgj + grave(3)},
+	{grave(30) + "\xCC", "\x80", grave(30) + cgj + grave(1)},
 	{"", "\uFDFA" + grave(14), "\u0635\u0644\u0649 \u0627\u0644\u0644\u0647 \u0639\u0644\u064a\u0647 \u0648\u0633\u0644\u0645" + grave(14)},
 	{"", "\uFDFA" + grave(28) + "\u0316", "\u0635\u0644\u0649 \u0627\u0644\u0644\u0647 \u0639\u0644\u064a\u0647 \u0648\u0633\u0644\u0645\u0316" + grave(28)},
+	// - First rune has a trailing non-starter.
+	{"\u00d5", grave(30), "\u00d5" + grave(29) + cgj + grave(1)},
+	// - U+FF9E decomposes into a non-starter in compatibility mode. A CGJ must be
+	//   inserted even when FF9E starts a new segment.
+	{"\uff9e", grave(30), "\u3099" + grave(29) + cgj + grave(1)},
+	{grave(30), "\uff9e", grave(30) + cgj + "\u3099"},
+	// - Many non-starter decompositions in a row causing overflow.
+	{"", rep(0x340, 31), rep(0x300, 30) + cgj + "\u0300"},
+	{"", rep(0xFF9E, 31), rep(0x3099, 30) + cgj + "\u3099"},
 	// weird UTF-8
 	{"\u00E0\xE1", "\x86", "\u00E0\xE1\x86"},
 	{"a\u0300\u11B7", "\u0300", "\u00E0\u11B7\u0300"},
@@ -516,33 +637,105 @@ var appendTests = []AppendTest{
 	{"\xF8\x80\x80\x80\x80\u0300", "\u0300", "\xF8\x80\x80\x80\x80\u0300\u0300"},
 	{"\xFC\x80\x80\x80\x80\x80\u0300", "\u0300", "\xFC\x80\x80\x80\x80\x80\u0300\u0300"},
 	{"\xF8\x80\x80\x80", "\x80\u0300\u0300", "\xF8\x80\x80\x80\x80\u0300\u0300"},
+
+	{"", strings.Repeat("a\u0316\u0300", 6), strings.Repeat("\u00E0\u0316", 6)},
+	// large input.
+	{"", strings.Repeat("a\u0300\u0316", 4000), strings.Repeat("\u00E0\u0316", 4000)},
+	{"", strings.Repeat("\x80\x80", 4000), strings.Repeat("\x80\x80", 4000)},
+	{"", "\u0041\u0307\u0304", "\u01E0"},
 }
 
-func appendF(f Form, out []byte, s string) []byte {
-	return f.Append(out, []byte(s)...)
-}
+var appendTestsNFKD = []AppendTest{
+	{"", "a" + grave(64), "a" + grave(30) + cgj + grave(30) + cgj + grave(4)},
 
-func appendStringF(f Form, out []byte, s string) []byte {
-	return f.AppendString(out, s)
-}
-
-func bytesF(f Form, out []byte, s string) []byte {
-	buf := []byte{}
-	buf = append(buf, out...)
-	buf = append(buf, s...)
-	return f.Bytes(buf)
-}
-
-func stringF(f Form, out []byte, s string) []byte {
-	outs := string(out) + s
-	return []byte(f.String(outs))
+	{ // segment overflow on unchanged character
+		"",
+		"a" + grave(64) + "\u0316",
+		"a" + grave(30) + cgj + grave(30) + cgj + "\u0316" + grave(4),
+	},
+	{ // segment overflow on unchanged character + start value
+		"",
+		"a" + grave(98) + "\u0316",
+		"a" + grave(30) + cgj + grave(30) + cgj + grave(30) + cgj + "\u0316" + grave(8),
+	},
+	{ // segment overflow on decomposition. (U+0340 decomposes to U+0300.)
+		"",
+		"a" + grave(59) + "\u0340",
+		"a" + grave(30) + cgj + grave(30),
+	},
+	{ // segment overflow on non-starter decomposition
+		"",
+		"a" + grave(33) + "\u0340" + grave(30) + "\u0320",
+		"a" + grave(30) + cgj + grave(30) + cgj + "\u0320" + grave(4),
+	},
+	{ // start value after ASCII overflow
+		"",
+		rep('a', segSize) + grave(32) + "\u0320",
+		rep('a', segSize) + grave(30) + cgj + "\u0320" + grave(2),
+	},
+	{ // Jamo overflow
+		"",
+		"\u1100\u1161" + grave(30) + "\u0320" + grave(2),
+		"\u1100\u1161" + grave(29) + cgj + "\u0320" + grave(3),
+	},
+	{ // Hangul
+		"",
+		"\uac00",
+		"\u1100\u1161",
+	},
+	{ // Hangul overflow
+		"",
+		"\uac00" + grave(32) + "\u0320",
+		"\u1100\u1161" + grave(29) + cgj + "\u0320" + grave(3),
+	},
+	{ // Hangul overflow in Hangul mode.
+		"",
+		"\uac00\uac00" + grave(32) + "\u0320",
+		"\u1100\u1161\u1100\u1161" + grave(29) + cgj + "\u0320" + grave(3),
+	},
+	{ // Hangul overflow in Hangul mode.
+		"",
+		strings.Repeat("\uac00", 3) + grave(32) + "\u0320",
+		strings.Repeat("\u1100\u1161", 3) + grave(29) + cgj + "\u0320" + grave(3),
+	},
+	{ // start value after cc=0
+		"",
+		"您您" + grave(34) + "\u0320",
+		"您您" + grave(30) + cgj + "\u0320" + grave(4),
+	},
+	{ // start value after normalization
+		"",
+		"\u0300\u0320a" + grave(34) + "\u0320",
+		"\u0320\u0300a" + grave(30) + cgj + "\u0320" + grave(4),
+	},
 }
 
 func TestAppend(t *testing.T) {
-	runAppendTests(t, "TestAppend", NFKC, appendF, appendTests)
-	runAppendTests(t, "TestAppendString", NFKC, appendStringF, appendTests)
-	runAppendTests(t, "TestBytes", NFKC, bytesF, appendTests)
-	runAppendTests(t, "TestString", NFKC, stringF, appendTests)
+	runNormTests(t, "Append", func(f Form, out []byte, s string) []byte {
+		return f.Append(out, []byte(s)...)
+	})
+}
+
+func TestAppendString(t *testing.T) {
+	runNormTests(t, "AppendString", func(f Form, out []byte, s string) []byte {
+		return f.AppendString(out, s)
+	})
+}
+
+func TestBytes(t *testing.T) {
+	runNormTests(t, "Bytes", func(f Form, out []byte, s string) []byte {
+		buf := []byte{}
+		buf = append(buf, out...)
+		buf = append(buf, s...)
+		return f.Bytes(buf)
+	})
+}
+
+func TestString(t *testing.T) {
+	runNormTests(t, "String", func(f Form, out []byte, s string) []byte {
+		outs := string(out) + s
+		return []byte(f.String(outs))
+	})
 }
 
 func appendBench(f Form, in []byte) func() {

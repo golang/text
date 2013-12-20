@@ -7,14 +7,96 @@ package norm
 import "unicode/utf8"
 
 const (
-	maxCombiningChars = 30
-	maxBufferSize     = maxCombiningChars + 1 // +1 to hold starter +1 to hold CGJ
-	maxBackRunes      = maxCombiningChars + 1
-	maxNFCExpansion   = 3  // NFC(0x1D160)
-	maxNFKCExpansion  = 18 // NFKC(0xFDFA)
+	maxNonStarters = 30
+	// The maximum number of characters needed for a buffer is
+	// maxNonStarters + 1 for the starter + 1 for the GCJ
+	maxBufferSize    = maxNonStarters + 2
+	maxNFCExpansion  = 3  // NFC(0x1D160)
+	maxNFKCExpansion = 18 // NFKC(0xFDFA)
 
 	maxByteBufferSize = utf8.UTFMax * maxBufferSize // 128
 )
+
+// ssState is used for reporting the segment state after inserting a rune.
+// It is returned by streamSafe.next.
+type ssState int
+
+const (
+	// Indicates a rune was successfully added to the segment.
+	ssSuccess ssState = iota
+	// Indicates a rune starts a new segment and should not be added.
+	ssStarter
+	// Indicates a rune caused a segment overflow and a CGJ should be inserted.
+	ssOverflow
+)
+
+// streamSafe implements the policy of when a CGJ should be inserted.
+type streamSafe uint8
+
+// mkStreamSafe is a shorthand for declaring a streamSafe var and calling
+// first on it.
+func mkStreamSafe(p Properties) streamSafe {
+	return streamSafe(p.nTrailingNonStarters())
+}
+
+// first inserts the first rune of a segment.
+func (ss *streamSafe) first(p Properties) {
+	if *ss != 0 {
+		panic("!= 0")
+	}
+	*ss = streamSafe(p.nTrailingNonStarters())
+}
+
+// insert returns a ssState value to indicate whether a rune represented by p
+// can be inserted.
+func (ss *streamSafe) next(p Properties) ssState {
+	if *ss > maxNonStarters {
+		panic("streamSafe was not reset")
+	}
+	n := p.nLeadingNonStarters()
+	if *ss += streamSafe(n); *ss > maxNonStarters {
+		*ss = 0
+		return ssOverflow
+	}
+	// The Stream-Safe Text Processing prescribes that the counting can stop
+	// as soon as a starter is encountered. However, there are some starters,
+	// like Jamo V and T, that can combine with other runes, leaving their
+	// successive non-starters appended to the previous, possibly causing an
+	// overflow. We will therefore consider any rune with a non-zero nLead to
+	// be a non-starter. Note that it always hold that if nLead > 0 then
+	// nLead == nTrail.
+	if n == 0 {
+		*ss = 0
+		return ssStarter
+	}
+	return ssSuccess
+}
+
+// backwards is used for checking for overflow and segment starts
+// when traversing a string backwards. Users do not need to call first
+// for the first rune. The state of the streamSafe retains the count of
+// the non-starters loaded.
+func (ss *streamSafe) backwards(p Properties) ssState {
+	if *ss > maxNonStarters {
+		panic("streamSafe was not reset")
+	}
+	c := *ss + streamSafe(p.nTrailingNonStarters())
+	if c > maxNonStarters {
+		return ssOverflow
+	}
+	*ss = c
+	if p.nLeadingNonStarters() == 0 {
+		return ssStarter
+	}
+	return ssSuccess
+}
+
+func (ss streamSafe) isMax() bool {
+	return ss == maxNonStarters
+}
+
+// GraphemeJoiner is inserted after maxNonStarters non-starter runes.
+const GraphemeJoiner = "\u034F"
 
 // reorderBuffer is used to normalize a single segment.  Characters inserted with
 // insert are decomposed and reordered based on CCC. The compose method can
@@ -25,6 +107,7 @@ type reorderBuffer struct {
 	rune  [maxBufferSize]Properties // Per character info.
 	byte  [maxByteBufferSize]byte   // UTF-8 buffer. Referenced by runeInfo.pos.
 	nbyte uint8                     // Number or bytes.
+	ss    streamSafe                // For limiting length of non-starter sequence.
 	nrune int                       // Number of runeInfos.
 	f     formInfo
 
@@ -40,12 +123,14 @@ func (rb *reorderBuffer) init(f Form, src []byte) {
 	rb.f = *formTable[f]
 	rb.src.setBytes(src)
 	rb.nsrc = len(src)
+	rb.ss = 0
 }
 
 func (rb *reorderBuffer) initString(f Form, src string) {
 	rb.f = *formTable[f]
 	rb.src.setString(src)
 	rb.nsrc = len(src)
+	rb.ss = 0
 }
 
 func (rb *reorderBuffer) setFlusher(out []byte, f func(*reorderBuffer) bool) {
@@ -57,6 +142,7 @@ func (rb *reorderBuffer) setFlusher(out []byte, f func(*reorderBuffer) bool) {
 func (rb *reorderBuffer) reset() {
 	rb.nrune = 0
 	rb.nbyte = 0
+	rb.ss = 0
 }
 
 func (rb *reorderBuffer) doFlush() bool {
@@ -104,11 +190,8 @@ func (rb *reorderBuffer) flushCopy(buf []byte) int {
 // insertOrdered inserts a rune in the buffer, ordered by Canonical Combining Class.
 // It returns false if the buffer is not large enough to hold the rune.
 // It is used internally by insert and insertString only.
-func (rb *reorderBuffer) insertOrdered(info Properties) bool {
+func (rb *reorderBuffer) insertOrdered(info Properties) {
 	n := rb.nrune
-	if n >= maxCombiningChars+1 {
-		return false
-	}
 	b := rb.rune[:]
 	cc := info.ccc
 	if cc > 0 {
@@ -125,7 +208,6 @@ func (rb *reorderBuffer) insertOrdered(info Properties) bool {
 	rb.nbyte += utf8.UTFMax
 	info.pos = pos
 	b[n] = info
-	return true
 }
 
 // insertErr is an error code returned by insert. Using this type instead
@@ -136,12 +218,13 @@ const (
 	iSuccess insertErr = -iota
 	iShortDst
 	iShortSrc
-	iOverflow
 )
 
-// insert inserts the given rune in the buffer ordered by CCC.
+// insertFlush inserts the given rune in the buffer ordered by CCC.
+// If a decomposition with multiple segments are encountered, they leading
+// ones are flushed.
 // It returns a non-zero error code if the rune was not inserted.
-func (rb *reorderBuffer) insert(src input, i int, info Properties) insertErr {
+func (rb *reorderBuffer) insertFlush(src input, i int, info Properties) insertErr {
 	if rune := src.hangul(i); rune != 0 {
 		rb.decomposeHangul(rune)
 		return iSuccess
@@ -149,7 +232,24 @@ func (rb *reorderBuffer) insert(src input, i int, info Properties) insertErr {
 	if info.hasDecomposition() {
 		return rb.insertDecomposed(info.Decomposition())
 	}
-	return rb.insertSingle(src, i, info)
+	rb.insertSingle(src, i, info)
+	return iSuccess
+}
+
+// insertUnsafe inserts the given rune in the buffer ordered by CCC.
+// It is assumed there is sufficient space to hold the runes. It is the
+// responsibility of the caller to ensure this. This can be done by checking
+// the state returned by the streamSafe type.
+func (rb *reorderBuffer) insertUnsafe(src input, i int, info Properties) {
+	if rune := src.hangul(i); rune != 0 {
+		rb.decomposeHangul(rune)
+	}
+	if info.hasDecomposition() {
+		// TODO: inline.
+		rb.insertDecomposed(info.Decomposition())
+	} else {
+		rb.insertSingle(src, i, info)
+	}
 }
 
 // insertDecomposed inserts an entry in to the reorderBuffer for each rune
@@ -162,28 +262,22 @@ func (rb *reorderBuffer) insertDecomposed(dcomp []byte) insertErr {
 		if info.BoundaryBefore() && rb.nrune > 0 && !rb.doFlush() {
 			return iShortDst
 		}
-		pos := rb.nbyte
-		if !rb.insertOrdered(info) { //&& !rb.doFlush() {
-			// This block is only reached if the decomposition starts with
-			// combining characters that do not fit in the buffer.
-			//return iShortDst
-			return iOverflow
-		}
-		i += copy(rb.byte[pos:], dcomp[i:i+int(info.size)])
+		i += copy(rb.byte[rb.nbyte:], dcomp[i:i+int(info.size)])
+		rb.insertOrdered(info)
 	}
 	return iSuccess
 }
 
 // insertSingle inserts an entry in the reorderBuffer for the rune at
 // position i. info is the runeInfo for the rune at position i.
-func (rb *reorderBuffer) insertSingle(src input, i int, info Properties) insertErr {
-	// insertOrder changes nbyte
-	pos := rb.nbyte
-	if !rb.insertOrdered(info) {
-		return iOverflow
-	}
-	src.copySlice(rb.byte[pos:], i, i+int(info.size))
-	return iSuccess
+func (rb *reorderBuffer) insertSingle(src input, i int, info Properties) {
+	src.copySlice(rb.byte[rb.nbyte:], i, i+int(info.size))
+	rb.insertOrdered(info)
+}
+
+// insertCGJ inserts a Combining Grapheme Joiner (0x034f) into rb.
+func (rb *reorderBuffer) insertCGJ() {
+	rb.insertSingle(input{str: GraphemeJoiner}, 0, Properties{size: uint8(len(GraphemeJoiner))})
 }
 
 // appendRune inserts a rune at the end of the buffer. It is used for Hangul.

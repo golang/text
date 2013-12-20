@@ -20,7 +20,13 @@ func runTests(t *testing.T, name string, fm Form, tests []TestCase) {
 		for j, rune := range test.in {
 			b := []byte(string(rune))
 			src := inputBytes(b)
-			if rb.insert(src, 0, rb.f.info(src, 0)) < 0 {
+			info := rb.f.info(src, 0)
+			if j == 0 {
+				rb.ss.first(info)
+			} else {
+				rb.ss.next(info)
+			}
+			if rb.insertFlush(src, 0, info) < 0 {
 				t.Errorf("%s:%d: insert failed for rune %d", name, i, j)
 			}
 		}
@@ -52,7 +58,8 @@ func TestFlush(t *testing.T) {
 	}
 
 	for i := range world {
-		rb.insert(rb.src, i, rb.f.info(rb.src, i))
+		// No need to set streamSafe values for this test.
+		rb.insertFlush(rb.src, i, rb.f.info(rb.src, i))
 		n := rb.flushCopy(out)
 		out = out[n:]
 		p += n

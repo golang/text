@@ -199,9 +199,8 @@ func cmpResult(t *Test, name string, f norm.Form, gold, test, result string) {
 		if errorCount > 20 {
 			return
 		}
-		st, sr, sg := []rune(test), []rune(result), []rune(gold)
-		logger.Printf("%s:%s: %s(%X)=%X; want:%X: %s",
-			t.Name(), name, fstr[f], st, sr, sg, t.name)
+		logger.Printf("%s:%s: %s(%+q)=%+q; want %+q: %s",
+			t.Name(), name, fstr[f], test, result, gold, t.name)
 	}
 }
 
@@ -211,7 +210,7 @@ func cmpIsNormal(t *Test, name string, f norm.Form, test string, result, want bo
 		if errorCount > 20 {
 			return
 		}
-		logger.Printf("%s:%s: %s(%X)=%v; want: %v", t.Name(), name, fstr[f], []rune(test), result, want)
+		logger.Printf("%s:%s: %s(%+q)=%v; want %v", t.Name(), name, fstr[f], test, result, want)
 	}
 }
 
@@ -245,6 +244,7 @@ func doTest(t *Test, f norm.Form, gold, test string) {
 		cmpResult(t, fmt.Sprintf(":Append:%d", i), f, gold, test, string(out))
 	}
 	cmpIsNormal(t, "IsNormal", f, test, f.IsNormal([]byte(test)), test == gold)
+	cmpIsNormal(t, "IsNormalString", f, test, f.IsNormalString(test), test == gold)
 }
 
 func doConformanceTests(t *Test, partn int) {
