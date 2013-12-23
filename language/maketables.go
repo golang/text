@@ -83,6 +83,14 @@ Each 2-letter codes is followed by two bytes with the following meaning:
 m49 maps regionIDs to UN.M49 codes. The first isoRegionOffset entries are
 codes indicating collections of regions.`,
 	`
+m49Index gives indexes into fromM49 based on the three most significant bits
+of a 10-bit UN.M49 code. To search an UN.M49 code in fromM49, search in
+   fromM49[m49Index[msb39(code)]:m49Index[msb3(code)+1]]
+for an entry where the first 7 bits match the 7 lsb of the UN.M49 code.
+The region code is stored in the 9 lsb of the indexed value.`,
+	`
+fromM49 contains entries to map UN.M49 codes to regions. See m49Index for details.`,
+	`
 altRegionISO3 holds a list of 3-letter region codes that cannot be
 mapped to 2-letter codes using the default algorithm. This is a short list.`,
 	`
@@ -886,6 +894,7 @@ func (b *builder) writeRegion() {
 
 	isoOffset := b.region.index("AA")
 	m49map := make([]uint16, len(b.region.slice()))
+	fromM49map := make(map[uint16]int)
 	altRegionISO3 := ""
 	altRegionIDs := []uint16{}
 
@@ -913,14 +922,33 @@ func (b *builder) writeRegion() {
 		}
 	}
 	for _, tc := range b.supp.CodeMappings.TerritoryCodes {
-		i := regionISO.index(tc.Type)
+		i := regionISO.index(tc.Type) + isoOffset
+		if d := m49map[i]; d != 0 {
+			log.Panicf("%s found as a duplicate UN.M49 code of %03d", tc.Numeric, d)
+		}
+		m49 := parseM49(tc.Numeric)
+		m49map[i] = m49
+		if r := fromM49map[m49]; r == 0 {
+			fromM49map[m49] = i
+		} else if r != i {
+			dep := b.registry[regionISO.s[r-isoOffset]].deprecated
+			if d := b.registry[tc.Type].deprecated; dep != "" && (d == "" || d > dep) {
+				fromM49map[m49] = i
+			}
+		}
+	}
+	for _, ta := range b.supp.Metadata.Alias.TerritoryAlias {
+		if len(ta.Type) == 3 && ta.Type[0] <= '9' && len(ta.Replacement) == 2 {
+			from := parseM49(ta.Type)
+			if r := fromM49map[from]; r == 0 {
+				fromM49map[from] = regionISO.index(ta.Replacement) + isoOffset
+			}
+		}
+	}
+	for _, tc := range b.supp.CodeMappings.TerritoryCodes {
 		if len(tc.Alpha3) == 3 {
 			update(tc.Type, tc.Alpha3)
 		}
-		if d := m49map[isoOffset+i]; d != 0 {
-			log.Panicf("%s found as a duplicate UN.M49 code of %03d", tc.Numeric, d)
-		}
-		m49map[isoOffset+i] = parseM49(tc.Numeric)
 	}
 	// This entries are not included in territoryCodes. Mostly 3-letter variants
 	// of deleted codes and an entry for QU.
@@ -972,9 +1000,33 @@ func (b *builder) writeRegion() {
 	})
 	// 3-digit region lookup, groupings.
 	for i := 1; i < isoOffset; i++ {
-		m49map[i] = parseM49(b.region.s[i])
+		m := parseM49(b.region.s[i])
+		m49map[i] = m
+		fromM49map[m] = i
 	}
 	b.writeSlice("m49", m49map)
+
+	const (
+		searchBits = 7
+		regionBits = 9
+	)
+	if len(m49map) >= 1<<regionBits {
+		log.Fatalf("Maximum number of regions exceeded: %d > %d", len(m49map), 1<<regionBits)
+	}
+	m49Index := [9]uint16{}
+	fromM49 := []uint16{}
+	m49 := []int{}
+	for k, _ := range fromM49map {
+		m49 = append(m49, int(k))
+	}
+	sort.Ints(m49)
+	for _, k := range m49[1:] {
+		val := (k & (1<<searchBits - 1)) << regionBits
+		fromM49 = append(fromM49, uint16(val|fromM49map[uint16(k)]))
+		m49Index[1:][k>>searchBits] = uint16(len(fromM49))
+	}
+	b.writeSlice("m49Index", m49Index)
+	b.writeSlice("fromM49", fromM49)
 }
 
 func find(list []string, s string) int {

@@ -284,14 +284,20 @@ func getRegionISO3(s []byte) (regionID, error) {
 }
 
 func getRegionM49(n int) (regionID, error) {
-	// These will mostly be group IDs, which are at the start of the list.
-	// For other values this may be a bit slow, as there are over 300 entries.
-	// TODO: group id is sorted!
-	if n != 0 {
-		for i, v := range m49 {
-			if v == uint16(n) {
-				return regionID(i), nil
-			}
+	if 0 < n && n <= 999 {
+		const (
+			searchBits = 7
+			regionBits = 9
+			regionMask = 1<<regionBits - 1
+		)
+		idx := n >> searchBits
+		buf := fromM49[m49Index[idx]:m49Index[idx+1]]
+		val := uint16(n) << regionBits // we rely on bits shifting out
+		i := sort.Search(len(buf), func(i int) bool {
+			return buf[i] >= val
+		})
+		if r := buf[i]; r&^regionMask == val {
+			return regionID(r & regionMask), nil
 		}
 	}
 	var e ValueError

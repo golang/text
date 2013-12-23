@@ -235,38 +235,88 @@ func TestRegionISO3(t *testing.T) {
 }
 
 func TestRegionM49(t *testing.T) {
-	tests := []struct {
-		id, remap string
-		m49       int
+	fromTests := []struct {
+		m49 int
+		id  string
 	}{
-		{"  ", "", 0},
-		{"AA", "", 958},
-		{"ZZ", "", 999},
-		{"419", "", 419},
-		{"EU", "", 967},
-		{"FR", "", 250},
-		{"FX", "", 249},
-		{"QT", "", 966},
-		{"QU", "EU", 967},
-		{"BF", "", 854},
-		{"CD", "", 180},
+		{0, ""},
+		{-1, ""},
+		{1000, ""},
+		{10000, ""},
+
+		{001, "001"},
+		{104, "MM"},
+		{180, "CD"},
+		{230, "ET"},
+		{231, "ET"},
+		{249, "FX"},
+		{250, "FR"},
+		{276, "DE"},
+		{278, "DD"},
+		{280, "DE"},
+		{419, "419"},
+		{626, "TL"},
+		{736, "SD"},
+		{840, "US"},
+		{854, "BF"},
+		{891, "CS"},
+		{899, ""},
+		{958, "AA"},
+		{966, "QT"},
+		{967, "EU"},
+		{999, "ZZ"},
+	}
+	for _, tt := range fromTests {
+		id, err := getRegionM49(tt.m49)
+		if want, have := err != nil, tt.id == ""; want != have {
+			t.Errorf("error(%d): have %v; want %v", tt.m49, have, want)
+			continue
+		}
+		r, _ := getRegionID(b(tt.id))
+		if r != id {
+			t.Errorf("region(%d): have %s; want %s", tt.m49, id, r)
+		}
+	}
+
+	toTests := []struct {
+		m49 int
+		id  string
+	}{
+		{0, "000"},
+		{0, "IC"}, // Some codes don't have an ID
+
+		{001, "001"},
+		{104, "MM"},
+		{104, "BU"},
+		{180, "CD"},
+		{180, "ZR"},
+		{231, "ET"},
+		{250, "FR"},
+		{249, "FX"},
+		{276, "DE"},
+		{278, "DD"},
+		{419, "419"},
+		{626, "TL"},
+		{626, "TP"},
+		{729, "SD"},
+		{826, "GB"},
+		{840, "US"},
+		{854, "BF"},
+		{891, "YU"},
+		{891, "CS"},
+		{958, "AA"},
+		{966, "QT"},
+		{967, "EU"},
+		{967, "QU"},
+		{999, "ZZ"},
 		// For codes that don't have an M49 code use the replacement value,
 		// if available.
-		{"HV", "BF", 854}, // maps to Burkino Faso
-		{"ZR", "CD", 180},
-		// Some codes don't have an ID
-		{"IC", "", 0},
+		{854, "HV"}, // maps to Burkino Faso
 	}
-	for _, tt := range tests {
+	for _, tt := range toTests {
 		r, _ := getRegionID(b(tt.id))
 		if r.M49() != tt.m49 {
-			t.Errorf("%s: found %d; want %d", tt.id, r.M49(), tt.m49)
-		}
-		if tt.remap != "" {
-			r, _ = getRegionID(b(tt.remap))
-		}
-		if id, _ := getRegionM49(tt.m49); tt.m49 != 0 && r != id {
-			t.Errorf("%d: found %s; want %s", tt.m49, id, r)
+			t.Errorf("m49(%q): have %d; want %d", tt.id, r.M49(), tt.m49)
 		}
 	}
 }
