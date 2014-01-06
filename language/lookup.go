@@ -296,7 +296,7 @@ func getRegionM49(n int) (regionID, error) {
 		i := sort.Search(len(buf), func(i int) bool {
 			return buf[i] >= val
 		})
-		if r := buf[i]; r&^regionMask == val {
+		if r := fromM49[int(m49Index[idx])+i]; r&^regionMask == val {
 			return regionID(r & regionMask), nil
 		}
 	}

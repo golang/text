@@ -207,6 +207,11 @@ func TestEncodeM49(t *testing.T) {
 			t.Errorf("%d:%d: was %s, %v; want %s, %v", i, tt.m49, r, err == nil, tt.code, tt.ok)
 		}
 	}
+	for i := 1; i <= 1000; i++ {
+		if r, err := EncodeM49(i); err == nil && r.M49() == 0 {
+			t.Errorf("%d has no error, but maps to undefined region", i)
+		}
+	}
 }
 
 func TestParseRegion(t *testing.T) {
