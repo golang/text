@@ -39,7 +39,7 @@ func cmp(a string, b []byte) int {
 	return 0
 }
 
-// search searchs for the insertion point of key in smap, which is a
+// search searches for the insertion point of key in smap, which is a
 // string with consecutive 4-byte entries. Only the first len(key)
 // bytes from the start of the 4-byte entries will be considered.
 func search(smap string, key []byte) int {
