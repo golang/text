@@ -396,7 +396,7 @@ type SupplementalData struct {
 			} `xml:"usesMetazone"`
 		} `xml:"timezone"`
 	} `xml:"metazoneInfo"`
-	Plurals *struct {
+	Plurals []*struct {
 		Common
 		PluralRules []*struct {
 			Common

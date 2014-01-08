@@ -43,7 +43,7 @@ var (
 	und   = Tag{}
 )
 
-// Tag represents a BCP 47 language tag. It is used to specifify
+// Tag represents a BCP 47 language tag. It is used to specify
 // an instance of a specific language or locale.
 // All language tag values are guaranteed to be well-formed.
 type Tag struct {

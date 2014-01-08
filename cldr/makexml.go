@@ -83,9 +83,10 @@ type dtd struct {
 	root string   // Go name of the root XML element
 	top  []string // create a different type for this section
 
-	skipElem   []string // hard-coded or deprecated elements
-	skipAttr   []string // attributes to exclude
-	predefined []string // hard-coded elements exist of the form <name>Elem
+	skipElem    []string // hard-coded or deprecated elements
+	skipAttr    []string // attributes to exclude
+	predefined  []string // hard-coded elements exist of the form <name>Elem
+	forceRepeat []string // elements to make slices despite DTD
 }
 
 var files = []dtd{
@@ -103,6 +104,9 @@ var files = []dtd{
 		top:  []string{"supplementalData"},
 		skipElem: []string{
 			"cldrVersion", // deprecated, not used
+		},
+		forceRepeat: []string{
+			"plurals", // data defined in plurals.xml and ordinals.xml
 		},
 	},
 	{
@@ -287,7 +291,7 @@ func (b *builder) resolve(e *element) {
 		if m == nil {
 			log.Fatalf("%s: invalid category string %q", e.name, s)
 		}
-		repeat := m[2] == "*" || m[2] == "+"
+		repeat := m[2] == "*" || m[2] == "+" || in(b.info.forceRepeat, m[1])
 		switch m[1] {
 		case "":
 		case "(":
