@@ -431,73 +431,7 @@ func parseExtensions(scan *scanner) int {
 	for len(scan.token) == 1 {
 		extStart := scan.start
 		ext := scan.token[0]
-		switch ext {
-		case 'u':
-			attrStart := end
-			scan.scan()
-			for last := []byte{}; len(scan.token) > 2; scan.scan() {
-				if bytes.Compare(scan.token, last) != -1 {
-					// Attributes are unsorted. Start over from scratch.
-					p := attrStart + 1
-					scan.next = p
-					attrs := [][]byte{}
-					for scan.scan(); len(scan.token) > 2; scan.scan() {
-						attrs = append(attrs, scan.token)
-						end = scan.end
-					}
-					sort.Sort(bytesSort(attrs))
-					copy(scan.b[p:], bytes.Join(attrs, separator))
-					break
-				}
-				last = scan.token
-				end = scan.end
-			}
-			var last, key []byte
-			for attrEnd := end; len(scan.token) == 2; last = key {
-				key = scan.token
-				keyEnd := scan.end
-				end = scan.acceptMinSize(3)
-				// TODO: check key value validity
-				if keyEnd == end || bytes.Compare(key, last) != 1 {
-					// We have an invalid key or the keys are not sorted.
-					// Start scanning keys from scratch and reorder.
-					p := attrEnd + 1
-					scan.next = p
-					keys := [][]byte{}
-					for scan.scan(); len(scan.token) == 2; {
-						keyStart, keyEnd := scan.start, scan.end
-						end = scan.acceptMinSize(3)
-						if keyEnd != end {
-							keys = append(keys, scan.b[keyStart:end])
-						} else {
-							scan.setError(errSyntax)
-							end = keyStart
-						}
-					}
-					sort.Sort(bytesSort(keys))
-					reordered := bytes.Join(keys, separator)
-					if e := p + len(reordered); e < end {
-						scan.deleteRange(e, end)
-						end = e
-					}
-					copy(scan.b[p:], bytes.Join(keys, separator))
-					break
-				}
-			}
-		case 't':
-			scan.scan()
-			if n := len(scan.token); n >= 2 && n <= 3 && isAlpha(scan.token[1]) {
-				_, end = parseTag(scan)
-				scan.toLower(extStart, end)
-			}
-			for len(scan.token) == 2 && !isAlpha(scan.token[1]) {
-				end = scan.acceptMinSize(3)
-			}
-		case 'x':
-			end = scan.acceptMinSize(1)
-		default:
-			end = scan.acceptMinSize(2)
-		}
+		end = parseExtension(scan)
 		extension := scan.b[extStart:end]
 		if len(extension) < 3 || (ext != 'x' && len(extension) < 4) {
 			scan.setError(errSyntax)
@@ -522,6 +456,80 @@ func parseExtensions(scan *scanner) int {
 	} else if start > 0 {
 		// Strip trailing '-'.
 		scan.b = scan.b[:start-1]
+	}
+	return end
+}
+
+// parseExtension parses a single extension and returns the position of
+// the extenion end.
+func parseExtension(scan *scanner) int {
+	start, end := scan.start, scan.end
+	switch scan.token[0] {
+	case 'u':
+		attrStart := end
+		scan.scan()
+		for last := []byte{}; len(scan.token) > 2; scan.scan() {
+			if bytes.Compare(scan.token, last) != -1 {
+				// Attributes are unsorted. Start over from scratch.
+				p := attrStart + 1
+				scan.next = p
+				attrs := [][]byte{}
+				for scan.scan(); len(scan.token) > 2; scan.scan() {
+					attrs = append(attrs, scan.token)
+					end = scan.end
+				}
+				sort.Sort(bytesSort(attrs))
+				copy(scan.b[p:], bytes.Join(attrs, separator))
+				break
+			}
+			last = scan.token
+			end = scan.end
+		}
+		var last, key []byte
+		for attrEnd := end; len(scan.token) == 2; last = key {
+			key = scan.token
+			keyEnd := scan.end
+			end = scan.acceptMinSize(3)
+			// TODO: check key value validity
+			if keyEnd == end || bytes.Compare(key, last) != 1 {
+				// We have an invalid key or the keys are not sorted.
+				// Start scanning keys from scratch and reorder.
+				p := attrEnd + 1
+				scan.next = p
+				keys := [][]byte{}
+				for scan.scan(); len(scan.token) == 2; {
+					keyStart, keyEnd := scan.start, scan.end
+					end = scan.acceptMinSize(3)
+					if keyEnd != end {
+						keys = append(keys, scan.b[keyStart:end])
+					} else {
+						scan.setError(errSyntax)
+						end = keyStart
+					}
+				}
+				sort.Sort(bytesSort(keys))
+				reordered := bytes.Join(keys, separator)
+				if e := p + len(reordered); e < end {
+					scan.deleteRange(e, end)
+					end = e
+				}
+				copy(scan.b[p:], bytes.Join(keys, separator))
+				break
+			}
+		}
+	case 't':
+		scan.scan()
+		if n := len(scan.token); n >= 2 && n <= 3 && isAlpha(scan.token[1]) {
+			_, end = parseTag(scan)
+			scan.toLower(start, end)
+		}
+		for len(scan.token) == 2 && !isAlpha(scan.token[1]) {
+			end = scan.acceptMinSize(3)
+		}
+	case 'x':
+		end = scan.acceptMinSize(1)
+	default:
+		end = scan.acceptMinSize(2)
 	}
 	return end
 }
