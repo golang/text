@@ -255,40 +255,45 @@ func TestParseExtensions(t *testing.T) {
 }
 
 // partChecks runs checks for each part by calling the function returned by f.
-func partChecks(t *testing.T, f func(*parseTest) func(Part) string) {
+func partChecks(t *testing.T, f func(*parseTest) (Tag, bool)) {
 	for i, tt := range parseTests() {
-		get := f(&tt)
-		if get == nil {
+		tag, skip := f(&tt)
+		if skip {
 			continue
 		}
-		l, _ := getLangID(b(tt.lang))
-		if s, g := get(LanguagePart), l.String(); s != g {
-			t.Errorf("%d: lang was %q; want %q", i, s, g)
+		if l, _ := getLangID(b(tt.lang)); l != tag.lang {
+			t.Errorf("%d: lang was %q; want %q", i, tag.lang, l)
 		}
-		if s, g := get(ScriptPart), tt.script; s != g {
-			t.Errorf("%d: script was %q; want %q", i, s, g)
+		if sc, _ := getScriptID(script, b(tt.script)); sc != tag.script {
+			t.Errorf("%d: script was %q; want %q", i, tag.script, sc)
 		}
-		if s, g := get(RegionPart), tt.region; s != g {
-			t.Errorf("%d: region was %q; want %q", i, s, g)
+		if r, _ := getRegionID(b(tt.region)); r != tag.region {
+			t.Errorf("%d: region was %q; want %q", i, tag.region, r)
 		}
-		if s, g := get(VariantPart), tt.variants; s != g {
+		if tag.str == nil {
+			continue
+		}
+		p := int(tag.pVariant)
+		if p < int(tag.pExt) {
+			p++
+		}
+		if s, g := (*tag.str)[p:tag.pExt], tt.variants; s != g {
 			t.Errorf("%d: variants was %q; want %q", i, s, g)
 		}
-		for _, g := range tt.extList {
-			if s := get(Extension(g[0])); s != g[2:] {
-				t.Errorf("%d: extension '%c' was %q; want %q", i, g[0], s, g[2:])
-			}
+		p = int(tag.pExt)
+		if p > 0 && p < len(*tag.str) {
+			p++
 		}
-		if s := get(Extension('q')); s != "" {
-			t.Errorf(`%d: unused extension 'q' was %q; want ""`, i, s)
+		if s, g := (*tag.str)[p:], tt.ext; s != g {
+			t.Errorf("%d: extensions were %q; want %q", i, s, g)
 		}
 	}
 }
 
 func TestParseTag(t *testing.T) {
-	partChecks(t, func(tt *parseTest) func(Part) string {
+	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
 		if strings.HasPrefix(tt.in, "x-") || tt.rewrite {
-			return nil
+			return Tag{}, true
 		}
 		scan := makeScannerString(tt.in)
 		id, end := parseTag(&scan)
@@ -299,15 +304,13 @@ func TestParseTag(t *testing.T) {
 		id.str = &s
 		tt.ext = ""
 		tt.extList = []string{}
-		return func(p Part) string {
-			return id.Part(p)
-		}
+		return id, false
 	})
 }
 
 func TestParse(t *testing.T) {
-	partChecks(t, func(tt *parseTest) func(Part) string {
-		id, err := Parse(tt.in)
+	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
+		id, err := Raw.Parse(tt.in)
 		ext := ""
 		if id.str != nil {
 			if strings.HasPrefix(*id.str, "x-") {
@@ -316,7 +319,7 @@ func TestParse(t *testing.T) {
 				ext = (*id.str)[id.pExt+1:]
 			}
 		}
-		if tag, _ := Parse(id.String()); tag.String() != id.String() {
+		if tag, _ := Raw.Parse(id.String()); tag.String() != id.String() {
 			t.Errorf("%d: reparse was %q; want %q", tt.i, id.String(), tag.String())
 		}
 		if ext != tt.ext {
@@ -329,9 +332,7 @@ func TestParse(t *testing.T) {
 		if (err != nil) != tt.invalid {
 			t.Errorf("%d: invalid was %v; want %v. Error: %v", tt.i, err != nil, tt.invalid, err)
 		}
-		return func(p Part) string {
-			return id.Part(p)
-		}
+		return id, false
 	})
 }
 
@@ -362,78 +363,55 @@ func TestErrors(t *testing.T) {
 	}
 }
 
-func TestPart(t *testing.T) {
-	partChecks(t, func(tt *parseTest) func(Part) string {
-		id, _ := Parse(tt.in)
-		return func(p Part) string {
-			return id.Part(p)
-		}
-	})
-}
-
-func TestParts(t *testing.T) {
-	partChecks(t, func(tt *parseTest) func(Part) string {
-		id, _ := Parse(tt.in)
-		m := id.Parts()
-		return func(p Part) string {
-			return m[p]
-		}
-	})
-}
-
 func TestCompose1(t *testing.T) {
-	partChecks(t, func(tt *parseTest) func(Part) string {
-		m := make(map[Part]string)
-		set := func(p Part, s string) {
-			if s != "" {
-				m[p] = strings.ToUpper(s)
-			}
+	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
+		l, _ := ParseBase(tt.lang)
+		s, _ := ParseScript(tt.script)
+		r, _ := ParseRegion(tt.region)
+		v := []Variant{}
+		for _, x := range strings.Split(tt.variants, "-") {
+			p, _ := ParseVariant(x)
+			v = append(v, p)
 		}
-		set(LanguagePart, tt.lang)
-		set(ScriptPart, tt.script)
-		set(RegionPart, tt.region)
-		if tt.variants != "" {
-			m[VariantPart] = tt.variants + "-tooManyChars-inv@lid-" + tt.variants
+		e := []Extension{}
+		for _, x := range tt.extList {
+			p, _ := ParseExtension(x)
+			e = append(e, p)
 		}
-		for _, ext := range tt.extList {
-			set(Extension(ext[0]), ext[2:])
-		}
-		id, err := Compose(m)
-		if tt.variants != "" && err == nil {
-			t.Errorf("%d: no error for invalid variant", tt.i)
-		}
-		return func(p Part) string {
-			return id.Part(p)
-		}
+		id, _ = Raw.Compose(l, s, r, v, e)
+		return id, false
 	})
 }
 
 func TestCompose2(t *testing.T) {
-	partChecks(t, func(tt *parseTest) func(Part) string {
-		m := make(map[Part]string)
-		tag := tt.lang
-		for _, s := range []string{tt.script, tt.region, tt.variants} {
-			if s != "" {
-				tag += "-" + s
-			}
+	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
+		l, _ := ParseBase(tt.lang)
+		s, _ := ParseScript(tt.script)
+		r, _ := ParseRegion(tt.region)
+		p := []interface{}{l, s, r, s, r, l}
+		for _, x := range strings.Split(tt.variants, "-") {
+			v, _ := ParseVariant(x)
+			p = append(p, v)
 		}
-		m[TagPart] = tag
-		for _, ext := range tt.extList {
-			m[Extension(ext[0])] = ext[2:] + "-tooManyChars"
+		for _, x := range tt.extList {
+			e, _ := ParseExtension(x)
+			p = append(p, e)
 		}
-		id, err := Compose(m)
-		if len(tt.extList) > 0 && err == nil {
-			t.Errorf("%d: no error for invalid variant", tt.i)
-		}
-		return func(p Part) string {
-			return id.Part(p)
-		}
+		id, _ = Raw.Compose(p...)
+		return id, false
+	})
+}
+
+func TestCompose3(t *testing.T) {
+	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
+		id, _ = Raw.Parse(tt.in)
+		id, _ = Raw.Compose(id)
+		return id, false
 	})
 }
 
 func mk(s string) Tag {
-	id, _ := Parse(s)
-	return id
+	return Raw.Make(s)
 }
 
 func TestParseAcceptLanguage(t *testing.T) {

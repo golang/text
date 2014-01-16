@@ -28,7 +28,7 @@ import (
 )
 
 var (
-	// Und represents the undertermined language. It is also the root language tag.
+	// Und represents the undetermined language. It is also the root language tag.
 	Und   Tag = und
 	En    Tag = en    // Default language tag for English.
 	En_US Tag = en_US // Default language tag for American English.
@@ -57,13 +57,23 @@ type Tag struct {
 	str      *string
 }
 
-// Make calls Parse and Canonicalize and returns the resulting Tag.
-// Any errors are ignored and a sensible default is returned.
-// In most cases, language tags should be created using this method.
-func Make(id string) Tag {
-	loc, _ := Parse(id)
-	loc, _ = loc.Canonicalize(Default)
-	return loc
+// Make is a convenience wrapper for Parse that omits the error.
+// In case of an error, a sensible default is returned.
+func Make(s string) Tag {
+	return Default.Make(s)
+}
+
+// Make is a convenience wrapper for c.Parse that omits the error.
+// In case of an error, a sensible default is returned.
+func (c CanonType) Make(s string) Tag {
+	t, _ := c.Parse(s)
+	return t
+}
+
+// Raw returns the raw base language, script and region, without making an
+// attempt to infer their values.
+func (t Tag) Raw() (b Base, s Script, r Region) {
+	return Base{t.lang}, Script{t.script}, Region{t.region}
 }
 
 // equalTags compares language, script and region subtags only.
@@ -92,29 +102,52 @@ func (t Tag) private() bool {
 type CanonType int
 
 const (
-	// Replace deprecated values with their preferred ones.
-	Deprecated CanonType = 1 << iota
+	// Replace deprecated base languages with their preferred replacements.
+	DeprecatedBase CanonType = 1 << iota
+	// Replace deprecated scripts with their preferred replacements.
+	DeprecatedScript
+	// Replace deprecated regions with their preferred replacements.
+	DeprecatedRegion
 	// Remove redundant scripts.
 	SuppressScript
 	// Normalize legacy encodings, as defined by CLDR.
 	Legacy
-	// Map the dominant language of a macro language group to the macro language subtag.
-	// For example cmn -> zh.
+	// Map the dominant language of a macro language group to the macro language
+	// subtag. For example cmn -> zh.
 	Macro
-	// The CLDR flag should be used if full compatibility with CLDR is required.  There are
-	// a few cases where language.Tag may differ from CLDR.
+	// The CLDR flag should be used if full compatibility with CLDR is required.
+	// There are a few cases where language.Tag may differ from CLDR. To follow all
+	// of CLDR's suggestions, use All|CLDR.
 	CLDR
-	// All canonicalizations prescribed by BCP 47.
-	BCP47   = Deprecated | SuppressScript
-	All     = BCP47 | Legacy | Macro
-	Default = All
 
-	// TODO: LikelyScript, LikelyRegion: supress similar to ICU.
+	// Raw can be used to Compose or Parse without Canonicalization.
+	Raw CanonType = 0
+
+	// Replace all deprecated tags with their preferred replacements.
+	Deprecated = DeprecatedBase | DeprecatedScript | DeprecatedRegion
+
+	// All canonicalizations recommended by BCP 47.
+	BCP47 = Deprecated | SuppressScript
+
+	// All canonicalizations.
+	All = BCP47 | Legacy | Macro
+
+	// Default is the canonicalization used by Parse, Make and Compose. To
+	// preserve as much information as possible, canonicalizations that remove
+	// potentially valuable information are not included. The Matcher is
+	// designed to recognize similar tags that would be the same if
+	// they were canonicalized using All.
+	Default = Deprecated | Legacy
+
+	// TODO: LikelyScript, LikelyRegion: suppress similar to ICU.
 )
 
 // canonicalize returns the canonicalized equivalent of the tag and
 // whether there was any change.
 func (t Tag) canonicalize(c CanonType) (Tag, bool) {
+	if c == Raw {
+		return t, false
+	}
 	changed := false
 	if c&SuppressScript != 0 {
 		if t.lang < langNoIndexOffset && uint8(t.script) == suppressScript[t.lang] {
@@ -142,7 +175,7 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 			changed = true
 		}
 	}
-	if c&Deprecated != 0 {
+	if c&DeprecatedBase != 0 {
 		l := normLang(langOldMap[:], t.lang)
 		if l != t.lang {
 			// CLDR maps "mo" to "ro". This mapping loses the piece of information
@@ -155,10 +188,14 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 			changed = true
 			t.lang = l
 		}
+	}
+	if c&DeprecatedScript != 0 {
 		if t.script == scrQaai {
 			changed = true
 			t.script = scrZinh
 		}
+	}
+	if c&DeprecatedRegion != 0 {
 		if r := normRegion(t.region); r != 0 {
 			changed = true
 			t.region = r
@@ -185,7 +222,7 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 }
 
 // Canonicalize returns the canonicalized equivalent of the tag.
-func (t Tag) Canonicalize(c CanonType) (Tag, error) {
+func (c CanonType) Canonicalize(t Tag) (Tag, error) {
 	t, changed := t.canonicalize(c)
 	if changed && t.str != nil {
 		t.remakeString()
@@ -194,7 +231,7 @@ func (t Tag) Canonicalize(c CanonType) (Tag, error) {
 }
 
 // Confidence indicates the level of certainty for a given return value.
-// For example, Serbian may be written in cyrillic or latin script.
+// For example, Serbian may be written in Cyrillic or Latin script.
 // The confidence level indicates whether a value was explicitly specified,
 // whether it is typically the only possible value, or whether there is
 // an ambiguity.
@@ -290,12 +327,12 @@ func (t Tag) Base() (Base, Confidence) {
 	return Base{0}, No
 }
 
-// Script infers the script for the language tag. If it was not explictly given, it will infer
+// Script infers the script for the language tag. If it was not explicitly given, it will infer
 // a most likely candidate.
 // If more than one script is commonly used for a language, the most likely one
 // is returned with a low confidence indication. For example, it returns (Cyrl, Low)
 // for Serbian.
-// If a script cannot be inferred (Zzzz, No) is returned. We do not use Zyyy (undertermined)
+// If a script cannot be inferred (Zzzz, No) is returned. We do not use Zyyy (undetermined)
 // as one would suspect from the IANA registry for BCP 47. In a Unicode context Zyyy marks
 // common characters (like 1, 2, 3, '.', etc.) and is therefore more like multiple scripts.
 // See http://www.unicode.org/reports/tr24/#Values for more details. Zzzz is also used for
@@ -317,7 +354,7 @@ func (t Tag) Script() (Script, Confidence) {
 	if tag, err := addTags(t); err == nil {
 		sc, c = Script{tag.script}, Low
 	}
-	t, _ = t.Canonicalize(Deprecated | Macro)
+	t, _ = (Deprecated | Macro).Canonicalize(t)
 	if tag, err := addTags(t); err == nil {
 		sc, c = Script{tag.script}, Low
 	}
@@ -334,7 +371,7 @@ func (t Tag) Region() (Region, Confidence) {
 	if t, err := addTags(t); err == nil {
 		return Region{t.region}, Low // TODO: differentiate between high and low.
 	}
-	t, _ = t.Canonicalize(Deprecated | Macro)
+	t, _ = (Deprecated | Macro).Canonicalize(t)
 	if tag, err := addTags(t); err == nil {
 		return Region{tag.region}, Low
 	}
@@ -343,9 +380,96 @@ func (t Tag) Region() (Region, Confidence) {
 
 // Variant returns the variants specified explicitly for this language tag.
 // or nil if no variant was specified.
-func (t Tag) Variant() []Variant {
-	// TODO: implement
-	return nil
+func (t Tag) Variants() []Variant {
+	v := []Variant{}
+	if t.str != nil && int(t.pVariant) < int(t.pExt) {
+		for x, str := "", (*t.str)[t.pVariant:t.pExt]; str != ""; {
+			x, str = nextToken(str)
+			v = append(v, Variant{x})
+		}
+	}
+	return v
+}
+
+// returns token t and the rest of the string.
+func nextToken(s string) (t, tail string) {
+	p := strings.Index(s[1:], "-")
+	if p == -1 {
+		return s[1:], ""
+	}
+	p++
+	return s[1:p], s[p:]
+}
+
+// Extension is a single BCP 47 extension.
+type Extension struct {
+	s string
+}
+
+// String returns the string representation of the extension, including the
+// type tag.
+func (e Extension) String() string {
+	return e.s
+}
+
+// ParseExtension parses s as an extension and returns it on success.
+func ParseExtension(s string) (e Extension, err error) {
+	scan := makeScannerString(s)
+	var end int
+	if n := len(scan.token); n != 1 {
+		return Extension{}, errSyntax
+	}
+	scan.toLower(0, len(scan.b))
+	end = parseExtension(&scan)
+	if end != len(s) {
+		return Extension{}, errSyntax
+	}
+	return Extension{string(scan.b)}, nil
+}
+
+// Type returns the one-byte extension type of e. It returns 0 for the zero
+// exception.
+func (e Extension) Type() byte {
+	if e.s == "" {
+		return 0
+	}
+	return e.s[0]
+}
+
+// Tokens returns the list of tokens of e.
+func (e Extension) Tokens() []string {
+	return strings.Split(e.s, "-")
+}
+
+// Extension returns the extension of type x for tag t. It will return
+// false for ok if t does not have the requested extension. The returned
+// extension will be invalid in this case.
+func (t Tag) Extension(x byte) (ext Extension, ok bool) {
+	if t.str != nil {
+		str := *t.str
+		for i := int(t.pExt); i < len(str)-1; {
+			var ext string
+			i, ext = getExtension(str, i)
+			if ext[0] == x {
+				return Extension{ext}, true
+			}
+		}
+	}
+	return Extension{string(x)}, false
+}
+
+// Extensions returns all extensions of t.
+func (t Tag) Extensions() []Extension {
+	e := []Extension{}
+	if t.str != nil {
+		str := *t.str
+		for i := int(t.pExt); i < len(str)-1; {
+			var ext string
+			i, ext = getExtension(str, i)
+			e = append(e, Extension{ext})
+		}
+	}
+	return e
 }
 
 // TypeForKey returns the type associated with the given key, where key and type
@@ -448,7 +572,7 @@ func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
 
 	// Iterate over keys until we get the end of a section.
 	for {
-		// p points to the hyphen preceeding the current token.
+		// p points to the hyphen preceding the current token.
 		if p3 := p + 3; s[p3] == '-' {
 			// Found a key.
 			// Check whether we just processed the key that was requested.
@@ -504,11 +628,6 @@ func ParseBase(s string) (Base, error) {
 	return Base{l}, err
 }
 
-// Tag returns a Tag with this base language as its only subtag.
-func (b Base) Tag() Tag {
-	return Tag{lang: b.langID}
-}
-
 // Script is a 4-letter ISO 15924 code for representing scripts.
 // It is idiomatically represented in title case.
 type Script struct {
@@ -525,11 +644,6 @@ func ParseScript(s string) (Script, error) {
 	var buf [4]byte
 	sc, err := getScriptID(script, buf[:copy(buf[:], s)])
 	return Script{sc}, err
-}
-
-// Tag returns a Tag with the undetermined language and this script as its only subtags.
-func (s Script) Tag() Tag {
-	return Tag{script: s.scriptID}
 }
 
 // Region is an ISO 3166-1 or UN M.49 code for representing countries and regions.
@@ -556,11 +670,6 @@ func ParseRegion(s string) (Region, error) {
 	return Region{r}, err
 }
 
-// Tag returns a Tag with the undetermined language and this region as its only subtags.
-func (r Region) Tag() Tag {
-	return Tag{region: r.regionID}
-}
-
 // IsCountry returns whether this region is a country or autonomous area.
 func (r Region) IsCountry() bool {
 	if r.regionID < isoRegionOffset || r.IsPrivateUse() {
@@ -571,13 +680,21 @@ func (r Region) IsCountry() bool {
 
 // Variant represents a registered variant of a language as defined by BCP 47.
 type Variant struct {
-	// TODO: implement
 	variant string
+}
+
+// ParseVariant parses and returns a Variant. An error is returned if s is not
+// a valid variant.
+func ParseVariant(s string) (Variant, error) {
+	s = strings.ToLower(s)
+	if _, ok := variantIndex[s]; ok {
+		return Variant{s}, nil
+	}
+	return Variant{}, mkErrInvalid([]byte(s))
 }
 
 // String returns the string representation of the variant.
 func (v Variant) String() string {
-	// TODO: implement
 	return v.variant
 }
 

@@ -216,16 +216,27 @@ func (s *scanner) acceptMinSize(min int) (end int) {
 	return end
 }
 
-// Parse parses the given BCP 47 string and returns a valid Tag.
-// If parsing failed it returns an error and any part of the tag
-// that could be parsed.
+// Parse parses the given BCP 47 string and returns a valid Tag. If parsing
+// failed it returns an error and any part of the tag that could be parsed.
 // If parsing succeeded but an unknown value was found, it returns
 // ValueError. The Tag returned in this case is just stripped of the unknown
-// value. All other values are preserved.
-// It accepts tags in the BCP 47 format and extensions to this standard
-// defined in
+// value. All other values are preserved. It accepts tags in the BCP 47 format
+// and extensions to this standard defined in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
+// The resulting tag is canonicalized using the default canonicalization type.
 func Parse(s string) (t Tag, err error) {
+	return Default.Parse(s)
+}
+
+// Parse parses the given BCP 47 string and returns a valid Tag. If parsing
+// failed it returns an error and any part of the tag that could be parsed.
+// If parsing succeeded but an unknown value was found, it returns
+// ValueError. The Tag returned in this case is just stripped of the unknown
+// value. All other values are preserved. It accepts tags in the BCP 47 format
+// and extensions to this standard defined in
+// http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
+// The resulting tag is canonicalized using the the canonicalization type c.
+func (c CanonType) Parse(s string) (t Tag, err error) {
 	// TODO: consider supporting old-style locale key-value pairs.
 	if s == "" {
 		return und, errSyntax
@@ -242,7 +253,12 @@ func Parse(s string) (t Tag, err error) {
 		}
 		return und, nil
 	}
-	return parse(&scan, s)
+	t, err = parse(&scan, s)
+	t, changed := t.canonicalize(c)
+	if changed && t.str != nil {
+		t.remakeString()
+	}
+	return t, err
 }
 
 func parse(scan *scanner, s string) (t Tag, err error) {
@@ -461,7 +477,7 @@ func parseExtensions(scan *scanner) int {
 }
 
 // parseExtension parses a single extension and returns the position of
-// the extenion end.
+// the extension end.
 func parseExtension(scan *scanner) int {
 	start, end := scan.start, scan.end
 	switch scan.token[0] {
@@ -534,152 +550,186 @@ func parseExtension(scan *scanner) int {
 	return end
 }
 
-// A Part identifies a part of the language tag.
-type Part byte
+// Compose creates a Tag from individual parts, which may be of type Tag, Base,
+// Script, Region, Variant, []Variant, Extension, []Extension or error. If a
+// Base, Script or Region or slice of type Variant or Extension is passed more
+// than once, the latter will overwrite the former. Variants and Extensions are
+// accumulated, but if two extensions of the same type are passed, the latter
+// will replace the former. A Tag overwrites all former values and typically
+// only makes sense as the first argument. The resulting tag is returned after
+// canonicalizing using the Default CanonType. If one or more errors are
+// encountered, one of the errors is returned.
+func Compose(part ...interface{}) (t Tag, err error) {
+	return Default.Compose(part...)
+}
 
-const (
-	TagPart Part = iota // The tag excluding extensions.
-	LanguagePart
-	ScriptPart
-	RegionPart
-	VariantPart
-)
-
-var partNames = []string{"Tag", "Language", "Script", "Region", "Variant"}
-
-func (p Part) String() string {
-	if p > VariantPart {
-		return string(p)
+// Compose creates a Tag from individual parts, which may be of type Tag, Base,
+// Script, Region, Variant, []Variant, Extension, []Extension or error. If a
+// Base, Script or Region or slice of type Variant or Extension is passed more
+// than once, the latter will overwrite the former. Variants and Extensions are
+// accumulated, but if two extensions of the same type are passed, the latter
+// will replace the former. A Tag overwrites all former values and typically
+// only makes sense as the first argument. The resulting tag is returned after
+// canonicalizing using CanonType c. If one or more errors are encountered,
+// one of the errors is returned.
+func (c CanonType) Compose(part ...interface{}) (t Tag, err error) {
+	var b builder
+	if err = b.update(part...); err != nil {
+		return und, err
 	}
-	return partNames[p]
+	t, _ = b.tag.canonicalize(c)
+
+	sort.Sort(sortVariant(b.variant))
+	sort.Strings(b.ext)
+	if b.private != "" {
+		b.ext = append(b.ext, b.private)
+	}
+	n := 12 + tokenLen(b.variant...) + tokenLen(b.ext...)
+	buf := make([]byte, n)
+	p := t.genCoreBytes(buf)
+	t.pVariant = byte(p)
+	p += appendTokens(buf[p:], b.variant...)
+	t.pExt = uint16(p)
+	p += appendTokens(buf[p:], b.ext...)
+	s := string(buf[:p])
+	t.str = &s
+	return
 }
 
-// Extension returns the Part identifier for extension e, which must be 0-9 or a-z.
-func Extension(e byte) Part {
-	return Part(e)
+type builder struct {
+	tag Tag
+
+	private string // the x extension
+	ext     []string
+	variant []string
+
+	err error
 }
 
-// Compose returns a language tag composed from the given parts or an error
-// if any of the strings for the parts are ill-formed.
-func Compose(m map[Part]string) (t Tag, err error) {
-	t = und
-	var scan scanner
-	scan.b = scan.bytes[:0]
-	add := func(p Part) {
-		if s, ok := m[p]; ok {
-			if len(scan.b) > 0 {
-				scan.b = append(scan.b, '-')
-			}
-			if p > VariantPart {
-				scan.b = append(scan.b, byte(p), '-')
-			}
-			scan.b = append(scan.b, s...)
+func (b *builder) addExt(e string) {
+	if e == "" {
+	} else if e[0] == 'x' {
+		b.private = e
+	} else {
+		b.ext = append(b.ext, e)
+	}
+}
+
+var errInvalidArgument = errors.New("invalid Extension or Variant")
+
+func (b *builder) update(part ...interface{}) (err error) {
+	replace := func(l *[]string, s string, eq func(a, b string) bool) bool {
+		if s == "" {
+			b.err = errInvalidArgument
+			return true
 		}
+		for i, v := range *l {
+			if eq(v, s) {
+				(*l)[i] = s
+				return true
+			}
+		}
+		return false
 	}
-	for p := TagPart; p <= VariantPart; p++ {
-		if p == TagPart && m[p] != "" {
-			for i := LanguagePart; i <= VariantPart; i++ {
-				if _, ok := m[i]; ok {
-					return und, fmt.Errorf("language: cannot specify both Tag and %s", partNames[i])
+	for _, x := range part {
+		switch v := x.(type) {
+		case Tag:
+			b.tag = v
+			if v.str != nil {
+				str := *v.str
+				b.variant = nil
+				for x, s := "", str[v.pVariant:v.pExt]; s != ""; {
+					x, s = nextToken(s)
+					b.variant = append(b.variant, x)
+				}
+				b.ext, b.private = nil, ""
+				for i, e := int(v.pExt), ""; i < len(str); {
+					i, e = getExtension(str, i)
+					b.addExt(e)
 				}
 			}
-		}
-		add(p)
-	}
-	for p := Part('0'); p <= Part('9'); p++ {
-		add(p)
-	}
-	for p := Part('a'); p <= Part('w'); p++ {
-		add(p)
-	}
-	for p := Part('y'); p <= Part('z'); p++ {
-		add(p)
-	}
-	add(Part('x'))
-	scan.init()
-	if len(scan.token) >= 4 {
-		if !strings.EqualFold(string(scan.b), "root") {
-			return und, errSyntax
-		}
-		return und, nil
-	}
-	return parse(&scan, "")
-}
-
-// Part returns the part of the language tag indicated by p.
-// The one-letter section identifier, if applicable, is not included.
-// Components are separated by a '-'.
-func (t Tag) Part(p Part) string {
-	s := ""
-	switch p {
-	case TagPart:
-		s = t.String()
-		if t.pExt > 0 {
-			s = s[:t.pExt]
-		}
-	case LanguagePart:
-		s = t.lang.String()
-	case ScriptPart:
-		if t.script != 0 {
-			s = t.script.String()
-		}
-	case RegionPart:
-		if t.region != 0 {
-			s = t.region.String()
-		}
-	case VariantPart:
-		if t.str != nil && uint16(t.pVariant) < t.pExt {
-			s = (*t.str)[t.pVariant+1 : t.pExt]
-		}
-	default:
-		if t.str != nil {
-			str := *t.str
-			for i := int(t.pExt); i < len(str)-1; {
-				end, name, ext := getExtension(str, i)
-				if name == byte(p) {
-					return ext
-				}
-				i = end
+		case Base:
+			b.tag.lang = v.langID
+		case Script:
+			b.tag.script = v.scriptID
+		case Region:
+			b.tag.region = v.regionID
+		case Variant:
+			if !replace(&b.variant, v.variant, func(a, b string) bool { return a == b }) {
+				b.variant = append(b.variant, v.variant)
 			}
+		case Extension:
+			if !replace(&b.ext, v.s, func(a, b string) bool { return a[0] == b[0] }) {
+				b.addExt(v.s)
+			}
+		case []Variant:
+			b.variant = nil
+			for _, x := range v {
+				b.update(x)
+			}
+		case []Extension:
+			b.ext, b.private = nil, ""
+			for _, e := range v {
+				b.update(e)
+			}
+		// TODO: support parsing of raw strings based on morphology or just extensions?
+		case error:
+			err = v
 		}
 	}
-	return s
+	return
 }
 
-// Parts returns all parts of the language tag in a map.
-func (t Tag) Parts() map[Part]string {
-	m := make(map[Part]string)
-	m[LanguagePart] = t.lang.String()
-	if t.script != 0 {
-		m[ScriptPart] = t.script.String()
+func tokenLen(token ...string) (n int) {
+	for _, t := range token {
+		n += len(t) + 1
 	}
-	if t.region != 0 {
-		m[RegionPart] = t.region.String()
+	return
+}
+
+func appendTokens(b []byte, token ...string) int {
+	p := 0
+	for _, t := range token {
+		b[p] = '-'
+		copy(b[p+1:], t)
+		p += 1 + len(t)
 	}
-	if t.str != nil {
-		s := *t.str
-		if uint16(t.pVariant) < t.pExt {
-			m[VariantPart] = s[t.pVariant+1 : t.pExt]
+	return p
+}
+
+type sortVariant []string
+
+func (s sortVariant) Len() int {
+	return len(s)
+}
+
+func (s sortVariant) Swap(i, j int) {
+	s[j], s[i] = s[i], s[j]
+}
+
+func (s sortVariant) Less(i, j int) bool {
+	return variantIndex[s[i]] < variantIndex[s[j]]
+}
+
+func findExt(list []string, x byte) int {
+	for i, e := range list {
+		if e[0] == x {
+			return i
 		}
-		for i := int(t.pExt); i < len(s)-1; {
-			end, name, ext := getExtension(s, i)
-			m[Extension(name)] = ext
-			i = end
-		}
 	}
-	return m
+	return -1
 }
 
 // getExtension returns the name, body and end position of the extension.
-func getExtension(s string, p int) (end int, name byte, ext string) {
+func getExtension(s string, p int) (end int, ext string) {
 	if s[p] == '-' {
 		p++
 	}
 	if s[p] == 'x' {
-		return len(s), s[p], s[p+2:]
+		return len(s), s[p:]
 	}
 	end = nextExtension(s, p)
-	return end, s[p], s[p+2 : end]
+	return end, s[p:end]
 }
 
 // nextExtension finds the next extension within the string, searching

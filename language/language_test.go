@@ -73,7 +73,6 @@ func TestBase(t *testing.T) {
 	}
 	for i, tt := range tests {
 		loc, _ := Parse(tt.loc)
-		loc, _ = loc.Canonicalize(0)
 		lang, conf := loc.Base()
 		if lang.String() != tt.lang {
 			t.Errorf("%d: language was %s; want %s", i, lang, tt.lang)
@@ -104,9 +103,8 @@ func TestParseBase(t *testing.T) {
 		if x.String() != tt.out || err == nil != tt.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
 		}
-		tag, _ := Parse(tt.out)
-		if err == nil && !tag.equalTags(x.Tag()) {
-			t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, x.Tag(), tt.out)
+		if y, _, _ := Raw.Make(tt.out).Raw(); x != y {
+			t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, x, y)
 		}
 	}
 }
@@ -128,7 +126,6 @@ func TestScript(t *testing.T) {
 	}
 	for i, tt := range tests {
 		loc, _ := Parse(tt.loc)
-		loc, _ = loc.Canonicalize(0)
 		sc, conf := loc.Script()
 		if sc.String() != tt.scr {
 			t.Errorf("%d: script was %s; want %s", i, sc, tt.scr)
@@ -158,9 +155,10 @@ func TestParseScript(t *testing.T) {
 		if x.String() != tt.out || err == nil != tt.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
 		}
-		tag, _ := Parse("und-" + tt.in)
-		if err == nil && !tag.equalTags(x.Tag()) {
-			t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, x.Tag(), tt.out)
+		if err == nil {
+			if _, y, _ := Raw.Make("und-" + tt.out).Raw(); x != y {
+				t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, x, y)
+			}
 		}
 	}
 }
@@ -180,8 +178,7 @@ func TestRegion(t *testing.T) {
 		{"x-abc", "ZZ", Low},
 	}
 	for i, tt := range tests {
-		loc, _ := Parse(tt.loc)
-		loc, _ = loc.Canonicalize(0)
+		loc, _ := Raw.Parse(tt.loc)
 		reg, conf := loc.Region()
 		if reg.String() != tt.reg {
 			t.Errorf("%d: region was %s; want %s", i, reg, tt.reg)
@@ -235,9 +232,10 @@ func TestParseRegion(t *testing.T) {
 		if r.String() != tt.out || err == nil != tt.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, r, err == nil, tt.out, tt.ok)
 		}
-		tag, _ := Parse("und-" + tt.out)
-		if err == nil && !tag.equalTags(r.Tag()) {
-			t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, r.Tag(), tag)
+		if err == nil {
+			if _, _, y := Raw.Make("und-" + tt.out).Raw(); r != y {
+				t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, r, y)
+			}
 		}
 	}
 }
@@ -310,17 +308,19 @@ func TestCanonicalize(t *testing.T) {
 		{"nb", "nb", Macro | CLDR},
 		{"no", "no", Macro},
 		{"no", "no", Macro | CLDR},
-		{"iw", "he", Deprecated},
+		{"iw", "he", DeprecatedBase},
 		{"iw", "he", Deprecated | CLDR},
 		{"mo", "ro-MD", Deprecated},
 		{"mo", "ro", Deprecated | CLDR},
 		{"und-AN", "und-AN", Deprecated},
-		{"und-YD", "und-YE", Deprecated},
-		{"und-Qaai", "und-Zinh", Deprecated},
+		{"und-YD", "und-YE", DeprecatedRegion},
+		{"und-YD", "und-YD", DeprecatedBase},
+		{"und-Qaai", "und-Zinh", DeprecatedScript},
+		{"und-Qaai", "und-Qaai", DeprecatedBase},
 	}
 	for i, tt := range tests {
-		in, _ := Parse(tt.in)
-		in, _ = in.Canonicalize(tt.option)
+		in, _ := Raw.Parse(tt.in)
+		in, _ = tt.option.Canonicalize(in)
 		if in.String() != tt.out {
 			t.Errorf("%d:%s: was %s; want %s", i, tt.in, in.String(), tt.out)
 		}

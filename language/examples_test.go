@@ -9,15 +9,11 @@ import (
 	"fmt"
 )
 
-func ExampleTag_Canonicalize() {
+func ExampleCanonType() {
 	p := func(id string) {
-		loc, _ := language.Parse(id)
-		l, _ := loc.Canonicalize(language.BCP47)
-		fmt.Printf("BCP47(%s) -> %s\n", id, l)
-		l, _ = loc.Canonicalize(language.Macro)
-		fmt.Printf("Macro(%s) -> %s\n", id, l)
-		l, _ = loc.Canonicalize(language.All)
-		fmt.Printf("All(%s) -> %s\n", id, l)
+		fmt.Printf("BCP47(%s) -> %s\n", id, language.BCP47.Make(id))
+		fmt.Printf("Macro(%s) -> %s\n", id, language.Macro.Make(id))
+		fmt.Printf("All(%s) -> %s\n", id, language.All.Make(id))
 	}
 	p("en-Latn")
 	p("sh")
@@ -84,12 +80,64 @@ func ExampleTag_Region() {
 	// US Low
 }
 
-func ExampleTag_Part() {
-	loc := language.Make("sr-RS")
-	script := loc.Part(language.ScriptPart)
-	region := loc.Part(language.RegionPart)
-	fmt.Printf("%q %q", script, region)
-	// Output: "" "RS"
+func ExampleCompose() {
+	nl, _ := language.ParseBase("nl")
+	us, _ := language.ParseRegion("US")
+	de := language.Make("de-1901-u-co-phonebk")
+	jp := language.Make("ja-JP")
+	fi := language.Make("fi-x-ing")
+
+	u, _ := language.ParseExtension("u-nu-arabic")
+	x, _ := language.ParseExtension("x-piglatin")
+
+	// Combine a base language and region.
+	fmt.Println(language.Compose(nl, us))
+	// Combine a base language and extension.
+	fmt.Println(language.Compose(nl, x))
+	// Replace the region.
+	fmt.Println(language.Compose(jp, us))
+	// Combine several tags.
+	fmt.Println(language.Compose(us, nl, u))
+
+	// Replace the base language of a tag.
+	fmt.Println(language.Compose(de, nl))
+	fmt.Println(language.Compose(de, nl, u))
+	// Remove the base language.
+	fmt.Println(language.Compose(de, language.Base{}))
+	// Remove all variants.
+	fmt.Println(language.Compose(de, []language.Variant{}))
+	// Remove all extensions.
+	fmt.Println(language.Compose(de, []language.Extension{}))
+	fmt.Println(language.Compose(fi, []language.Extension{}))
+	// Remove all variants and extensions.
+	fmt.Println(language.Compose(de.Raw()))
+
+	// An error is gobbled or returned if non-nil.
+	fmt.Println(language.Compose(language.ParseRegion("ZA")))
+	fmt.Println(language.Compose(language.ParseRegion("HH")))
+
+	// Compose uses the same Default canonicalization as Make.
+	fmt.Println(language.Compose(language.Raw.Parse("en-Latn-UK")))
+
+	// Call compose on a different CanonType for different results.
+	fmt.Println(language.All.Compose(language.Raw.Parse("en-Latn-UK")))
+
+	// Output:
+	// nl-US <nil>
+	// nl-x-piglatin <nil>
+	// ja-US <nil>
+	// nl-US-u-nu-arabic <nil>
+	// nl-1901-u-co-phonebk <nil>
+	// nl-1901-u-nu-arabic <nil>
+	// und-1901-u-co-phonebk <nil>
+	// de-u-co-phonebk <nil>
+	// de-1901 <nil>
+	// fi <nil>
+	// de <nil>
+	// und-ZA <nil>
+	// und language: subtag "HH" is well-formed but unknown
+	// en-Latn-GB <nil>
+	// en-GB <nil>
 }
 
 func ExampleParse_errors() {
