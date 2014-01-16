@@ -466,3 +466,31 @@ func (t removeF) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err err
 	}
 	return
 }
+
+// Bytes returns a new byte slice with the result of converting b using t.
+// If any unrecoverable error occurs it returns nil.
+func Bytes(t Transformer, b []byte) []byte {
+	out := make([]byte, len(b))
+	n := 0
+	for {
+		nDst, nSrc, err := t.Transform(out[n:], b, true)
+		n += nDst
+		if err == nil {
+			return out[:n]
+		} else if err != ErrShortDst {
+			return nil
+		}
+		b = b[nSrc:]
+
+		// Grow the destination buffer.
+		sz := len(out)
+		if sz <= 256 {
+			sz *= 2
+		} else {
+			sz += sz >> 1
+		}
+		out2 := make([]byte, sz)
+		copy(out2, out[:n])
+		out = out2
+	}
+}

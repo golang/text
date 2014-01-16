@@ -874,3 +874,28 @@ func TestRemoveFunc(t *testing.T) {
 		}
 	}
 }
+
+func TestBytes(t *testing.T) {
+	for _, tt := range append(testCases, chainTests()...) {
+		if tt.desc == "allowStutter = true" {
+			// We don't have control over the buffer size, so we eliminate tests
+			// that depend on a specific buffer size being set.
+			continue
+		}
+		got := Bytes(tt.t, []byte(tt.src))
+		if tt.wantErr != nil {
+			if tt.wantErr != ErrShortDst && tt.wantErr != ErrShortSrc {
+				// Bytes should return nil for non-recoverable errors.
+				if g, w := (got == nil), (tt.wantErr != nil); g != w {
+					t.Errorf("%s:error: got %v; want %v", tt.desc, g, w)
+				}
+			}
+			// The output strings in the tests that expect an error will
+			// almost certainly not be the same as the result of Bytes.
+			continue
+		}
+		if string(got) != tt.wantStr {
+			t.Errorf("%s:string: got %q; want %q", tt.desc, got, tt.wantStr)
+		}
+	}
+}
