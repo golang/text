@@ -334,10 +334,10 @@ func (r regionID) String() string {
 
 // ISO3 returns the 3-letter ISO code of r.
 // Note that not all regions have a 3-letter ISO code.
-// In such cases this method returns the empty string.
+// In such cases this method returns "ZZZ".
 func (r regionID) ISO3() string {
 	if r < isoRegionOffset {
-		return ""
+		return "ZZZ"
 	}
 	r -= isoRegionOffset
 	reg := regionISO[r<<2:]
@@ -345,7 +345,7 @@ func (r regionID) ISO3() string {
 	case 0:
 		return altRegionISO3[reg[3]:][:3]
 	case ' ':
-		return ""
+		return "ZZZ"
 	}
 	return reg[0:1] + reg[2:4]
 }

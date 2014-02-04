@@ -196,14 +196,14 @@ func TestRegionISO3(t *testing.T) {
 	tests := []struct {
 		from, iso3, to string
 	}{
-		{"  ", "", ""},
-		{"000", "", ""},
+		{"  ", "ZZZ", "ZZ"},
+		{"000", "ZZZ", "ZZ"},
 		{"AA", "AAA", ""},
 		{"CT", "CTE", ""},
 		{"DY", "DHY", ""},
 		{"EU", "QUU", ""},
 		{"HV", "HVO", ""},
-		{"IC", "", ""},
+		{"IC", "ZZZ", "ZZ"},
 		{"JT", "JTN", ""},
 		{"PZ", "PCZ", ""},
 		{"QU", "QUU", "EU"},
@@ -213,7 +213,7 @@ func TestRegionISO3(t *testing.T) {
 		{"TF", "ATF", ""},
 		{"FX", "FXX", ""},
 		{"ZZ", "ZZZ", ""},
-		{"419", "", ""},
+		{"419", "ZZZ", "ZZ"},
 	}
 	for _, tt := range tests {
 		r, _ := getRegionID(b(tt.from))
