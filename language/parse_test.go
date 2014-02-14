@@ -99,18 +99,18 @@ type parseTest struct {
 
 func parseTests() []parseTest {
 	tests := []parseTest{
-		{in: "root", lang: "und", changed: true},
+		{in: "root", lang: "und"},
 		{in: "und", lang: "und"},
 		{in: "en", lang: "en"},
-		{in: "xy", lang: "und", invalid: true, changed: true},
+		{in: "xy", lang: "und", invalid: true},
 		{in: "en-ZY", lang: "en", invalid: true},
 		{in: "gsw", lang: "gsw"},
-		{in: "sr_Latn", lang: "sr", script: "Latn", changed: true},
+		{in: "sr_Latn", lang: "sr", script: "Latn"},
 		{in: "af-Arab", lang: "af", script: "Arab"},
 		{in: "nl-BE", lang: "nl", region: "BE"},
 		{in: "es-419", lang: "es", region: "419"},
 		{in: "und-001", lang: "und", region: "001"},
-		{in: "de-latn-be", lang: "de", script: "Latn", region: "BE", changed: true},
+		{in: "de-latn-be", lang: "de", script: "Latn", region: "BE"},
 		// Variants
 		{in: "de-1901", lang: "de", variants: "1901"},
 		// Accept with unsuppressed script.
@@ -141,7 +141,7 @@ func parseTests() []parseTest {
 		// Invalid variant.
 		{in: "de-1902", lang: "de", variants: "", invalid: true},
 
-		{in: "EN_CYRL", lang: "en", script: "Cyrl", changed: true},
+		{in: "EN_CYRL", lang: "en", script: "Cyrl"},
 		// private use and extensions
 		{in: "x-a-b-c-d", ext: "x-a-b-c-d"},
 		{in: "x_A.-B-C_D", ext: "x-b-c-d", invalid: true, changed: true},
@@ -191,32 +191,32 @@ func parseTests() []parseTest {
 		{in: "en-t-nl-latn", lang: "en", ext: "t-nl-latn"},
 		{in: "en-t-t0-abcd-x-a", lang: "en", extList: []string{"t-t0-abcd", "x-a"}},
 		// invalid
-		{in: "", lang: "und", invalid: true, changed: true},
-		{in: "-", lang: "und", invalid: true, changed: true},
-		{in: "x", lang: "und", invalid: true, changed: true},
-		{in: "x-", lang: "und", invalid: true, changed: true},
-		{in: "x--", lang: "und", invalid: true, changed: true},
-		{in: "a-a-b-c-d", lang: "und", invalid: true, changed: true},
+		{in: "", lang: "und", invalid: true},
+		{in: "-", lang: "und", invalid: true},
+		{in: "x", lang: "und", invalid: true},
+		{in: "x-", lang: "und", invalid: true},
+		{in: "x--", lang: "und", invalid: true},
+		{in: "a-a-b-c-d", lang: "und", invalid: true},
 		{in: "en-", lang: "en", invalid: true},
-		{in: "enne-", lang: "und", invalid: true, changed: true},
-		{in: "en.", lang: "und", invalid: true, changed: true},
-		{in: "en.-latn", lang: "und", invalid: true, changed: true},
+		{in: "enne-", lang: "und", invalid: true},
+		{in: "en.", lang: "und", invalid: true},
+		{in: "en.-latn", lang: "und", invalid: true},
 		{in: "en.-en", lang: "en", invalid: true},
 		{in: "x-a-tooManyChars-c-d", ext: "x-a-c-d", invalid: true, changed: true},
-		{in: "a-tooManyChars-c-d", lang: "und", invalid: true, changed: true},
+		{in: "a-tooManyChars-c-d", lang: "und", invalid: true},
 		// TODO: check key-value validity
 		// { in: "en-u-cu-xd", lang: "en", ext: "u-cu-xd", invalid: true },
 		{in: "en-t-abcd", lang: "en", invalid: true},
 		{in: "en-Latn-US-en", lang: "en", script: "Latn", region: "US", invalid: true},
 		// rewrites
-		{in: "zh-min", lang: "und", rewrite: true, changed: true},
-		{in: "zh-min-nan", lang: "nan", changed: true},
-		{in: "zh-yue", lang: "yue", changed: true},
-		{in: "zh-xiang", lang: "hsn", rewrite: true, changed: true},
-		{in: "zh-guoyu", lang: "zh", rewrite: true, changed: true},
-		{in: "iw", lang: "iw", changed: false},
-		{in: "sgn-BE-FR", lang: "sfb", rewrite: true, changed: true},
-		{in: "i-klingon", lang: "tlh", rewrite: true, changed: true},
+		{in: "zh-min", lang: "und", rewrite: true},
+		{in: "zh-min-nan", lang: "nan"},
+		{in: "zh-yue", lang: "yue"},
+		{in: "zh-xiang", lang: "hsn", rewrite: true},
+		{in: "zh-guoyu", lang: "zh", rewrite: true},
+		{in: "iw", lang: "iw"},
+		{in: "sgn-BE-FR", lang: "sfb", rewrite: true},
+		{in: "i-klingon", lang: "tlh", rewrite: true},
 	}
 	for i, tt := range tests {
 		tests[i].i = i
@@ -270,21 +270,21 @@ func partChecks(t *testing.T, f func(*parseTest) (Tag, bool)) {
 		if r, _ := getRegionID(b(tt.region)); r != tag.region {
 			t.Errorf("%d: region was %q; want %q", i, tag.region, r)
 		}
-		if tag.str == nil {
+		if tag.str == "" {
 			continue
 		}
 		p := int(tag.pVariant)
 		if p < int(tag.pExt) {
 			p++
 		}
-		if s, g := (*tag.str)[p:tag.pExt], tt.variants; s != g {
+		if s, g := tag.str[p:tag.pExt], tt.variants; s != g {
 			t.Errorf("%d: variants was %q; want %q", i, s, g)
 		}
 		p = int(tag.pExt)
-		if p > 0 && p < len(*tag.str) {
+		if p > 0 && p < len(tag.str) {
 			p++
 		}
-		if s, g := (*tag.str)[p:], tt.ext; s != g {
+		if s, g := (tag.str)[p:], tt.ext; s != g {
 			t.Errorf("%d: extensions were %q; want %q", i, s, g)
 		}
 	}
@@ -297,11 +297,7 @@ func TestParseTag(t *testing.T) {
 		}
 		scan := makeScannerString(tt.in)
 		id, end := parseTag(&scan)
-		s := string(scan.b[:end])
-		if changed := !strings.HasPrefix(tt.in, s); changed != tt.changed && tt.ext == "" {
-			t.Errorf("%d: changed was %v; want %v", tt.i, changed, tt.changed)
-		}
-		id.str = &s
+		id.str = string(scan.b[:end])
 		tt.ext = ""
 		tt.extList = []string{}
 		return id, false
@@ -312,25 +308,25 @@ func TestParse(t *testing.T) {
 	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
 		id, err := Raw.Parse(tt.in)
 		ext := ""
-		if id.str != nil {
-			if strings.HasPrefix(*id.str, "x-") {
-				ext = *id.str
-			} else if int(id.pExt) < len(*id.str) && id.pExt > 0 {
-				ext = (*id.str)[id.pExt+1:]
+		if id.str != "" {
+			if strings.HasPrefix(id.str, "x-") {
+				ext = id.str
+			} else if int(id.pExt) < len(id.str) && id.pExt > 0 {
+				ext = id.str[id.pExt+1:]
 			}
 		}
 		if tag, _ := Raw.Parse(id.String()); tag.String() != id.String() {
-			t.Errorf("%d: reparse was %q; want %q", tt.i, id.String(), tag.String())
+			t.Errorf("%d:%s: reparse was %q; want %q", tt.i, tt.in, id.String(), tag.String())
 		}
 		if ext != tt.ext {
-			t.Errorf("%d: ext was %q; want %q", tt.i, ext, tt.ext)
+			t.Errorf("%d:%s: ext was %q; want %q", tt.i, tt.in, ext, tt.ext)
 		}
-		changed := id.str == nil || !strings.HasPrefix(tt.in, *id.str)
+		changed := id.str != "" && !strings.HasPrefix(tt.in, id.str)
 		if changed != tt.changed {
-			t.Errorf("%d: changed was %v; want %v", tt.i, changed, tt.changed)
+			t.Errorf("%d:%s: changed was %v; want %v", tt.i, tt.in, changed, tt.changed)
 		}
 		if (err != nil) != tt.invalid {
-			t.Errorf("%d: invalid was %v; want %v. Error: %v", tt.i, err != nil, tt.invalid, err)
+			t.Errorf("%d:%s: invalid was %v; want %v. Error: %v", tt.i, tt.in, err != nil, tt.invalid, err)
 		}
 		return id, false
 	})

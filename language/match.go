@@ -33,6 +33,9 @@ func NewMatcher(t ...Tag) Matcher {
 
 func (m *matcher) Match(want ...Tag) (Tag, int, Confidence) {
 	match, c := m.getBest(want...)
+	if match == nil {
+		return m.default_.tag, 0, c
+	}
 	return match.tag, match.index, c
 }
 
@@ -667,15 +670,12 @@ func (t Tag) variants() string {
 	if t.pVariant == 0 {
 		return ""
 	}
-	return (*t.str)[t.pVariant:t.pExt]
+	return t.str[t.pVariant:t.pExt]
 }
 
-// strPart returns variants or private string
+// strPart returns variants and extensions.
 func (t Tag) strPart() string {
-	if t.str == nil {
-		return ""
-	}
-	return (*t.str)[t.pVariant:]
+	return t.str[t.pVariant:]
 }
 
 // equalsRest compares everything except the language.

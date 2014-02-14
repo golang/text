@@ -69,7 +69,7 @@ func (e ValueError) Subtag() string {
 // scanner is used to scan BCP 47 tokens, which are separated by _ or -.
 type scanner struct {
 	b     []byte
-	bytes [64]byte // small buffer to cover most common cases
+	bytes [max99thPercentileSize]byte
 	token []byte
 	start int // start position of the current token
 	end   int // end position of the current token
@@ -255,7 +255,7 @@ func (c CanonType) Parse(s string) (t Tag, err error) {
 	}
 	t, err = parse(&scan, s)
 	t, changed := t.canonicalize(c)
-	if changed && t.str != nil {
+	if changed {
 		t.remakeString()
 	}
 	return t, err
@@ -282,14 +282,17 @@ func parse(scan *scanner, s string) (t Tag, err error) {
 			scan.b = scan.b[:end]
 		}
 	}
-	if end < len(s) {
-		s = s[:end]
-	}
-	if len(s) > 0 && cmp(s, scan.b) == 0 {
-		t.str = &s
-	} else if t.pVariant < uint8(end) {
-		s = string(scan.b)
-		t.str = &s
+	if int(t.pVariant) < len(scan.b) {
+		if end < len(s) {
+			s = s[:end]
+		}
+		if len(s) > 0 && cmp(s, scan.b) == 0 {
+			t.str = s
+		} else {
+			t.str = string(scan.b)
+		}
+	} else {
+		t.pVariant, t.pExt = 0, 0
 	}
 	return t, scan.err
 }
@@ -579,20 +582,24 @@ func (c CanonType) Compose(part ...interface{}) (t Tag, err error) {
 	}
 	t, _ = b.tag.canonicalize(c)
 
-	sort.Sort(sortVariant(b.variant))
-	sort.Strings(b.ext)
-	if b.private != "" {
-		b.ext = append(b.ext, b.private)
+	if len(b.ext) > 0 || len(b.variant) > 0 {
+		sort.Sort(sortVariant(b.variant))
+		sort.Strings(b.ext)
+		if b.private != "" {
+			b.ext = append(b.ext, b.private)
+		}
+		n := maxCoreSize + tokenLen(b.variant...) + tokenLen(b.ext...)
+		buf := make([]byte, n)
+		p := t.genCoreBytes(buf)
+		t.pVariant = byte(p)
+		p += appendTokens(buf[p:], b.variant...)
+		t.pExt = uint16(p)
+		p += appendTokens(buf[p:], b.ext...)
+		t.str = string(buf[:p])
+	} else if b.private != "" {
+		t.str = b.private
+		t.remakeString()
 	}
-	n := 12 + tokenLen(b.variant...) + tokenLen(b.ext...)
-	buf := make([]byte, n)
-	p := t.genCoreBytes(buf)
-	t.pVariant = byte(p)
-	p += appendTokens(buf[p:], b.variant...)
-	t.pExt = uint16(p)
-	p += appendTokens(buf[p:], b.ext...)
-	s := string(buf[:p])
-	t.str = &s
 	return
 }
 
@@ -634,17 +641,18 @@ func (b *builder) update(part ...interface{}) (err error) {
 	for _, x := range part {
 		switch v := x.(type) {
 		case Tag:
-			b.tag = v
-			if v.str != nil {
-				str := *v.str
+			b.tag.lang = v.lang
+			b.tag.region = v.region
+			b.tag.script = v.script
+			if v.str != "" {
 				b.variant = nil
-				for x, s := "", str[v.pVariant:v.pExt]; s != ""; {
+				for x, s := "", v.str[v.pVariant:v.pExt]; s != ""; {
 					x, s = nextToken(s)
 					b.variant = append(b.variant, x)
 				}
 				b.ext, b.private = nil, ""
-				for i, e := int(v.pExt), ""; i < len(str); {
-					i, e = getExtension(str, i)
+				for i, e := int(v.pExt), ""; i < len(v.str); {
+					i, e = getExtension(v.str, i)
 					b.addExt(e)
 				}
 			}

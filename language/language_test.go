@@ -5,7 +5,6 @@
 package language
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -13,8 +12,8 @@ import (
 func TestTagSize(t *testing.T) {
 	id := Tag{}
 	typ := reflect.TypeOf(id)
-	if typ.Size() > 16 {
-		t.Errorf("size of Tag was %d; want 16", typ.Size())
+	if typ.Size() > 24 {
+		t.Errorf("size of Tag was %d; want 24", typ.Size())
 	}
 }
 
@@ -27,8 +26,22 @@ func TestIsRoot(t *testing.T) {
 		loc, _ := Parse(tt.in)
 		undef := tt.lang == "und" && tt.script == "" && tt.region == "" && tt.ext == ""
 		if loc.IsRoot() != undef {
-			fmt.Printf("%d: %#v %s %v\n", i, loc, tt.lang, undef)
 			t.Errorf("%d: was %v; want %v", i, loc.IsRoot(), undef)
+		}
+	}
+}
+
+func TestEquality(t *testing.T) {
+	for i, tt := range parseTests()[48:49] {
+		s := tt.in
+		tag := Make(s)
+		t1 := Make(tag.String())
+		if tag != t1 {
+			t.Errorf("%d:%s: equality test 1 failed\n got: %#v\nwant: %#v)", i, s, t1, tag)
+		}
+		t2, _ := Compose(tag)
+		if tag != t2 {
+			t.Errorf("%d:%s: equality test 2 failed\n got: %#v\nwant: %#v", i, s, t2, tag)
 		}
 	}
 }
@@ -52,6 +65,9 @@ func TestMakeString(t *testing.T) {
 			if str := id.String(); str != tt.out {
 				t.Errorf("%d:%d: found %s; want %s", i, j, id.String(), tt.out)
 			}
+		}
+		if n := testing.AllocsPerRun(2, id.remakeString); n > 1 {
+			t.Errorf("%d: # allocs got %.1f; want <= 1", i, n)
 		}
 	}
 }
@@ -360,6 +376,11 @@ func TestSetTypeForKey(t *testing.T) {
 		{"co", "pinyin", "en-u-ca-gregory-v-va", "en-u-ca-gregory-co-pinyin-v-va", false},
 		{"co", "pinyin", "en-u-ca-gregory-x-a", "en-u-ca-gregory-co-pinyin-x-a", false},
 		{"ca", "gregory", "en-u-co-pinyin", "en-u-ca-gregory-co-pinyin", false},
+		// remove pair
+		{"co", "", "en-u-co-phonebk", "en", false},
+		{"co", "", "en-u-ca-gregory-co-phonebk", "en-u-ca-gregory", false},
+		{"co", "", "en-u-co-phonebk-nu-arabic", "en-u-nu-arabic", false},
+		{"co", "", "en", "en", false},
 		// add -u extension
 		{"co", "pinyin", "en", "en-u-co-pinyin", false},
 		{"co", "pinyin", "und", "und-u-co-pinyin", false},
@@ -391,7 +412,7 @@ func TestSetTypeForKey(t *testing.T) {
 		}
 		if len(tag.String()) <= 3 {
 			// Simulate a tag for which the string has not been set.
-			tag.str, tag.pExt, tag.pVariant = nil, 0, 0
+			tag.str, tag.pExt, tag.pVariant = "", 0, 0
 			if tag, err := tag.SetTypeForKey(tt.key, tt.value); err == nil {
 				if val := tag.TypeForKey(tt.key); err == nil && val != tt.value {
 					t.Errorf("%d:%q[%q]==%q: was %v; want %v", i, tt.out, tt.key, tt.value, val, tt.value)
@@ -414,7 +435,7 @@ func TestFindKeyAndType(t *testing.T) {
 		{"co", false, "x-foo-u-co-pinyin", ""},
 		{"co", false, "en-s-fff-x-foo", "en-s-fff"},
 		// Insertion points in absence of -u extension.
-		{"cu", false, "en", "en"},
+		{"cu", false, "en", ""}, // t.str is ""
 		{"cu", false, "en-v-va", "en"},
 		{"cu", false, "en-a-va", "en-a-va"},
 		{"cu", false, "en-a-va-v-va", "en-a-va"},

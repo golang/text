@@ -27,6 +27,20 @@ import (
 	"strings"
 )
 
+const (
+	// maxCoreSize is the maximum size of a BCP 47 tag without variants and
+	// extensions. Equals max lang (3) + script (4) + max reg (3) + 2 dashes.
+	maxCoreSize = 12
+
+	// max99thPercentileSize is a somewhat arbitrary buffer size that presumably
+	// is large enough to hold at least 99% of the BCP 47 tags.
+	max99thPercentileSize = 32
+
+	// maxSimpleUExtensionSize is the maximum size of a -u extension with one
+	// key-type pair. Equals len("-u-") + key (2) + dash + max value (8).
+	maxSimpleUExtensionSize = 14
+)
+
 var (
 	// Und represents the undetermined language. It is also the root language tag.
 	Und   Tag = und
@@ -43,18 +57,19 @@ var (
 	und   = Tag{}
 )
 
-// Tag represents a BCP 47 language tag. It is used to specify
-// an instance of a specific language or locale.
-// All language tag values are guaranteed to be well-formed.
+// Tag represents a BCP 47 language tag. It is used to specify an instance of a
+// specific language or locale. All language tag values are guaranteed to be
+// well-formed.
 type Tag struct {
-	// In most cases, just lang, region and script will be needed.  In such cases
-	// str may be nil.
 	lang     langID
 	region   regionID
 	script   scriptID
 	pVariant byte   // offset in str, includes preceding '-'
 	pExt     uint16 // offset of first extension, includes preceding '-'
-	str      *string
+
+	// str is the string representation of the Tag. It will only be used if the
+	// tag has variants or extensions.
+	str string
 }
 
 // Make is a convenience wrapper for Parse that omits the error.
@@ -83,19 +98,15 @@ func (t Tag) equalTags(a Tag) bool {
 
 // IsRoot returns true if t is equal to language "und".
 func (t Tag) IsRoot() bool {
-	if t.str != nil {
-		n := len(*t.str)
-		if int(t.pVariant) < n {
-			return false
-		}
-		t.str = nil
+	if int(t.pVariant) < len(t.str) {
+		return false
 	}
 	return t.equalTags(und)
 }
 
 // private reports whether the Tag consists solely of a private use tag.
 func (t Tag) private() bool {
-	return t.str != nil && t.pVariant == 0
+	return t.str != "" && t.pVariant == 0
 }
 
 // CanonType can be used to enable or disable various types of canonicalization.
@@ -224,7 +235,7 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 // Canonicalize returns the canonicalized equivalent of the tag.
 func (c CanonType) Canonicalize(t Tag) (Tag, error) {
 	t, changed := t.canonicalize(c)
-	if changed && t.str != nil {
+	if changed {
 		t.remakeString()
 	}
 	return t, nil
@@ -252,24 +263,22 @@ func (c Confidence) String() string {
 
 // remakeString is used to update t.str in case lang, script or region changed.
 // It is assumed that pExt and pVariant still point to the start of the
-// respective parts, if applicable.
-// remakeString can also be used to compute the string for Tag for which str
-// is not defined.
+// respective parts.
 func (t *Tag) remakeString() {
-	extra := ""
-	if t.str != nil && int(t.pVariant) < len(*t.str) {
-		extra = (*t.str)[t.pVariant:]
-		if t.pVariant > 0 {
-			extra = extra[1:]
-		}
-		if t.equalTags(und) && strings.HasPrefix(extra, "x-") {
-			t.str = &extra
-			t.pVariant = 0
-			t.pExt = 0
-			return
-		}
+	if t.str == "" {
+		return
 	}
-	var buf [128]byte // avoid memory allocation for the vast majority of tags.
+	extra := t.str[t.pVariant:]
+	if t.pVariant > 0 {
+		extra = extra[1:]
+	}
+	if t.equalTags(und) && strings.HasPrefix(extra, "x-") {
+		t.str = extra
+		t.pVariant = 0
+		t.pExt = 0
+		return
+	}
+	var buf [max99thPercentileSize]byte // avoid extra memory allocation in most cases.
 	b := buf[:t.genCoreBytes(buf[:])]
 	if extra != "" {
 		diff := uint8(len(b)) - t.pVariant
@@ -281,10 +290,12 @@ func (t *Tag) remakeString() {
 		t.pVariant = uint8(len(b))
 		t.pExt = uint16(len(b))
 	}
-	s := string(b)
-	t.str = &s
+	t.str = string(b)
 }
 
+// genCoreBytes writes a string for the base languages, script and region tags
+// to the given buffer and returns the number of bytes written. It will never
+// write more than maxCoreSize bytes.
 func (t *Tag) genCoreBytes(buf []byte) int {
 	n := t.lang.stringToBuf(buf[:])
 	if t.script != 0 {
@@ -300,14 +311,14 @@ func (t *Tag) genCoreBytes(buf []byte) int {
 
 // String returns the canonical string representation of the language tag.
 func (t Tag) String() string {
-	if t.str == nil {
-		if t.script == 0 && t.region == 0 {
-			return t.lang.String()
-		}
-		buf := [16]byte{}
-		return string(buf[:t.genCoreBytes(buf[:])])
+	if t.str != "" {
+		return t.str
 	}
-	return *t.str
+	if t.script == 0 && t.region == 0 {
+		return t.lang.String()
+	}
+	buf := [maxCoreSize]byte{}
+	return string(buf[:t.genCoreBytes(buf[:])])
 }
 
 // Base returns the base language of the language tag. If the base language is
@@ -382,8 +393,8 @@ func (t Tag) Region() (Region, Confidence) {
 // or nil if no variant was specified.
 func (t Tag) Variants() []Variant {
 	v := []Variant{}
-	if t.str != nil && int(t.pVariant) < int(t.pExt) {
-		for x, str := "", (*t.str)[t.pVariant:t.pExt]; str != ""; {
+	if int(t.pVariant) < int(t.pExt) {
+		for x, str := "", t.str[t.pVariant:t.pExt]; str != ""; {
 			x, str = nextToken(str)
 			v = append(v, Variant{x})
 		}
@@ -445,14 +456,11 @@ func (e Extension) Tokens() []string {
 // false for ok if t does not have the requested extension. The returned
 // extension will be invalid in this case.
 func (t Tag) Extension(x byte) (ext Extension, ok bool) {
-	if t.str != nil {
-		str := *t.str
-		for i := int(t.pExt); i < len(str)-1; {
-			var ext string
-			i, ext = getExtension(str, i)
-			if ext[0] == x {
-				return Extension{ext}, true
-			}
+	for i := int(t.pExt); i < len(t.str)-1; {
+		var ext string
+		i, ext = getExtension(t.str, i)
+		if ext[0] == x {
+			return Extension{ext}, true
 		}
 	}
 	return Extension{string(x)}, false
@@ -461,13 +469,10 @@ func (t Tag) Extension(x byte) (ext Extension, ok bool) {
 // Extensions returns all extensions of t.
 func (t Tag) Extensions() []Extension {
 	e := []Extension{}
-	if t.str != nil {
-		str := *t.str
-		for i := int(t.pExt); i < len(str)-1; {
-			var ext string
-			i, ext = getExtension(str, i)
-			e = append(e, Extension{ext})
-		}
+	for i := int(t.pExt); i < len(t.str)-1; {
+		var ext string
+		i, ext = getExtension(t.str, i)
+		e = append(e, Extension{ext})
 	}
 	return e
 }
@@ -478,7 +483,7 @@ func (t Tag) Extensions() []Extension {
 // TypeForKey will traverse the inheritance chain to get the correct value.
 func (t Tag) TypeForKey(key string) string {
 	if start, end, _ := t.findTypeForKey(key); end != start {
-		return (*t.str)[start:end]
+		return t.str[start:end]
 	}
 	return ""
 }
@@ -491,23 +496,49 @@ var (
 // SetTypeForKey returns a new Tag with the key set to type, where key and type
 // are of the allowed values defined for the Unicode locale extension ('u') in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
+// An empty value removes an existing pair with the same key.
 func (t Tag) SetTypeForKey(key, value string) (Tag, error) {
 	if t.private() {
 		return t, errPrivateUse
 	}
-	if len(key) != 2 || len(value) < 3 || len(value) > 8 {
+	if len(key) != 2 {
 		return t, errInvalidArguments
 	}
+
+	// Remove the setting if value is "".
+	if value == "" {
+		start, end, _ := t.findTypeForKey(key)
+		if start != end {
+			// Remove key tag and leading '-'.
+			start -= 4
+
+			// Remove a possible empty extension.
+			if (end == len(t.str) || t.str[end+2] == '-') && t.str[start-2] == '-' {
+				start -= 2
+			}
+			if start == int(t.pVariant) && end == len(t.str) {
+				t.str = ""
+				t.pVariant, t.pExt = 0, 0
+			} else {
+				t.str = fmt.Sprintf("%s%s", t.str[:start], t.str[end:])
+			}
+		}
+		return t, nil
+	}
+
+	if len(value) < 3 || len(value) > 8 {
+		return t, errInvalidArguments
+	}
+
 	var (
-		buf    [26]byte // enough to hold a core tag and simple -u extension
-		uStart int      // start of the -u extension.
+		buf    [maxCoreSize + maxSimpleUExtensionSize]byte
+		uStart int // start of the -u extension.
 	)
 
 	// Generate the tag string if needed.
-	if t.str == nil {
+	if t.str == "" {
 		uStart = t.genCoreBytes(buf[:])
 		buf[uStart] = '-'
-		t.pVariant, t.pExt = byte(uStart), uint16(uStart)
 		uStart++
 	}
 
@@ -523,22 +554,21 @@ func (t Tag) SetTypeForKey(key, value string) (Tag, error) {
 	}
 
 	// Assemble the replacement string.
-	s := ""
-	if t.str == nil {
-		s = string(buf[:uStart+len(b)])
+	if t.str == "" {
+		t.pVariant, t.pExt = byte(uStart-1), uint16(uStart-1)
+		t.str = string(buf[:uStart+len(b)])
 	} else {
-		s = *t.str
+		s := t.str
 		start, end, hasExt := t.findTypeForKey(key)
 		if start == end {
 			if hasExt {
 				b = b[2:]
 			}
-			s = fmt.Sprintf("%s-%s%s", s[:start], b, s[end:])
+			t.str = fmt.Sprintf("%s-%s%s", s[:start], b, s[end:])
 		} else {
-			s = fmt.Sprintf("%s%s%s", s[:start], value, s[end:])
+			t.str = fmt.Sprintf("%s%s%s", s[:start], value, s[end:])
 		}
 	}
-	t.str = &s
 	return t, nil
 }
 
@@ -549,10 +579,10 @@ func (t Tag) SetTypeForKey(key, value string) (Tag, error) {
 // only one key-type pair.
 func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
 	p := int(t.pExt)
-	if t.str == nil || len(key) != 2 || p == 0 || p == len(*t.str) {
+	if len(key) != 2 || p == len(t.str) || p == 0 {
 		return p, p, false
 	}
-	s := *t.str
+	s := t.str
 
 	// Find the correct extension.
 	for p++; s[p] != 'u'; p++ {
