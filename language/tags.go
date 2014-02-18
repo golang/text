@@ -16,6 +16,16 @@ func MustParse(s string) Tag {
 	return t
 }
 
+// MustParse is like Parse, but panics if the given BCP 47 tag cannot be parsed.
+// It simplifies safe initialization of Tag values.
+func (c CanonType) MustParse(s string) Tag {
+	t, err := c.Parse(s)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
 // MustParseBase is like ParseBase, but panics if the given base cannot be parsed.
 // It simplifies safe initialization of Base values.
 func MustParseBase(s string) Base {
