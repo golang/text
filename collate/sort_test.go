@@ -40,7 +40,7 @@ func (s sorter) Bytes(i int) []byte {
 }
 
 func TestSort(t *testing.T) {
-	c := collate.New(language.En)
+	c := collate.New(language.English)
 	strings := []string{
 		"bcd",
 		"abc",
