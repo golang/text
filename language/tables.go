@@ -10,20 +10,81 @@ type fromTo struct {
 }
 
 const nonCanonicalUnd = 415
-
 const (
-	lang_de  = 82
-	lang_en  = 97
-	lang_fil = 107
-	lang_fr  = 111
-	lang_it  = 162
-	lang_mo  = 266
-	lang_mul = 272
-	lang_nb  = 279
-	lang_no  = 290
-	lang_sh  = 346
-	lang_sr  = 362
-	lang_tl  = 392
+	_af  = 6
+	_am  = 10
+	_ar  = 13
+	_az  = 20
+	_bg  = 33
+	_bn  = 43
+	_ca  = 57
+	_cs  = 74
+	_da  = 79
+	_de  = 82
+	_el  = 96
+	_en  = 97
+	_es  = 99
+	_et  = 100
+	_fa  = 103
+	_fi  = 106
+	_fil = 107
+	_fr  = 111
+	_gu  = 130
+	_he  = 136
+	_hi  = 137
+	_hr  = 144
+	_hu  = 147
+	_hy  = 148
+	_id  = 152
+	_is  = 161
+	_it  = 162
+	_ja  = 165
+	_ka  = 171
+	_kk  = 191
+	_km  = 195
+	_kn  = 197
+	_ko  = 198
+	_ky  = 216
+	_lo  = 232
+	_lt  = 234
+	_lv  = 239
+	_mk  = 260
+	_ml  = 261
+	_mn  = 262
+	_mo  = 266
+	_mr  = 268
+	_ms  = 269
+	_mul = 272
+	_my  = 274
+	_nb  = 279
+	_ne  = 282
+	_nl  = 286
+	_no  = 290
+	_pa  = 305
+	_pl  = 311
+	_pt  = 315
+	_ro  = 324
+	_ru  = 326
+	_sh  = 346
+	_si  = 349
+	_sk  = 351
+	_sl  = 352
+	_sq  = 361
+	_sr  = 362
+	_sv  = 371
+	_sw  = 372
+	_ta  = 377
+	_te  = 381
+	_th  = 386
+	_tl  = 392
+	_tn  = 394
+	_tr  = 397
+	_uk  = 412
+	_ur  = 418
+	_uz  = 419
+	_vi  = 422
+	_zh  = 440
+	_zu  = 441
 )
 
 const langPrivateStart = 11260
@@ -424,15 +485,16 @@ var tagAlias = map[string]uint16{
 }
 
 const (
-	scrLatn = 75
-	scrHani = 46
-	scrHans = 48
-	scrQaaa = 119
-	scrQaai = 127
-	scrQabx = 168
-	scrZinh = 212
-	scrZyyy = 216
-	scrZzzz = 217
+	_Latn = 75
+	_Hani = 46
+	_Hans = 48
+	_Hant = 49
+	_Qaaa = 119
+	_Qaai = 127
+	_Qabx = 168
+	_Zinh = 212
+	_Zyyy = 216
+	_Zzzz = 217
 )
 
 // script is an alphabetically sorted list of ISO 15924 codes. The index
@@ -499,11 +561,18 @@ var suppressScript = [444]uint8{
 }
 
 const (
-	regMD = 186
-	regUS = 306
-	regZZ = 354
-	regXA = 320
-	regXC = 322
+	_001 = 1
+	_419 = 30
+	_BR  = 64
+	_CA  = 72
+	_ES  = 109
+	_GB  = 121
+	_MD  = 186
+	_PT  = 236
+	_US  = 306
+	_ZZ  = 354
+	_XA  = 320
+	_XC  = 322
 )
 
 // isoRegionOffset needs to be added to the index of regionISO to obtain the regionID
@@ -730,10 +799,9 @@ var variantIndex = map[string]uint8{
 
 // variantNumSpecialized is the number of specialized variants in variants.
 const variantNumSpecialized = 62
-
 const (
-	curXTS = 280
-	curXXX = 282
+	_XTS = 280
+	_XXX = 282
 )
 
 // currency holds an alphabetically sorted list of canonical 3-letter currency identifiers.
@@ -2144,4 +2212,4 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 16.8K (17225 bytes); Check: 6CD0B27D
+// Size: 16.8K (17225 bytes); Check: E69F6776

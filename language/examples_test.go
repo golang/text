@@ -170,3 +170,161 @@ func ExampleParse_errors() {
 	// AC: culprit "ac"
 	// ac-u: ill-formed
 }
+
+// ExampleMatcher_bestMatch gives some examples of getting the best match of
+// a set of tags to any of the tags of given set.
+func ExampleMatcher() {
+	// This is the set of tags from which we want to pick the best match. These
+	// can be, for example, the supported languages for some package.
+	tags := []language.Tag{
+		language.English,
+		language.BritishEnglish,
+		language.French,
+		language.Afrikaans,
+		language.BrazilianPortuguese,
+		language.EuropeanPortuguese,
+		language.Croatian,
+		language.SimplifiedChinese,
+		language.Raw.Make("iw-IL"),
+		language.Raw.Make("iw"),
+		language.Raw.Make("he"),
+	}
+	m := language.NewMatcher(tags...)
+
+	// A simple match.
+	fmt.Println(m.Match(language.Make("fr")))
+
+	// Australian English is closer to British than American English.
+	fmt.Println(m.Match(language.Make("en-AU")))
+
+	// Default to the first tag passed to the Matcher if there is no match.
+	fmt.Println(m.Match(language.Make("zu")))
+
+	// Get the default tag.
+	fmt.Println(m.Match())
+
+	fmt.Println("----")
+
+	// Croatian speakers will likely understand Serbian written in Latin script.
+	fmt.Println(m.Match(language.Make("sr-Latn")))
+
+	// We match SimplifiedChinese, but with Low confidence.
+	fmt.Println(m.Match(language.TraditionalChinese))
+
+	// Serbian in Latin script is a closer match to Croatian than Traditional
+	// Chinese to Simplified Chinese.
+	fmt.Println(m.Match(language.TraditionalChinese, language.Make("sr-Latn")))
+
+	fmt.Println("----")
+
+	// In case a multiple variants of a language are available, the most spoken
+	// variant is typically returned.
+	fmt.Println(m.Match(language.Portuguese))
+
+	// Pick the first value passed to Match in case of a tie.
+	fmt.Println(m.Match(language.Dutch, language.Make("en-AU"), language.Make("af-NA")))
+	fmt.Println(m.Match(language.Dutch, language.Make("af-NA"), language.Make("en-AU")))
+
+	fmt.Println("----")
+
+	// If a Matcher is initialized with a language and it's deprecated version,
+	// it will distinguish between them.
+	fmt.Println(m.Match(language.Raw.Make("iw")))
+
+	// However, for non-exact matches, it will treat deprecated versions as
+	// equivalent and consider other factors first.
+	fmt.Println(m.Match(language.Raw.Make("he-IL")))
+
+	// Output:
+	// fr 2 Exact
+	// en-GB 1 High
+	// en 0 No
+	// en 0 No
+	// ----
+	// hr 6 High
+	// zh-Hans 7 Low
+	// hr 6 High
+	// ----
+	// pt-BR 4 High
+	// en-GB 1 High
+	// af 3 High
+	// ----
+	// iw 9 Exact
+	// iw-IL 8 Exact
+}
+
+func ExampleTag_ComprehensibleTo() {
+	// Various levels of comprehensibility.
+	fmt.Println(language.English.ComprehensibleTo(language.English))
+	fmt.Println(language.BritishEnglish.ComprehensibleTo(language.AmericanEnglish))
+
+	// An explicit Und results in no match.
+	fmt.Println(language.Und.ComprehensibleTo(language.English))
+
+	fmt.Println("----")
+
+	// There is usually no mutual comprehensibility between different scripts.
+	fmt.Println(language.English.ComprehensibleTo(language.Make("en-Dsrt")))
+
+	// One exception is for Traditional versus Simplified Chinese, albeit with
+	// a low confidence.
+	fmt.Println(language.SimplifiedChinese.ComprehensibleTo(language.TraditionalChinese))
+
+	fmt.Println("----")
+
+	// A Swiss German speaker will often understand High German.
+	fmt.Println(language.Make("de").ComprehensibleTo(language.Make("gsw")))
+
+	// The converse is not generally the case.
+	fmt.Println(language.Make("gsw").ComprehensibleTo(language.Make("de")))
+
+	// Output:
+	// Exact
+	// High
+	// No
+	// ----
+	// No
+	// Low
+	// ----
+	// Low
+	// No
+}
+
+func ExampleParseAcceptLanguage() {
+	// Tags are reordered based on their q rating. A missing q value means 1.0.
+	fmt.Println(language.ParseAcceptLanguage(" nn;q=0.3, en-gb;q=0.8, en,"))
+
+	m := language.NewMatcher(language.Norwegian, language.Make("en-AU"))
+
+	t, _, _ := language.ParseAcceptLanguage("da, en-gb;q=0.8, en;q=0.7")
+	fmt.Println(m.Match(t...))
+
+	// Danish is pretty close to Norwegian.
+	t, _, _ = language.ParseAcceptLanguage(" da, nl")
+	fmt.Println(m.Match(t...))
+
+	// Output:
+	// [en en-GB nn] [1 0.8 0.3] <nil>
+	// en-AU 1 High
+	// no 0 Low
+}
+
+func ExampleTag_values() {
+	us := language.MustParseRegion("US")
+	en := language.MustParseBase("en")
+
+	lang, _, region := language.AmericanEnglish.Raw()
+	fmt.Println(lang == en, region == us)
+
+	lang, _, region = language.BritishEnglish.Raw()
+	fmt.Println(lang == en, region == us)
+
+	// Tags can be compared for exact equivalence using '=='.
+	en_us, _ := language.Compose(en, us)
+	fmt.Println(en_us == language.AmericanEnglish)
+
+	// Output:
+	// true true
+	// true false
+	// true
+}

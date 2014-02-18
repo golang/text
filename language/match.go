@@ -15,6 +15,14 @@ type Matcher interface {
 	Match(t ...Tag) (tag Tag, index int, c Confidence)
 }
 
+// ComprehensibleTo returns the confidence score for speaker being able to
+// comprehend the (written) language t. It uses a Matcher under the hood.
+func (t Tag) ComprehensibleTo(speaker Tag) Confidence {
+	// TODO: this could be more efficient.
+	_, _, c := NewMatcher(t).Match(speaker)
+	return c
+}
+
 // NewMatcher returns a Matcher that finds the best match for a tag
 // based on written intelligibility. The index returned by the Match
 // method corresponds to the index of the matched tag in the given list.
@@ -25,7 +33,7 @@ type Matcher interface {
 // reach a certain confidence threshold. The tags passed to Match should
 // therefore be specified in order of preference.
 // Various factors such as deprecated variants of tags, legacy mappings
-// and information based on mutual intelligibililty defined in CLDR
+// and information based on mutual intelligibility defined in CLDR
 // are considered to determine equivalence.
 func NewMatcher(t ...Tag) Matcher {
 	return newMatcher(t)
@@ -72,15 +80,15 @@ var ErrMissingLikelyTagsData = errors.New("missing likely tags data")
 // addLikelySubtags sets subtags to their most likely value, given the locale.
 // In most cases this means setting fields for unknown values, but in some
 // cases it may alter a value.  It returns a ErrMissingLikelyTagsData error
-// if the given locale cannot be expaned.
+// if the given locale cannot be expanded.
 func (t Tag) addLikelySubtags() (Tag, error) {
 	// Hard-coded exception.  This is currently the only exception to the rule
 	// that any defined value before expanding likely subtags remains the same.
 	// maketables verifies this is indeed the only case.
 	// We include this in addLikelySubtags instead of addTags to guarantee that
 	// Minimize does not alter any of the tags.
-	if t.script == scrHani {
-		t.script = scrHans
+	if t.script == _Hani {
+		t.script = _Hans
 	}
 	id, err := addTags(t)
 	if err != nil {
@@ -171,7 +179,7 @@ func addTags(t Tag) (Tag, error) {
 			t.setUndefinedScript(scriptID(x.script))
 			t.setUndefinedRegion(regionID(x.region))
 			if t.lang == 0 {
-				t.lang = lang_en // default language
+				t.lang = _en // default language
 			}
 			return t, nil
 		}
@@ -313,7 +321,7 @@ func minimizeTags(t Tag) (Tag, error) {
 //   - expanding entries for the equivalence classes defined in CLDR's languageMatch
 //     data.
 // The per-language map ensures that typically only a very small number of tags need
-// to be considered. The pre-expansion of canonicalized subtags and equivilance
+// to be considered. The pre-expansion of canonicalized subtags and equivalence
 // classes reduces the amount of map lookups that need to be done at runtime.
 
 // matcher keeps a set of supported language tags, indexed by language.
@@ -479,7 +487,7 @@ func newMatcher(supported []Tag) *matcher {
 
 	// Add entries for legacy encodings. There is currently only "tl". "sh" is
 	// already handled in languageMatching data.
-	update(lang_tl, lang_fil, High)
+	update(_tl, _fil, High)
 
 	// Add entries for macro equivalents.
 	for _, lm := range langMacroMap {
@@ -561,7 +569,7 @@ type bestMatch struct {
 // update updates the existing best match if the new pair is considered to be a
 // better match.
 // To determine if the given pair is a better match, it first computes the rough
-// confidence level. If this surpases the current match, it will replace it and
+// confidence level. If this surpasses the current match, it will replace it and
 // update the tie-breaker rule cache. If there is a tie, it proceeds with applying
 // a series of tie-breaker rules. If there is no conclusive winner after applying
 // the tie-breaker rules, it leaves the current match as the preferred match.
@@ -573,7 +581,7 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 	}
 	if have.maxScript != maxScript {
 		// There is usually very little comprehension between different scripts.
-		// In a few cases there may still be Low comprehension. This possiblity is
+		// In a few cases there may still be Low comprehension. This possibility is
 		// pre-computed and stored in have.altScript.
 		if Low < m.conf || have.altScript != maxScript {
 			return
@@ -589,7 +597,7 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 
 	// We store the results of the computations of the tie-breaker rules along
 	// with the best match. There is no need to do the checks once we determine
-	// we have a winner, but we do still need to do the tie-breaker compuations.
+	// we have a winner, but we do still need to do the tie-breaker computations.
 	// We use "beaten" to keep track if we still need to do the checks.
 	beaten := false // true if the new pair defeats the current one.
 	if c != m.conf {
@@ -633,9 +641,9 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 
 // regionDist wraps regionDistance with some exceptions to the algorithmic distance.
 func regionDist(want, have regionID, lang langID) uint8 {
-	if lang == lang_en {
+	if lang == _en {
 		// Two variants of non-US English are close to each other, regardless of distance.
-		if want != regUS && have != regUS {
+		if want != _US && have != _US {
 			return 2
 		}
 	}

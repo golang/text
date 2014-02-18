@@ -387,7 +387,7 @@ func (s scriptID) String() string {
 
 // IsPrivateUse reports whether this script code is reserved for private use.
 func (s scriptID) IsPrivateUse() bool {
-	return scrQaaa <= s && s <= scrQabx
+	return _Qaaa <= s && s <= _Qabx
 }
 
 type currencyID uint16

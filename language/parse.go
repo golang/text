@@ -806,11 +806,11 @@ func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
 // Add hack mapping to deal with a small number of cases that that occur
 // in Accept-Language (with reasonable frequency).
 var acceptFallback = map[string]langID{
-	"english": lang_en,
-	"deutsch": lang_de,
-	"italian": lang_it,
-	"french":  lang_fr,
-	"*":       lang_mul, // defined in the spec to match all languages.
+	"english": _en,
+	"deutsch": _de,
+	"italian": _it,
+	"french":  _fr,
+	"*":       _mul, // defined in the spec to match all languages.
 }
 
 type tagSort struct {

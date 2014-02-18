@@ -66,7 +66,10 @@ func TestMakeString(t *testing.T) {
 				t.Errorf("%d:%d: found %s; want %s", i, j, id.String(), tt.out)
 			}
 		}
-		if n := testing.AllocsPerRun(2, id.remakeString); n > 1 {
+		// The bytes to string conversion as used in remakeString
+		// occasionally measures as more than one alloc, breaking this test.
+		// To alleviate this we set the number of runs to more than 1.
+		if n := testing.AllocsPerRun(8, id.remakeString); n > 1 {
 			t.Errorf("%d: # allocs got %.1f; want <= 1", i, n)
 		}
 	}

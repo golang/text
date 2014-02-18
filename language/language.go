@@ -41,22 +41,6 @@ const (
 	maxSimpleUExtensionSize = 14
 )
 
-var (
-	// Und represents the undetermined language. It is also the root language tag.
-	Und   Tag = und
-	En    Tag = en    // Default language tag for English.
-	En_US Tag = en_US // Default language tag for American English.
-	De    Tag = de    // Default language tag for German.
-	// TODO: list of most common language tags.
-)
-
-var (
-	de    = Tag{lang: lang_de}
-	en    = Tag{lang: lang_en}
-	en_US = Tag{lang: lang_en, region: regUS}
-	und   = Tag{}
-)
-
 // Tag represents a BCP 47 language tag. It is used to specify an instance of a
 // specific language or locale. All language tag values are guaranteed to be
 // well-formed.
@@ -170,19 +154,19 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 		// We hard code this set as it is very small, unlikely to change and requires some
 		// handling that does not fit elsewhere.
 		switch t.lang {
-		case lang_no:
+		case _no:
 			if c&CLDR != 0 {
-				t.lang = lang_nb
+				t.lang = _nb
 				changed = true
 			}
-		case lang_tl:
-			t.lang = lang_fil
+		case _tl:
+			t.lang = _fil
 			changed = true
-		case lang_sh:
+		case _sh:
 			if t.script == 0 {
-				t.script = scrLatn
+				t.script = _Latn
 			}
-			t.lang = lang_sr
+			t.lang = _sr
 			changed = true
 		}
 	}
@@ -193,17 +177,17 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 			// that "mo" very likely implies the region "MD". This may be important
 			// for applications that insist on making a difference between these
 			// two language codes.
-			if t.lang == lang_mo && t.region == 0 && c&CLDR == 0 {
-				t.region = regMD
+			if t.lang == _mo && t.region == 0 && c&CLDR == 0 {
+				t.region = _MD
 			}
 			changed = true
 			t.lang = l
 		}
 	}
 	if c&DeprecatedScript != 0 {
-		if t.script == scrQaai {
+		if t.script == _Qaai {
 			changed = true
-			t.script = scrZinh
+			t.script = _Zinh
 		}
 	}
 	if c&DeprecatedRegion != 0 {
@@ -221,7 +205,7 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 		// http://unicode.org/cldr/trac/ticket/1790 for some of the practical
 		// implications.
 		// TODO: this check could be removed if CLDR adopts this change.
-		if c&CLDR == 0 || t.lang != lang_nb {
+		if c&CLDR == 0 || t.lang != _nb {
 			l := normLang(langMacroMap[:], t.lang)
 			if l != t.lang {
 				changed = true
@@ -361,7 +345,7 @@ func (t Tag) Script() (Script, Confidence) {
 			return Script{scriptID(sc)}, High
 		}
 	}
-	sc, c := Script{scrZzzz}, No
+	sc, c := Script{_Zzzz}, No
 	if tag, err := addTags(t); err == nil {
 		sc, c = Script{tag.script}, Low
 	}
@@ -386,7 +370,7 @@ func (t Tag) Region() (Region, Confidence) {
 	if tag, err := addTags(t); err == nil {
 		return Region{tag.region}, Low
 	}
-	return Region{regZZ}, No // TODO: return world instead of undetermined?
+	return Region{_ZZ}, No // TODO: return world instead of undetermined?
 }
 
 // Variant returns the variants specified explicitly for this language tag.
