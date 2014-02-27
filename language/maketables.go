@@ -1348,6 +1348,7 @@ type mutualIntelligibility struct {
 }
 
 type scriptIntelligibility struct {
+	lang       uint16 // langID or 0 if *
 	want, have uint8
 	conf       uint8
 }
@@ -1371,7 +1372,7 @@ func toConf(pct uint8) uint8 {
 	switch {
 	case pct == 100:
 		return 3 // Exact
-	case pct > 90:
+	case pct >= 90:
 		return 2 // High
 	case pct > 50:
 		return 1 // Low
@@ -1398,19 +1399,39 @@ func (b *builder) writeMatchData() {
 	for _, m := range lm[0].LanguageMatch {
 		d := strings.Split(m.Desired, "-")
 		s := strings.Split(m.Supported, "-")
-		if len(d) != len(s) || len(d) > 2 || s[0] == "nb" || d[0] == "nb" {
+		if len(d) != len(s) || len(d) > 2 {
 			// Skip all entries with regions and work around CLDR bug.
-			// Also skip "nb", which maps to "no" by means of canonicalization.
 			continue
 		}
 		pct, _ := strconv.ParseInt(m.Percent, 10, 8)
-		if len(d) == 2 && d[0] == "*" && s[0] == "*" && d[1] != "*" {
+		if len(d) == 2 && d[0] == s[0] && d[1] != "*" {
+			lang := uint16(0)
+			if d[0] != "*" {
+				lang = uint16(b.langIndex(d[0]))
+			}
 			matchScript = append(matchScript, scriptIntelligibility{
+				lang: lang,
 				want: uint8(b.script.index(d[1])),
 				have: uint8(b.script.index(s[1])),
 				conf: toConf(uint8(pct)),
 			})
+			if m.Oneway != "true" {
+				matchScript = append(matchScript, scriptIntelligibility{
+					lang: lang,
+					want: uint8(b.script.index(s[1])),
+					have: uint8(b.script.index(d[1])),
+					conf: toConf(uint8(pct)),
+				})
+			}
 		} else if len(d) == 1 && d[0] != "*" {
+			if pct == 100 {
+				// nb == no is already handled by macro mapping. Check there
+				// really is only this case.
+				if d[0] != "no" || s[0] != "nb" {
+					log.Fatalf("unhandled equivalence %s == %s", s[0], d[0])
+				}
+				continue
+			}
 			matchLang = append(matchLang, mutualIntelligibility{
 				want:   uint16(b.langIndex(d[0])),
 				have:   uint16(b.langIndex(s[0])),
@@ -1418,7 +1439,7 @@ func (b *builder) writeMatchData() {
 				oneway: m.Oneway == "true",
 			})
 		} else {
-			a := []string{"*-*;*-*", "*;*", "sr-Latn;sr-Cyrl"}
+			a := []string{"*-*;*-*", "*;*"}
 			s := strings.Join([]string{m.Desired, m.Supported}, ";")
 			if i := sort.SearchStrings(a, s); i == len(a) || a[i] != s {
 				log.Fatalf("%q not handled", s)

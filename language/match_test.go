@@ -5,9 +5,14 @@
 package language
 
 import (
+	"bytes"
+	"flag"
+	"fmt"
 	"strings"
 	"testing"
 )
+
+var verbose = flag.Bool("verbose", false, "set to true to print the internal tables of matchers")
 
 func TestAddLikelySubtags(t *testing.T) {
 	tests := []struct{ in, out string }{
@@ -167,6 +172,34 @@ func TestRegionDistance(t *testing.T) {
 	}
 }
 
+// Implementation of String methods for various types for debugging purposes.
+
+func (m *matcher) String() string {
+	w := &bytes.Buffer{}
+	fmt.Fprintln(w, "Default:", m.default_)
+	for tag, h := range m.index {
+		fmt.Fprintf(w, "  %s: %v\n", tag, h)
+	}
+	return w.String()
+}
+
+func (h *matchHeader) String() string {
+	w := &bytes.Buffer{}
+	fmt.Fprintf(w, "exact: ")
+	for _, h := range h.exact {
+		fmt.Fprintf(w, "%v, ", h)
+	}
+	fmt.Fprint(w, "; max: ")
+	for _, h := range h.max {
+		fmt.Fprintf(w, "%v, ", h)
+	}
+	return w.String()
+}
+
+func (t haveTag) String() string {
+	return fmt.Sprintf("%v:%d:%v:%v-%v|%v", t.tag, t.index, t.conf, t.maxRegion, t.maxScript, t.altScript)
+}
+
 // The test set for TestBestMatch is defined in data_test.go.
 func TestBestMatch(t *testing.T) {
 	parse := func(list string) (out []Tag) {
@@ -178,6 +211,9 @@ func TestBestMatch(t *testing.T) {
 	for i, tt := range matchTests {
 		supported := parse(tt.supported)
 		m := newMatcher(supported)
+		if *verbose {
+			fmt.Printf("%s:\n%v\n", tt.comment, m)
+		}
 		for _, tm := range tt.test {
 			desired := parse(tm.desired)
 			id, conf := m.getBest(desired...)

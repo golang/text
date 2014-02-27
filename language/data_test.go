@@ -33,6 +33,26 @@ var matchTests = []matchTest{
 		},
 	},
 	{
+		"language-specific script fallbacks 1",
+		"en, sr, nl",
+		[]struct{ match, desired string }{
+			{"sr", "sr-Latn"},
+			{"en", "sh"},
+			{"en", "hr"},
+			{"en", "bs"},
+			{"en", "nl-Cyrl"},
+		},
+	},
+	{
+		"language-specific script fallbacks 2",
+		"en, sh",
+		[]struct{ match, desired string }{
+			{"sh", "sr"},
+			{"sh", "sr-Cyrl"},
+			{"sh", "hr"},
+		},
+	},
+	{
 		"both deprecated and not",
 		"fil, tl, iw, he",
 		[]struct{ match, desired string }{
@@ -52,6 +72,64 @@ var matchTests = []matchTest{
 			{"ro", "mo"},
 			{"nn", "nb"},
 			{"en", "ja"}, // make sure default works
+		},
+	},
+	{
+		"nearby languages: Nynorsk to Bokmål",
+		"en, nb",
+		[]struct{ match, desired string }{
+			{"nb", "nn"},
+		},
+	},
+	{
+		"nearby languages: Danish does not match nn",
+		"en, nn",
+		[]struct{ match, desired string }{
+			{"en", "da"},
+		},
+	},
+	{
+		"nearby languages: Danish matches no",
+		"en, no",
+		[]struct{ match, desired string }{
+			{"no", "da"},
+		},
+	},
+	{
+		"nearby languages: Danish matches nb",
+		"en, nb",
+		[]struct{ match, desired string }{
+			{"nb", "da"},
+		},
+	},
+	{
+		"prefer matching languages over language variants.",
+		"nn, en-GB",
+		[]struct{ match, desired string }{
+			{"en-GB", "no, en-US"},
+			{"en-GB", "nb, en-US"},
+		},
+	},
+	{
+		"deprecated version is closer than same language with other differences",
+		"nl, he, en-GB",
+		[]struct{ match, desired string }{
+			{"he", "iw, en-US"},
+		},
+	},
+	{
+		"macro equivalent is closer than same language with other differences",
+		"nl, zh, en-GB, no",
+		[]struct{ match, desired string }{
+			{"zh", "cmn, en-US"},
+			{"no", "nb, en-US"},
+		},
+	},
+	{
+		"legacy equivalent is closer than same language with other differences",
+		"nl, fil, en-GB",
+		[]struct{ match, desired string }{
+			{"fil", "tl, en-US"},
 		},
 	},
 	{

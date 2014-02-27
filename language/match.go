@@ -4,7 +4,9 @@
 
 package language
 
-import "errors"
+import (
+	"errors"
+)
 
 // Matcher is the interface that wraps the Match method.
 //
@@ -292,37 +294,45 @@ func minimizeTags(t Tag) (Tag, error) {
 //
 // Tie-breaking
 // If we get the same confidence level for two matches, we apply a sequence of
-// tie-breaking rules. If any of the rules is conclusive, the tie-breaking stops,
-// otherwise it will proceed to the next rule. The rules are:
-//   1) Original region was defined and was identical beats otherwise.
-//   2) Smallest distance between maximized regions wins.
-//   3) Original script was defined and was identical beats otherwise.
-// If there is still no winner after these rules are applied, the first match found wins.
+// tie-breaking rules. The first that succeeds defines the result. The rules are
+// applied in the following order.
+//   1) Original language was defined and was identical.
+//   2) Original region was defined and was identical.
+//   3) Distance between two maximized regions was the smallest.
+//   4) Original script was defined and was identical.
+// If there is still no winner after these rules are applied, the first match
+// found wins.
 //
 // Notes:
-// [1] Note that even if we may not have a perfect match, if a match is above a certain
-//     threshold, it is considered a better match than any other match to a tag later
-//     in the list of preferred language tags.
-// [2] In practice, as matching of Exact is done in a separate phase from matching the
-//     other levels, we reuse the Exact level to mean MaxExact in the second phase.
-//     As a consequence, we only need the levels defined by the Confidence type.
-//     The MaxExact confidence level is mapped to High in the public API.
+// [1] Note that even if we may not have a perfect match, if a match is above a
+//     certain threshold, it is considered a better match than any other match
+//     to a tag later in the list of preferred language tags.
+// [2] In practice, as matching of Exact is done in a separate phase from
+//     matching the other levels, we reuse the Exact level to mean MaxExact in
+//     the second phase. As a consequence, we only need the levels defined by
+//     the Confidence type. The MaxExact confidence level is mapped to High in
+//     the public API.
 // [3] We do not differentiate between maximized script values that were derived
-//     from suppressScript versus most likely tag data. We determined that in ranking
-//     the two, one ranks just after the other. Moreover, the two cannot occur
-//     concurrently. As a consequence, they are identical for practical purposes.
+//     from suppressScript versus most likely tag data. We determined that in
+//     ranking the two, one ranks just after the other. Moreover, the two cannot
+//     occur concurrently. As a consequence, they are identical for practical
+//     purposes.
+// [4] In case of deprecated, macro-equivalents and legacy mappings, we assign
+//     the MaxExact level to allow iw vs he to still be a closer match than
+//     en-AU vs en-US, for example.
 //
 // Implementation Details:
 // There are several performance considerations worth pointing out. Most notably,
 // we preprocess as much as possible (within reason) at the time of creation of a
 // matcher. This includes:
-//   - creating a per-language map, which includes data for the raw base language and
-//     its canonicalized variant (if applicable),
-//   - expanding entries for the equivalence classes defined in CLDR's languageMatch
-//     data.
-// The per-language map ensures that typically only a very small number of tags need
-// to be considered. The pre-expansion of canonicalized subtags and equivalence
-// classes reduces the amount of map lookups that need to be done at runtime.
+//   - creating a per-language map, which includes data for the raw base language
+//     and its canonicalized variant (if applicable),
+//   - expanding entries for the equivalence classes defined in CLDR's
+//     languageMatch data.
+// The per-language map ensures that typically only a very small number of tags
+// need to be considered. The pre-expansion of canonicalized subtags and
+// equivalence classes reduces the amount of map lookups that need to be done at
+// runtime.
 
 // matcher keeps a set of supported language tags, indexed by language.
 type matcher struct {
@@ -369,15 +379,15 @@ func makeHaveTag(tag Tag, index int) (haveTag, langID) {
 		max, _ = addTags(max)
 		max.remakeString()
 	}
-	return haveTag{tag, index, Exact, max.region, max.script, altScript(max.script), 0}, max.lang
+	return haveTag{tag, index, Exact, max.region, max.script, altScript(max.lang, max.script), 0}, max.lang
 }
 
 // altScript returns an alternative script that may match the given script with
 // a low confidence.  At the moment, the langMatch data allows for at most one
 // script to map to another and we rely on this to keep the code simple.
-func altScript(s scriptID) scriptID {
+func altScript(l langID, s scriptID) scriptID {
 	for _, alt := range matchScript {
-		if scriptID(alt.have) == s {
+		if (alt.lang == 0 || langID(alt.lang) == l) && scriptID(alt.have) == s {
 			return scriptID(alt.want)
 		}
 	}
@@ -447,15 +457,23 @@ func newMatcher(supported []Tag) *matcher {
 	}
 
 	// update is used to add indexes in the map for equivalent languages.
-	update := func(want, have uint16, conf Confidence) {
+	// If force is true, the update will also apply to derived entries. To
+	// avoid applying a "transitive closure", use false.
+	update := func(want, have uint16, conf Confidence, force bool) {
 		if hh := m.index[langID(have)]; hh != nil {
+			if !force && len(hh.exact) == 0 {
+				return
+			}
 			hw := m.header(langID(want))
 			for _, v := range hh.max {
 				if conf < v.conf {
 					v.conf = conf
 				}
 				v.nextMax = 0 // this value needs to be recomputed
-				hw.addIfNew(v, conf == Exact)
+				if v.altScript != 0 {
+					v.altScript = altScript(langID(want), v.maxScript)
+				}
+				hw.addIfNew(v, conf == Exact && len(hh.exact) > 0)
 			}
 		}
 	}
@@ -463,9 +481,9 @@ func newMatcher(supported []Tag) *matcher {
 	// Add entries for languages with mutual intelligibility as defined by CLDR's
 	// languageMatch data.
 	for _, ml := range matchLang {
-		update(ml.want, ml.have, Confidence(ml.conf))
+		update(ml.want, ml.have, Confidence(ml.conf), false)
 		if !ml.oneway {
-			update(ml.have, ml.want, Confidence(ml.conf))
+			update(ml.have, ml.want, Confidence(ml.conf), false)
 		}
 	}
 
@@ -481,17 +499,17 @@ func newMatcher(supported []Tag) *matcher {
 		if isExactEquivalent(langID(lm.from)) {
 			conf = Exact
 		}
-		update(lm.from, lm.to, conf)
-		update(lm.to, lm.from, conf)
+		update(lm.from, lm.to, conf, true)
+		update(lm.to, lm.from, conf, true)
 	}
 
 	// Add entries for legacy encodings. There is currently only "tl". "sh" is
 	// already handled in languageMatching data.
-	update(_tl, _fil, High)
+	update(_tl, _fil, Exact, true)
 
 	// Add entries for macro equivalents.
 	for _, lm := range langMacroMap {
-		update(lm.from, lm.to, High)
+		update(lm.from, lm.to, Exact, true)
 	}
 	return m
 }
@@ -561,6 +579,7 @@ type bestMatch struct {
 	have *haveTag
 	conf Confidence
 	// Cached results from applying tie-breaking rules.
+	origLang   bool
 	origReg    bool
 	regDist    uint8
 	origScript bool
@@ -608,6 +627,15 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 	}
 
 	// Tie-breaker rules:
+	// We prefer if the pre-maximized language was specified and identical.
+	origLang := have.tag.lang == tag.lang && tag.lang != 0
+	if !beaten && m.origLang != origLang {
+		if m.origLang {
+			return
+		}
+		beaten = true
+	}
+
 	// We prefer if the pre-maximized region was specified and identical.
 	origReg := have.tag.region == tag.region && tag.region != 0
 	if !beaten && m.origReg != origReg {
@@ -634,6 +662,7 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 	// Update m to the newly found best match.
 	m.have = have
 	m.conf = c
+	m.origLang = origLang
 	m.origReg = origReg
 	m.origScript = origScript
 	m.regDist = regDist
@@ -650,11 +679,10 @@ func regionDist(want, have regionID, lang langID) uint8 {
 	return uint8(regionDistance(want, have))
 }
 
-// regionDistance computes the distance between two regions based
-// on the distance in the graph of region containments as defined in CLDR.
-// It iterates over increasingly inclusive sets of groups, represented as
-// bit vectors, until the source bit vector has bits in common with the
-// destination vector.
+// regionDistance computes the distance between two regions based on the
+// distance in the graph of region containments as defined in CLDR. It iterates
+// over increasingly inclusive sets of groups, represented as bit vectors, until
+// the source bit vector has bits in common with the destination vector.
 func regionDistance(a, b regionID) int {
 	if a == b {
 		return 0

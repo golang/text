@@ -727,78 +727,79 @@ var fromM49 = [332]uint16{
 	49491, 50004, 50517, 51030, 51543, 52056, 52569, 53090,
 }
 
-// Size: 1254 bytes
+// Size: 1273 bytes
 var variantIndex = map[string]uint8{
 	"1606nict": 0x0,
 	"1694acad": 0x1,
 	"1901":     0x2,
 	"1959acad": 0x3,
-	"1994":     0x3c,
+	"1994":     0x3d,
 	"1996":     0x4,
-	"alalc97":  0x3e,
+	"alalc97":  0x3f,
 	"aluku":    0x5,
 	"arevela":  0x6,
 	"arevmda":  0x7,
 	"baku1926": 0x8,
-	"barla":    0x9,
-	"bauddha":  0xa,
-	"biscayan": 0xb,
-	"biske":    0x37,
-	"bohoric":  0xc,
-	"boont":    0xd,
-	"dajnko":   0xe,
-	"ekavsk":   0xf,
-	"emodeng":  0x10,
-	"fonipa":   0x3f,
-	"fonupa":   0x40,
-	"fonxsamp": 0x41,
-	"hepburn":  0x11,
-	"heploc":   0x3d,
-	"hognorsk": 0x12,
-	"ijekavsk": 0x13,
-	"itihasa":  0x14,
-	"jauer":    0x15,
-	"jyutping": 0x16,
-	"kkcor":    0x17,
-	"kscor":    0x18,
-	"laukika":  0x19,
-	"lipaw":    0x38,
-	"luna1918": 0x1a,
-	"metelko":  0x1b,
-	"monoton":  0x1c,
-	"ndyuka":   0x1d,
-	"nedis":    0x1e,
-	"njiva":    0x39,
-	"nulik":    0x1f,
-	"osojs":    0x3a,
-	"pamaka":   0x20,
-	"petr1708": 0x21,
-	"pinyin":   0x22,
-	"polyton":  0x23,
-	"puter":    0x24,
-	"rigik":    0x25,
-	"rozaj":    0x26,
-	"rumgr":    0x27,
-	"scotland": 0x28,
-	"scouse":   0x29,
-	"solba":    0x3b,
-	"sotav":    0x2a,
-	"surmiran": 0x2b,
-	"sursilv":  0x2c,
-	"sutsilv":  0x2d,
-	"tarask":   0x2e,
-	"uccor":    0x2f,
-	"ucrcor":   0x30,
-	"ulster":   0x31,
-	"unifon":   0x32,
-	"vaidika":  0x33,
-	"valencia": 0x34,
-	"vallader": 0x35,
-	"wadegile": 0x36,
+	"balanka":  0x9,
+	"barla":    0xa,
+	"bauddha":  0xb,
+	"biscayan": 0xc,
+	"biske":    0x38,
+	"bohoric":  0xd,
+	"boont":    0xe,
+	"dajnko":   0xf,
+	"ekavsk":   0x10,
+	"emodeng":  0x11,
+	"fonipa":   0x40,
+	"fonupa":   0x41,
+	"fonxsamp": 0x42,
+	"hepburn":  0x12,
+	"heploc":   0x3e,
+	"hognorsk": 0x13,
+	"ijekavsk": 0x14,
+	"itihasa":  0x15,
+	"jauer":    0x16,
+	"jyutping": 0x17,
+	"kkcor":    0x18,
+	"kscor":    0x19,
+	"laukika":  0x1a,
+	"lipaw":    0x39,
+	"luna1918": 0x1b,
+	"metelko":  0x1c,
+	"monoton":  0x1d,
+	"ndyuka":   0x1e,
+	"nedis":    0x1f,
+	"njiva":    0x3a,
+	"nulik":    0x20,
+	"osojs":    0x3b,
+	"pamaka":   0x21,
+	"petr1708": 0x22,
+	"pinyin":   0x23,
+	"polyton":  0x24,
+	"puter":    0x25,
+	"rigik":    0x26,
+	"rozaj":    0x27,
+	"rumgr":    0x28,
+	"scotland": 0x29,
+	"scouse":   0x2a,
+	"solba":    0x3c,
+	"sotav":    0x2b,
+	"surmiran": 0x2c,
+	"sursilv":  0x2d,
+	"sutsilv":  0x2e,
+	"tarask":   0x2f,
+	"uccor":    0x30,
+	"ucrcor":   0x31,
+	"ulster":   0x32,
+	"unifon":   0x33,
+	"vaidika":  0x34,
+	"valencia": 0x35,
+	"vallader": 0x36,
+	"wadegile": 0x37,
 }
 
 // variantNumSpecialized is the number of specialized variants in variants.
-const variantNumSpecialized = 62
+const variantNumSpecialized = 63
 const (
 	_XTS = 280
 	_XXX = 282
@@ -2113,6 +2114,7 @@ type mutualIntelligibility struct {
 }
 
 type scriptIntelligibility struct {
+	lang uint16
 	want uint8
 	have uint8
 	conf uint8
@@ -2121,27 +2123,31 @@ type scriptIntelligibility struct {
 // matchLang holds pairs of langIDs of base languages that are typically
 // mutually intelligible. Each pair is associated with a confidence and
 // whether the intelligibility goes one or both ways.
-// Size: 66 bytes, 11 elements
-var matchLang = [11]mutualIntelligibility{
+// Size: 78 bytes, 13 elements
+var matchLang = [13]mutualIntelligibility{
+	{want: 0x120, have: 0x117, conf: 0x2, oneway: false},
 	{want: 0x120, have: 0x122, conf: 0x2, oneway: false},
+	{want: 0x15a, have: 0x90, conf: 0x2, oneway: false},
 	{want: 0x16a, have: 0x90, conf: 0x2, oneway: false},
 	{want: 0x15a, have: 0x16a, conf: 0x2, oneway: false},
 	{want: 0x16e, have: 0x1, conf: 0x2, oneway: false},
 	{want: 0x90, have: 0x31, conf: 0x2, oneway: false},
 	{want: 0x15a, have: 0x31, conf: 0x2, oneway: false},
 	{want: 0x16a, have: 0x31, conf: 0x2, oneway: false},
-	{want: 0x15a, have: 0x90, conf: 0x2, oneway: false},
-	{want: 0x4f, have: 0x122, conf: 0x1, oneway: false},
-	{want: 0x10d, have: 0x98, conf: 0x1, oneway: false},
+	{want: 0x4f, have: 0x122, conf: 0x2, oneway: false},
+	{want: 0x4f, have: 0x117, conf: 0x2, oneway: false},
+	{want: 0x10d, have: 0x98, conf: 0x2, oneway: false},
 	{want: 0x81, have: 0x52, conf: 0x1, oneway: true},
 }
 
 // matchScript holds pairs of scriptIDs where readers of one script
 // can typically also read the other. Each is associated with a confidence.
-// Size: 6 bytes, 2 elements
-var matchScript = [2]scriptIntelligibility{
-	{want: 0x30, have: 0x31, conf: 0x1},
-	{want: 0x31, have: 0x30, conf: 0x1},
+// Size: 24 bytes, 4 elements
+var matchScript = [4]scriptIntelligibility{
+	{lang: 0x16a, want: 0x4b, have: 0x1b, conf: 0x2},
+	{lang: 0x16a, want: 0x1b, have: 0x4b, conf: 0x2},
+	{lang: 0x0, want: 0x30, have: 0x31, conf: 0x1},
+	{lang: 0x0, want: 0x31, have: 0x30, conf: 0x1},
 }
 
 // nRegionGroups is the number of region groups.  All regionIDs < nRegionGroups
@@ -2212,4 +2218,4 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 16.8K (17225 bytes); Check: E69F6776
+// Size: 16.9K (17274 bytes); Check: 2F36588B

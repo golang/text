@@ -306,7 +306,7 @@ func ExampleParseAcceptLanguage() {
 	// Output:
 	// [en en-GB nn] [1 0.8 0.3] <nil>
 	// en-AU 1 High
-	// no 0 Low
+	// no 0 High
 }
 
 func ExampleTag_values() {
