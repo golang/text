@@ -477,6 +477,103 @@ func TestFindKeyAndType(t *testing.T) {
 	}
 }
 
+func TestParent(t *testing.T) {
+	tests := []struct{ in, out string }{
+		// Strip variants and extensions first
+		{"de-u-co-phonebk", "de"},
+		{"de-1994", "de"},
+		{"de-Latn-1994", "de"}, // remove superfluous script.
+
+		// Ensure the canonical Tag for an entry is in the chain for base-script
+		// pairs.
+		{"zh-Hans", "zh"},
+
+		// Skip the script if it is the maximized version. CLDR files for the
+		// skipped tag are always empty.
+		{"zh-Hans-TW", "zh"},
+		{"zh-Hans-CN", "zh"},
+
+		// Insert the script if the maximized script is not the same as the
+		// maximized script of the base language.
+		{"zh-TW", "zh-Hant"},
+		{"zh-HK", "zh-Hant"},
+		{"zh-Hant-TW", "zh-Hant"},
+		{"zh-Hant-HK", "zh-Hant"},
+
+		// Non-default script skips to und.
+		// CLDR
+		{"az-Cyrl", "und"},
+		{"bs-Cyrl", "und"},
+		{"en-Dsrt", "und"},
+		{"ha-Arab", "und"},
+		{"mn-Mong", "und"},
+		{"pa-Arab", "und"},
+		{"shi-Latn", "und"},
+		{"sr-Latn", "und"},
+		{"uz-Arab", "und"},
+		{"uz-Latn", "und"},
+		{"vai-Latn", "und"},
+		{"zh-Hant", "und"},
+		// extra
+		{"nl-Cyrl", "und"},
+
+		// World english inherits from en-GB.
+		{"en-150", "en-GB"},
+		{"en-AU", "en-GB"},
+		{"en-BE", "en-GB"},
+		{"en-GG", "en-GB"},
+		{"en-GI", "en-GB"},
+		{"en-HK", "en-GB"},
+		{"en-IE", "en-GB"},
+		{"en-IM", "en-GB"},
+		{"en-IN", "en-GB"},
+		{"en-JE", "en-GB"},
+		{"en-MT", "en-GB"},
+		{"en-NZ", "en-GB"},
+		{"en-PK", "en-GB"},
+		{"en-SG", "en-GB"},
+
+		// Spanish in Latin-American countries have es-419 as parent.
+		{"es-AR", "es-419"},
+		{"es-BO", "es-419"},
+		{"es-CL", "es-419"},
+		{"es-CO", "es-419"},
+		{"es-CR", "es-419"},
+		{"es-CU", "es-419"},
+		{"es-DO", "es-419"},
+		{"es-EC", "es-419"},
+		{"es-GT", "es-419"},
+		{"es-HN", "es-419"},
+		{"es-MX", "es-419"},
+		{"es-NI", "es-419"},
+		{"es-PA", "es-419"},
+		{"es-PE", "es-419"},
+		{"es-PR", "es-419"},
+		{"es-PY", "es-419"},
+		{"es-SV", "es-419"},
+		{"es-US", "es-419"},
+		{"es-UY", "es-419"},
+		{"es-VE", "es-419"},
+		// exceptions (according to CLDR)
+		{"es-CW", "es"},
+
+		// Inherit from pt-PT, instead of pt for these countries.
+		{"pt-AO", "pt-PT"},
+		{"pt-CV", "pt-PT"},
+		{"pt-GW", "pt-PT"},
+		{"pt-MO", "pt-PT"},
+		{"pt-MZ", "pt-PT"},
+		{"pt-ST", "pt-PT"},
+		{"pt-TL", "pt-PT"},
+	}
+	for _, tt := range tests {
+		tag := Raw.MustParse(tt.in)
+		if p := Raw.MustParse(tt.out); p != tag.Parent() {
+			t.Errorf("%s: was %v; want %v", tt.in, tag.Parent(), p)
+		}
+	}
+}
+
 var (
 	// Tags without error that don't need to be changed.
 	benchBasic = []string{

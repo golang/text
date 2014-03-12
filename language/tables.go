@@ -4,6 +4,9 @@
 
 package language
 
+// Version is the version of CLDR used to generate the date in this package.
+const Version = "23"
+
 type fromTo struct {
 	from uint16
 	to   uint16
@@ -2218,4 +2221,19 @@ var regionInclusionNext = [75]uint8{
 	25, 74, 62,
 }
 
-// Size: 16.9K (17274 bytes); Check: 2F36588B
+type parentRel struct {
+	lang       uint16
+	script     uint8
+	maxScript  uint8
+	toRegion   uint16
+	fromRegion []uint16
+}
+
+// Size: 178 bytes, 3 elements
+var parents = [3]parentRel{
+	{lang: 0x61, script: 0x0, maxScript: 0x4b, toRegion: 0x79, fromRegion: []uint16{0x1a, 0x2e, 0x35, 0x7d, 0x7f, 0x8b, 0x94, 0x96, 0x97, 0x9d, 0xc9, 0xde, 0xe6, 0x10b}},
+	{lang: 0x63, script: 0x0, maxScript: 0x4b, toRegion: 0x1e, fromRegion: []uint16{0x2b, 0x3e, 0x50, 0x53, 0x55, 0x58, 0x64, 0x68, 0x87, 0x8d, 0xcd, 0xd6, 0xe0, 0xe2, 0xea, 0xef, 0x118, 0x132, 0x133, 0x138}},
+	{lang: 0x13b, script: 0x0, maxScript: 0x4b, toRegion: 0xec, fromRegion: []uint16{0x29, 0x59, 0x89, 0xc4, 0xcf, 0x116, 0x124}},
+}
+
+// Size: 17.0K (17452 bytes); Check: 8A3B3D0D

@@ -171,6 +171,42 @@ func ExampleParse_errors() {
 	// ac-u: ill-formed
 }
 
+func ExampleParent() {
+	p := func(tag string) {
+		fmt.Printf("parent(%v): %v\n", tag, language.Make(tag).Parent())
+	}
+	p("zh-CN")
+
+	// Australian English inherits from British English.
+	p("en-AU")
+
+	// If the tag has a different maximized script from its parent, a tag with
+	// this maximized script is inserted. This allows different language tags
+	// which have the same base language and script in common to inherit from
+	// a common set of settings.
+	p("zh-HK")
+
+	// If the maximized script of the parent is not identical, CLDR will skip
+	// inheriting from it, as it means there will not be many entries in common
+	// and inheriting from it is nonsensical.
+	p("zh-Hant")
+
+	// The parent of a tag with variants and extensions is the tag with all
+	// variants and extensions removed.
+	p("de-1994-u-co-phonebk")
+
+	// Remove default script.
+	p("de-Latn-LU")
+
+	// Output:
+	// parent(zh-CN): zh
+	// parent(en-AU): en-GB
+	// parent(zh-HK): zh-Hant
+	// parent(zh-Hant): und
+	// parent(de-1994-u-co-phonebk): de
+	// parent(de-Latn-LU): de
+}
+
 // ExampleMatcher_bestMatch gives some examples of getting the best match of
 // a set of tags to any of the tags of given set.
 func ExampleMatcher() {

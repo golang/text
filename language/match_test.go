@@ -172,6 +172,30 @@ func TestRegionDistance(t *testing.T) {
 	}
 }
 
+func TestParentDistance(t *testing.T) {
+	tests := []struct {
+		parent string
+		tag    string
+		d      uint8
+	}{
+		{"en-GB", "en-AU", 1},
+		{"pt-PT", "pt-AO", 1},
+		{"pt", "pt-AO", 2},
+		{"en-AU", "en-GB", 255},
+		{"en-NL", "en-AU", 255},
+		// Note that pt-BR and en-US are not automatically minimized.
+		{"pt-BR", "pt-AO", 255},
+		{"en-US", "en-AU", 255},
+	}
+	for _, tt := range tests {
+		r := Raw.MustParse(tt.parent).region
+		tag := Raw.MustParse(tt.tag)
+		if d := parentDistance(r, tag); d != tt.d {
+			t.Errorf("d(%s, %s) was %d; want %d", r, tag, d, tt.d)
+		}
+	}
+}
+
 // Implementation of String methods for various types for debugging purposes.
 
 func (m *matcher) String() string {

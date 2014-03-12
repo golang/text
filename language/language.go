@@ -386,6 +386,62 @@ func (t Tag) Variants() []Variant {
 	return v
 }
 
+// Parent returns the CLDR parent of t. In CLDR, missing fields in data for a
+// specific language are substituted with fields from the parent language.
+// The parent for a language may change for newer versions of CLDR.
+func (t Tag) Parent() Tag {
+	if t.str != "" {
+		// Strip the variants and extensions.
+		t, _ = Raw.Compose(t.Raw())
+		if t.region == 0 && t.script != 0 && t.lang != 0 {
+			base, _ := addTags(Tag{lang: t.lang})
+			if base.script == t.script {
+				return Tag{lang: t.lang}
+			}
+		}
+		return t
+	}
+	if t.lang != 0 {
+		if t.region != 0 {
+			maxScript := t.script
+			if maxScript == 0 {
+				max, _ := addTags(t)
+				maxScript = max.script
+			}
+
+			for i := range parents {
+				if langID(parents[i].lang) == t.lang && scriptID(parents[i].maxScript) == maxScript {
+					for _, r := range parents[i].fromRegion {
+						if regionID(r) == t.region {
+							return Tag{
+								lang:   t.lang,
+								script: scriptID(parents[i].script),
+								region: regionID(parents[i].toRegion),
+							}
+						}
+					}
+				}
+			}
+
+			// Strip the script if it is the default one.
+			base, _ := addTags(Tag{lang: t.lang})
+			if base.script != maxScript {
+				return Tag{lang: t.lang, script: maxScript}
+			}
+			return Tag{lang: t.lang}
+		} else if t.script != 0 {
+			// The parent for an base-script pair with a non-default script is
+			// "und" instead of the base language.
+			base, _ := addTags(Tag{lang: t.lang})
+			if base.script != t.script {
+				return und
+			}
+			return Tag{lang: t.lang}
+		}
+	}
+	return und
+}
+
 // returns token t and the rest of the string.
 func nextToken(s string) (t, tail string) {
 	p := strings.Index(s[1:], "-")

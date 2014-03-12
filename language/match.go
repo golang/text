@@ -300,6 +300,7 @@ func minimizeTags(t Tag) (Tag, error) {
 //   2) Original region was defined and was identical.
 //   3) Distance between two maximized regions was the smallest.
 //   4) Original script was defined and was identical.
+//   5) Distance from want tag to have tag using the parent relation [see Note 5.]
 // If there is still no winner after these rules are applied, the first match
 // found wins.
 //
@@ -320,6 +321,12 @@ func minimizeTags(t Tag) (Tag, error) {
 // [4] In case of deprecated, macro-equivalents and legacy mappings, we assign
 //     the MaxExact level to allow iw vs he to still be a closer match than
 //     en-AU vs en-US, for example.
+// [5] In CLDR a locale inherits fields that are unspecified for this locale
+//     from its parent. Therefore, if a locale is a parent of another locale,
+//     it is a strong measure for closeness, especially when no other tie
+//     breaker rule applies. One could also argue it is inconsistent, for
+//     example, when pt-AO matches pt (which CLDR equates with pt-BR), even
+//     though its parent is pt-PT according to the inheritance rules.
 //
 // Implementation Details:
 // There are several performance considerations worth pointing out. Most notably,
@@ -583,6 +590,7 @@ type bestMatch struct {
 	origReg    bool
 	regDist    uint8
 	origScript bool
+	parentDist uint8 // 255 if have is not an ancestor of want tag.
 }
 
 // update updates the existing best match if the new pair is considered to be a
@@ -656,27 +664,60 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 
 	// Next we prefer if the pre-maximized script was specified and identical.
 	origScript := have.tag.script == tag.script && tag.script != 0
-	if !beaten && (m.origScript || !origScript) {
-		return
+	if !beaten && m.origScript != origScript {
+		if m.origScript {
+			return
+		}
+		beaten = true
 	}
+
+	// Finally we prefer tags which have a closer parent relationship.
+	parentDist := parentDistance(have.tag.region, tag)
+	if !beaten && m.parentDist != parentDist {
+		if parentDist > m.parentDist {
+			return
+		}
+		beaten = true
+	}
+
 	// Update m to the newly found best match.
-	m.have = have
-	m.conf = c
-	m.origLang = origLang
-	m.origReg = origReg
-	m.origScript = origScript
-	m.regDist = regDist
+	if beaten {
+		m.have = have
+		m.conf = c
+		m.origLang = origLang
+		m.origReg = origReg
+		m.origScript = origScript
+		m.regDist = regDist
+		m.parentDist = parentDist
+	}
+}
+
+// parentDistance returns the number of times Parent must be called before the
+// regions match. It is assumed that it has already been checked that lang and
+// script are identical. If haveRegion does not occur in the ancestor chain of
+// tag, it returns 255.
+func parentDistance(haveRegion regionID, tag Tag) uint8 {
+	p := tag.Parent()
+	d := uint8(1)
+	for haveRegion != p.region {
+		if p.region == 0 {
+			return 255
+		}
+		p = p.Parent()
+		d++
+	}
+	return d
 }
 
 // regionDist wraps regionDistance with some exceptions to the algorithmic distance.
-func regionDist(want, have regionID, lang langID) uint8 {
+func regionDist(a, b regionID, lang langID) uint8 {
 	if lang == _en {
 		// Two variants of non-US English are close to each other, regardless of distance.
-		if want != _US && have != _US {
+		if a != _US && b != _US {
 			return 2
 		}
 	}
-	return uint8(regionDistance(want, have))
+	return uint8(regionDistance(a, b))
 }
 
 // regionDistance computes the distance between two regions based on the
