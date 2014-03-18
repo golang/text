@@ -20,6 +20,8 @@ func TestAddLikelySubtags(t *testing.T) {
 		{"aa-Latn", "aa-Latn-ET"},
 		{"aa-Arab", "aa-Arab-ET"},
 		{"aa-Arab-ER", "aa-Arab-ER"},
+		{"kk", "kk-Cyrl-KZ"},
+		{"kk-CN", "kk-Arab-CN"},
 		{"cmn", "cmn"},
 		{"zh-AU", "zh-Hant-AU"},
 		{"zh-VN", "zh-Hant-VN"},

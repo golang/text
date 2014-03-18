@@ -137,8 +137,11 @@ func TestScript(t *testing.T) {
 		{"en-Latn", "Latn", Exact},
 		{"en", "Latn", High},
 		{"sr", "Cyrl", Low},
+		{"kk", "Cyrl", High},
+		{"kk-CN", "Arab", Low},
 		{"cmn", "Hans", Low},
 		{"ru", "Cyrl", High},
+		{"ru-RU", "Cyrl", High},
 		{"yue", "Zzzz", No},
 		{"x-abc", "Zzzz", Low},
 		{"und-zyyy", "Zyyy", Exact},
@@ -147,10 +150,10 @@ func TestScript(t *testing.T) {
 		loc, _ := Parse(tt.loc)
 		sc, conf := loc.Script()
 		if sc.String() != tt.scr {
-			t.Errorf("%d: script was %s; want %s", i, sc, tt.scr)
+			t.Errorf("%d:%s: script was %s; want %s", i, tt.loc, sc, tt.scr)
 		}
 		if conf != tt.conf {
-			t.Errorf("%d: confidence was %d; want %d", i, conf, tt.conf)
+			t.Errorf("%d:%s: confidence was %d; want %d", i, tt.loc, conf, tt.conf)
 		}
 	}
 }

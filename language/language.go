@@ -340,20 +340,28 @@ func (t Tag) Script() (Script, Confidence) {
 	if t.script != 0 {
 		return Script{t.script}, Exact
 	}
+	sc, c := scriptID(_Zzzz), No
 	if t.lang < langNoIndexOffset {
-		if sc := suppressScript[t.lang]; sc != 0 {
-			return Script{scriptID(sc)}, High
+		if scr := scriptID(suppressScript[t.lang]); scr != 0 {
+			// Note: it is not always the case that a language with a suppress
+			// script value is only written in one script (e.g. kk, ms, pa).
+			if t.region == 0 {
+				return Script{scriptID(scr)}, High
+			}
+			sc, c = scr, High
 		}
 	}
-	sc, c := Script{_Zzzz}, No
 	if tag, err := addTags(t); err == nil {
-		sc, c = Script{tag.script}, Low
+		if tag.script != sc {
+			sc, c = tag.script, Low
+		}
+	} else {
+		t, _ = (Deprecated | Macro).Canonicalize(t)
+		if tag, err := addTags(t); err == nil && tag.script != sc {
+			sc, c = tag.script, Low
+		}
 	}
-	t, _ = (Deprecated | Macro).Canonicalize(t)
-	if tag, err := addTags(t); err == nil {
-		sc, c = Script{tag.script}, Low
-	}
-	return sc, c
+	return Script{sc}, c
 }
 
 // Region returns the region for the language tag. If it was not explicitly given, it will
