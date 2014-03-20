@@ -718,6 +718,16 @@ func (b *builder) parseIndices() {
 			b.currency.add(cur.Iso4217)
 		}
 	}
+
+	for _, s := range b.lang.s {
+		if len(s) == 3 {
+			b.langNoIndex.remove(s)
+		}
+	}
+	b.writeConst("numLanguages", len(b.lang.slice())+len(b.langNoIndex.slice()))
+	b.writeConst("numScripts", len(b.script.slice()))
+	b.writeConst("numRegions", len(b.region.slice()))
+
 	// Add dummy codes at the start of each list to represent "unspecified".
 	b.lang.add("---")
 	b.script.add("----")
@@ -953,7 +963,7 @@ func (b *builder) writeRegion() {
 			fromM49map[m49] = i
 		} else if r != i {
 			dep := b.registry[regionISO.s[r-isoOffset]].deprecated
-			if d := b.registry[tc.Type].deprecated; dep != "" && (d == "" || d > dep) {
+			if t := b.registry[tc.Type]; t != nil && dep != "" && (t.deprecated == "" || t.deprecated > dep) {
 				fromM49map[m49] = i
 			}
 		}
