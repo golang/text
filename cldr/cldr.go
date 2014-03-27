@@ -15,6 +15,7 @@
 package cldr
 
 import (
+	"fmt"
 	"sort"
 )
 
@@ -52,7 +53,21 @@ const (
 	Unconfirmed
 )
 
-var drafts = []string{"unconfirmed", "provisional", "contributed", "approved"}
+var drafts = []string{"unconfirmed", "provisional", "contributed", "approved", ""}
+
+// ParseDraft returns the Draft value corresponding to the given string. The
+// empty string corresponds to Approved.
+func ParseDraft(level string) (Draft, error) {
+	if level == "" {
+		return Approved, nil
+	}
+	for i, s := range drafts {
+		if level == s {
+			return Unconfirmed - Draft(i), nil
+		}
+	}
+	return Approved, fmt.Errorf("cldr: unknown draft level %q", level)
+}
 
 func (d Draft) String() string {
 	return drafts[len(drafts)-1-int(d)]

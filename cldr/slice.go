@@ -140,5 +140,5 @@ func (s Slice) SelectOnePerGroup(a string, v []string) {
 // and selects the highest draft level of the remaining.
 // This method assumes that the input CLDR is canonicalized.
 func (s Slice) SelectDraft(d Draft) {
-	s.SelectOnePerGroup("draft", drafts[len(drafts)-1-int(d):])
+	s.SelectOnePerGroup("draft", drafts[len(drafts)-2-int(d):])
 }
