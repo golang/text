@@ -21,7 +21,7 @@ type Matcher interface {
 // comprehend the (written) language t. It uses a Matcher under the hood.
 func (t Tag) ComprehensibleTo(speaker Tag) Confidence {
 	// TODO: this could be more efficient.
-	_, _, c := NewMatcher(t).Match(speaker)
+	_, _, c := NewMatcher([]Tag{t}).Match(speaker)
 	return c
 }
 
@@ -37,7 +37,7 @@ func (t Tag) ComprehensibleTo(speaker Tag) Confidence {
 // Various factors such as deprecated variants of tags, legacy mappings
 // and information based on mutual intelligibility defined in CLDR
 // are considered to determine equivalence.
-func NewMatcher(t ...Tag) Matcher {
+func NewMatcher(t []Tag) Matcher {
 	return newMatcher(t)
 }
 

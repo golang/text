@@ -122,7 +122,7 @@ func Supported() []language.Tag {
 	return tags
 }
 
-var matcher = language.NewMatcher(Supported()...)
+var matcher = language.NewMatcher(Supported())
 
 // New returns a new Collator initialized for the given locale.
 func New(t language.Tag) *Collator {
