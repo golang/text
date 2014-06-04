@@ -27,16 +27,36 @@ func TestAddLikelySubtags(t *testing.T) {
 		{"zh-VN", "zh-Hant-VN"},
 		{"zh-SG", "zh-Hans-SG"},
 		{"zh-Hant", "zh-Hant-TW"},
-		{"zh-Hani", "zh-Hans-CN"},
+		{"zh-Hani", "zh-Hani-CN"},
+		{"und-Hani", "zh-Hani-CN"},
 		{"und", "en-Latn-US"},
+		{"und-GB", "en-Latn-GB"},
 		{"und-CW", "pap-Latn-CW"},
 		{"und-YT", "fr-Latn-YT"},
 		{"und-Arab", "ar-Arab-EG"},
 		{"und-AM", "hy-Armn-AM"},
+		{"und-002", "en-Latn-NG"},
+		{"und-Latn-002", "en-Latn-NG"},
+		{"en-Latn-002", "en-Latn-NG"},
+		{"en-002", "en-Latn-NG"},
+		{"en-001", "en-Latn-US"},
+		{"und-003", "en-Latn-US"},
+		{"und-GB", "en-Latn-GB"},
+		{"Latn-001", "en-Latn-US"},
+		{"en-001", "en-Latn-US"},
+		{"es-419", "es-Latn-419"},
+		{"he-145", "he-Hebr-IL"},
+		{"ky-145", "ky-Latn-TR"},
+		{"kk", "kk-Cyrl-KZ"},
+		// Don't specialize duplicate and ambiguous matches.
+		{"kk-034", "kk-Arab-034"}, // Matches IR and AF. Both are Arab.
+		{"ku-145", "ku-Latn-TR"},  // Matches IQ, TR, and LB, but kk -> TR.
 		{"und-Arab-CC", "ms-Arab-CC"},
+		{"und-Arab-GB", "ks-Arab-GB"},
 		{"und-Hans-CC", "zh-Hans-CC"},
 		{"und-CC", "en-Latn-CC"},
 		{"sr", "sr-Cyrl-RS"},
+		{"sr-151", "sr-Latn-151"}, // Matches RO and RU.
 		// We would like addLikelySubtags to generate the same results if the input
 		// only changes by adding tags that would otherwise have been added
 		// by the expansion.

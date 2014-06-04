@@ -278,12 +278,48 @@ func TestIsCountry(t *testing.T) {
 		{"QO", false},
 		{"EU", false},
 		{"AA", false},
+		{"XK", true},
 	}
 	for i, tt := range tests {
 		reg, _ := getRegionID([]byte(tt.reg))
 		r := Region{reg}
 		if r.IsCountry() != tt.country {
 			t.Errorf("%d: IsCountry(%s) was %v; want %v", i, tt.reg, r.IsCountry(), tt.country)
+		}
+	}
+}
+
+func TestContains(t *testing.T) {
+	tests := []struct {
+		enclosing, contained string
+		contains             bool
+	}{
+		// A region contains itself.
+		{"US", "US", true},
+		{"001", "001", true},
+
+		// Direct containment.
+		{"001", "002", true},
+		{"039", "XK", true},
+		{"150", "XK", true},
+		{"EU", "AT", true},
+		{"QO", "AQ", true},
+
+		// Indirect containemnt.
+		{"001", "US", true},
+		{"001", "419", true},
+		{"001", "013", true},
+
+		// No containment.
+		{"US", "001", false},
+		{"155", "EU", false},
+	}
+	for i, tt := range tests {
+		enc, _ := getRegionID([]byte(tt.enclosing))
+		con, _ := getRegionID([]byte(tt.contained))
+		r := Region{enc}
+		if got := r.Contains(Region{con}); got != tt.contains {
+			t.Errorf("%d: %s.Contains(%s) was %v; want %v", i, tt.enclosing, tt.contained, got, tt.contains)
 		}
 	}
 }
@@ -514,7 +550,7 @@ func TestParent(t *testing.T) {
 		{"shi-Latn", "und"},
 		{"sr-Latn", "und"},
 		{"uz-Arab", "und"},
-		{"uz-Latn", "und"},
+		{"uz-Cyrl", "und"},
 		{"vai-Latn", "und"},
 		{"zh-Hant", "und"},
 		// extra

@@ -756,6 +756,34 @@ func (r Region) IsCountry() bool {
 	return true
 }
 
+// Contains returns whether Region c is contained by Region r. It returns true
+// if c == r.
+func (r Region) Contains(c Region) bool {
+	return r.regionID.contains(c.regionID)
+}
+
+func (r regionID) contains(c regionID) bool {
+	if r == c {
+		return true
+	}
+	g := regionInclusion[r]
+	if g >= nRegionGroups {
+		return false
+	}
+	m := regionContainment[g]
+
+	d := regionInclusion[c]
+	b := regionInclusionBits[d]
+
+	// A contained country may belong to multiple disjoint groups. Matching any
+	// of these indicates containment. If the contained region is a group, it
+	// must strictly be a subset.
+	if d >= nRegionGroups {
+		return b&m != 0
+	}
+	return b&^m == 0
+}
+
 // Variant represents a registered variant of a language as defined by BCP 47.
 type Variant struct {
 	variant string

@@ -5,7 +5,6 @@
 // +build ignore
 
 // This tool generates types for the various XML formats of CLDR.
-// This tool is optimized for CLDR version 22.
 package main
 
 import (
@@ -27,7 +26,7 @@ import (
 
 var (
 	url = flag.String("url",
-		"http://www.unicode.org/Public/cldr/23/core.zip",
+		"http://www.unicode.org/Public/cldr/25/core.zip",
 		"Path to CLDR directory or zip archive.")
 	localFiles = flag.Bool("local", false,
 		"data files have been copied to the current directory; for debugging only.")

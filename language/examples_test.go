@@ -42,13 +42,13 @@ func ExampleTag_Base() {
 	fmt.Println(language.Make("und").Base())
 	fmt.Println(language.Make("und-US").Base())
 	fmt.Println(language.Make("und-NL").Base())
-	fmt.Println(language.Make("und-419").Base())
+	fmt.Println(language.Make("und-419").Base()) // Latin America
 	fmt.Println(language.Make("und-ZZ").Base())
 	// Output:
 	// en Low
 	// en High
 	// nl High
-	// en Low
+	// es Low
 	// en Low
 }
 
@@ -322,7 +322,7 @@ func ExampleTag_ComprehensibleTo() {
 	// No
 	// Low
 	// ----
-	// Low
+	// High
 	// No
 }
 

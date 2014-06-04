@@ -467,6 +467,7 @@ func TestIsPrivateUse(t *testing.T) {
 		{"QM", true},
 		{"QZ", true},
 		{"XA", true},
+		{"XK", false},
 		{"XZ", true},
 		{"ZW", false},
 		{"ZZ", true},

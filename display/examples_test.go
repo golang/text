@@ -24,7 +24,7 @@ func ExampleNamer() {
 	}
 
 	// Output:
-	// U.S. English         (U.S. English)
+	// American English     (American English)
 	// British English      (British English)
 	// Japanese             (日本語)
 	// Chinese              (中文)

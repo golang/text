@@ -179,7 +179,7 @@ func TestTag(t *testing.T) {
 		{"nl", "nl-BE", "Vlaams"},
 		{"en", "en", "English"},
 		{"en", "en-GB", "British English"},
-		{"en", "en-US", "U.S. English"}, // American English in CLDR 24+
+		{"en", "en-US", "American English"}, // American English in CLDR 24+
 		{"ru", "ru", "русский"},
 		{"ru", "ru-RU", "русский (Россия)"},
 		{"ru", "ru-Cyrl", "русский (Кириллица)"},
@@ -236,7 +236,7 @@ func TestLanguage(t *testing.T) {
 		{"en", "pt-BR", "Brazilian Portuguese"},
 		{"en", "en", "English"},
 		{"en", "en-GB", "British English"},
-		{"en", "en-US", "U.S. English"}, // American English in CLDR 24+
+		{"en", "en-US", "American English"}, // American English in CLDR 24+
 		{"en", lastLang2zu.String(), "Zulu"},
 		{"en", firstLang2aa.String(), "Afar"},
 		{"en", lastLang3zza.String(), "Zaza"},
@@ -284,7 +284,7 @@ func TestScript(t *testing.T) {
 		{"nl", "Arab", "Arabisch"},
 		{"en", "Arab", "Arabic"},
 		{"en", "Zzzz", "Unknown Script"},
-		{"zh-Hant", "Hang", "諺文"},
+		{"zh-Hant", "Hang", "韓文字"},
 		{"zh-Hant-HK", "Hang", "韓文字母"},
 		{"zh", "Arab", "阿拉伯文"},
 		{"zh-Hans-HK", "Arab", "阿拉伯文"}, // same as zh
@@ -364,10 +364,10 @@ func TestSelf(t *testing.T) {
 		{"nl-BE", "Vlaams"},
 		{"en-GB", "British English"},
 		{lastLang2zu.String(), "isiZulu"},
-		{firstLang2aa.String(), ""},         // not defined
-		{lastLang3zza.String(), ""},         // not defined
-		{firstLang3ace.String(), ""},        // not defined
-		{firstTagAr001.String(), "العربية"}, // no specific entry for world variant
+		{firstLang2aa.String(), ""},  // not defined
+		{lastLang3zza.String(), ""},  // not defined
+		{firstLang3ace.String(), ""}, // not defined
+		{firstTagAr001.String(), "العربية الرسمية الحديثة"},
 		{"ar", "العربية"},
 		{lastTagZhHant.String(), "繁體中文"},
 		{"aaa", ""},

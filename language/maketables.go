@@ -132,8 +132,7 @@ whether the intelligibility goes one or both ways.`,
 matchScript holds pairs of scriptIDs where readers of one script
 can typically also read the other. Each is associated with a confidence.`,
 	`
-nRegionGroups is the number of region groups.  All regionIDs < nRegionGroups
-are groups.`,
+nRegionGroups is the number of region groups.`,
 	`
 regionInclusion maps region identifiers to sets of regions in regionInclusionBits,
 where each set holds all groupings that are directly connected in a region
@@ -335,9 +334,14 @@ type builder struct {
 	variant     stringSet // 4-8-alphanumeric variant code.
 	currency    stringSet // 3-letter ISO currency codes
 
+	// Region codes that are groups with their corresponding group IDs.
+	groups map[int]index
+
 	// langInfo
 	registry map[string]*ianaEntry
 }
+
+type index uint
 
 func openReader(url *string) io.ReadCloser {
 	if *localFiles {
@@ -738,6 +742,25 @@ func (b *builder) parseIndices() {
 	b.locale.parse(meta.DefaultContent.Locales)
 }
 
+func (b *builder) computeRegionGroups() {
+	b.groups = make(map[int]index)
+
+	// Create group indices.
+	for i := 1; b.region.s[i][0] < 'A'; i++ { // Base M49 indices on regionID.
+		b.groups[i] = index(len(b.groups))
+	}
+	for _, g := range b.supp.TerritoryContainment.Group {
+		group := b.region.index(g.Type)
+		if _, ok := b.groups[group]; !ok {
+			b.groups[group] = index(len(b.groups))
+		}
+	}
+	if len(b.groups) > 32 {
+		log.Fatalf("only 32 groups supported, found %d", len(b.groups))
+	}
+	b.writeConst("nRegionGroups", len(b.groups))
+}
+
 var langConsts = []string{
 	"af", "am", "ar", "az", "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es",
 	"et", "fa", "fi", "fil", "fr", "gu", "he", "hi", "hr", "hu", "hy", "id", "is",
@@ -918,6 +941,7 @@ func parseM49(s string) uint16 {
 
 var regionConsts = []string{
 	"001", "419", "BR", "CA", "ES", "GB", "MD", "PT", "US", "ZZ", "XA", "XC",
+	"XK", // Unofficial tag for Kosovo.
 }
 
 func (b *builder) writeRegion() {
@@ -999,7 +1023,6 @@ func (b *builder) writeRegion() {
 		{"WK", "WAK"},
 		// These three-letter codes are used for others as well.
 		{"FQ", "ATF"},
-		{"QU", "QUU"},
 	} {
 		update(m.iso2, m.iso3)
 	}
@@ -1238,13 +1261,21 @@ func (b *builder) writeLikelyData() {
 			lang   uint16
 			region uint16
 		}
+		// likelyTag is used for getting likely tags for group regions, where
+		// the likely region might be a region contained in the group.
+		likelyTag struct {
+			lang   uint16
+			region uint16
+			script uint8
+		}
 	)
 	var ( // generated variables
-		likelyLang       = make([]likelyScriptRegion, len(b.lang.s))
-		likelyRegion     = make([]likelyLangScript, len(b.region.s))
-		likelyScript     = make([]likelyLangRegion, len(b.script.s))
-		likelyLangList   = []likelyScriptRegion{}
-		likelyRegionList = []likelyLangScript{}
+		likelyRegionGroup = make([]likelyTag, len(b.groups))
+		likelyLang        = make([]likelyScriptRegion, len(b.lang.s))
+		likelyRegion      = make([]likelyLangScript, len(b.region.s))
+		likelyScript      = make([]likelyLangRegion, len(b.script.s))
+		likelyLangList    = []likelyScriptRegion{}
+		likelyRegionList  = []likelyLangScript{}
 	)
 	type fromTo struct {
 		from, to []string
@@ -1262,9 +1293,6 @@ func (b *builder) writeLikelyData() {
 		}
 		if from[0] != to[0] && from[0] != "und" {
 			log.Fatalf("unexpected language change in expansion: %s -> %s", from, to)
-		}
-		if len(from) >= 2 && from[1] != to[1] && from[1] != to[2] && from[1] != "Hani" {
-			log.Fatalf("unexpected changes in expansion: %s -> %s", to, from)
 		}
 		if len(from) == 3 {
 			if from[2] != to[2] {
@@ -1285,8 +1313,17 @@ func (b *builder) writeLikelyData() {
 			likelyScript[sid].lang = uint16(b.langIndex(to[0]))
 			likelyScript[sid].region = uint16(b.region.index(to[2]))
 		} else {
-			id := b.region.index(from[len(from)-1])
-			regionToOther[id] = append(regionToOther[id], fromTo{from, to})
+			r := b.region.index(from[len(from)-1])
+			if id, ok := b.groups[r]; ok {
+				if from[0] != "und" {
+					log.Fatalf("region changed unexpectedly: %s -> %s", from, to)
+				}
+				likelyRegionGroup[id].lang = uint16(b.langIndex(to[0]))
+				likelyRegionGroup[id].script = uint8(b.script.index(to[1]))
+				likelyRegionGroup[id].region = uint16(b.region.index(to[2]))
+			} else {
+				regionToOther[r] = append(regionToOther[r], fromTo{from, to})
+			}
 		}
 	}
 	b.writeType(likelyLangRegion{})
@@ -1335,10 +1372,10 @@ func (b *builder) writeLikelyData() {
 			likelyRegion[id].flags = isList
 			likelyRegion[id].lang = uint16(len(likelyRegionList))
 			likelyRegion[id].script = uint8(len(list))
-			if len(list[0].from) != 2 {
-				log.Fatalf("expected script to be unspecified in the first entry, found %s", list[0].from)
-			}
-			for _, x := range list {
+			for i, x := range list {
+				if len(x.from) == 2 && i != 0 || i > 0 && len(x.from) != 3 {
+					log.Fatalf("unspecified script must be first in list: %v at %d", x.from, i)
+				}
 				x := likelyLangScript{
 					lang:   uint16(b.langIndex(x.to[0])),
 					script: uint8(b.script.index(x.to[1])),
@@ -1353,6 +1390,9 @@ func (b *builder) writeLikelyData() {
 	b.writeType(likelyLangScript{})
 	b.writeSlice("likelyRegion", likelyRegion)
 	b.writeSlice("likelyRegionList", likelyRegionList)
+
+	b.writeType(likelyTag{})
+	b.writeSlice("likelyRegionGroup", likelyRegionGroup)
 }
 
 type mutualIntelligibility struct {
@@ -1411,14 +1451,18 @@ func (b *builder) writeMatchData() {
 	matchScript := []scriptIntelligibility{}
 	// Convert the languageMatch entries in lists keyed by desired language.
 	for _, m := range lm[0].LanguageMatch {
-		d := strings.Split(m.Desired, "-")
-		s := strings.Split(m.Supported, "-")
+		// Different versions of CLDR use different separators.
+		desired := strings.Replace(m.Desired, "-", "_", -1)
+		supported := strings.Replace(m.Supported, "-", "_", -1)
+		d := strings.Split(desired, "_")
+		s := strings.Split(supported, "_")
 		if len(d) != len(s) || len(d) > 2 {
 			// Skip all entries with regions and work around CLDR bug.
 			continue
 		}
 		pct, _ := strconv.ParseInt(m.Percent, 10, 8)
-		if len(d) == 2 && d[0] == s[0] && d[1] != "*" {
+		if len(d) == 2 && d[0] == s[0] && len(d[1]) == 4 {
+			// language-script pair.
 			lang := uint16(0)
 			if d[0] != "*" {
 				lang = uint16(b.langIndex(d[0]))
@@ -1453,8 +1497,10 @@ func (b *builder) writeMatchData() {
 				oneway: m.Oneway == "true",
 			})
 		} else {
-			a := []string{"*-*;*-*", "*;*"}
-			s := strings.Join([]string{m.Desired, m.Supported}, ";")
+			// TODO: Handle the es_MX -> es_419 mapping. This does not seem to
+			// make much sense for our purposes, though.
+			a := []string{"*;*", "*_*;*_*", "es_MX;es_419"}
+			s := strings.Join([]string{desired, supported}, ";")
 			if i := sort.SearchStrings(a, s); i == len(a) || a[i] != s {
 				log.Fatalf("%q not handled", s)
 			}
@@ -1470,37 +1516,49 @@ func (b *builder) writeMatchData() {
 }
 
 func (b *builder) writeRegionInclusionData() {
-	type index uint
-	groups := make(map[int]index)
-	// Create group indices.
-	for i := 1; b.region.s[i][0] < 'A'; i++ { // Base M49 indices on regionID.
-		groups[i] = index(len(groups))
-	}
+	var (
+		// mm holds for each group the set of groups with a distance of 1.
+		mm = make(map[int][]index)
+
+		// containment holds for each group the transitive closure of
+		// containment of other groups.
+		containment = make(map[index][]index)
+	)
 	for _, g := range b.supp.TerritoryContainment.Group {
 		group := b.region.index(g.Type)
-		if _, ok := groups[group]; !ok {
-			groups[group] = index(len(groups))
-		}
-	}
-	if len(groups) > 32 {
-		log.Fatalf("only 32 groups supported, found %d", len(groups))
-	}
-	b.writeConst("nRegionGroups", len(groups))
-	mm := make(map[int][]index)
-	for _, g := range b.supp.TerritoryContainment.Group {
-		group := b.region.index(g.Type)
+		groupIdx := b.groups[group]
 		for _, mem := range strings.Split(g.Contains, " ") {
 			r := b.region.index(mem)
-			mm[r] = append(mm[r], groups[group])
-			if g, ok := groups[r]; ok {
+			mm[r] = append(mm[r], groupIdx)
+			if g, ok := b.groups[r]; ok {
 				mm[group] = append(mm[group], g)
+				containment[groupIdx] = append(containment[groupIdx], g)
 			}
 		}
 	}
+
+	regionContainment := make([]uint32, len(b.groups))
+	for _, g := range b.groups {
+		l := containment[g]
+
+		// Compute the transitive closure of containment.
+		for i := 0; i < len(l); i++ {
+			l = append(l, containment[l[i]]...)
+		}
+
+		// Compute the bitmask.
+		regionContainment[g] = 1 << g
+		for _, v := range l {
+			regionContainment[g] |= 1 << v
+		}
+		// log.Printf("%d: %X", g, regionContainment[g])
+	}
+	b.writeSlice("regionContainment", regionContainment)
+
 	regionInclusion := make([]uint8, len(b.region.s))
 	bvs := make(map[uint32]index)
 	// Make the first bitvector positions correspond with the groups.
-	for r, i := range groups {
+	for r, i := range b.groups {
 		bv := uint32(1 << i)
 		for _, g := range mm[r] {
 			bv |= 1 << g
@@ -1509,14 +1567,14 @@ func (b *builder) writeRegionInclusionData() {
 		regionInclusion[r] = uint8(bvs[bv])
 	}
 	for r := 1; r < len(b.region.s); r++ {
-		if _, ok := groups[r]; !ok {
+		if _, ok := b.groups[r]; !ok {
 			bv := uint32(0)
 			for _, g := range mm[r] {
 				bv |= 1 << g
 			}
 			if bv == 0 {
 				// Pick the world for unspecified regions.
-				bv = 1 << groups[b.region.index("001")]
+				bv = 1 << b.groups[b.region.index("001")]
 			}
 			if _, ok := bvs[bv]; !ok {
 				bvs[bv] = index(len(bvs))
@@ -1534,7 +1592,7 @@ func (b *builder) writeRegionInclusionData() {
 	for i := 0; i < len(regionInclusionBits); i++ {
 		bits := regionInclusionBits[i]
 		next := bits
-		for i := uint(0); i < uint(len(groups)); i++ {
+		for i := uint(0); i < uint(len(b.groups)); i++ {
 			if bits&(1<<i) != 0 {
 				next |= regionInclusionBits[i]
 			}
@@ -1615,6 +1673,7 @@ func main() {
 	b.writeVariant()
 	// TODO: b.writeLocale()
 	b.writeCurrencies()
+	b.computeRegionGroups()
 	b.writeLikelyData()
 	b.writeMatchData()
 	b.writeRegionInclusionData()

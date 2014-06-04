@@ -359,7 +359,7 @@ func (r regionID) M49() int {
 // IsPrivateUse reports whether r is reserved for private use.
 func (r regionID) IsPrivateUse() bool {
 	const m49PrivateUseStart = 900
-	return r.M49() >= m49PrivateUseStart
+	return r.M49() >= m49PrivateUseStart && r != _XK
 }
 
 type scriptID uint8
@@ -409,6 +409,8 @@ func (c currencyID) String() string {
 	}
 	return get(currency, int(c), 3)
 }
+
+// TODO: cash rounding and decimals.
 
 func round(index string, c currencyID) int {
 	return int(index[c<<2+3] >> 2)

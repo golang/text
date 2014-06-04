@@ -70,7 +70,7 @@ func (t *Tag) setUndefinedScript(id scriptID) {
 }
 
 func (t *Tag) setUndefinedRegion(id regionID) {
-	if t.region == 0 {
+	if t.region == 0 || t.region.contains(id) {
 		t.region = id
 	}
 }
@@ -84,14 +84,6 @@ var ErrMissingLikelyTagsData = errors.New("missing likely tags data")
 // cases it may alter a value.  It returns a ErrMissingLikelyTagsData error
 // if the given locale cannot be expanded.
 func (t Tag) addLikelySubtags() (Tag, error) {
-	// Hard-coded exception.  This is currently the only exception to the rule
-	// that any defined value before expanding likely subtags remains the same.
-	// maketables verifies this is indeed the only case.
-	// We include this in addLikelySubtags instead of addTags to guarantee that
-	// Minimize does not alter any of the tags.
-	if t.script == _Hani {
-		t.script = _Hans
-	}
 	id, err := addTags(t)
 	if err != nil {
 		return t, err
@@ -102,6 +94,18 @@ func (t Tag) addLikelySubtags() (Tag, error) {
 	return id, nil
 }
 
+// specializeRegion attempts to specialize a group region.
+func specializeRegion(t *Tag) bool {
+	if i := regionInclusion[t.region]; i < nRegionGroups {
+		x := likelyRegionGroup[i]
+		if langID(x.lang) == t.lang && scriptID(x.script) == t.script {
+			t.region = regionID(x.region)
+		}
+		return true
+	}
+	return false
+}
+
 func addTags(t Tag) (Tag, error) {
 	// We leave private use identifiers alone.
 	if t.private() {
@@ -110,9 +114,11 @@ func addTags(t Tag) (Tag, error) {
 	if t.script != 0 && t.region != 0 {
 		if t.lang != 0 {
 			// already fully specified
+			specializeRegion(&t)
 			return t, nil
 		}
-		// Search matches for und-script-region.
+		// Search matches for und-script-region. Note that for these cases
+		// region will never be a group so there is no need to check for this.
 		list := likelyRegion[t.region : t.region+1]
 		if x := list[0]; x.flags&isList != 0 {
 			list = likelyRegionList[x.lang : x.lang+uint16(x.script)]
@@ -139,11 +145,28 @@ func addTags(t Tag) (Tag, error) {
 						}
 					}
 				} else if t.region != 0 {
+					count := 0
+					goodScript := true
+					tt := t
 					for _, x := range list {
-						if regionID(x.region) == t.region && x.flags&regionInFrom != 0 {
-							t.setUndefinedScript(scriptID(x.script))
-							return t, nil
+						// We visit all entries for which the script was not
+						// defined, including the ones where the region was not
+						// defined. This allows for proper disambiguation within
+						// regions.
+						if x.flags&scriptInFrom == 0 && t.region.contains(regionID(x.region)) {
+							tt.region = regionID(x.region)
+							tt.setUndefinedScript(scriptID(x.script))
+							goodScript = goodScript && tt.script == scriptID(x.script)
+							count++
 						}
+					}
+					if count == 1 {
+						return tt, nil
+					}
+					// Even if we fail to find a unique Region, we might have
+					// an unambiguous script.
+					if goodScript {
+						t.script = tt.script
 					}
 				}
 			}
@@ -158,19 +181,30 @@ func addTags(t Tag) (Tag, error) {
 				return t, nil
 			}
 		}
-		// Search matches for und-region.
+		// Search matches for und-region. If und-script-region exists, it would
+		// have been found earlier.
 		if t.region != 0 {
-			x := likelyRegion[t.region]
-			if x.flags&isList != 0 {
-				x = likelyRegionList[x.lang]
-			}
-			if x.script != 0 && x.flags != scriptInFrom {
-				t.setUndefinedLang(langID(x.lang))
-				t.setUndefinedScript(scriptID(x.script))
-				return t, nil
+			if i := regionInclusion[t.region]; i < nRegionGroups {
+				x := likelyRegionGroup[i]
+				if x.region != 0 {
+					t.setUndefinedLang(langID(x.lang))
+					t.setUndefinedScript(scriptID(x.script))
+					t.region = regionID(x.region)
+				}
+			} else {
+				x := likelyRegion[t.region]
+				if x.flags&isList != 0 {
+					x = likelyRegionList[x.lang]
+				}
+				if x.script != 0 && x.flags != scriptInFrom {
+					t.setUndefinedLang(langID(x.lang))
+					t.setUndefinedScript(scriptID(x.script))
+					return t, nil
+				}
 			}
 		}
 	}
+
 	// Search matches for lang.
 	if t.lang < langNoIndexOffset {
 		x := likelyLang[t.lang]
@@ -180,11 +214,12 @@ func addTags(t Tag) (Tag, error) {
 		if x.region != 0 {
 			t.setUndefinedScript(scriptID(x.script))
 			t.setUndefinedRegion(regionID(x.region))
-			if t.lang == 0 {
-				t.lang = _en // default language
-			}
-			return t, nil
 		}
+		specializeRegion(&t)
+		if t.lang == 0 {
+			t.lang = _en // default language
+		}
+		return t, nil
 	}
 	return t, ErrMissingLikelyTagsData
 }
