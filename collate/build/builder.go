@@ -502,7 +502,7 @@ func (b *Builder) Print(w io.Writer) (n int, err error) {
 			p(fmt.Fprintf(w, ",%s", loc.id))
 		}
 	}
-	p(fmt.Fprintln(w, "\"\n"))
+	p(fmt.Fprint(w, "\"\n\n"))
 	p(fmt.Fprintf(w, "const varTop = 0x%x\n\n", b.varTop))
 	p(fmt.Fprintln(w, "var locales = [...]tableIndex{"))
 	for _, loc := range b.locale {
