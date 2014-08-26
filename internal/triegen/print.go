@@ -149,7 +149,7 @@ func (t *{{.Name}}Trie) lookupValue(n uint32, b byte) {{.ValueType}}{{$last := d
 }
 
 // {{.Name}}Values: {{len .ValueBlocks}} blocks, {{.Stats.NValueEntries}} entries, {{.Stats.NValueBytes}} bytes
-// Block 3 is the zero block.
+// Block 2 is the zero block.
 var {{.Name}}Values = [{{.Stats.NValueEntries}}]{{.ValueType}} {
 {{range $i, $v := .ValueBlocks}}{{printValues $i $v}}
 {{end}}}
