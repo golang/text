@@ -436,7 +436,7 @@ func (t removeF) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err err
 
 			if sz == 1 {
 				// Invalid rune.
-				if !atEOF && !utf8.FullRune(src[nSrc:]) {
+				if !atEOF && !utf8.FullRune(src) {
 					err = ErrShortSrc
 					break
 				}

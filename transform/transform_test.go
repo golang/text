@@ -885,6 +885,14 @@ func TestRemoveFunc(t *testing.T) {
 		},
 
 		{
+			// Test a long buffer greater than the internal buffer size
+			src:      "hello\xcc\xcc\xccworld",
+			srcSize:  13,
+			wantStr:  "hello\uFFFD\uFFFD\uFFFDworld",
+			wantIter: 1,
+		},
+
+		{
 			src:     "\u2345",
 			dstSize: 2,
 			wantStr: "",
