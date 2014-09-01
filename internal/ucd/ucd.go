@@ -52,6 +52,14 @@ var (
 	KeepRanges Option = keepRanges
 )
 
+// The Part option register a handler for lines starting with a '@'. The text
+// after a '@' is available as the first field. Comments are handled as usual.
+func Part(f func(p *Parser)) Option {
+	return func(p *Parser) {
+		p.partHandler = f
+	}
+}
+
 // A Parser parses Unicode Character Database (UCD) files.
 type Parser struct {
 	scanner *bufio.Scanner
@@ -65,6 +73,8 @@ type Parser struct {
 	// field. In some cases this requires scanning ahead.
 	parsedRange          bool
 	rangeStart, rangeEnd rune
+
+	partHandler func(p *Parser)
 }
 
 func (p *Parser) setError(err error) {
@@ -120,7 +130,12 @@ func (p *Parser) Next() bool {
 			b = b[:i]
 		}
 		if b[0] == '@' {
-			// We skip directives for now.
+			if p.partHandler != nil {
+				p.field = append(p.field, bytes.TrimSpace(b[1:]))
+				p.partHandler(p)
+				p.field = p.field[:0]
+			}
+			p.comment = nil
 			continue
 		}
 		for {

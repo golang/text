@@ -14,12 +14,15 @@ const file = `
 9;       True  ;9  ;  -1;-2.25  ;  0009;
 
 # more comments to be ignored
+@Part0  
 
 A;       N;   10  ;   -2;  -1.25; ;# N
 B;       No;   11 ;   -3;  -0.25; 
 C;        False;12;   -4;   0.75;
 D;        ;13;-5;1.75;
 
+@Part1   # Another part. 
+# We test part comments get removed by not commenting the the next line.
 E..10FFFF; F;   14  ; -6;   2.75;
 `
 
@@ -38,7 +41,23 @@ var want = []struct {
 }
 
 func TestGetters(t *testing.T) {
-	p := New(strings.NewReader(file), KeepRanges)
+	parts := [][2]string{
+		{"Part0", ""},
+		{"Part1", "Another part."},
+	}
+	handler := func(p *Parser) {
+		if len(parts) == 0 {
+			t.Error("Part handler invoked too many times.")
+			return
+		}
+		want := parts[0]
+		parts = parts[1:]
+		if got0, got1 := p.String(0), p.Comment(); got0 != want[0] || got1 != want[1] {
+			t.Errorf(`part: got %q, %q; want %q"`, got0, got1, want)
+		}
+	}
+
+	p := New(strings.NewReader(file), KeepRanges, Part(handler))
 	for i := 0; p.Next(); i++ {
 		start, end := p.Range(0)
 		w := want[i]
@@ -79,5 +98,8 @@ func TestGetters(t *testing.T) {
 	}
 	if err := p.Err(); err != nil {
 		t.Errorf("Parser error: %v", err)
+	}
+	if len(parts) != 0 {
+		t.Errorf("expected %d more invocations of part handler", len(parts))
 	}
 }
