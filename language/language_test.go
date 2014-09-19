@@ -289,6 +289,33 @@ func TestIsCountry(t *testing.T) {
 	}
 }
 
+func TestIsGroup(t *testing.T) {
+	tests := []struct {
+		reg   string
+		group bool
+	}{
+		{"US", false},
+		{"001", true},
+		{"958", false},
+		{"419", true},
+		{"203", false},
+		{"020", false},
+		{"900", false},
+		{"999", false},
+		{"QO", true},
+		{"EU", true},
+		{"AA", false},
+		{"XK", false},
+	}
+	for i, tt := range tests {
+		reg, _ := getRegionID([]byte(tt.reg))
+		r := Region{reg}
+		if r.IsGroup() != tt.group {
+			t.Errorf("%d: IsGroup(%s) was %v; want %v", i, tt.reg, r.IsGroup(), tt.group)
+		}
+	}
+}
+
 func TestContains(t *testing.T) {
 	tests := []struct {
 		enclosing, contained string
@@ -320,6 +347,113 @@ func TestContains(t *testing.T) {
 		r := Region{enc}
 		if got := r.Contains(Region{con}); got != tt.contains {
 			t.Errorf("%d: %s.Contains(%s) was %v; want %v", i, tt.enclosing, tt.contained, got, tt.contains)
+		}
+	}
+}
+
+func TestRegionCanonicalize(t *testing.T) {
+	for i, tt := range []struct{ in, out string }{
+		{"UK", "GB"},
+		{"TP", "TL"},
+		{"QU", "EU"},
+		{"SU", "SU"},
+		{"VD", "VN"},
+		{"DD", "DE"},
+	} {
+		r := MustParseRegion(tt.in)
+		want := MustParseRegion(tt.out)
+		if got := r.Canonicalize(); got != want {
+			t.Errorf("%d: got %v; want %v", i, got, want)
+		}
+	}
+}
+
+func TestRegionTLD(t *testing.T) {
+	for _, tt := range []struct {
+		in, out string
+		ok      bool
+	}{
+		{"EH", "EH", true},
+		{"FR", "FR", true},
+		{"TL", "TL", true},
+
+		// In ccTLD before in ISO.
+		{"GG", "GG", true},
+
+		// Non-standard assignment of ccTLD to ISO code.
+		{"GB", "UK", true},
+
+		// Exceptionally reserved in ISO and valid ccTLD.
+		{"UK", "UK", true},
+		{"AC", "AC", true},
+		{"EU", "EU", true},
+		{"SU", "SU", true},
+
+		// Exceptionally reserved in ISO and invalid ccTLD.
+		{"CP", "ZZ", false},
+		{"DG", "ZZ", false},
+		{"EA", "ZZ", false},
+		{"FX", "ZZ", false},
+		{"IC", "ZZ", false},
+		{"TA", "ZZ", false},
+
+		// Transitionally reserved in ISO (e.g. deprecated) but valid ccTLD as
+		// it is still being phased out.
+		{"AN", "AN", true},
+		{"TP", "TP", true},
+
+		// Transitionally reserved in ISO (e.g. deprecated) and invalid ccTLD.
+		// Defined in package language as it has a mapping in CLDR.
+		{"BU", "ZZ", false},
+		{"CS", "ZZ", false},
+		{"NT", "ZZ", false},
+		{"YU", "ZZ", false},
+		{"ZR", "ZZ", false},
+		// Not defined in package: SF.
+
+		// Indeterminately reserved in ISO.
+		// Defined in package language as it has a legacy mapping in CLDR.
+		{"DY", "ZZ", false},
+		{"RH", "ZZ", false},
+		{"VD", "ZZ", false},
+		// Not defined in package: EW, FL, JA, LF, PI, RA, RB, RC, RI, RL, RM,
+		// RN, RP, WG, WL, WV, and YV.
+
+		// Not assigned in ISO, but legacy definitions in CLDR.
+		{"DD", "ZZ", false},
+		{"YD", "ZZ", false},
+
+		// Normal mappings but somewhat special status in ccTLD.
+		{"BL", "BL", true},
+		{"MF", "MF", true},
+		{"BV", "BV", true},
+		{"SJ", "SJ", true},
+
+		// Have values when normalized, but not as is.
+		{"QU", "ZZ", false},
+
+		// ISO Private Use.
+		{"AA", "ZZ", false},
+		{"QM", "ZZ", false},
+		{"QO", "ZZ", false},
+		{"XA", "ZZ", false},
+		{"XK", "ZZ", false}, // Sometimes used for Kosovo, but invalid ccTLD.
+	} {
+		if tt.in == "" {
+			continue
+		}
+
+		r := MustParseRegion(tt.in)
+		var want Region
+		if tt.out != "ZZ" {
+			want = MustParseRegion(tt.out)
+		}
+		tld, err := r.TLD()
+		if got := err == nil; got != tt.ok {
+			t.Errorf("error(%v): got %v; want %v", r, got, tt.ok)
+		}
+		if tld != want {
+			t.Errorf("TLD(%v): got %v; want %v", r, tld, want)
 		}
 	}
 }

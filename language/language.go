@@ -748,12 +748,22 @@ func ParseRegion(s string) (Region, error) {
 	return Region{r}, err
 }
 
-// IsCountry returns whether this region is a country or autonomous area.
+// IsCountry returns whether this region is a country or autonomous area. This
+// includes non-standard definitions from CLDR.
 func (r Region) IsCountry() bool {
-	if r.regionID < isoRegionOffset || r.IsPrivateUse() {
+	if r.regionID == 0 || r.IsGroup() || r.IsPrivateUse() && r.regionID != _XK {
 		return false
 	}
 	return true
+}
+
+// IsGroup returns whether this region defines a collection of regions. This
+// includes non-standard definitions from CLDR.
+func (r Region) IsGroup() bool {
+	if r.regionID == 0 {
+		return false
+	}
+	return int(regionInclusion[r.regionID]) < len(regionContainment)
 }
 
 // Contains returns whether Region c is contained by Region r. It returns true
@@ -782,6 +792,37 @@ func (r regionID) contains(c regionID) bool {
 		return b&m != 0
 	}
 	return b&^m == 0
+}
+
+var errNoTLD = errors.New("language: region is not a valid ccTLD")
+
+// TLD returns the country code top-level domain (ccTLD). UK is returned for GB.
+// In all other cases it returns either the region itself or an error.
+//
+// This method may return an error for a region for which there exists a
+// canonical form with a ccTLD. To get that ccTLD canonicalize r first. The
+// region will already be canonicalized it was obtained from a Tag that was
+// obtained using any of the default methods.
+func (r Region) TLD() (Region, error) {
+	// See http://en.wikipedia.org/wiki/Country_code_top-level_domain for the
+	// difference between ISO 3166-1 and IANA ccTLD.
+	if r.regionID == _GB {
+		r = Region{_UK}
+	}
+	if (r.typ() & ccTLD) == 0 {
+		return Region{}, errNoTLD
+	}
+	return r, nil
+}
+
+// Canonicalize returns the region or a possible replacement if the region is
+// deprecated. It will not return a replacement for deprecated regions that
+// are split into multiple regions.
+func (r Region) Canonicalize() Region {
+	if cr := normRegion(r.regionID); cr != 0 {
+		return Region{cr}
+	}
+	return r
 }
 
 // Variant represents a registered variant of a language as defined by BCP 47.

@@ -192,6 +192,34 @@ func TestRegionID(t *testing.T) {
 	}
 }
 
+func TestRegionType(t *testing.T) {
+	for _, tt := range []struct {
+		r string
+		t byte
+	}{
+		{"NL", bcp47Region | ccTLD},
+		{"EU", bcp47Region | ccTLD}, // exceptionally reserved
+		{"AN", bcp47Region | ccTLD}, // transitionally reserved
+
+		{"DD", bcp47Region}, // deleted in ISO, deprecated in BCP 47
+		{"NT", bcp47Region}, // transitionally reserved, deprecated in BCP 47
+
+		{"XA", iso3166UserAssigned | bcp47Region},
+		{"ZZ", iso3166UserAssigned | bcp47Region},
+		{"AA", iso3166UserAssigned | bcp47Region},
+		{"QO", iso3166UserAssigned | bcp47Region},
+		{"QM", iso3166UserAssigned | bcp47Region},
+		{"XK", iso3166UserAssigned | bcp47Region},
+
+		{"CT", 0}, // deleted in ISO, not in BCP 47, canonicalized in CLDR
+	} {
+		r := MustParseRegion(tt.r)
+		if tp := r.typ(); tp != tt.t {
+			t.Errorf("Type(%s): got %x; want %x", tt.r, tp, tt.t)
+		}
+	}
+}
+
 func TestRegionISO3(t *testing.T) {
 	tests := []struct {
 		from, iso3, to string
@@ -461,13 +489,14 @@ func TestIsPrivateUse(t *testing.T) {
 		{"958", true},
 		{"AA", true},
 		{"AC", false},
-		{"EU", true}, // CLDR grouping
-		{"QO", true}, // CLDR grouping
+		{"EU", false}, // CLDR grouping, exceptionally reserved in ISO.
+		{"QU", true},  // Canonicalizes to EU, User-assigned in ISO.
+		{"QO", true},  // CLDR grouping, User-assigned in ISO.
 		{"QA", false},
 		{"QM", true},
 		{"QZ", true},
 		{"XA", true},
-		{"XK", false},
+		{"XK", true}, // Assigned to Kosovo in CLDR, User-assigned in ISO.
 		{"XZ", true},
 		{"ZW", false},
 		{"ZZ", true},

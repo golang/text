@@ -319,6 +319,16 @@ func normRegion(r regionID) regionID {
 	return 0
 }
 
+const (
+	iso3166UserAssigned = 1 << iota
+	ccTLD
+	bcp47Region
+)
+
+func (r regionID) typ() byte {
+	return regionTypes[r]
+}
+
 // String returns the BCP 47 representation for the region.
 // It returns "ZZ" for an unspecified region.
 func (r regionID) String() string {
@@ -356,10 +366,11 @@ func (r regionID) M49() int {
 	return int(m49[r])
 }
 
-// IsPrivateUse reports whether r is reserved for private use.
+// IsPrivateUse reports whether r has the ISO 3166 User-assigned status. This
+// may include private-use tags that are assigned by CLDR and used in this
+// implementation. So IsPrivateUse and IsCountry can be simultaneously true.
 func (r regionID) IsPrivateUse() bool {
-	const m49PrivateUseStart = 900
-	return r.M49() >= m49PrivateUseStart && r != _XK
+	return r.typ()&iso3166UserAssigned != 0
 }
 
 type scriptID uint8

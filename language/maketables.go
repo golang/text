@@ -17,12 +17,14 @@ import (
 	"hash"
 	"hash/fnv"
 	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
 	"os"
 	"path"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -35,6 +37,9 @@ var (
 	iana = flag.String("iana",
 		"http://www.iana.org/assignments/language-subtag-registry",
 		"URL of IANA language subtag registry.")
+	tld = flag.String("tld",
+		"http://www.iana.org/domains/root/db",
+		"URL of IANA Root Zone Database")
 	test = flag.Bool("test", false,
 		"test existing tables; can be used to compare web data with package data.")
 	localFiles = flag.Bool("local", false,
@@ -79,6 +84,8 @@ Each 2-letter codes is followed by two bytes with the following meaning:
     - [A-Z}{2}: the first letter of the 2-letter code plus these two 
                 letters form the 3-letter ISO code.
     - 0, n:     index into altRegionISO3.`,
+	`
+regionTypes defines the status of a region for various standards.`,
 	`
 m49 maps regionIDs to UN.M49 codes. The first isoRegionOffset entries are
 codes indicating collections of regions.`,
@@ -306,7 +313,6 @@ func (ss *stringSet) join() string {
 // fields.
 type ianaEntry struct {
 	typ            string
-	tag            string
 	description    []string
 	scope          string
 	added          string
@@ -343,24 +349,24 @@ type builder struct {
 
 type index uint
 
-func openReader(url *string) io.ReadCloser {
+func openReader(url string) io.ReadCloser {
 	if *localFiles {
 		pwd, _ := os.Getwd()
-		*url = "file://" + path.Join(pwd, path.Base(*url))
+		url = "file://" + path.Join(pwd, path.Base(url))
 	}
 	t := &http.Transport{}
 	t.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
 	c := &http.Client{Transport: t}
-	resp, err := c.Get(*url)
+	resp, err := c.Get(url)
 	failOnError(err)
 	if resp.StatusCode != 200 {
-		log.Fatalf(`bad GET status for "%s": %s`, *url, resp.Status)
+		log.Fatalf(`bad GET status for "%s": %s`, url, resp.Status)
 	}
 	return resp.Body
 }
 
 func newBuilder() *builder {
-	r := openReader(url)
+	r := openReader(*url)
 	defer r.Close()
 	d := &cldr.Decoder{}
 	d.SetDirFilter("supplemental")
@@ -378,7 +384,7 @@ func newBuilder() *builder {
 }
 
 func (b *builder) parseRegistry() {
-	r := openReader(iana)
+	r := openReader(*iana)
 	defer r.Close()
 	b.registry = make(map[string]*ianaEntry)
 
@@ -393,13 +399,12 @@ func (b *builder) parseRegistry() {
 		case "Type:":
 			record = &ianaEntry{typ: value}
 		case "Subtag:", "Tag:":
-			record.tag = value
-			if info, ok := b.registry[value]; ok {
-				if info.typ != "language" || record.typ != "extlang" {
-					log.Fatalf("parseRegistry: tag %q already exists", value)
+			if s := strings.SplitN(value, "..", 2); len(s) > 1 {
+				for a := s[0]; a <= s[1]; a = inc(a) {
+					b.addToRegistry(a, record)
 				}
 			} else {
-				b.registry[value] = record
+				b.addToRegistry(value, record)
 			}
 		case "Suppress-Script:":
 			record.suppressScript = value
@@ -434,6 +439,16 @@ func (b *builder) parseRegistry() {
 	}
 	if scan.Err() != nil {
 		log.Panic(scan.Err())
+	}
+}
+
+func (b *builder) addToRegistry(key string, entry *ianaEntry) {
+	if info, ok := b.registry[key]; ok {
+		if info.typ != "language" || entry.typ != "extlang" {
+			log.Fatalf("parseRegistry: tag %q already exists", key)
+		}
+	} else {
+		b.registry[key] = entry
 	}
 }
 
@@ -697,13 +712,7 @@ func (b *builder) parseIndices() {
 		default:
 			continue
 		}
-		if s := strings.SplitN(k, "..", 2); len(s) > 1 {
-			for a := s[0]; a <= s[1]; a = inc(a) {
-				ss.add(a)
-			}
-		} else {
-			ss.add(k)
-		}
+		ss.add(k)
 	}
 	// Include languages in likely subtags.
 	for _, m := range b.supp.LikelySubtags.LikelySubtag {
@@ -940,8 +949,8 @@ func parseM49(s string) uint16 {
 }
 
 var regionConsts = []string{
-	"001", "419", "BR", "CA", "ES", "GB", "MD", "PT", "US", "ZZ", "XA", "XC",
-	"XK", // Unofficial tag for Kosovo.
+	"001", "419", "BR", "CA", "ES", "GB", "MD", "PT", "UK", "US",
+	"ZZ", "XA", "XC", "XK", // Unofficial tag for Kosovo.
 }
 
 func (b *builder) writeRegion() {
@@ -959,6 +968,36 @@ func (b *builder) writeRegion() {
 	regionISO := b.region.clone()
 	regionISO.s = regionISO.s[isoOffset:]
 	regionISO.sorted = false
+
+	regionTypes := make([]byte, len(b.region.s))
+
+	// Is the region valid BCP 47?
+	for s, e := range b.registry {
+		if len(s) == 2 && s == strings.ToUpper(s) {
+			i := b.region.index(s)
+			for _, d := range e.description {
+				if strings.Contains(d, "Private use") {
+					regionTypes[i] = iso3166UserAssgined
+				}
+			}
+			regionTypes[i] |= bcp47Region
+		}
+	}
+
+	// Is the region a valid ccTLD?
+	r := openReader(*tld)
+	defer r.Close()
+
+	buf, err := ioutil.ReadAll(r)
+	failOnError(err)
+	re := regexp.MustCompile(`"/domains/root/db/([a-z]{2}).html"`)
+	for _, m := range re.FindAllSubmatch(buf, -1) {
+		i := b.region.index(strings.ToUpper(string(m[1])))
+		regionTypes[i] |= ccTLD
+	}
+
+	b.writeSlice("regionTypes", regionTypes)
+
 	iso3Set := make(map[string]int)
 	update := func(iso2, iso3 string) {
 		i := regionISO.index(iso2)
@@ -1036,6 +1075,8 @@ func (b *builder) writeRegion() {
 	b.writeSlice("altRegionIDs", altRegionIDs)
 
 	// Create list of deprecated regions.
+	// TODO: consider inserting SF -> FI. Not included by CLDR, but is the only
+	// Transitionally-reserved mapping not included.
 	regionOldMap := stringSet{}
 	// Include regions in territoryAlias (not all are in the IANA registry!)
 	for _, reg := range b.supp.Metadata.Alias.TerritoryAlias {
@@ -1082,6 +1123,21 @@ func (b *builder) writeRegion() {
 	b.writeSlice("m49Index", m49Index)
 	b.writeSlice("fromM49", fromM49)
 }
+
+const (
+	// TODO: put these lists in regionTypes as user data? Could be used for
+	// various optimizations and refinements and could be exposed in the API.
+	iso3166Except = "AC CP DG EA EU FX IC SU TA UK"
+	iso3166Trans  = "AN BU CS NT TP YU ZR" // SF is not in our set of Regions.
+	// DY and RH are actually not deleted, but indeterminately reserved.
+	iso3166DelCLDR = "CT DD DY FQ HV JT MI NH NQ PC PU PZ RH VD WK YD"
+)
+
+const (
+	iso3166UserAssgined = 1 << iota
+	ccTLD
+	bcp47Region
+)
 
 func find(list []string, s string) int {
 	for i, t := range list {
@@ -1651,7 +1707,7 @@ func (b *builder) writeParents() {
 }
 
 var header = `// Generated by running
-//		maketables -url=%s -iana=%s
+//		maketables -url=%s -iana=%s -tld=%s
 // DO NOT EDIT
 
 package language
@@ -1663,7 +1719,7 @@ const Version = %q
 func main() {
 	flag.Parse()
 	b := newBuilder()
-	fmt.Fprintf(b.out, header, *url, *iana, cldr.Version)
+	fmt.Fprintf(b.out, header, *url, *iana, *tld, cldr.Version)
 
 	b.parseIndices()
 	b.writeType(fromTo{})

@@ -80,6 +80,27 @@ func ExampleTag_Region() {
 	// US Low
 }
 
+func ExampleRegion_TLD() {
+	us := language.MustParseRegion("US")
+	gb := language.MustParseRegion("GB")
+	bu := language.MustParseRegion("BU")
+
+	fmt.Println(us.TLD())
+	fmt.Println(gb.TLD())
+	fmt.Println(bu.TLD())
+
+	fmt.Println(us.Canonicalize().TLD())
+	fmt.Println(gb.Canonicalize().TLD())
+	fmt.Println(bu.Canonicalize().TLD())
+	// Output:
+	// US <nil>
+	// UK <nil>
+	// ZZ language: region is not a valid ccTLD
+	// US <nil>
+	// UK <nil>
+	// MM <nil>
+}
+
 func ExampleCompose() {
 	nl, _ := language.ParseBase("nl")
 	us, _ := language.ParseRegion("US")
