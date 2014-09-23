@@ -31,7 +31,7 @@ func (eucJP) String() string {
 
 var errInvalidEUCJP = errors.New("japanese: invalid EUC-JP encoding")
 
-type eucJPDecoder struct{}
+type eucJPDecoder struct{ transform.NopResetter }
 
 func (eucJPDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
@@ -111,7 +111,7 @@ loop:
 	return nDst, nSrc, err
 }
 
-type eucJPEncoder struct{}
+type eucJPEncoder struct{ transform.NopResetter }
 
 func (eucJPEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0

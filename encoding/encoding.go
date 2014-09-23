@@ -81,7 +81,7 @@ func (replacement) NewEncoder() transform.Transformer {
 	return replacementEncoder{}
 }
 
-type replacementDecoder struct{}
+type replacementDecoder struct{ transform.NopResetter }
 
 func (replacementDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	if len(dst) < 3 {
@@ -97,7 +97,7 @@ func (replacementDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int
 	return nDst, len(src), nil
 }
 
-type replacementEncoder struct{}
+type replacementEncoder struct{ transform.NopResetter }
 
 func (replacementEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
@@ -140,7 +140,7 @@ var ErrInvalidUTF8 = errors.New("encoding: invalid UTF-8")
 // input byte that is not valid UTF-8.
 var UTF8Validator transform.Transformer = utf8Validator{}
 
-type utf8Validator struct{}
+type utf8Validator struct{ transform.NopResetter }
 
 func (utf8Validator) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	n := len(src)

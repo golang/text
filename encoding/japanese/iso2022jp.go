@@ -42,6 +42,10 @@ const asciiEsc = 0x1b
 
 type iso2022JPDecoder int
 
+func (d *iso2022JPDecoder) Reset() {
+	*d = asciiState
+}
+
 func (d *iso2022JPDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
 loop:
@@ -135,6 +139,10 @@ loop:
 }
 
 type iso2022JPEncoder int
+
+func (e *iso2022JPEncoder) Reset() {
+	*e = asciiState
+}
 
 func (e *iso2022JPEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0

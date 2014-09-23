@@ -32,7 +32,7 @@ func (shiftJIS) String() string {
 
 var errInvalidShiftJIS = errors.New("japanese: invalid Shift JIS encoding")
 
-type shiftJISDecoder struct{}
+type shiftJISDecoder struct{ transform.NopResetter }
 
 func (shiftJISDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
@@ -102,7 +102,7 @@ loop:
 	return nDst, nSrc, err
 }
 
-type shiftJISEncoder struct{}
+type shiftJISEncoder struct{ transform.NopResetter }
 
 func (shiftJISEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0

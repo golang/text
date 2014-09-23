@@ -76,11 +76,19 @@ type utf16Encoding struct {
 }
 
 func (u utf16Encoding) NewDecoder() transform.Transformer {
-	return &utf16Decoder{endianness: u.endianness, bomPolicy: u.bomPolicy}
+	return &utf16Decoder{
+		endianness:       u.endianness,
+		initialBOMPolicy: u.bomPolicy,
+		currentBOMPolicy: u.bomPolicy,
+	}
 }
 
 func (u utf16Encoding) NewEncoder() transform.Transformer {
-	return &utf16Encoder{endianness: u.endianness, bomPolicy: u.bomPolicy}
+	return &utf16Encoder{
+		endianness:       u.endianness,
+		initialBOMPolicy: u.bomPolicy,
+		currentBOMPolicy: u.bomPolicy,
+	}
 }
 
 func (u utf16Encoding) String() string {
@@ -95,14 +103,17 @@ func (u utf16Encoding) String() string {
 }
 
 type utf16Decoder struct {
-	// TODO: does these need to be explicitly or implicitly reset, if this
-	// transformer is re-used?
-	endianness Endianness
-	bomPolicy  BOMPolicy
+	endianness       Endianness
+	initialBOMPolicy BOMPolicy
+	currentBOMPolicy BOMPolicy
+}
+
+func (u *utf16Decoder) Reset() {
+	u.currentBOMPolicy = u.initialBOMPolicy
 }
 
 func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
-	if u.bomPolicy == ExpectBOM {
+	if u.currentBOMPolicy == ExpectBOM {
 		if len(src) < 2 {
 			return 0, 0, transform.ErrShortSrc
 		}
@@ -114,7 +125,7 @@ func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 		default:
 			return 0, 0, ErrMissingBOM
 		}
-		u.bomPolicy = IgnoreBOM
+		u.currentBOMPolicy = IgnoreBOM
 		nSrc = 2
 	}
 
@@ -153,19 +164,22 @@ func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 }
 
 type utf16Encoder struct {
-	// TODO: do these need to be explicitly or implicitly reset, if this
-	// transformer is re-used?
-	endianness Endianness
-	bomPolicy  BOMPolicy
+	endianness       Endianness
+	initialBOMPolicy BOMPolicy
+	currentBOMPolicy BOMPolicy
+}
+
+func (u *utf16Encoder) Reset() {
+	u.currentBOMPolicy = u.initialBOMPolicy
 }
 
 func (u *utf16Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
-	if u.bomPolicy == ExpectBOM {
+	if u.currentBOMPolicy == ExpectBOM {
 		if len(dst) < 2 {
 			return 0, 0, transform.ErrShortDst
 		}
 		dst[0], dst[1] = 0xfe, 0xff
-		u.bomPolicy = IgnoreBOM
+		u.currentBOMPolicy = IgnoreBOM
 		nDst = 2
 	}
 

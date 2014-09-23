@@ -31,7 +31,7 @@ func (big5) String() string {
 
 var errInvalidBig5 = errors.New("traditionalchinese: invalid Big5 encoding")
 
-type big5Decoder struct{}
+type big5Decoder struct{ transform.NopResetter }
 
 func (big5Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size, s := rune(0), 0, ""
@@ -108,7 +108,7 @@ loop:
 	return nDst, nSrc, err
 }
 
-type big5Encoder struct{}
+type big5Encoder struct{ transform.NopResetter }
 
 func (big5Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0

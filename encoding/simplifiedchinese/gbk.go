@@ -45,6 +45,7 @@ var (
 )
 
 type gbkDecoder struct {
+	transform.NopResetter
 	gb18030 bool
 }
 
@@ -154,6 +155,7 @@ loop:
 }
 
 type gbkEncoder struct {
+	transform.NopResetter
 	gb18030 bool
 }
 

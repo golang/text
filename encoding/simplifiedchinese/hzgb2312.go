@@ -38,6 +38,10 @@ const (
 
 type hzGB2312Decoder int
 
+func (d *hzGB2312Decoder) Reset() {
+	*d = asciiState
+}
+
 func (d *hzGB2312Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
 loop:
@@ -112,6 +116,10 @@ loop:
 }
 
 type hzGB2312Encoder int
+
+func (d *hzGB2312Encoder) Reset() {
+	*d = asciiState
+}
 
 func (e *hzGB2312Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0

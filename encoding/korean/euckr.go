@@ -31,7 +31,7 @@ func (eucKR) String() string {
 
 var errInvalidEUCKR = errors.New("korean: invalid EUC-KR encoding")
 
-type eucKRDecoder struct{}
+type eucKRDecoder struct{ transform.NopResetter }
 
 func (eucKRDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0
@@ -93,7 +93,7 @@ loop:
 	return nDst, nSrc, err
 }
 
-type eucKREncoder struct{}
+type eucKREncoder struct{ transform.NopResetter }
 
 func (eucKREncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	r, size := rune(0), 0

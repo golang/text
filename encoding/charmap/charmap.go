@@ -51,6 +51,7 @@ func (m *charmap) String() string {
 
 // charmapDecoder implements transform.Transformer by decoding to UTF-8.
 type charmapDecoder struct {
+	transform.NopResetter
 	charmap *charmap
 }
 
@@ -85,6 +86,7 @@ func (m charmapDecoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, 
 
 // charmapEncoder implements transform.Transformer by encoding from UTF-8.
 type charmapEncoder struct {
+	transform.NopResetter
 	charmap *charmap
 }
 
