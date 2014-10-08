@@ -16,7 +16,7 @@ func ExampleNamer() {
 		"en-US", "en-GB", "ja", "zh", "zh-Hans", "zh-Hant", "pt", "pt-PT", "ko", "ar", "el", "ru", "uk", "pa",
 	}
 
-	en := display.Languages(language.English)
+	en := display.English.Languages()
 
 	for _, s := range supported {
 		t := language.MustParse(s)
