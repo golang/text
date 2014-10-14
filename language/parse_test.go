@@ -208,12 +208,11 @@ func parseTests() []parseTest {
 		// { in: "en-u-cu-xd", lang: "en", ext: "u-cu-xd", invalid: true },
 		{in: "en-t-abcd", lang: "en", invalid: true},
 		{in: "en-Latn-US-en", lang: "en", script: "Latn", region: "US", invalid: true},
-		// rewrites
-		{in: "zh-min", lang: "und", rewrite: true},
+		// rewrites (more tests in TestGrandfathered)
 		{in: "zh-min-nan", lang: "nan"},
 		{in: "zh-yue", lang: "yue"},
 		{in: "zh-xiang", lang: "hsn", rewrite: true},
-		{in: "zh-guoyu", lang: "zh", rewrite: true},
+		{in: "zh-guoyu", lang: "cmn", rewrite: true},
 		{in: "iw", lang: "iw"},
 		{in: "sgn-BE-FR", lang: "sfb", rewrite: true},
 		{in: "i-klingon", lang: "tlh", rewrite: true},

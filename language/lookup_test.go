@@ -151,6 +151,45 @@ func TestLangID(t *testing.T) {
 	}
 }
 
+func TestGrandfathered(t *testing.T) {
+	for _, tt := range []struct{ in, out string }{
+		{"art-lojban", "jbo"},
+		{"i-ami", "ami"},
+		{"i-bnn", "bnn"},
+		{"i-hak", "hak"},
+		{"i-klingon", "tlh"},
+		{"i-lux", "lb"},
+		{"i-navajo", "nv"},
+		{"i-pwn", "pwn"},
+		{"i-tao", "tao"},
+		{"i-tay", "tay"},
+		{"i-tsu", "tsu"},
+		{"no-bok", "nb"},
+		{"no-nyn", "nn"},
+		{"sgn-BE-FR", "sfb"},
+		{"sgn-BE-NL", "vgt"},
+		{"sgn-CH-DE", "sgg"},
+		{"zh-guoyu", "cmn"},
+		{"zh-hakka", "hak"},
+		{"zh-min-nan", "nan"},
+		{"zh-xiang", "hsn"},
+
+		// Grandfathered tags with no modern replacement will be converted as follows:
+		{"cel-gaulish", "xtg-x-cel-gaulish"},
+		{"en-GB-oed", "en-GB-x-oed"},
+		{"i-default", "en-x-i-default"},
+		{"i-enochian", "und-x-i-enochian"},
+		{"i-mingo", "see-x-i-mingo"},
+		{"zh-min", "nan-x-zh-min"},
+	} {
+		got := Raw.Make(tt.in)
+		want := Raw.MustParse(tt.out)
+		if got != want {
+			t.Errorf("%s: got %q; want %q", tt.in, got, want)
+		}
+	}
+}
+
 func TestRegionID(t *testing.T) {
 	tests := []struct {
 		in, out string

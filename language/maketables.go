@@ -66,8 +66,6 @@ Each 3-letter code is followed by its 1-byte langID.`,
 	`
 altLangIndex is used to convert indexes in altLangISO3 to langIDs.`,
 	`
-tagAlias holds a mapping from legacy and grandfathered tags to their language tag.`,
-	`
 langOldMap maps deprecated langIDs to their suggested replacements.`,
 	`
 langMacroMap maps languages to their macro language replacement, if applicable.`,
@@ -777,6 +775,10 @@ var langConsts = []string{
 	"mn", "mo", "mr", "ms", "mul", "my", "nb", "ne", "nl", "no", "pa", "pl", "pt",
 	"ro", "ru", "sh", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta", "te", "th",
 	"tl", "tn", "tr", "uk", "ur", "uz", "vi", "zh", "zu",
+
+	// constants for grandfathered tags (if not already defined)
+	"jbo", "ami", "bnn", "hak", "tlh", "lb", "nv", "pwn", "tao", "tay", "tsu",
+	"nn", "sfb", "vgt", "sgg", "cmn", "nan", "hsn",
 }
 
 // writeLanguage generates all tables needed for language canonicalization.
@@ -784,7 +786,7 @@ func (b *builder) writeLanguage() {
 	meta := b.supp.Metadata
 
 	b.writeConst("nonCanonicalUnd", b.lang.index("und"))
-	b.writeConsts(b.lang.index, langConsts...)
+	b.writeConsts(func(s string) int { return int(b.langIndex(s)) }, langConsts...)
 	b.writeConst("langPrivateStart", b.langIndex("qaa"))
 	b.writeConst("langPrivateEnd", b.langIndex("qtz"))
 
@@ -800,9 +802,6 @@ func (b *builder) writeLanguage() {
 	// Add dummy start to avoid the use of index 0.
 	altLangISO3.add("---")
 	altLangISO3.updateLater("---", "aa")
-
-	// legacyTag maps from tag to language code.
-	legacyTag := make(map[string]string)
 
 	lang := b.lang.clone()
 	for _, a := range meta.Alias.LanguageAlias {
@@ -824,8 +823,6 @@ func (b *builder) writeLanguage() {
 			} else if l := a.Type; !(l == "sh" || l == "no" || l == "tl") {
 				log.Fatalf("new %s alias: %s", a.Reason, a.Type)
 			}
-		} else {
-			legacyTag[strings.Replace(a.Type, "_", "-", -1)] = repl
 		}
 	}
 	// Manually add the mapping of "nb" (Norwegian) to its macro language.
@@ -902,15 +899,8 @@ func (b *builder) writeLanguage() {
 	b.writeString("altLangISO3", altLangISO3.join())
 	b.writeSlice("altLangIndex", altLangIndex)
 
-	index := func(s string) uint16 {
-		return b.langIndex(s)
-	}
-	b.writeSortedMap("langOldMap", &langOldMap, index)
-	b.writeSortedMap("langMacroMap", &langMacroMap, index)
-
-	b.writeMapFunc("tagAlias", legacyTag, func(s string) uint16 {
-		return uint16(b.langIndex(s))
-	})
+	b.writeSortedMap("langOldMap", &langOldMap, b.langIndex)
+	b.writeSortedMap("langMacroMap", &langMacroMap, b.langIndex)
 }
 
 var scriptConsts = []string{

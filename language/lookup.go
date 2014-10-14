@@ -430,3 +430,57 @@ func round(index string, c currencyID) int {
 func decimals(index string, c currencyID) int {
 	return int(index[c<<2+3] & 0x03)
 }
+
+var (
+	// grandfatheredMap holds a mapping from legacy and grandfathered tags to
+	// their base language or index to more elaborate tag.
+	grandfatheredMap = map[string]int16{
+		"art-lojban": _jbo,
+		"i-ami":      _ami,
+		"i-bnn":      _bnn,
+		"i-hak":      _hak,
+		"i-klingon":  _tlh,
+		"i-lux":      _lb,
+		"i-navajo":   _nv,
+		"i-pwn":      _pwn,
+		"i-tao":      _tao,
+		"i-tay":      _tay,
+		"i-tsu":      _tsu,
+		"no-bok":     _nb,
+		"no-nyn":     _nn,
+		"sgn-BE-FR":  _sfb,
+		"sgn-BE-NL":  _vgt,
+		"sgn-CH-DE":  _sgg,
+		"zh-guoyu":   _cmn,
+		"zh-hakka":   _hak,
+		"zh-min-nan": _nan,
+		"zh-xiang":   _hsn,
+
+		// Grandfathered tags with no modern replacement will be converted as
+		// follows:
+		"cel-gaulish": -1,
+		"en-GB-oed":   -2,
+		"i-default":   -3,
+		"i-enochian":  -4,
+		"i-mingo":     -5,
+		"zh-min":      -6,
+
+		// CLDR-specific tag.
+		"root": 0,
+	}
+
+	altTagIndex = [...]uint8{0, 17, 28, 42, 58, 71, 83}
+
+	altTags = "xtg-x-cel-gaulishen-GB-x-oeden-x-i-defaultund-x-i-enochiansee-x-i-mingonan-x-zh-min"
+)
+
+func grandfathered(s string) (t Tag, ok bool) {
+	if v, ok := grandfatheredMap[s]; ok {
+		if v < 0 {
+			return Make(altTags[altTagIndex[-v-1]:altTagIndex[-v]]), true
+		}
+		t.lang = langID(v)
+		return t, true
+	}
+	return t, false
+}

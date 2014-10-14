@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 // isAlpha returns true if the byte is not a digit.
@@ -241,18 +240,11 @@ func (c CanonType) Parse(s string) (t Tag, err error) {
 	if s == "" {
 		return und, errSyntax
 	}
-	t = und
-	if lang, ok := tagAlias[s]; ok {
-		t.lang = langID(lang)
-		return
+	t, ok := grandfathered(s)
+	if ok {
+		return t, nil
 	}
 	scan := makeScannerString(s)
-	if len(scan.token) >= 4 {
-		if !strings.EqualFold(s, "root") {
-			return und, errSyntax
-		}
-		return und, nil
-	}
 	t, err = parse(&scan, s)
 	t, changed := t.canonicalize(c)
 	if changed {

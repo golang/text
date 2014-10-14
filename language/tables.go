@@ -94,6 +94,24 @@ const (
 	_vi  = 507
 	_zh  = 531
 	_zu  = 533
+	_jbo = 6660
+	_ami = 856
+	_bnn = 1563
+	_hak = 5278
+	_tlh = 13673
+	_lb  = 258
+	_nv  = 353
+	_pwn = 11261
+	_tao = 13394
+	_tay = 13404
+	_tsu = 13868
+	_nn  = 344
+	_sfb = 12835
+	_vgt = 14907
+	_sgg = 12866
+	_cmn = 2213
+	_nan = 9337
+	_hsn = 5749
 )
 
 const langPrivateStart = 11352
@@ -477,35 +495,6 @@ var langMacroMap = [64]fromTo{
 	{from: 0x4424, to: 0x442b},
 	{from: 0x45fc, to: 0x13e},
 	{from: 0x468d, to: 0x20f},
-}
-
-// tagAlias holds a mapping from legacy and grandfathered tags to their language tag.
-// Size: 497 bytes
-var tagAlias = map[string]uint16{
-	"aa-SAAHO":   440,
-	"art-lojban": 6660,
-	"i-ami":      856,
-	"i-bnn":      1563,
-	"i-hak":      5278,
-	"i-klingon":  13673,
-	"i-lux":      258,
-	"i-navajo":   353,
-	"i-pwn":      11261,
-	"i-tao":      13394,
-	"i-tay":      13404,
-	"i-tsu":      13868,
-	"no-BOKMAL":  331,
-	"no-NYNORSK": 344,
-	"no-bok":     331,
-	"no-nyn":     344,
-	"sgn-BE-FR":  12835,
-	"sgn-BE-NL":  14907,
-	"sgn-CH-DE":  12866,
-	"zh-guoyu":   531,
-	"zh-hakka":   5278,
-	"zh-min":     0,
-	"zh-min-nan": 9337,
-	"zh-xiang":   5749,
 }
 
 const (
@@ -2530,4 +2519,4 @@ var parents = [5]parentRel{
 	{lang: 0x213, script: 0x31, maxScript: 0x31, toRegion: 0x8b, fromRegion: []uint16{0xc4}},
 }
 
-// Size: 19.3K (19723 bytes); Check: 46A07331
+// Size: 18.8K (19226 bytes); Check: 93201F51
