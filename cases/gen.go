@@ -55,9 +55,9 @@ func main() {
 type runeInfo struct {
 	Rune rune
 
-	entry caseInfo // trie value for this rune.
+	entry info // trie value for this rune.
 
-	CaseMode caseInfo
+	CaseMode info
 
 	// Simple case mappings.
 	Simple [1 + maxCaseMode][]rune
@@ -95,7 +95,7 @@ const (
 )
 
 // mapping returns the case mapping for the given case type.
-func (r *runeInfo) mapping(c caseInfo) string {
+func (r *runeInfo) mapping(c info) string {
 	if r.HasSpecial {
 		return string(r.Special[c])
 	}
@@ -355,7 +355,7 @@ func makeEntry(ri *runeInfo) {
 		makeException(ri)
 		return
 	}
-	ri.entry |= caseInfo((x&0xFF00)<<(xorShift-2) + (x&0x3F)<<xorShift)
+	ri.entry |= info((x&0xFF00)<<(xorShift-2) + (x&0x3F)<<xorShift)
 }
 
 // See the comments in gen_trieval.go re "the exceptions slice".
@@ -375,7 +375,7 @@ func makeException(ri *runeInfo) {
 	}
 
 	// Set the offset in the exceptionData array.
-	ri.entry |= caseInfo(len(exceptionData) << exceptionShift)
+	ri.entry |= info(len(exceptionData) << exceptionShift)
 
 	orig := string(ri.Rune)
 	tc := ri.mapping(cTitle)
@@ -446,7 +446,7 @@ func makeSparse(vals []uint64) ([]uint16, int) {
 	}
 
 	alt := func(i int, v uint16) uint16 {
-		if cm := caseInfo(v & fullCasedMask); cm == cUpper || cm == cLower {
+		if cm := info(v & fullCasedMask); cm == cUpper || cm == cLower {
 			// Convert cLower or cUpper to cXORCase value, which has the form 11x.
 			xor := v
 			xor &^= 1

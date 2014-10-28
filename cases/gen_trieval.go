@@ -11,7 +11,7 @@ package main
 // program and the resultant package. Sharing is achieved by the generator
 // copying gen_trieval.go to trieval.go and changing what's above this comment.
 
-// caseInfo holds case information for a single rune. It is the value returned
+// info holds case information for a single rune. It is the value returned
 // by a trie lookup. Most mapping information can be stored in a single 16-bit
 // value. If not, for example when a rune is mapped to multiple runes, the value
 // stores some basic case data and an index into an array with additional data.
@@ -34,7 +34,7 @@ package main
 //
 // See the definitions below for a more detailed description of the various
 // bits.
-type caseInfo uint16
+type info uint16
 
 const (
 	casedMask      = 0x0003
@@ -70,34 +70,34 @@ const (
 // cXORCase can result in large series of identical trie values. This, in turn,
 // allows us to better compress the trie blocks.
 const (
-	cUncased          caseInfo = iota // 000
-	cTitle                            // 001
-	cLower                            // 010
-	cUpper                            // 011
-	cIgnorableUncased                 // 100
-	cIgnorableCased                   // 101 // lower case if mappings exist
-	cXORCase                          // 11x // case is cLower | ((rune&1) ^ x)
+	cUncased          info = iota // 000
+	cTitle                        // 001
+	cLower                        // 010
+	cUpper                        // 011
+	cIgnorableUncased             // 100
+	cIgnorableCased               // 101 // lower case if mappings exist
+	cXORCase                      // 11x // case is cLower | ((rune&1) ^ x)
 
 	maxCaseMode = cUpper
 )
 
-func (c caseInfo) isCased() bool {
+func (c info) isCased() bool {
 	return c&casedMask != 0
 }
 
-func (c caseInfo) isCaseIgnorable() bool {
+func (c info) isCaseIgnorable() bool {
 	return c&ignorableMask == ignorableValue
 }
 
-func (c caseInfo) isCaseIgnorableAndNonBreakStarter() bool {
+func (c info) isCaseIgnorableAndNonBreakStarter() bool {
 	return c&(fullCasedMask|cccMask) == (ignorableValue | cccZero)
 }
 
-func (c caseInfo) isNotCasedAndNotCaseIgnorable() bool {
+func (c info) isNotCasedAndNotCaseIgnorable() bool {
 	return c&fullCasedMask == 0
 }
 
-func (c caseInfo) isCaseIgnorableAndNotCased() bool {
+func (c info) isCaseIgnorableAndNotCased() bool {
 	return c&fullCasedMask == cIgnorableUncased
 }
 
@@ -107,7 +107,7 @@ func (c caseInfo) isCaseIgnorableAndNotCased() bool {
 // CCC(r) > 0, but not 230. A value of cccBreak means that CCC(r) == 0 and that
 // the rune also has the break category Break (see below).
 const (
-	cccBreak caseInfo = iota << 4
+	cccBreak info = iota << 4
 	cccZero
 	cccAbove
 	cccOther
@@ -115,14 +115,14 @@ const (
 	cccMask = cccBreak | cccZero | cccAbove | cccOther
 )
 
-func (c caseInfo) cccVal() caseInfo {
+func (c info) cccVal() info {
 	if c&exceptionBit != 0 {
 		return cccZero
 	}
 	return c & cccMask
 }
 
-func (c caseInfo) cccType() caseInfo {
+func (c info) cccType() info {
 	ccc := c.cccVal()
 	if ccc <= cccZero {
 		return cccZero
@@ -185,13 +185,13 @@ const (
 // is undesirable for our purposes. ICU prevents breaks in such cases as well.
 
 // isBreak returns whether this rune should introduce a break.
-func (c caseInfo) isBreak() bool {
+func (c info) isBreak() bool {
 	return c.cccVal() == cccBreak
 }
 
 // isLetter returns whether the rune is of break type ALetter, Hebrew_Letter,
 // Numeric, ExtendNumLet, or Extend.
-func (c caseInfo) isLetter() bool {
+func (c info) isLetter() bool {
 	ccc := c.cccVal()
 	if ccc == cccZero {
 		return !c.isCaseIgnorable()
@@ -199,7 +199,7 @@ func (c caseInfo) isLetter() bool {
 	return ccc != cccBreak
 }
 
-// The exceptions slice holds data that does not fit in a normal caseInfo entry.
+// The exceptions slice holds data that does not fit in a normal info entry.
 // The entry is pointed to by the exception index in an entry. It has the
 // following format:
 //
