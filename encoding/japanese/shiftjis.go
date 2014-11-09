@@ -8,8 +8,8 @@ import (
 	"errors"
 	"unicode/utf8"
 
-	"code.google.com/p/go.text/encoding"
-	"code.google.com/p/go.text/transform"
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/transform"
 )
 
 // ShiftJIS is the Shift JIS encoding, also known as Code Page 932 and

@@ -11,9 +11,9 @@ package main
 
 import (
 	"bufio"
-	"code.google.com/p/go.text/cldr"
 	"flag"
 	"fmt"
+	"golang.org/x/text/cldr"
 	"hash"
 	"hash/fnv"
 	"io"

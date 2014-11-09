@@ -19,8 +19,8 @@ import (
 	"sort"
 	"strings"
 
-	"code.google.com/p/go.text/cldr"
-	"code.google.com/p/go.text/language"
+	"golang.org/x/text/cldr"
+	"golang.org/x/text/language"
 )
 
 var (

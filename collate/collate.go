@@ -11,9 +11,9 @@ import (
 	"bytes"
 	"strings"
 
-	"code.google.com/p/go.text/collate/colltab"
-	"code.google.com/p/go.text/language"
-	"code.google.com/p/go.text/unicode/norm"
+	"golang.org/x/text/collate/colltab"
+	"golang.org/x/text/language"
+	"golang.org/x/text/unicode/norm"
 )
 
 // AlternateHandling identifies the various ways in which variables are handled.

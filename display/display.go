@@ -15,7 +15,7 @@ package display
 import (
 	"strings"
 
-	"code.google.com/p/go.text/language"
+	"golang.org/x/text/language"
 )
 
 /*

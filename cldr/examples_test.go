@@ -1,8 +1,8 @@
 package cldr_test
 
 import (
-	"code.google.com/p/go.text/cldr"
 	"fmt"
+	"golang.org/x/text/cldr"
 )
 
 func ExampleSlice() {

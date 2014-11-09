@@ -9,7 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"code.google.com/p/go.text/internal/triegen"
+	"golang.org/x/text/internal/triegen"
 )
 
 func ExampleCompacter() {

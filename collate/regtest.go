@@ -24,9 +24,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"code.google.com/p/go.text/collate"
-	"code.google.com/p/go.text/collate/build"
-	"code.google.com/p/go.text/collate/colltab"
+	"golang.org/x/text/collate"
+	"golang.org/x/text/collate/build"
+	"golang.org/x/text/collate/colltab"
 )
 
 // This regression test runs tests for the test files in CollationTest.zip

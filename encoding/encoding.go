@@ -9,18 +9,18 @@
 //	rInUTF8 := transform.NewReader(r, e.NewDecoder())
 // and to convert from UTF-8 to the encoding e:
 //	wInUTF8 := transform.NewWriter(w, e.NewEncoder())
-// In both cases, import "code.google.com/p/go.text/transform".
+// In both cases, import "golang.org/x/text/transform".
 //
 // Encoding implementations are provided in other packages, such as
-// code.google.com/p/go.text/encoding/charmap and
-// code.google.com/p/go.text/encoding/japanese.
+// golang.org/x/text/encoding/charmap and
+// golang.org/x/text/encoding/japanese.
 package encoding
 
 import (
 	"errors"
 	"unicode/utf8"
 
-	"code.google.com/p/go.text/transform"
+	"golang.org/x/text/transform"
 )
 
 // Encoding is a character set encoding that can be transformed to and from

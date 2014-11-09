@@ -27,9 +27,9 @@ import (
 	"strings"
 	"unicode"
 
-	"code.google.com/p/go.text/internal/triegen"
-	"code.google.com/p/go.text/internal/ucd"
-	"code.google.com/p/go.text/unicode/norm"
+	"golang.org/x/text/internal/triegen"
+	"golang.org/x/text/internal/ucd"
+	"golang.org/x/text/unicode/norm"
 )
 
 var (

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"unicode"
 
-	"code.google.com/p/go.text/language"
+	"golang.org/x/text/language"
 )
 
 // TODO: test that tables are properly dropped by the linker for various use

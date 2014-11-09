@@ -7,9 +7,9 @@ package collate
 import (
 	"testing"
 
-	"code.google.com/p/go.text/collate/build"
-	"code.google.com/p/go.text/collate/colltab"
-	"code.google.com/p/go.text/unicode/norm"
+	"golang.org/x/text/collate/build"
+	"golang.org/x/text/collate/colltab"
+	"golang.org/x/text/unicode/norm"
 )
 
 type ColElems []Weights

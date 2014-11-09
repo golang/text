@@ -5,8 +5,8 @@
 package language_test
 
 import (
-	"code.google.com/p/go.text/language"
 	"fmt"
+	"golang.org/x/text/language"
 )
 
 func ExampleCanonType() {

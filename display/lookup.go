@@ -12,7 +12,7 @@ import (
 	"sort"
 	"strings"
 
-	"code.google.com/p/go.text/language"
+	"golang.org/x/text/language"
 )
 
 type namer interface {
