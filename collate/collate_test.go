@@ -18,18 +18,23 @@ type weightsTest struct {
 
 type opts struct {
 	lev int
-	alt AlternateHandling
+	alt alternateHandling
 	top int
 
 	backwards bool
 	caseLevel bool
 }
 
-func (o opts) level() colltab.Level {
-	if o.lev == 0 {
-		return colltab.Quaternary
+// ignore returns an initialized boolean array based on the given Level.
+// A negative value means using the default setting of quaternary.
+func ignore(level colltab.Level) (ignore [colltab.NumLevels]bool) {
+	if level < 0 {
+		level = colltab.Quaternary
 	}
-	return colltab.Level(o.lev - 1)
+	for i := range ignore {
+		ignore[i] = level < colltab.Level(i)
+	}
+	return ignore
 }
 
 func makeCE(w []int) colltab.Elem {
@@ -42,11 +47,13 @@ func makeCE(w []int) colltab.Elem {
 
 func (o opts) collator() *Collator {
 	c := &Collator{
-		Strength:    o.level(),
-		Alternate:   o.alt,
-		Backwards:   o.backwards,
-		CaseLevel:   o.caseLevel,
-		variableTop: uint32(o.top),
+		options: options{
+			ignore:      ignore(colltab.Level(o.lev - 1)),
+			alternate:   o.alt,
+			backwards:   o.backwards,
+			caseLevel:   o.caseLevel,
+			variableTop: uint32(o.top),
+		},
 	}
 	return c
 }
@@ -72,133 +79,133 @@ var zero = W(0, 0, 0, 0)
 var processTests = []weightsTest{
 	// Shifted
 	{ // simple sequence of non-variables
-		opt: opts{alt: AltShifted, top: 100},
+		opt: opts{alt: altShifted, top: 100},
 		in:  ColElems{W(200), W(300), W(400)},
 		out: ColElems{wpq(200, maxQ), wpq(300, maxQ), wpq(400, maxQ)},
 	},
 	{ // first is a variable
-		opt: opts{alt: AltShifted, top: 250},
+		opt: opts{alt: altShifted, top: 250},
 		in:  ColElems{W(200), W(300), W(400)},
 		out: ColElems{wq(200), wpq(300, maxQ), wpq(400, maxQ)},
 	},
 	{ // all but first are variable
-		opt: opts{alt: AltShifted, top: 999},
+		opt: opts{alt: altShifted, top: 999},
 		in:  ColElems{W(1000), W(200), W(300), W(400)},
 		out: ColElems{wpq(1000, maxQ), wq(200), wq(300), wq(400)},
 	},
 	{ // first is a modifier
-		opt: opts{alt: AltShifted, top: 999},
+		opt: opts{alt: altShifted, top: 999},
 		in:  ColElems{W(0, 10), W(1000)},
 		out: ColElems{wsq(10, maxQ), wpq(1000, maxQ)},
 	},
 	{ // primary ignorables
-		opt: opts{alt: AltShifted, top: 250},
+		opt: opts{alt: altShifted, top: 250},
 		in:  ColElems{W(200), W(0, 10), W(300), W(0, 15), W(400)},
 		out: ColElems{wq(200), zero, wpq(300, maxQ), wsq(15, maxQ), wpq(400, maxQ)},
 	},
 	{ // secondary ignorables
-		opt: opts{alt: AltShifted, top: 250},
+		opt: opts{alt: altShifted, top: 250},
 		in:  ColElems{W(200), W(0, 0, 10), W(300), W(0, 0, 15), W(400)},
 		out: ColElems{wq(200), zero, wpq(300, maxQ), W(0, 0, 15, maxQ), wpq(400, maxQ)},
 	},
 	{ // tertiary ignorables, no change
-		opt: opts{alt: AltShifted, top: 250},
+		opt: opts{alt: altShifted, top: 250},
 		in:  ColElems{W(200), zero, W(300), zero, W(400)},
 		out: ColElems{wq(200), zero, wpq(300, maxQ), zero, wpq(400, maxQ)},
 	},
 
 	// ShiftTrimmed (same as Shifted)
 	{ // simple sequence of non-variables
-		opt: opts{alt: AltShiftTrimmed, top: 100},
+		opt: opts{alt: altShiftTrimmed, top: 100},
 		in:  ColElems{W(200), W(300), W(400)},
 		out: ColElems{wpq(200, maxQ), wpq(300, maxQ), wpq(400, maxQ)},
 	},
 	{ // first is a variable
-		opt: opts{alt: AltShiftTrimmed, top: 250},
+		opt: opts{alt: altShiftTrimmed, top: 250},
 		in:  ColElems{W(200), W(300), W(400)},
 		out: ColElems{wq(200), wpq(300, maxQ), wpq(400, maxQ)},
 	},
 	{ // all but first are variable
-		opt: opts{alt: AltShiftTrimmed, top: 999},
+		opt: opts{alt: altShiftTrimmed, top: 999},
 		in:  ColElems{W(1000), W(200), W(300), W(400)},
 		out: ColElems{wpq(1000, maxQ), wq(200), wq(300), wq(400)},
 	},
 	{ // first is a modifier
-		opt: opts{alt: AltShiftTrimmed, top: 999},
+		opt: opts{alt: altShiftTrimmed, top: 999},
 		in:  ColElems{W(0, 10), W(1000)},
 		out: ColElems{wsq(10, maxQ), wpq(1000, maxQ)},
 	},
 	{ // primary ignorables
-		opt: opts{alt: AltShiftTrimmed, top: 250},
+		opt: opts{alt: altShiftTrimmed, top: 250},
 		in:  ColElems{W(200), W(0, 10), W(300), W(0, 15), W(400)},
 		out: ColElems{wq(200), zero, wpq(300, maxQ), wsq(15, maxQ), wpq(400, maxQ)},
 	},
 	{ // secondary ignorables
-		opt: opts{alt: AltShiftTrimmed, top: 250},
+		opt: opts{alt: altShiftTrimmed, top: 250},
 		in:  ColElems{W(200), W(0, 0, 10), W(300), W(0, 0, 15), W(400)},
 		out: ColElems{wq(200), zero, wpq(300, maxQ), W(0, 0, 15, maxQ), wpq(400, maxQ)},
 	},
 	{ // tertiary ignorables, no change
-		opt: opts{alt: AltShiftTrimmed, top: 250},
+		opt: opts{alt: altShiftTrimmed, top: 250},
 		in:  ColElems{W(200), zero, W(300), zero, W(400)},
 		out: ColElems{wq(200), zero, wpq(300, maxQ), zero, wpq(400, maxQ)},
 	},
 
 	// Blanked
 	{ // simple sequence of non-variables
-		opt: opts{alt: AltBlanked, top: 100},
+		opt: opts{alt: altBlanked, top: 100},
 		in:  ColElems{W(200), W(300), W(400)},
 		out: ColElems{W(200), W(300), W(400)},
 	},
 	{ // first is a variable
-		opt: opts{alt: AltBlanked, top: 250},
+		opt: opts{alt: altBlanked, top: 250},
 		in:  ColElems{W(200), W(300), W(400)},
 		out: ColElems{zero, W(300), W(400)},
 	},
 	{ // all but first are variable
-		opt: opts{alt: AltBlanked, top: 999},
+		opt: opts{alt: altBlanked, top: 999},
 		in:  ColElems{W(1000), W(200), W(300), W(400)},
 		out: ColElems{W(1000), zero, zero, zero},
 	},
 	{ // first is a modifier
-		opt: opts{alt: AltBlanked, top: 999},
+		opt: opts{alt: altBlanked, top: 999},
 		in:  ColElems{W(0, 10), W(1000)},
 		out: ColElems{W(0, 10), W(1000)},
 	},
 	{ // primary ignorables
-		opt: opts{alt: AltBlanked, top: 250},
+		opt: opts{alt: altBlanked, top: 250},
 		in:  ColElems{W(200), W(0, 10), W(300), W(0, 15), W(400)},
 		out: ColElems{zero, zero, W(300), W(0, 15), W(400)},
 	},
 	{ // secondary ignorables
-		opt: opts{alt: AltBlanked, top: 250},
+		opt: opts{alt: altBlanked, top: 250},
 		in:  ColElems{W(200), W(0, 0, 10), W(300), W(0, 0, 15), W(400)},
 		out: ColElems{zero, zero, W(300), W(0, 0, 15), W(400)},
 	},
 	{ // tertiary ignorables, no change
-		opt: opts{alt: AltBlanked, top: 250},
+		opt: opts{alt: altBlanked, top: 250},
 		in:  ColElems{W(200), zero, W(300), zero, W(400)},
 		out: ColElems{zero, zero, W(300), zero, W(400)},
 	},
 
 	// Non-ignorable: input is always equal to output.
 	{ // all but first are variable
-		opt: opts{alt: AltNonIgnorable, top: 999},
+		opt: opts{alt: altNonIgnorable, top: 999},
 		in:  ColElems{W(1000), W(200), W(300), W(400)},
 		out: ColElems{W(1000), W(200), W(300), W(400)},
 	},
 	{ // primary ignorables
-		opt: opts{alt: AltNonIgnorable, top: 250},
+		opt: opts{alt: altNonIgnorable, top: 250},
 		in:  ColElems{W(200), W(0, 10), W(300), W(0, 15), W(400)},
 		out: ColElems{W(200), W(0, 10), W(300), W(0, 15), W(400)},
 	},
 	{ // secondary ignorables
-		opt: opts{alt: AltNonIgnorable, top: 250},
+		opt: opts{alt: altNonIgnorable, top: 250},
 		in:  ColElems{W(200), W(0, 0, 10), W(300), W(0, 0, 15), W(400)},
 		out: ColElems{W(200), W(0, 0, 10), W(300), W(0, 0, 15), W(400)},
 	},
 	{ // tertiary ignorables, no change
-		opt: opts{alt: AltNonIgnorable, top: 250},
+		opt: opts{alt: altNonIgnorable, top: 250},
 		in:  ColElems{W(200), zero, W(300), zero, W(400)},
 		out: ColElems{W(200), zero, W(300), zero, W(400)},
 	},
@@ -230,7 +237,7 @@ const sep = 0 // separator byte
 
 var keyFromElemTests = []keyFromElemTest{
 	{ // simple primary and secondary weights.
-		opts{alt: AltShifted},
+		opts{alt: altShifted},
 		ColElems{W(0x200), W(0x7FFF), W(0, 0x30), W(0x100)},
 		[]byte{0x2, 0, 0x7F, 0xFF, 0x1, 0x00, // primary
 			sep, sep, 0, defS, 0, defS, 0, 0x30, 0, defS, // secondary
@@ -239,7 +246,7 @@ var keyFromElemTests = []keyFromElemTest{
 		},
 	},
 	{ // same as first, but with zero element that need to be removed
-		opts{alt: AltShifted},
+		opts{alt: altShifted},
 		ColElems{W(0x200), zero, W(0x7FFF), W(0, 0x30), zero, W(0x100)},
 		[]byte{0x2, 0, 0x7F, 0xFF, 0x1, 0x00, // primary
 			sep, sep, 0, defS, 0, defS, 0, 0x30, 0, defS, // secondary
@@ -248,7 +255,7 @@ var keyFromElemTests = []keyFromElemTest{
 		},
 	},
 	{ // same as first, with large primary values
-		opts{alt: AltShifted},
+		opts{alt: altShifted},
 		ColElems{W(0x200), W(0x8000), W(0, 0x30), W(0x12345)},
 		[]byte{0x2, 0, 0x80, 0x80, 0x00, 0x81, 0x23, 0x45, // primary
 			sep, sep, 0, defS, 0, defS, 0, 0x30, 0, defS, // secondary
@@ -257,7 +264,7 @@ var keyFromElemTests = []keyFromElemTest{
 		},
 	},
 	{ // same as first, but with the secondary level backwards
-		opts{alt: AltShifted, backwards: true},
+		opts{alt: altShifted, backwards: true},
 		ColElems{W(0x200), W(0x7FFF), W(0, 0x30), W(0x100)},
 		[]byte{0x2, 0, 0x7F, 0xFF, 0x1, 0x00, // primary
 			sep, sep, 0, defS, 0, 0x30, 0, defS, 0, defS, // secondary
@@ -266,7 +273,7 @@ var keyFromElemTests = []keyFromElemTest{
 		},
 	},
 	{ // same as first, ignoring quaternary level
-		opts{alt: AltShifted, lev: 3},
+		opts{alt: altShifted, lev: 3},
 		ColElems{W(0x200), zero, W(0x7FFF), W(0, 0x30), zero, W(0x100)},
 		[]byte{0x2, 0, 0x7F, 0xFF, 0x1, 0x00, // primary
 			sep, sep, 0, defS, 0, defS, 0, 0x30, 0, defS, // secondary
@@ -274,19 +281,19 @@ var keyFromElemTests = []keyFromElemTest{
 		},
 	},
 	{ // same as first, ignoring tertiary level
-		opts{alt: AltShifted, lev: 2},
+		opts{alt: altShifted, lev: 2},
 		ColElems{W(0x200), zero, W(0x7FFF), W(0, 0x30), zero, W(0x100)},
 		[]byte{0x2, 0, 0x7F, 0xFF, 0x1, 0x00, // primary
 			sep, sep, 0, defS, 0, defS, 0, 0x30, 0, defS, // secondary
 		},
 	},
 	{ // same as first, ignoring secondary level
-		opts{alt: AltShifted, lev: 1},
+		opts{alt: altShifted, lev: 1},
 		ColElems{W(0x200), zero, W(0x7FFF), W(0, 0x30), zero, W(0x100)},
 		[]byte{0x2, 0, 0x7F, 0xFF, 0x1, 0x00},
 	},
 	{ // simple primary and secondary weights.
-		opts{alt: AltShiftTrimmed, top: 0x250},
+		opts{alt: altShiftTrimmed, top: 0x250},
 		ColElems{W(0x300), W(0x200), W(0x7FFF), W(0, 0x30), W(0x800)},
 		[]byte{0x3, 0, 0x7F, 0xFF, 0x8, 0x00, // primary
 			sep, sep, 0, defS, 0, defS, 0, 0x30, 0, defS, // secondary
@@ -295,7 +302,7 @@ var keyFromElemTests = []keyFromElemTest{
 		},
 	},
 	{ // as first, primary with case level enabled
-		opts{alt: AltShifted, lev: 1, caseLevel: true},
+		opts{alt: altShifted, lev: 1, caseLevel: true},
 		ColElems{W(0x200), W(0x7FFF), W(0, 0x30), W(0x100)},
 		[]byte{0x2, 0, 0x7F, 0xFF, 0x1, 0x00, // primary
 			sep, sep, // secondary
@@ -388,8 +395,8 @@ var keyTests = []keyTest{
 
 func TestKey(t *testing.T) {
 	c, _ := makeTable(appendNextTests[4].in)
-	c.Alternate = AltShifted
-	c.Strength = colltab.Quaternary
+	c.alternate = altShifted
+	c.ignore = ignore(colltab.Quaternary)
 	buf := Buffer{}
 	keys1 := [][]byte{}
 	keys2 := [][]byte{}

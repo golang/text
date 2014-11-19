@@ -26,7 +26,7 @@ import (
 
 	"golang.org/x/text/collate"
 	"golang.org/x/text/collate/build"
-	"golang.org/x/text/collate/colltab"
+	"golang.org/x/text/language"
 )
 
 // This regression test runs tests for the test files in CollationTest.zip
@@ -224,19 +224,19 @@ func runes(b []byte) []rune {
 	return []rune(string(b))
 }
 
+var shifted = language.MustParse("und-u-ka-shifted-ks-level4")
+
 func doTest(t Test) {
 	bld := build.NewBuilder()
 	parseUCA(bld)
 	w, err := bld.Build()
 	Error(err)
-	c := collate.NewFromTable(w)
-	c.Strength = colltab.Quaternary
-	c.Alternate = collate.AltShifted
-	b := &collate.Buffer{}
-	if strings.Contains(t.name, "NON_IGNOR") {
-		c.Strength = colltab.Tertiary
-		c.Alternate = collate.AltNonIgnorable
+	var tag language.Tag
+	if !strings.Contains(t.name, "NON_IGNOR") {
+		tag = shifted
 	}
+	c := collate.NewFromTable(w, collate.OptionsFromTag(tag))
+	b := &collate.Buffer{}
 	prev := t.str[0]
 	for i := 1; i < len(t.str); i++ {
 		b.Reset()

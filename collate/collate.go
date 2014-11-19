@@ -7,104 +7,24 @@
 // interface to collation. Users should typically use that package instead.
 package collate
 
+//go:generate go run maketables.go -output tables.go
+
 import (
 	"bytes"
 	"strings"
 
 	"golang.org/x/text/collate/colltab"
 	"golang.org/x/text/language"
-	"golang.org/x/text/unicode/norm"
-)
-
-// AlternateHandling identifies the various ways in which variables are handled.
-// A rune with a primary weight lower than the variable top is considered a
-// variable.
-// See http://www.unicode.org/reports/tr10/#Variable_Weighting for details.
-type AlternateHandling int
-
-const (
-	// AltNonIgnorable turns off special handling of variables.
-	AltNonIgnorable AlternateHandling = iota
-
-	// AltBlanked sets variables and all subsequent primary ignorables to be
-	// ignorable at all levels. This is identical to removing all variables
-	// and subsequent primary ignorables from the input.
-	AltBlanked
-
-	// AltShifted sets variables to be ignorable for levels one through three and
-	// adds a fourth level based on the values of the ignored levels.
-	AltShifted
-
-	// AltShiftTrimmed is a slight variant of AltShifted that is used to
-	// emulate POSIX.
-	AltShiftTrimmed
 )
 
 // Collator provides functionality for comparing strings for a given
 // collation order.
 type Collator struct {
-	// TODO: hide most of these options. Low-level options are set through the locale
-	// identifier (as defined by LDML) while high-level options are set through SetOptions.
-	// Using high-level options allows us to be more flexible (such as not ignoring
-	// Thai vowels for IgnoreDiacriticals) and more user-friendly (such as allowing
-	// diacritical marks to be ignored but not case without having to fiddle with levels).
-
-	// Strength sets the maximum level to use in comparison.
-	Strength colltab.Level
-
-	// Alternate specifies an alternative handling of variables.
-	Alternate AlternateHandling
-
-	// Backwards specifies the order of sorting at the secondary level.
-	// This option exists predominantly to support reverse sorting of accents in French.
-	Backwards bool
-
-	// TODO: implement:
-	// With HiraganaQuaternary enabled, Hiragana codepoints will get lower values
-	// than all the other non-variable code points. Strength must be greater or
-	// equal to Quaternary for this to take effect.
-	HiraganaQuaternary bool
-
-	// If CaseLevel is true, a level consisting only of case characteristics will
-	// be inserted in front of the tertiary level.  To ignore accents but take
-	// cases into account, set Strength to Primary and CaseLevel to true.
-	CaseLevel bool
-
-	// If Numeric is true, any sequence of decimal digits (category is Nd) is sorted
-	// at a primary level with its numeric value.  For example, "A-21" < "A-123".
-	Numeric bool
-
-	// The largest primary value that is considered to be variable.
-	variableTop uint32
-
-	f norm.Form
-
-	t colltab.Weigher
+	options
 
 	sorter sorter
 
 	_iter [2]iter
-}
-
-// An Option is used to change the behavior of Collator.  They override the
-// settings passed through the locale identifier.
-type Option int
-
-const (
-	Numeric          Option = 1 << iota // Sort numbers numerically ("2" < "12").
-	IgnoreCase                          // Case-insensitive search.
-	IgnoreDiacritics                    // Ignore diacritical marks. ("o" == "ö").
-	IgnoreWidth                         // Ignore full versus normal width.
-	UpperFirst                          // Sort upper case before lower case.
-	LowerFirst                          // Sort lower case before upper case.
-	Force                               // Force ordering if strings are equivalent but not equal.
-
-	Loose = IgnoreDiacritics | IgnoreWidth | IgnoreCase
-)
-
-// SetOptions accepts a Options or-ed together.  All previous calls to SetOptions are ignored.
-func (c *Collator) SetOptions(o Option) {
-	// TODO: implement
 }
 
 func (c *Collator) iter(i int) *iter {
@@ -125,20 +45,26 @@ func Supported() []language.Tag {
 var matcher = language.NewMatcher(Supported())
 
 // New returns a new Collator initialized for the given locale.
-func New(t language.Tag) *Collator {
-	_, index, _ := matcher.Match(t)
-	return NewFromTable(colltab.Init(locales[index]))
+func New(t language.Tag, o ...Option) *Collator {
+	tt, index, _ := matcher.Match(t)
+	c := newCollator(colltab.Init(locales[index]))
+
+	// Set the default options for the retrieved locale.
+	c.setFromTag(tt)
+
+	// Set options from the user-supplied tag.
+	c.setFromTag(t)
+
+	// Set the user-supplied options.
+	c.setOptions(o)
+
+	return c
 }
 
-func NewFromTable(t colltab.Weigher) *Collator {
-	c := &Collator{
-		Strength: colltab.Tertiary,
-		f:        norm.NFD,
-		t:        t,
-	}
-	c._iter[0].init(c)
-	c._iter[1].init(c)
-	c.variableTop = t.Top()
+// NewFromTable returns a new Collator for the given Weigher.
+func NewFromTable(w colltab.Weigher, o ...Option) *Collator {
+	c := newCollator(w)
+	c.setOptions(o)
 	return c
 }
 
@@ -169,7 +95,7 @@ func (c *Collator) Compare(a, b []byte) int {
 	if res := c.compare(); res != 0 {
 		return res
 	}
-	if colltab.Identity == c.Strength {
+	if !c.ignore[colltab.Identity] {
 		return bytes.Compare(a, b)
 	}
 	return 0
@@ -185,7 +111,7 @@ func (c *Collator) CompareString(a, b string) int {
 	if res := c.compare(); res != 0 {
 		return res
 	}
-	if colltab.Identity == c.Strength {
+	if !c.ignore[colltab.Identity] {
 		if a < b {
 			return -1
 		} else if a > b {
@@ -216,18 +142,17 @@ func compareLevel(f func(i *iter) int, a, b *iter) int {
 func (c *Collator) compare() int {
 	ia, ib := c.iter(0), c.iter(1)
 	// Process primary level
-	if c.Alternate != AltShifted {
+	if c.alternate != altShifted {
 		// TODO: implement script reordering
-		// TODO: special hiragana handling
 		if res := compareLevel((*iter).nextPrimary, ia, ib); res != 0 {
 			return res
 		}
 	} else {
 		// TODO: handle shifted
 	}
-	if colltab.Secondary <= c.Strength {
+	if !c.ignore[colltab.Secondary] {
 		f := (*iter).nextSecondary
-		if c.Backwards {
+		if c.backwards {
 			f = (*iter).prevSecondary
 		}
 		if res := compareLevel(f, ia, ib); res != 0 {
@@ -235,12 +160,11 @@ func (c *Collator) compare() int {
 		}
 	}
 	// TODO: special case handling (Danish?)
-	if colltab.Tertiary <= c.Strength || c.CaseLevel {
+	if !c.ignore[colltab.Tertiary] || c.caseLevel {
 		if res := compareLevel((*iter).nextTertiary, ia, ib); res != 0 {
 			return res
 		}
-		// TODO: Not needed for the default value of AltNonIgnorable?
-		if colltab.Quaternary <= c.Strength {
+		if !c.ignore[colltab.Quaternary] {
 			if res := compareLevel((*iter).nextQuaternary, ia, ib); res != 0 {
 				return res
 			}
@@ -270,7 +194,7 @@ func (c *Collator) KeyFromString(buf *Buffer, str string) []byte {
 }
 
 func (c *Collator) key(buf *Buffer, w []colltab.Elem) []byte {
-	processWeights(c.Alternate, c.t.Top(), w)
+	processWeights(c.alternate, c.t.Top(), w)
 	kn := len(buf.key)
 	c.keyFromElems(buf, w)
 	return buf.key[kn:]
@@ -502,10 +426,10 @@ func (c *Collator) keyFromElems(buf *Buffer, ws []colltab.Elem) {
 			buf.key = appendPrimary(buf.key, w)
 		}
 	}
-	if colltab.Secondary <= c.Strength {
+	if !c.ignore[colltab.Secondary] {
 		buf.key = append(buf.key, 0, 0)
 		// TODO: we can use one 0 if we can guarantee that all non-zero weights are > 0xFF.
-		if !c.Backwards {
+		if !c.backwards {
 			for _, v := range ws {
 				if w := v.Secondary(); w > 0 {
 					buf.key = append(buf.key, uint8(w>>8), uint8(w))
@@ -518,10 +442,10 @@ func (c *Collator) keyFromElems(buf *Buffer, ws []colltab.Elem) {
 				}
 			}
 		}
-	} else if c.CaseLevel {
+	} else if c.caseLevel {
 		buf.key = append(buf.key, 0, 0)
 	}
-	if colltab.Tertiary <= c.Strength || c.CaseLevel {
+	if !c.ignore[colltab.Tertiary] || c.caseLevel {
 		buf.key = append(buf.key, 0, 0)
 		for _, v := range ws {
 			if w := v.Tertiary(); w > 0 {
@@ -532,8 +456,8 @@ func (c *Collator) keyFromElems(buf *Buffer, ws []colltab.Elem) {
 		// Note that we represent MaxQuaternary as 0xFF. The first byte of the
 		// representation of a primary weight is always smaller than 0xFF,
 		// so using this single byte value will compare correctly.
-		if colltab.Quaternary <= c.Strength && c.Alternate >= AltShifted {
-			if c.Alternate == AltShiftTrimmed {
+		if !c.ignore[colltab.Quaternary] && c.alternate >= altShifted {
+			if c.alternate == altShiftTrimmed {
 				lastNonFFFF := len(buf.key)
 				buf.key = append(buf.key, 0)
 				for _, v := range ws {
@@ -559,11 +483,11 @@ func (c *Collator) keyFromElems(buf *Buffer, ws []colltab.Elem) {
 	}
 }
 
-func processWeights(vw AlternateHandling, top uint32, wa []colltab.Elem) {
+func processWeights(vw alternateHandling, top uint32, wa []colltab.Elem) {
 	ignore := false
 	vtop := int(top)
 	switch vw {
-	case AltShifted, AltShiftTrimmed:
+	case altShifted, altShiftTrimmed:
 		for i := range wa {
 			if p := wa[i].Primary(); p <= vtop && p != 0 {
 				wa[i] = colltab.MakeQuaternary(p)
@@ -576,7 +500,7 @@ func processWeights(vw AlternateHandling, top uint32, wa []colltab.Elem) {
 				ignore = false
 			}
 		}
-	case AltBlanked:
+	case altBlanked:
 		for i := range wa {
 			if p := wa[i].Primary(); p <= vtop && (ignore || p != 0) {
 				wa[i] = colltab.Ignore

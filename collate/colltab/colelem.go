@@ -23,6 +23,8 @@ const (
 	Tertiary
 	Quaternary
 	Identity
+
+	NumLevels
 )
 
 const (
