@@ -14,6 +14,8 @@
 // Older versions may not work.
 package cldr
 
+//go:generate go run makexml.go -output xml.go
+
 import (
 	"fmt"
 	"sort"
