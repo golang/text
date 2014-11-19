@@ -108,8 +108,8 @@ func TestLangID(t *testing.T) {
 		{id: "gsw", bcp47: "gsw", iso3: "gsw"},
 		{id: "gSW", bcp47: "gsw", iso3: "gsw"},
 		{id: "und", bcp47: "und", iso3: "und"},
-		{id: "sh", bcp47: "sh", iso3: "hbs", norm: "sh"},
-		{id: "hbs", bcp47: "sh", iso3: "hbs", norm: "sh"},
+		{id: "sh", bcp47: "sh", iso3: "hbs", norm: "sr"},
+		{id: "hbs", bcp47: "sh", iso3: "hbs", norm: "sr"},
 		{id: "no", bcp47: "no", iso3: "nor", norm: "no"},
 		{id: "nor", bcp47: "no", iso3: "nor", norm: "no"},
 		{id: "cmn", bcp47: "cmn", iso3: "cmn", norm: "zh"},
@@ -137,8 +137,7 @@ func TestLangID(t *testing.T) {
 		if tt.norm != "" {
 			norm, _ = getLangID(b(tt.norm))
 		}
-		id := normLang(langOldMap[:], want)
-		id = normLang(langMacroMap[:], id)
+		id, _ := normLang(want)
 		if id != norm {
 			t.Errorf("%d:norm(%s): found %v; want %v", i, tt.id, id, norm)
 		}
@@ -455,12 +454,9 @@ func TestGetScriptID(t *testing.T) {
 }
 
 func TestCurrency(t *testing.T) {
-	curInfo := func(round, dec int) string {
-		return string(round<<2 + dec)
-	}
 	idx := strings.Join([]string{
 		"   \x00",
-		"BBB" + curInfo(5, 2),
+		"BBB" + mkCurrencyInfo(5, 2),
 		"DDD\x00",
 		"XXX\x00",
 		"ZZZ\x00",

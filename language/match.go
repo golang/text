@@ -534,24 +534,21 @@ func newMatcher(supported []Tag) *matcher {
 	// First we match deprecated equivalents. If they are perfect equivalents
 	// (their canonicalization simply substitutes a different language code, but
 	// nothing else), the match confidence is Exact, otherwise it is High.
-	for _, lm := range langOldMap {
+	for i, lm := range langAliasMap {
+		if lm.from == _sh {
+			continue
+		}
+
 		// If deprecated codes match and there is no fiddling with the script or
 		// or region, we consider it an exact match.
-		conf := High
-		if isExactEquivalent(langID(lm.from)) {
-			conf = Exact
+		conf := Exact
+		if langAliasTypes[i] != langMacro {
+			if !isExactEquivalent(langID(lm.from)) {
+				conf = High
+			}
+			update(lm.to, lm.from, conf, true)
 		}
 		update(lm.from, lm.to, conf, true)
-		update(lm.to, lm.from, conf, true)
-	}
-
-	// Add entries for legacy encodings. There is currently only "tl". "sh" is
-	// already handled in languageMatching data.
-	update(_tl, _fil, Exact, true)
-
-	// Add entries for macro equivalents.
-	for _, lm := range langMacroMap {
-		update(lm.from, lm.to, Exact, true)
 	}
 	return m
 }
@@ -813,7 +810,7 @@ var notEquivalent []langID
 func init() {
 	// Create a list of all languages for which canonicalization may alter the
 	// script or region.
-	for _, lm := range langOldMap {
+	for _, lm := range langAliasMap {
 		tag := Tag{lang: langID(lm.from)}
 		if tag, _ = tag.canonicalize(All); tag.script != 0 || tag.region != 0 {
 			notEquivalent = append(notEquivalent, langID(lm.from))

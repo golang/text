@@ -111,6 +111,7 @@ func TestParseBase(t *testing.T) {
 		{"en", "en", true},
 		{"EN", "en", true},
 		{"nld", "nl", true},
+		{"dut", "dut", true},  // bibliographic
 		{"aaj", "und", false}, // unknown
 		{"qaa", "qaa", true},
 		{"a", "und", false},
@@ -502,8 +503,11 @@ func TestCanonicalize(t *testing.T) {
 		{"no", "no", Macro | CLDR},
 		{"iw", "he", DeprecatedBase},
 		{"iw", "he", Deprecated | CLDR},
-		{"mo", "ro-MD", Deprecated},
-		{"mo", "ro", Deprecated | CLDR},
+		{"mo", "ro-MD", Deprecated}, // Adopted by CLDR as of version 25.
+		{"alb", "sq", Legacy},       // bibliographic
+		{"dut", "nl", Legacy},       // bibliographic
+		// As of CLDR 25, mo is no longer considered a legacy mapping.
+		{"mo", "mo", Legacy | CLDR},
 		{"und-AN", "und-AN", Deprecated},
 		{"und-YD", "und-YE", DeprecatedRegion},
 		{"und-YD", "und-YD", DeprecatedBase},

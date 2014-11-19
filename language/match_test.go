@@ -89,7 +89,7 @@ func TestAddLikelySubtags(t *testing.T) {
 		{"abp-Arab-GB", "abp-Arab-GB"},
 		// script has preference over region
 		{"und-Arab-NL", "ar-Arab-NL"},
-		{"zza", "zza-Arab-TR"},
+		{"zza", "zza-Latn-TR"},
 		// preserve variants and extensions
 		{"de-1901", "de-Latn-DE-1901"},
 		{"de-x-abc", "de-Latn-DE-x-abc"},

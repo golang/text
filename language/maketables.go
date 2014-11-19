@@ -11,6 +11,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"golang.org/x/text/cldr"
@@ -22,6 +23,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"reflect"
 	"regexp"
@@ -40,10 +42,15 @@ var (
 	tld = flag.String("tld",
 		"http://www.iana.org/domains/root/db",
 		"URL of IANA Root Zone Database")
-	test = flag.Bool("test", false,
+	test = flag.Bool("test",
+		false,
 		"test existing tables; can be used to compare web data with package data.")
-	localFiles = flag.Bool("local", false,
-		"data files have been copied to the current directory; for debugging only.")
+	localFiles = flag.String("local",
+		"",
+		"directory containing local data files; for debugging only.")
+	outputFile = flag.String("output",
+		"tables.go",
+		"output file for generated tables")
 )
 
 var comment = []string{
@@ -66,9 +73,7 @@ Each 3-letter code is followed by its 1-byte langID.`,
 	`
 altLangIndex is used to convert indexes in altLangISO3 to langIDs.`,
 	`
-langOldMap maps deprecated langIDs to their suggested replacements.`,
-	`
-langMacroMap maps languages to their macro language replacement, if applicable.`,
+langAliasMap maps langIDs to their suggested replacements.`,
 	`
 script is an alphabetically sorted list of ISO 15924 codes. The index
 of the script in the string, divided by 4, is the internal scriptID.`,
@@ -323,7 +328,7 @@ type ianaEntry struct {
 
 type builder struct {
 	w      io.Writer   // multi writer
-	out    io.Writer   // set to Stdout
+	out    io.Writer   // set to output file.
 	hash32 hash.Hash32 // for checking whether tables have changed.
 	size   int
 	data   *cldr.CLDR
@@ -348,9 +353,12 @@ type builder struct {
 type index uint
 
 func openReader(url string) io.ReadCloser {
-	if *localFiles {
-		pwd, _ := os.Getwd()
-		url = "file://" + path.Join(pwd, path.Base(url))
+	if *localFiles != "" {
+		if !path.IsAbs(*localFiles) {
+			pwd, _ := os.Getwd()
+			*localFiles = path.Join(pwd, *localFiles)
+		}
+		url = "file://" + path.Join(*localFiles, path.Base(url))
 	}
 	t := &http.Transport{}
 	t.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
@@ -363,7 +371,7 @@ func openReader(url string) io.ReadCloser {
 	return resp.Body
 }
 
-func newBuilder() *builder {
+func newBuilder(w io.Writer) *builder {
 	r := openReader(*url)
 	defer r.Close()
 	d := &cldr.Decoder{}
@@ -371,7 +379,7 @@ func newBuilder() *builder {
 	data, err := d.DecodeZip(r)
 	failOnError(err)
 	b := builder{
-		out:    os.Stdout,
+		out:    w,
 		data:   data,
 		supp:   data.Supplemental(),
 		hash32: fnv.New32(),
@@ -717,6 +725,12 @@ func (b *builder) parseIndices() {
 		from := strings.Split(m.From, "_")
 		b.lang.add(from[0])
 	}
+	// Include ISO-639 alpha-3 bibliographic entries.
+	for _, a := range meta.Alias.LanguageAlias {
+		if a.Reason == "bibliographic" {
+			b.langNoIndex.add(a.Type)
+		}
+	}
 	// Include regions in territoryAlias (not all are in the IANA registry!)
 	for _, reg := range b.supp.Metadata.Alias.TerritoryAlias {
 		if len(reg.Type) == 2 {
@@ -790,12 +804,10 @@ func (b *builder) writeLanguage() {
 	b.writeConst("langPrivateStart", b.langIndex("qaa"))
 	b.writeConst("langPrivateEnd", b.langIndex("qtz"))
 
-	// Get language codes that need to be mapped (overlong 3-letter codes, deprecated
-	// 2-letter codes and grandfathered tags.
-	langOldMap := stringSet{}
-
-	// Mappings for macro languages
-	langMacroMap := stringSet{}
+	// Get language codes that need to be mapped (overlong 3-letter codes,
+	// deprecated 2-letter codes, legacy and grandfathered tags.)
+	langAliasMap := stringSet{}
+	aliasTypeMap := map[string]langAliasType{}
 
 	// altLangISO3 get the alternative ISO3 names that need to be mapped.
 	altLangISO3 := stringSet{}
@@ -815,26 +827,36 @@ func (b *builder) writeLanguage() {
 				lang.updateLater(a.Replacement, a.Type)
 			}
 		} else if len(a.Type) <= 3 {
-			if a.Reason == "macrolanguage" {
-				langMacroMap.add(a.Type)
-				langMacroMap.updateLater(a.Type, repl)
-			} else if a.Reason == "deprecated" {
+			switch a.Reason {
+			case "macrolanguage":
+				aliasTypeMap[a.Type] = langMacro
+			case "deprecated":
 				// handled elsewhere
-			} else if l := a.Type; !(l == "sh" || l == "no" || l == "tl") {
+				continue
+			case "bibliographic", "legacy":
+				if a.Type == "no" {
+					continue
+				}
+				aliasTypeMap[a.Type] = langLegacy
+			default:
 				log.Fatalf("new %s alias: %s", a.Reason, a.Type)
 			}
+			langAliasMap.add(a.Type)
+			langAliasMap.updateLater(a.Type, repl)
 		}
 	}
 	// Manually add the mapping of "nb" (Norwegian) to its macro language.
 	// This can be removed if CLDR adopts this change.
-	langMacroMap.add("nb")
-	langMacroMap.updateLater("nb", "no")
+	langAliasMap.add("nb")
+	langAliasMap.updateLater("nb", "no")
+	aliasTypeMap["nb"] = langMacro
 
 	for k, v := range b.registry {
 		// Also add deprecated values for 3-letter ISO codes, which CLDR omits.
 		if v.typ == "language" && v.deprecated != "" && v.preferred != "" {
-			langOldMap.add(k)
-			langOldMap.updateLater(k, v.preferred)
+			langAliasMap.add(k)
+			langAliasMap.updateLater(k, v.preferred)
+			aliasTypeMap[k] = langDeprecated
 		}
 	}
 	// Fix CLDR mappings.
@@ -850,7 +872,7 @@ func (b *builder) writeLanguage() {
 	for _, v := range lang.s[1:] {
 		s, ok := lang.update[v]
 		if !ok {
-			if s, ok = lang.update[langOldMap.update[v]]; !ok {
+			if s, ok = lang.update[langAliasMap.update[v]]; !ok {
 				continue
 			}
 			lang.update[v] = s
@@ -899,8 +921,12 @@ func (b *builder) writeLanguage() {
 	b.writeString("altLangISO3", altLangISO3.join())
 	b.writeSlice("altLangIndex", altLangIndex)
 
-	b.writeSortedMap("langOldMap", &langOldMap, b.langIndex)
-	b.writeSortedMap("langMacroMap", &langMacroMap, b.langIndex)
+	b.writeSortedMap("langAliasMap", &langAliasMap, b.langIndex)
+	types := make([]langAliasType, len(langAliasMap.s))
+	for i, s := range langAliasMap.s {
+		types[i] = aliasTypeMap[s]
+	}
+	b.writeSlice("langAliasTypes", types)
 }
 
 var scriptConsts = []string{
@@ -1261,9 +1287,9 @@ func (b *builder) writeCurrencies() {
 	rounding := map[string]uint64{}
 	for _, info := range b.supp.CurrencyData.Fractions[0].Info {
 		var err error
-		digits[info.Iso4217], err = strconv.ParseUint(info.Digits, 10, 2)
+		digits[info.Iso4217], err = strconv.ParseUint(info.Digits, 10, curDigitBits)
 		failOnError(err)
-		rounding[info.Iso4217], err = strconv.ParseUint(info.Rounding, 10, 6)
+		rounding[info.Iso4217], err = strconv.ParseUint(info.Rounding, 10, curRoundBits)
 		failOnError(err)
 	}
 	for i, cur := range b.currency.slice() {
@@ -1275,7 +1301,7 @@ func (b *builder) writeCurrencies() {
 		if r = rounding[cur]; r == 0 {
 			r = 1 // default rounding increment in units 10^{-digits)
 		}
-		b.currency.s[i] += string([]byte{byte(r<<2 + d)})
+		b.currency.s[i] += mkCurrencyInfo(int(r), int(d))
 	}
 	b.writeString("currency", b.currency.join())
 	// Hack alert: gofmt indents a trailing comment after an indented string.
@@ -1696,20 +1722,60 @@ func (b *builder) writeParents() {
 	b.writeSliceAddSize("parents", n*2, parents)
 }
 
-var header = `// Generated by running
+var (
+	header = `// Generated by running
 //		maketables -url=%s -iana=%s -tld=%s
+// automatically with go generate.
 // DO NOT EDIT
 
 package language
+`
 
+	version = `
 // Version is the version of CLDR used to generate the data in this package.
 const Version = %q
 `
+)
+
+func rewriteCommon() {
+	// Generate common.go
+	src, err := ioutil.ReadFile("gen_common.go")
+	failOnError(err)
+	const toDelete = "// +build ignore\n\npackage main\n"
+	i := bytes.Index(src, []byte(toDelete))
+	if i < 0 {
+		log.Fatalf("could not find %q in gen_common.go", toDelete)
+	}
+	w := &bytes.Buffer{}
+	fmt.Fprintf(w, header, *url, *iana, *tld)
+	w.Write(src[i+len(toDelete):])
+	failOnError(ioutil.WriteFile("common.go", w.Bytes(), 0644))
+}
 
 func main() {
 	flag.Parse()
-	b := newBuilder()
-	fmt.Fprintf(b.out, header, *url, *iana, *tld, cldr.Version)
+
+	rewriteCommon()
+
+	// Pipe output to gofmt -s.
+	gofmt := exec.Command("gofmt", "-s")
+	f, err := os.Create(*outputFile)
+	failOnError(err)
+	defer f.Close()
+	gofmt.Stdout = f
+	gofmt.Stderr = os.Stderr
+
+	fd, err := gofmt.StdinPipe()
+	failOnError(err)
+	defer fd.Close()
+	w := bufio.NewWriter(fd)
+	defer w.Flush()
+
+	failOnError(gofmt.Start())
+
+	b := newBuilder(w)
+	fmt.Fprintf(w, header, *url, *iana, *tld)
+	fmt.Fprintf(w, version, cldr.Version)
 
 	b.parseIndices()
 	b.writeType(fromTo{})
@@ -1725,5 +1791,5 @@ func main() {
 	b.writeRegionInclusionData()
 	b.writeParents()
 
-	fmt.Fprintf(b.out, "\n// Size: %.1fK (%d bytes); Check: %X\n", float32(b.size)/1024, b.size, b.hash32.Sum32())
+	fmt.Fprintf(w, "\n// Size: %.1fK (%d bytes); Check: %X\n", float32(b.size)/1024, b.size, b.hash32.Sum32())
 }

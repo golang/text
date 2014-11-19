@@ -103,14 +103,14 @@ func getLangID(s []byte) (langID, error) {
 }
 
 // mapLang returns the mapped langID of id according to mapping m.
-func normLang(m []fromTo, id langID) langID {
-	k := sort.Search(len(m), func(i int) bool {
-		return m[i].from >= uint16(id)
+func normLang(id langID) (langID, langAliasType) {
+	k := sort.Search(len(langAliasMap), func(i int) bool {
+		return langAliasMap[i].from >= uint16(id)
 	})
-	if k < len(m) && m[k].from == uint16(id) {
-		return langID(m[k].to)
+	if k < len(langAliasMap) && langAliasMap[k].from == uint16(id) {
+		return langID(langAliasMap[k].to), langAliasTypes[k]
 	}
-	return id
+	return id, langAliasTypeUnknown
 }
 
 // getLangISO2 returns the langID for the given 2-letter ISO language code
@@ -424,11 +424,11 @@ func (c currencyID) String() string {
 // TODO: cash rounding and decimals.
 
 func round(index string, c currencyID) int {
-	return int(index[c<<2+3] >> 2)
+	return currencyInfo(index[c<<2+3]).round()
 }
 
 func decimals(index string, c currencyID) int {
-	return int(index[c<<2+3] & 0x03)
+	return currencyInfo(index[c<<2+3]).decimals()
 }
 
 var (

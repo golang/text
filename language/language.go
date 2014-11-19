@@ -21,6 +21,8 @@
 // implemented, and the API is subject to change.
 package language
 
+//go:generate go run maketables.go gen_common.go -output tables.go
+
 import (
 	"errors"
 	"fmt"
@@ -105,7 +107,8 @@ const (
 	DeprecatedRegion
 	// Remove redundant scripts.
 	SuppressScript
-	// Normalize legacy encodings, as defined by CLDR.
+	// Normalize legacy encodings. This includes legacy languages defined in
+	// CLDR as well as bibliographic codes defined in ISO-639.
 	Legacy
 	// Map the dominant language of a macro language group to the macro language
 	// subtag. For example cmn -> zh.
@@ -134,6 +137,8 @@ const (
 	// they were canonicalized using All.
 	Default = Deprecated | Legacy
 
+	canonLang = DeprecatedBase | Legacy | Macro
+
 	// TODO: LikelyScript, LikelyRegion: suppress similar to ICU.
 )
 
@@ -150,38 +155,45 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 			changed = true
 		}
 	}
-	if c&Legacy != 0 {
-		// We hard code this set as it is very small, unlikely to change and requires some
-		// handling that does not fit elsewhere.
-		switch t.lang {
-		case _no:
-			if c&CLDR != 0 {
-				t.lang = _nb
-				changed = true
+	if c&canonLang != 0 {
+		if l, aliasType := normLang(t.lang); l != t.lang {
+			switch aliasType {
+			case langLegacy:
+				if c&Legacy != 0 {
+					if t.lang == _sh && t.script == 0 {
+						t.script = _Latn
+					}
+					t.lang = l
+					changed = true
+				}
+			case langMacro:
+				if c&Macro != 0 {
+					// We deviate here from CLDR. The mapping "nb" -> "no"
+					// qualifies as a typical Macro language mapping.  However,
+					// for legacy reasons, CLDR maps "no", the macro language
+					// code for Norwegian, to the dominant variant "nb". This
+					// change is currently under consideration for CLDR as well.
+					// See http://unicode.org/cldr/trac/ticket/2698 and also
+					// http://unicode.org/cldr/trac/ticket/1790 for some of the
+					// practical implications. TODO: this check could be removed
+					// if CLDR adopts this change.
+					if c&CLDR == 0 || t.lang != _nb {
+						changed = true
+						t.lang = l
+					}
+				}
+			case langDeprecated:
+				if c&DeprecatedBase != 0 {
+					if t.lang == _mo && t.region == 0 {
+						t.region = _MD
+					}
+					t.lang = l
+					changed = true
+				}
 			}
-		case _tl:
-			t.lang = _fil
+		} else if c&Legacy != 0 && t.lang == _no && c&CLDR != 0 {
+			t.lang = _nb
 			changed = true
-		case _sh:
-			if t.script == 0 {
-				t.script = _Latn
-			}
-			t.lang = _sr
-			changed = true
-		}
-	}
-	if c&DeprecatedBase != 0 {
-		l := normLang(langOldMap[:], t.lang)
-		if l != t.lang {
-			// CLDR maps "mo" to "ro". This mapping loses the piece of information
-			// that "mo" very likely implies the region "MD". This may be important
-			// for applications that insist on making a difference between these
-			// two language codes.
-			if t.lang == _mo && t.region == 0 && c&CLDR == 0 {
-				t.region = _MD
-			}
-			changed = true
-			t.lang = l
 		}
 	}
 	if c&DeprecatedScript != 0 {
@@ -194,23 +206,6 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 		if r := normRegion(t.region); r != 0 {
 			changed = true
 			t.region = r
-		}
-	}
-	if c&Macro != 0 {
-		// We deviate here from CLDR. The mapping "nb" -> "no" qualifies as a typical
-		// Macro language mapping.  However, for legacy reasons, CLDR maps "no",
-		// the macro language code for Norwegian, to the dominant variant "nb".
-		// This change is currently under consideration for CLDR as well.
-		// See http://unicode.org/cldr/trac/ticket/2698 and also
-		// http://unicode.org/cldr/trac/ticket/1790 for some of the practical
-		// implications.
-		// TODO: this check could be removed if CLDR adopts this change.
-		if c&CLDR == 0 || t.lang != _nb {
-			l := normLang(langMacroMap[:], t.lang)
-			if l != t.lang {
-				changed = true
-				t.lang = l
-			}
 		}
 	}
 	return t, changed
