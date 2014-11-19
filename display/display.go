@@ -12,6 +12,8 @@
 // Dictionary defined for a selected set of common languages for this purpose.
 package display
 
+//go:generate go run maketables.go -output tables.go
+
 import (
 	"strings"
 
