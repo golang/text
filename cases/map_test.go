@@ -6,12 +6,12 @@ package cases
 
 import (
 	"bytes"
-	"code.google.com/p/go.text/unicode/norm"
 	"strings"
 	"testing"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 type testCase struct {
