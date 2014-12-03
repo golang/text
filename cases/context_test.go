@@ -5,12 +5,13 @@
 package cases
 
 import (
-	"golang.org/x/text/language"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 	"strings"
 	"testing"
 	"unicode"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 // The following definitions are taken directly from Chapter 3 of The Unicode

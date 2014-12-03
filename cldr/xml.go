@@ -1376,4 +1376,5 @@ type Numbers struct {
 	} `xml:"miscPatterns"`
 }
 
+// Version is the version of CLDR from which the XML definitions are generated.
 const Version = "26"

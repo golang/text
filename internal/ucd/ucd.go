@@ -20,8 +20,8 @@ import (
 	"strings"
 )
 
+// UnicodeData.txt fields.
 const (
-	// UnicodeData.txt fields.
 	CodePoint = iota
 	Name
 	GeneralCategory

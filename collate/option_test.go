@@ -4,11 +4,11 @@
 package collate
 
 import (
-	"golang.org/x/text/language"
 	"reflect"
 	"testing"
 
 	"golang.org/x/text/collate/colltab"
+	"golang.org/x/text/language"
 )
 
 var (

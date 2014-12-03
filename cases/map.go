@@ -491,14 +491,13 @@ func ltLower(c *context) bool {
 				// Assumption: modifier never changes on lowercase. See A.1.
 				// Assumption: all modifiers added have CCC = Above. See A.2.3.
 				return c.writeString("\u0307") && c.writeBytes(d[1:])
-			} else {
-				// In all other cases the additional modifiers will have a CCC
-				// that is less than 230 (Above). We will insert the U+0307, if
-				// needed, after these modifiers so that a string in FCD form
-				// will remain so. See A.2.2.
-				lower(c)
-				i = 1
 			}
+			// In all other cases the additional modifiers will have a CCC
+			// that is less than 230 (Above). We will insert the U+0307, if
+			// needed, after these modifiers so that a string in FCD form
+			// will remain so. See A.2.2.
+			lower(c)
+			i = 1
 		} else {
 			return lower(c)
 		}
