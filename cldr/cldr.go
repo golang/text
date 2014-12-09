@@ -12,7 +12,7 @@
 // may have moved or changed.
 // CLDR version 22 is the first version supported by this package.
 // Older versions may not work.
-package cldr
+package cldr // import "golang.org/x/text/cldr"
 
 //go:generate go run makexml.go -output xml.go
 

@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package cases provides general and language-specific case mappers.
-package cases
+package cases // import "golang.org/x/text/cases"
 
 import (
 	"golang.org/x/text/language"

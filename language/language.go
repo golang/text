@@ -19,7 +19,7 @@
 //
 // NOTE: This package is still under development. Parts of it are not yet
 // implemented, and the API is subject to change.
-package language
+package language // import "golang.org/x/text/language"
 
 //go:generate go run maketables.go gen_common.go -output tables.go
 

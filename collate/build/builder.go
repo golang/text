@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package build
+package build // import "golang.org/x/text/collate/build"
 
 import (
 	"fmt"
