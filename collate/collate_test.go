@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"golang.org/x/text/collate/colltab"
+	"golang.org/x/text/language"
 )
 
 type weightsTest struct {
@@ -518,6 +519,35 @@ func TestDoNorm(t *testing.T) {
 		}
 		if result[o+2] == 5 && i.pStarter != p {
 			t.Errorf("%d: i.pStarter was %d; want %d", n, i.pStarter, p)
+		}
+	}
+}
+
+func TestNumeric(t *testing.T) {
+	c := New(language.English, Loose, Numeric)
+
+	for i, tt := range []struct {
+		a, b string
+		want int
+	}{
+		{"1", "2", -1},
+		{"2", "12", -1},
+		{"２", "１２", -1}, // Fullwidth is sorted as usual.
+		{"₂", "₁₂", 1},  // Subscript is not sorted as numbers.
+		{"②", "①②", 1},  // Circled is not sorted as numbers.
+		{ // Imperial Aramaic, is not sorted as number.
+			"\U00010859",
+			"\U00010858\U00010859",
+			1,
+		},
+		{"12", "2", 1},
+		{"A-1", "A-2", -1},
+		{"A-2", "A-12", -1},
+		{"A-12", "A-2", 1},
+		{"A-0001", "A-1", 0},
+	} {
+		if got := c.CompareString(tt.a, tt.b); got != tt.want {
+			t.Errorf("%d: CompareString(%s, %s) = %d; want %d", i, tt.a, tt.b, got, tt.want)
 		}
 	}
 }

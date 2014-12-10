@@ -5,9 +5,24 @@
 package colltab
 
 import (
+	"fmt"
 	"testing"
 	"unicode"
 )
+
+func (e Elem) String() string {
+	q := ""
+	if v := e.Quaternary(); v == MaxQuaternary {
+		q = "max"
+	} else {
+		q = fmt.Sprint(v)
+	}
+	return fmt.Sprintf("[%d, %d, %d, %s]",
+		e.Primary(),
+		e.Secondary(),
+		e.Tertiary(),
+		q)
+}
 
 type ceTest struct {
 	f   func(inout []int) (Elem, ceType)
@@ -17,6 +32,12 @@ type ceTest struct {
 func makeCE(weights []int) Elem {
 	ce, _ := MakeElem(weights[0], weights[1], weights[2], uint8(weights[3]))
 	return ce
+}
+
+var defaultValues = []int{0, defaultSecondary, defaultTertiary, 0}
+
+func e(w ...int) Elem {
+	return makeCE(append(w, defaultValues[len(w):]...))
 }
 
 func makeContractIndex(index, n, offset int) Elem {
