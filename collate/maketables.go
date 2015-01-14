@@ -15,23 +15,25 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"golang.org/x/text/cldr"
-	"golang.org/x/text/collate"
-	"golang.org/x/text/collate/build"
-	"golang.org/x/text/collate/colltab"
-	"golang.org/x/text/language"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/text/cldr"
+	"golang.org/x/text/collate"
+	"golang.org/x/text/collate/build"
+	"golang.org/x/text/collate/colltab"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -42,10 +44,13 @@ file containing the file allkeys_CLDR.txt or an allkeys.txt file.`)
 	cldrzip = flag.String("cldr",
 		"http://www.unicode.org/Public/cldr/"+cldr.Version+"/core.zip",
 		"URL of CLDR archive.")
+	unicodeVersion = flag.String("unicode",
+		unicode.Version,
+		"Unicode version to enforce.")
 	test = flag.Bool("test", false,
 		"test existing tables; can be used to compare web data with package data.")
-	localFiles = flag.Bool("local", false,
-		"data files have been copied to the current directory; for debugging only.")
+	localDir = flag.String("local", "",
+		"directory containing local data files; for debugging only.")
 	short = flag.Bool("short", false, `Use "short" alternatives, when available.`)
 	draft = flag.Bool("draft", false, `Use draft versions, when available.`)
 	tags  = flag.String("tags", "", "build tags to be included after +build directive")
@@ -195,19 +200,19 @@ func failOnError(e error) {
 // openReader opens the URL or file given by url and returns it as an io.ReadCloser
 // or nil on error.
 func openReader(url *string) (io.ReadCloser, error) {
-	if *localFiles {
-		pwd, _ := os.Getwd()
-		*url = "file://" + path.Join(pwd, path.Base(*url))
+	if *localDir != "" {
+		dir, err := filepath.Abs(*localDir)
+		if err != nil {
+			return nil, err
+		}
+		return os.Open(filepath.Join(dir, path.Base(*url)))
 	}
-	t := &http.Transport{}
-	t.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
-	c := &http.Client{Transport: t}
-	resp, err := c.Get(*url)
+	resp, err := http.Get(*url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("HTTP GET: %v", err)
 	}
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf(`bad GET status for "%s": %s`, *url, resp.Status)
+		return nil, fmt.Errorf("Bad GET status for %q: %q", *url, resp.Status)
 	}
 	return resp.Body, nil
 }
@@ -255,7 +260,7 @@ func parseUCA(builder *build.Builder) {
 			switch {
 			case strings.HasPrefix(line[1:], "version "):
 				a := strings.Split(line[1:], " ")
-				if a[1] != unicode.Version {
+				if a[1] != *unicodeVersion {
 					log.Fatalf("incompatible version %s; want %s", a[1], unicode.Version)
 				}
 			case strings.HasPrefix(line[1:], "backwards "):
@@ -466,13 +471,25 @@ func parseCollation(b *build.Builder) {
 		sl.SelectOnePerGroup("alt", altInclude())
 
 		for _, c := range cs {
-			m := make(map[language.Part]string)
-			m[language.TagPart] = loc
-			if c.Type != x.Collations.Default() {
-				m[language.Extension('u')] = "co-" + c.Type
+			id, err := language.Parse(loc)
+			if err != nil {
+				if loc == "en-US-posix" {
+					fmt.Fprintf(os.Stderr, "invalid locale: %q", err.Error())
+					continue
+				}
+				loc = "en-US-x-posix"
 			}
-			id, err := language.Compose(m)
-			failOnError(err)
+			// Support both old- and new-style defaults.
+			d := c.Type
+			if x.Collations.DefaultCollation == nil {
+				d = x.Collations.Default()
+			} else {
+				d = x.Collations.DefaultCollation.Data()
+			}
+			if d != c.Type {
+				id, err = id.SetTypeForKey("co", c.Type)
+				failOnError(err)
+			}
 			t := b.Tailoring(id)
 			c.Process(processor{t})
 		}
