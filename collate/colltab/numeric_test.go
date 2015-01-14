@@ -17,8 +17,8 @@ const (
 
 var tPlus3 = e(0, 50, digTert+3)
 
-// numWeigher is a testWeigher used for testing numericWeigher.
-var numWeigher = testWeigher{
+// numWeighter is a testWeighter used for testing numericWeighter.
+var numWeighter = testWeighter{
 	"0": p(100),
 	"０": []Elem{e(100, digSec, digTert+1)}, // U+FF10 FULLWIDTH DIGIT ZERO
 	"₀": []Elem{e(100, digSec, digTert+5)}, // U+2080 SUBSCRIPT ZERO
@@ -105,7 +105,7 @@ func TestNumericAppendNext(t *testing.T) {
 		// Ensure AppendNext* adds to the given buffer.
 		{"a10", p(5, 120, 2, 101, 100)},
 	} {
-		nw := NewNumericWeigher(numWeigher)
+		nw := NewNumericWeighter(numWeighter)
 
 		b := []byte(tt.in)
 		got := []Elem(nil)
@@ -131,7 +131,7 @@ func TestNumericAppendNext(t *testing.T) {
 func TestNumericOverflow(t *testing.T) {
 	manyDigits := strings.Repeat("9", maxDigits+1) + "a"
 
-	nw := NewNumericWeigher(numWeigher)
+	nw := NewNumericWeighter(numWeighter)
 
 	got, n := nw.AppendNextString(nil, manyDigits)
 
@@ -144,12 +144,12 @@ func TestNumericOverflow(t *testing.T) {
 	}
 }
 
-func TestNumericWeigherAlloc(t *testing.T) {
+func TestNumericWeighterAlloc(t *testing.T) {
 	buf := make([]Elem, 100)
-	w := NewNumericWeigher(numWeigher)
+	w := NewNumericWeighter(numWeighter)
 	s := "1234567890a"
 
-	nNormal := testing.AllocsPerRun(3, func() { numWeigher.AppendNextString(buf, s) })
+	nNormal := testing.AllocsPerRun(3, func() { numWeighter.AppendNextString(buf, s) })
 	nNumeric := testing.AllocsPerRun(3, func() { w.AppendNextString(buf, s) })
 	if n := nNumeric - nNormal; n > 0 {
 		t.Errorf("got %f; want 0", n)

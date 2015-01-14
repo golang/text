@@ -46,7 +46,7 @@ func TestNumericCompare(t *testing.T) {
 // current implemenation uses CLDR 24, which uses Unicode 6.3.0. This will
 // be resolved once we move to CLDR version 25 (or later), which introduces
 // significant changes.
-// We skip digits that are not known as digits by the Weigher.
+// We skip digits that are not known as digits by the Weighter.
 //
 // TODO: remove once we upgrade collation to newer tables.
 var notSupported = map[rune]bool{
@@ -124,7 +124,7 @@ func testDigitCompare(t *testing.T, c *collate.Collator, zero, nine rune) {
 	}
 }
 
-func BenchmarkNumericWeigher(b *testing.B) {
+func BenchmarkNumericWeighter(b *testing.B) {
 	c := collate.New(language.English, collate.Numeric)
 	input := bytes.Repeat([]byte("Testing, testing 123..."), 100)
 	b.SetBytes(int64(2 * len(input)))

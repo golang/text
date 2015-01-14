@@ -62,8 +62,8 @@ func New(t language.Tag, o ...Option) *Collator {
 	return c
 }
 
-// NewFromTable returns a new Collator for the given Weigher.
-func NewFromTable(w colltab.Weigher, o ...Option) *Collator {
+// NewFromTable returns a new Collator for the given Weighter.
+func NewFromTable(w colltab.Weighter, o ...Option) *Collator {
 	c := newCollator(w)
 	c.setOptions(o)
 	c.init()
@@ -72,7 +72,7 @@ func NewFromTable(w colltab.Weigher, o ...Option) *Collator {
 
 func (c *Collator) init() {
 	if c.numeric {
-		c.t = colltab.NewNumericWeigher(c.t)
+		c.t = colltab.NewNumericWeighter(c.t)
 	}
 	c._iter[0].init(c)
 	c._iter[1].init(c)
@@ -238,7 +238,7 @@ type iter struct {
 	prevCCC  uint8
 	pStarter int
 
-	t colltab.Weigher
+	t colltab.Weighter
 }
 
 func (i *iter) init(c *Collator) {

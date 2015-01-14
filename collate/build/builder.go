@@ -464,8 +464,8 @@ func (b *Builder) build() (*table, error) {
 }
 
 // Build builds the root Collator.
-// TODO: return Weigher instead
-func (b *Builder) Build() (colltab.Weigher, error) {
+// TODO: return Weighter instead
+func (b *Builder) Build() (colltab.Weighter, error) {
 	t, err := b.build()
 	if err != nil {
 		return nil, err
@@ -478,7 +478,7 @@ func (b *Builder) Build() (colltab.Weigher, error) {
 }
 
 // Build builds a Collator for Tailoring t.
-func (t *Tailoring) Build() (colltab.Weigher, error) {
+func (t *Tailoring) Build() (colltab.Weighter, error) {
 	// TODO: implement.
 	return nil, nil
 }

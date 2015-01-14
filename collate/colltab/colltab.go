@@ -4,8 +4,8 @@
 
 package colltab // import "golang.org/x/text/collate/colltab"
 
-// A Weigher can be used as a source for Collator and Searcher.
-type Weigher interface {
+// A Weighter can be used as a source for Collator and Searcher.
+type Weighter interface {
 	// Start finds the start of the segment that includes position p.
 	Start(p int, b []byte) int
 

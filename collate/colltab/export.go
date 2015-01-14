@@ -5,7 +5,7 @@
 package colltab
 
 // Init is for internal use only.
-func Init(data interface{}) Weigher {
+func Init(data interface{}) Weighter {
 	init, ok := data.(tableInitializer)
 	if !ok {
 		return nil

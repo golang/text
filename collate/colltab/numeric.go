@@ -9,13 +9,13 @@ import (
 	"unicode/utf8"
 )
 
-// NewNumericWeigher wraps w to replace individual digits to sort based on their
+// NewNumericWeighter wraps w to replace individual digits to sort based on their
 // numeric value.
 //
-// Weigher w must have a free primary weight after the primary weight for 9.
+// Weighter w must have a free primary weight after the primary weight for 9.
 // If this is not the case, numeric value will sort at the same primary level
 // as the first primary sorting after 9.
-func NewNumericWeigher(w Weigher) Weigher {
+func NewNumericWeighter(w Weighter) Weighter {
 	getElem := func(s string) Elem {
 		elems, _ := w.AppendNextString(nil, s)
 		return elems[0]
@@ -26,8 +26,8 @@ func NewNumericWeigher(w Weigher) Weigher {
 	// TODO: move before zero once we use fractional collation elements.
 	ns, _ := MakeElem(nine.Primary()+1, nine.Secondary(), int(nine.Tertiary()), 0)
 
-	return &numericWeigher{
-		Weigher: w,
+	return &numericWeighter{
+		Weighter: w,
 
 		// We assume that w sorts digits of different kinds in order of numeric
 		// value and that the tertiary weight order is preserved.
@@ -43,10 +43,10 @@ func NewNumericWeigher(w Weigher) Weigher {
 	}
 }
 
-// A numericWeigher translates a stream of digits into a stream of weights
+// A numericWeighter translates a stream of digits into a stream of weights
 // representing the numeric value.
-type numericWeigher struct {
-	Weigher
+type numericWeighter struct {
+	Weighter
 
 	// The Elems below all demarcate boundaries of specific ranges. With the
 	// current element encoding digits are in two ranges: normal (default
@@ -67,8 +67,8 @@ type numericWeigher struct {
 
 // AppendNext calls the namesake of the underlying weigher, but replaces single
 // digits with weights representing their value.
-func (nw *numericWeigher) AppendNext(buf []Elem, s []byte) (ce []Elem, n int) {
-	ce, n = nw.Weigher.AppendNext(buf, s)
+func (nw *numericWeighter) AppendNext(buf []Elem, s []byte) (ce []Elem, n int) {
+	ce, n = nw.Weighter.AppendNext(buf, s)
 	nc := numberConverter{
 		elems: buf,
 		w:     nw,
@@ -81,7 +81,7 @@ func (nw *numericWeigher) AppendNext(buf []Elem, s []byte) (ce []Elem, n int) {
 	// ce might have been grown already, so take it instead of buf.
 	nc.init(ce, len(buf), isZero)
 	for n < len(s) {
-		ce, sz := nw.Weigher.AppendNext(nc.elems, s[n:])
+		ce, sz := nw.Weighter.AppendNext(nc.elems, s[n:])
 		nc.b = s
 		n += sz
 		if !nc.update(ce) {
@@ -93,8 +93,8 @@ func (nw *numericWeigher) AppendNext(buf []Elem, s []byte) (ce []Elem, n int) {
 
 // AppendNextString calls the namesake of the underlying weigher, but replaces
 // single digits with weights representing their value.
-func (nw *numericWeigher) AppendNextString(buf []Elem, s string) (ce []Elem, n int) {
-	ce, n = nw.Weigher.AppendNextString(buf, s)
+func (nw *numericWeighter) AppendNextString(buf []Elem, s string) (ce []Elem, n int) {
+	ce, n = nw.Weighter.AppendNextString(buf, s)
 	nc := numberConverter{
 		elems: buf,
 		w:     nw,
@@ -106,7 +106,7 @@ func (nw *numericWeigher) AppendNextString(buf []Elem, s string) (ce []Elem, n i
 	}
 	nc.init(ce, len(buf), isZero)
 	for n < len(s) {
-		ce, sz := nw.Weigher.AppendNextString(nc.elems, s[n:])
+		ce, sz := nw.Weighter.AppendNextString(nc.elems, s[n:])
 		nc.s = s
 		n += sz
 		if !nc.update(ce) {
@@ -117,7 +117,7 @@ func (nw *numericWeigher) AppendNextString(buf []Elem, s string) (ce []Elem, n i
 }
 
 type numberConverter struct {
-	w *numericWeigher
+	w *numericWeighter
 
 	elems    []Elem
 	nDigits  int

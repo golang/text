@@ -4,18 +4,18 @@
 
 package colltab
 
-// testWeigher is a simple Weigher that returns weights from a user-defined map.
-type testWeigher map[string][]Elem
+// testWeighter is a simple Weighter that returns weights from a user-defined map.
+type testWeighter map[string][]Elem
 
-func (t testWeigher) Start(int, []byte) int       { return 0 }
-func (t testWeigher) StartString(int, string) int { return 0 }
-func (t testWeigher) Domain() []string            { return nil }
-func (t testWeigher) Top() uint32                 { return 0 }
+func (t testWeighter) Start(int, []byte) int       { return 0 }
+func (t testWeighter) StartString(int, string) int { return 0 }
+func (t testWeighter) Domain() []string            { return nil }
+func (t testWeighter) Top() uint32                 { return 0 }
 
 // maxContractBytes is the maximum length of any key in the map.
 const maxContractBytes = 10
 
-func (t testWeigher) AppendNext(buf []Elem, s []byte) ([]Elem, int) {
+func (t testWeighter) AppendNext(buf []Elem, s []byte) ([]Elem, int) {
 	n := len(s)
 	if n > maxContractBytes {
 		n = maxContractBytes
@@ -25,10 +25,10 @@ func (t testWeigher) AppendNext(buf []Elem, s []byte) ([]Elem, int) {
 			return append(buf, e...), i
 		}
 	}
-	panic("incomplete testWeigher: could not find " + string(s))
+	panic("incomplete testWeighter: could not find " + string(s))
 }
 
-func (t testWeigher) AppendNextString(buf []Elem, s string) ([]Elem, int) {
+func (t testWeighter) AppendNextString(buf []Elem, s string) ([]Elem, int) {
 	n := len(s)
 	if n > maxContractBytes {
 		n = maxContractBytes
@@ -38,5 +38,5 @@ func (t testWeigher) AppendNextString(buf []Elem, s string) ([]Elem, int) {
 			return append(buf, e...), i
 		}
 	}
-	panic("incomplete testWeigher: could not find " + s)
+	panic("incomplete testWeighter: could not find " + s)
 }
