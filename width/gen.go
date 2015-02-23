@@ -26,6 +26,7 @@ func main() {
 	log.SetPrefix("")
 	log.SetFlags(log.Lshortfile)
 	genTables()
+	genTests()
 	repackage("gen_trieval.go", "trieval.go")
 	repackage("gen_common.go", "common_test.go")
 }
@@ -52,6 +53,34 @@ func genTables() {
 		out = w.Bytes()
 	}
 	if err := ioutil.WriteFile(*outputFile, out, 0644); err != nil {
+		log.Fatalf("Could not write output: %v", err)
+	}
+}
+
+func genTests() {
+	type keyval struct{ key, val rune }
+	m := []keyval{}
+
+	getWidthData(func(r rune, tag elem, alt rune) {
+		if alt != 0 {
+			m = append(m, keyval{r, alt})
+		}
+	})
+
+	w := &bytes.Buffer{}
+	fmt.Fprintf(w, header)
+	fmt.Fprintf(w, "\nvar foldRunes = map[rune]rune{\n")
+	for _, kv := range m {
+		fmt.Fprintf(w, "\t0x%X: 0x%X,\n", kv.key, kv.val)
+	}
+	fmt.Fprintln(w, "}")
+
+	out, err := format.Source(w.Bytes())
+	if err != nil {
+		log.Printf("Could not format output: %v", err)
+		out = w.Bytes()
+	}
+	if err := ioutil.WriteFile("runes_test.go", out, 0644); err != nil {
 		log.Fatalf("Could not write output: %v", err)
 	}
 }

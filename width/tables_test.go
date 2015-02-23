@@ -21,43 +21,33 @@ func TestTables(t *testing.T) {
 	if *localDir == "" && !*long {
 		t.Skip("skipping test to prevent downloading; to run use -long or use -local to specify a local source")
 	}
-	// Store the UCD data in a map.
-	type data struct {
-		tag elem
-		alt rune
-	}
-	runes := map[rune]data{}
-	getWidthData(func(r rune, tag elem, alt rune) {
-		runes[r] = data{tag, alt}
+	runes := map[rune]elem{}
+	getWidthData(func(r rune, tag elem, _ rune) {
+		runes[r] = tag
 	})
 	for r := rune(0); r < 0x10FFFF; r++ {
 		if loSurrogate <= r && r <= hiSurrogate {
 			continue
 		}
-		want := neutral
-		switch runes[r].tag {
+		want := Neutral
+		switch runes[r] {
 		case tagAmbiguous:
-			want = ambiguous
+			want = EastAsianAmbiguous
 		case tagNarrow:
-			want = narrow
+			want = EastAsianNarrow
 		case tagWide:
-			want = wide
+			want = EastAsianWide
 		case tagHalfwidth:
-			want = halfwidth
+			want = EastAsianHalfwidth
 		case tagFullwidth:
-			want = fullwidth
+			want = EastAsianFullwidth
 		}
-		if got := kindOfRune(r); got != want {
-			t.Errorf("kindOfRune(%U) = %s; want %s.", r, got, want)
+		p := LookupRune(r)
+		if got := p.Kind(); got != want {
+			t.Errorf("Kind of %U was %s; want %s.", r, got, want)
 		}
-
-		got := foldRune(r)
-		if alt := runes[r].alt; alt == 0 {
-			if got != r {
-				t.Errorf("foldRune(%U) = %+q; want %U", r, got, r)
-			}
-		} else if got != alt {
-			t.Errorf("foldRune(%U) = %+q; want %U", r, got, alt)
+		if got, want := p.Folded(), foldRunes[r]; got != want {
+			t.Errorf("fold of %U was %+q; want %U", r, got, want)
 		}
 	}
 }
