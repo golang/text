@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run maketables.go -output tables.go
+
 // Package display provides display names for languages, scripts and regions in
 // a requested language.
 //
@@ -11,8 +13,6 @@
 // table sizes by cherry picking the languages one wishes to support. There is a
 // Dictionary defined for a selected set of common languages for this purpose.
 package display // import "golang.org/x/text/display"
-
-//go:generate go run maketables.go -output tables.go
 
 import (
 	"strings"

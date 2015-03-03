@@ -7,6 +7,8 @@ package width
 import (
 	"flag"
 	"testing"
+
+	"golang.org/x/text/internal/gen"
 )
 
 var long = flag.Bool("long", false,
@@ -18,7 +20,7 @@ const (
 )
 
 func TestTables(t *testing.T) {
-	if *localDir == "" && !*long {
+	if !gen.IsLocal() && !*long {
 		t.Skip("skipping test to prevent downloading; to run use -long or use -local to specify a local source")
 	}
 	runes := map[rune]elem{}

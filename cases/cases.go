@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run gen.go gen_trieval.go
+
 // Package cases provides general and language-specific case mappers.
 package cases // import "golang.org/x/text/cases"
 

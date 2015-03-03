@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run maketables.go gen_common.go -output tables.go
+
 // Package language implements BCP 47 language tags and related functionality.
 //
 // The Tag type, which is used to represent language tags, is agnostic to the
@@ -20,8 +22,6 @@
 // NOTE: This package is still under development. Parts of it are not yet
 // implemented, and the API is subject to change.
 package language // import "golang.org/x/text/language"
-
-//go:generate go run maketables.go gen_common.go -output tables.go
 
 import (
 	"errors"

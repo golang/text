@@ -10,24 +10,15 @@ package main
 
 import (
 	"flag"
-	"golang.org/x/text/internal/ucd"
-	"io"
 	"log"
-	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
-	"unicode"
+
+	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/internal/ucd"
 )
 
 var (
-	url = flag.String("url",
-		"http://www.unicode.org/Public/"+unicode.Version+"/ucd",
-		"URL of Unicode database directory")
-	localDir = flag.String("local",
-		"",
-		"directory containing local data files; for debugging only.")
 	outputFile = flag.String("out", "tables.go", "output file")
 )
 
@@ -107,23 +98,7 @@ func getWidthData(f func(r rune, tag elem, alt rune)) {
 
 // parse calls f for each entry in the given UCD file.
 func parse(filename string, f func(p *ucd.Parser)) {
-	var r io.ReadCloser
-	if *localDir != "" {
-		f, err := os.Open(filepath.Join(*localDir, filename))
-		if err != nil {
-			log.Fatal(err)
-		}
-		r = f
-	} else {
-		resp, err := http.Get(*url + "/" + filename)
-		if err != nil {
-			log.Fatalf("HTTP GET: %v", err)
-		}
-		if resp.StatusCode != 200 {
-			log.Fatalf("Bad GET status for %q: %q", *url, resp.Status)
-		}
-		r = resp.Body
-	}
+	r := gen.OpenUCDFile(filename)
 	defer r.Close()
 
 	p := ucd.New(r)
