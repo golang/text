@@ -35,14 +35,15 @@ func genTables() {
 		t.Insert(r, uint64(tag|elem(alt&0x3FFF)))
 	})
 
-	w := gen.NewFormattedFileWriter(*outputFile, "width")
-	defer w.Close()
+	w := &bytes.Buffer{}
 
 	sz, err := t.Gen(w)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Fprintf(w, "// Total table size %d bytes (%dKiB)\n", sz, sz/1024)
+
+	gen.WriteGoFile(*outputFile, "width", w.Bytes())
 }
 
 func genTests() {
@@ -55,14 +56,14 @@ func genTests() {
 		}
 	})
 
-	w := gen.NewFormattedFileWriter("runes_test.go", "width")
-	defer w.Close()
+	w := &bytes.Buffer{}
 
 	fmt.Fprintf(w, "\nvar foldRunes = map[rune]rune{\n")
 	for _, kv := range m {
 		fmt.Fprintf(w, "\t0x%X: 0x%X,\n", kv.key, kv.val)
 	}
 	fmt.Fprintln(w, "}")
+	gen.WriteGoFile("runes_test.go", "width", w.Bytes())
 }
 
 // repackage rewrites a file from belonging to package main to belonging to
@@ -78,9 +79,6 @@ func repackage(inFile, outFile string) {
 		log.Fatalf("Could not find %q in gen_trieval.go", toDelete)
 	}
 	w := &bytes.Buffer{}
-	gen.WriteHeader(w, "width")
 	w.Write(src[i+len(toDelete):])
-	if err := ioutil.WriteFile(outFile, w.Bytes(), 0644); err != nil {
-		log.Fatalf("Writing %s: %v", outFile, err)
-	}
+	gen.WriteGoFile(outFile, "width", w.Bytes())
 }

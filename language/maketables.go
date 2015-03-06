@@ -1704,9 +1704,8 @@ func rewriteCommon() {
 		log.Fatalf("could not find %q in gen_common.go", toDelete)
 	}
 	w := &bytes.Buffer{}
-	gen.WriteHeader(w, "language")
 	w.Write(src[i+len(toDelete):])
-	failOnError(ioutil.WriteFile("common.go", w.Bytes(), 0644))
+	gen.WriteGoFile("common.go", "language", w.Bytes())
 }
 
 func main() {
@@ -1714,8 +1713,7 @@ func main() {
 
 	rewriteCommon()
 
-	w := gen.NewFormattedFileWriter(*outputFile, "language")
-	defer w.Close()
+	w := &bytes.Buffer{}
 
 	b := newBuilder(w)
 	fmt.Fprintf(w, version, cldr.Version)
@@ -1735,4 +1733,5 @@ func main() {
 	b.writeParents()
 
 	fmt.Fprintf(w, "\n// Size: %.1fK (%d bytes); Check: %X\n", float32(b.size)/1024, b.size, b.hash32.Sum32())
+	gen.WriteGoFile("tables.go", "language", w.Bytes())
 }

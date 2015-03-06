@@ -19,12 +19,10 @@
 package gen
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -131,39 +129,31 @@ func get(root, path string) io.ReadCloser {
 	return resp.Body
 }
 
-// WriteHeader writes a file comment for a generated file and a package statement.
-func WriteHeader(w io.Writer, pkg string) error {
-	_, err := fmt.Fprintf(w, header, pkg)
-	return err
-}
-
-// NewFormattedFileWriter returns a WriteCloser to which Go files can be written.
-// The written Go code will be formatted with the -s option. It also writes a
-// standard header to inform the users that this file was generated.
+// WriteGoFile writes applies gofmt to the given bytes and writes them to a file
+// with the given name. It writes a standard file comment and package statement.
 // It will call log.Fatal if there are any errors.
-func NewFormattedFileWriter(filename, pkg string) io.WriteCloser {
-	w := &formattedWriter{&bytes.Buffer{}, filename}
-	WriteHeader(w, pkg)
-	return w
-}
-
-type formattedWriter struct {
-	w        *bytes.Buffer
-	filename string
-}
-
-func (fw *formattedWriter) Write(b []byte) (n int, err error) {
-	return fw.w.Write(b)
-}
-
-func (fw *formattedWriter) Close() error {
-	b := fw.w.Bytes()
+func WriteGoFile(filename, pkg string, b []byte) {
+	w, err := os.Create(filename)
+	if err != nil {
+		log.Fatalf("Could not create file %s: %v", filename, err)
+	}
+	defer w.Close()
+	_, err = fmt.Fprintf(w, header, pkg)
+	if err != nil {
+		log.Fatalf("Error writing header: %v", err)
+	}
+	// Strip leading newlines.
+	for len(b) > 0 && b[0] == '\n' {
+		b = b[1:]
+	}
 	formatted, err := format.Source(b)
 	if err != nil {
 		// Print the original buffer even in case of an error so that the
 		// returned error can be meaningfully interpreted.
-		ioutil.WriteFile(fw.filename, b, 0644)
-		log.Fatalf("Error formatting file %s: %v", fw.filename, err)
+		w.Write(b)
+		log.Fatalf("Error formatting file %s: %v", filename, err)
 	}
-	return ioutil.WriteFile(fw.filename, formatted, 0644)
+	if _, err := w.Write(formatted); err != nil {
+		log.Fatalf("Error writing file %s: %v", filename, err)
+	}
 }

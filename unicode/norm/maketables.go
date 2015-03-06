@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -727,8 +726,7 @@ func contains(sa []string, s string) bool {
 }
 
 func makeTables() {
-	w := gen.NewFormattedFileWriter("tables.go", "norm")
-	defer w.Close()
+	w := &bytes.Buffer{}
 
 	size := 0
 	if *tablelist == "" {
@@ -806,6 +804,7 @@ func makeTables() {
 	}
 
 	fmt.Fprintf(w, "// Total size of tables: %dKB (%d bytes)\n", (size+512)/1024, size)
+	gen.WriteGoFile("tables.go", "norm", w.Bytes())
 }
 
 func printChars() {
@@ -954,14 +953,9 @@ func printTestdata() {
 		nTrail uint8
 		f      string
 	}
-	w, err := os.Create("data_test.go")
-	if err != nil {
-		log.Fatalf("Could not create file data_test.go: %v", err)
-	}
-	defer w.Close()
 
 	last := lastInfo{}
-	gen.WriteHeader(w, "norm")
+	w := &bytes.Buffer{}
 	fmt.Fprintf(w, testHeader)
 	for r, c := range chars {
 		f := c.forms[FCanonical]
@@ -981,4 +975,5 @@ func printTestdata() {
 		}
 	}
 	fmt.Fprintln(w, "}")
+	gen.WriteGoFile("data_test.go", "norm", w.Bytes())
 }

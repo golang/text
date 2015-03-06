@@ -76,8 +76,7 @@ func main() {
 		log.Fatalf("DecodeZip: %v", err)
 	}
 
-	w := gen.NewFormattedFileWriter(*outputFile, "display")
-	defer w.Close()
+	w := &bytes.Buffer{}
 
 	b := builder{
 		w:     w,
@@ -85,6 +84,7 @@ func main() {
 		group: make(map[string]*group),
 	}
 	b.generate()
+	gen.WriteGoFile(*outputFile, "display", w.Bytes())
 }
 
 const tagForm = language.All

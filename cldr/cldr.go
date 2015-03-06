@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run makexml.go -output xml.go
+
 // Package cldr provides a parser for LDML and related XML formats.
 // This package is inteded to be used by the table generation tools
 // for the various internationalization-related packages.
@@ -13,8 +15,6 @@
 // CLDR version 22 is the first version supported by this package.
 // Older versions may not work.
 package cldr // import "golang.org/x/text/cldr"
-
-//go:generate go run makexml.go -output xml.go
 
 import (
 	"fmt"

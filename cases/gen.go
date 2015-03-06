@@ -17,8 +17,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"os"
-	"os/exec"
 	"reflect"
 	"strconv"
 	"strings"
@@ -216,13 +214,8 @@ func genTables() {
 		t.Insert(rune(i), uint64(c.entry))
 	}
 
-	const file = "tables.go"
-	w, err := os.Create(file + ".tmp")
-	if err != nil {
-		log.Fatal(err)
-	}
+	w := &bytes.Buffer{}
 
-	gen.WriteHeader(w, "cases")
 	sz, err := t.Gen(w, triegen.Compact(&sparseCompacter{}))
 	if err != nil {
 		log.Fatal(err)
@@ -234,10 +227,7 @@ func genTables() {
 	sz += len(exceptionData)
 	fmt.Fprintf(w, "// Total table size %d bytes (%dKiB)\n", sz, sz/1024)
 
-	if err := os.Rename(file+".tmp", file); err != nil {
-		log.Fatalf("Rename to file %v failed.", file)
-	}
-	exec.Command("gofmt", "-w", file).Run()
+	gen.WriteGoFile("tables.go", "cases", w.Bytes())
 }
 
 func makeEntry(ri *runeInfo) {
@@ -627,13 +617,7 @@ func verifyProperties(chars []runeInfo) {
 }
 
 func genTablesTest() {
-	const file = "tables_test.go"
-	w, err := os.Create(file + ".tmp")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	gen.WriteHeader(w, "cases")
+	w := &bytes.Buffer{}
 
 	fmt.Fprintln(w, "var (")
 	printProperties(w, "DerivedCoreProperties.txt", "Case_Ignorable", verifyIgnore)
@@ -728,10 +712,7 @@ func genTablesTest() {
 
 	fmt.Fprintln(w, ")")
 
-	if err := os.Rename(file+".tmp", file); err != nil {
-		log.Fatalf("Rename to file %v failed.", file)
-	}
-	exec.Command("gofmt", "-w", file).Run()
+	gen.WriteGoFile("tables_test.go", "cases", w.Bytes())
 }
 
 // These functions are just used for verification that their definition have not
@@ -807,12 +788,9 @@ func genTrieval() {
 	if i < 0 {
 		log.Fatalf("could not find %q in gen_trieval.go", toDelete)
 	}
-	dst := new(bytes.Buffer)
-	gen.WriteHeader(dst, "cases")
-	dst.Write(src[i+len(toDelete):])
-	if err := ioutil.WriteFile("trieval.go", dst.Bytes(), 0644); err != nil {
-		log.Fatalf("writing trieval.go: %v", err)
-	}
+	w := &bytes.Buffer{}
+	w.Write(src[i+len(toDelete):])
+	gen.WriteGoFile("trieval.go", "cases", w.Bytes())
 }
 
 // The newCaseTrie, sparseValues and sparseOffsets definitions below are
