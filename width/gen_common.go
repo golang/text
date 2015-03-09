@@ -51,11 +51,10 @@ func getWidthData(f func(r rune, tag elem, alt rune)) {
 		}
 	}
 
-	wide := map[rune]rune{}
-	narrow := map[rune]rune{}
-	maps := map[string]map[rune]rune{
-		"<wide>":   wide,
-		"<narrow>": narrow,
+	inverse := map[rune]rune{}
+	maps := map[string]bool{
+		"<wide>":   true,
+		"<narrow>": true,
 	}
 
 	// We cannot reuse package norm's decomposition, as we need an unexpanded
@@ -64,15 +63,18 @@ func getWidthData(f func(r rune, tag elem, alt rune)) {
 	parse("UnicodeData.txt", func(p *ucd.Parser) {
 		r := p.Rune(0)
 		s := strings.SplitN(p.String(ucd.DecompMapping), " ", 2)
-		m := maps[s[0]]
-		if m == nil {
+		if !maps[s[0]] {
 			return
 		}
 		x, err := strconv.ParseUint(s[1], 16, 32)
 		if err != nil {
 			log.Fatalf("Error parsing rune %q", s[1])
 		}
-		m[r] = rune(x)
+		if inverse[r] != 0 || inverse[rune(x)] != 0 {
+			log.Fatalf("Circular dependency in mapping between %U and %U", r, x)
+		}
+		inverse[r] = rune(x)
+		inverse[rune(x)] = r
 	})
 
 	// <rune range>;<type>
@@ -82,15 +84,12 @@ func getWidthData(f func(r rune, tag elem, alt rune)) {
 			log.Fatalf("Unknown width type %q", p.String(1))
 		}
 		r := p.Rune(0)
-		alt := rune(0)
-		ok = true // Already true, but set explicity for clarity.
-		if tag == tagFullwidth {
-			alt, ok = wide[r]
-		} else if tag == tagHalfwidth && r != wonSign {
-			alt, ok = narrow[r]
-		}
-		if !ok {
-			log.Fatalf("Narrow or wide rune %U has no decomposition ", r)
+		alt, ok := inverse[r]
+		if tag == tagFullwidth || tag == tagHalfwidth && r != wonSign {
+			tag |= tagNeedsFold
+			if !ok {
+				log.Fatalf("Narrow or wide rune %U has no decomposition", r)
+			}
 		}
 		f(r, tag, alt)
 	})

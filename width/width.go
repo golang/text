@@ -66,14 +66,14 @@ var trie = newWidthTrie(0)
 // of its UTF-8 encoding.
 func Lookup(b []byte) (p Properties, size int) {
 	v, sz := trie.lookup(b)
-	return Properties{elem(v)}, sz
+	return Properties{elem(v), b[sz-1]}, sz
 }
 
 // LookupString reports the Properties of the first rune in s and the number of
 // bytes of its UTF-8 encoding.
 func LookupString(s string) (p Properties, size int) {
 	v, sz := trie.lookupString(s)
-	return Properties{elem(v)}, sz
+	return Properties{elem(v), s[sz-1]}, sz
 }
 
 // LookupRune reports the Properties of rune r.
@@ -81,31 +81,29 @@ func LookupRune(r rune) Properties {
 	var buf [4]byte
 	n := utf8.EncodeRune(buf[:], r)
 	v, _ := trie.lookup(buf[:n])
-	return Properties{elem(v)}
+	return Properties{elem(v), 0x80 + byte(r&0x3f)}
 }
 
 // Properties provides access to width properties of a rune.
 type Properties struct {
 	elem elem
+	last byte
 }
 
 // Kind returns the Kind of a rune as defined in Unicode TR #11.
 // See http://unicode.org/reports/tr11/ for more details.
 func (p Properties) Kind() Kind {
 	v := p.elem
-	if v < hasMappingMask {
-		return Kind(v)
-	}
-	if v&tagMappingMask == tagHalfwidth {
-		return EastAsianHalfwidth
-	}
-	return EastAsianFullwidth
+	return Kind(v >> typeShift)
 }
 
 // Folded returns the folded variant of a rune or 0 if the rune is canonical.
 func (p Properties) Folded() rune {
-	if p.elem > hasMappingMask {
-		return rune(p.elem &^ tagMappingMask)
+	if p.elem&tagNeedsFold != 0 {
+		buf := inverseData[byte(p.elem)]
+		buf[buf[0]] ^= p.last
+		r, _ := utf8.DecodeRune(buf[1 : 1+buf[0]])
+		return r
 	}
 	return 0
 }

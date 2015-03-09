@@ -37,17 +37,23 @@ func (foldTransform) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 			}
 			size = 1 // gobble 1 byte
 		}
-		if elem(v)&hasMappingMask == 0 || v == tagHalfwidth /* Won Sign */ {
+		if elem(v)&tagNeedsFold == 0 {
 			if size != copy(dst[nDst:], src[nSrc:nSrc+size]) {
 				return nDst, nSrc, transform.ErrShortDst
 			}
 			nDst += size
 		} else {
-			r := rune(v &^ tagMappingMask)
-			if utf8.RuneLen(r) > len(dst)-nDst {
+			data := inverseData[byte(v)]
+			if len(dst)-nDst < int(data[0]) {
 				return nDst, nSrc, transform.ErrShortDst
 			}
-			nDst += utf8.EncodeRune(dst[nDst:], r)
+			i := 1
+			for end := int(data[0]); i < end; i++ {
+				dst[nDst] = data[i]
+				nDst++
+			}
+			dst[nDst] = data[i] ^ src[nSrc+size-1]
+			nDst++
 		}
 		nSrc += size
 	}

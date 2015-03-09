@@ -31,19 +31,7 @@ func TestTables(t *testing.T) {
 		if loSurrogate <= r && r <= hiSurrogate {
 			continue
 		}
-		want := Neutral
-		switch runes[r] {
-		case tagAmbiguous:
-			want = EastAsianAmbiguous
-		case tagNarrow:
-			want = EastAsianNarrow
-		case tagWide:
-			want = EastAsianWide
-		case tagHalfwidth:
-			want = EastAsianHalfwidth
-		case tagFullwidth:
-			want = EastAsianFullwidth
-		}
+		want := Kind(runes[r] >> typeShift)
 		p := LookupRune(r)
 		if got := p.Kind(); got != want {
 			t.Errorf("Kind of %U was %s; want %s.", r, got, want)
