@@ -16,7 +16,20 @@ type foldTransform struct {
 
 func (foldTransform) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	for nSrc < len(src) {
-		// TODO: ASCII fast path.
+		if src[nSrc] < utf8.RuneSelf {
+			// ASCII fast path.
+			start, end := nSrc, len(src)
+			if d := len(dst) - nDst; d < end-start {
+				end = nSrc + d
+			}
+			for nSrc++; nSrc < end && src[nSrc] < utf8.RuneSelf; nSrc++ {
+			}
+			nDst += copy(dst[nDst:], src[start:nSrc])
+			if nDst == len(dst) && nSrc < len(src) && src[nSrc] < utf8.RuneSelf {
+				return nDst, nSrc, transform.ErrShortDst
+			}
+			continue
+		}
 		v, size := trie.lookup(src[nSrc:])
 		if size == 0 { // incomplete UTF-8 encoding
 			if !atEOF {
