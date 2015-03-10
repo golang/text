@@ -747,7 +747,7 @@ func makeTables() {
 
 	fmt.Fprintln(w, "const (")
 	fmt.Fprintln(w, "\t// Version is the Unicode edition from which the tables are derived.")
-	fmt.Fprintf(w, "\tVersion = %q\n", gen.UnicodeVersion)
+	fmt.Fprintf(w, "\tVersion = %q\n", gen.UnicodeVersion())
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "\t// MaxTransformChunkSize indicates the maximum number of bytes that Transform")
 	fmt.Fprintln(w, "\t// may need to write atomically for any Form. Making a destination buffer at")

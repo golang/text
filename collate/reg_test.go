@@ -2,35 +2,33 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore
-
-package main
+package collate
 
 import (
 	"archive/zip"
 	"bufio"
 	"bytes"
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"os"
 	"path"
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
+	"testing"
 	"unicode/utf8"
 
-	"golang.org/x/text/collate"
 	"golang.org/x/text/collate/build"
+	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/language"
 )
 
+var long = flag.Bool("long", false,
+	"run time-consuming tests, such as tests that fetch data online")
+
 // This regression test runs tests for the test files in CollationTest.zip
-// (taken from http://www.unicode.org/Public/UCA/<unicode.Version>/).
+// (taken from http://www.unicode.org/Public/UCA/<gen.UnicodeVersion()>/).
 //
 // The test files have the following form:
 // # header
@@ -44,16 +42,6 @@ import (
 // represented by rune sequence are in the file in sorted order, as
 // defined by the DUCET.
 
-var testdata = flag.String("testdata",
-	"http://www.unicode.org/Public/UCA/"+unicode.Version+"/CollationTest.zip",
-	"URL of Unicode collation tests zip file")
-var ducet = flag.String("ducet",
-	"http://unicode.org/Public/UCA/"+unicode.Version+"/allkeys.txt",
-	"URL of the Default Unicode Collation Element Table (DUCET).")
-var localFiles = flag.Bool("local",
-	false,
-	"data files have been copied to the current directory; for debugging only")
-
 type Test struct {
 	name    string
 	str     [][]byte
@@ -63,35 +51,26 @@ type Test struct {
 var versionRe = regexp.MustCompile(`# UCA Version: (.*)\n?$`)
 var testRe = regexp.MustCompile(`^([\dA-F ]+);.*# (.*)\n?$`)
 
+func TestCollation(t *testing.T) {
+	if !gen.IsLocal() && !*long {
+		t.Skip("skipping test to prevent downloading; to run use -long or use -local to specify a local source")
+	}
+	for _, test := range loadTestData() {
+		doTest(t, test)
+	}
+}
+
 func Error(e error) {
 	if e != nil {
 		log.Fatal(e)
 	}
 }
 
-// openReader opens the url or file given by url and returns it as an io.ReadCloser
-// or nil on error.
-func openReader(url string) io.ReadCloser {
-	if *localFiles {
-		pwd, _ := os.Getwd()
-		url = "file://" + path.Join(pwd, path.Base(url))
-	}
-	t := &http.Transport{}
-	t.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
-	c := &http.Client{Transport: t}
-	resp, err := c.Get(url)
-	Error(err)
-	if resp.StatusCode != 200 {
-		Error(fmt.Errorf(`bad GET status for "%s": %s`, url, resp.Status))
-	}
-	return resp.Body
-}
-
 // parseUCA parses a Default Unicode Collation Element Table of the format
 // specified in http://www.unicode.org/reports/tr10/#File_Format.
 // It returns the variable top.
 func parseUCA(builder *build.Builder) {
-	r := openReader(*ducet)
+	r := gen.OpenUnicodeFile("UCA", "", "allkeys.txt")
 	defer r.Close()
 	input := bufio.NewReader(r)
 	colelem := regexp.MustCompile(`\[([.*])([0-9A-F.]+)\]`)
@@ -110,8 +89,8 @@ func parseUCA(builder *build.Builder) {
 		}
 		if line[0] == '@' {
 			if strings.HasPrefix(line[1:], "version ") {
-				if v := strings.Split(line[1:], " ")[1]; v != unicode.Version {
-					log.Fatalf("incompatible version %s; want %s", v, unicode.Version)
+				if v := strings.Split(line[1:], " ")[1]; v != gen.UnicodeVersion() {
+					log.Fatalf("incompatible version %s; want %s", v, gen.UnicodeVersion())
 				}
 			}
 		} else {
@@ -152,7 +131,7 @@ func convHex(line int, s string) int {
 }
 
 func loadTestData() []Test {
-	f := openReader(*testdata)
+	f := gen.OpenUnicodeFile("UCA", "", "CollationTest.zip")
 	buffer, err := ioutil.ReadAll(f)
 	f.Close()
 	Error(err)
@@ -173,8 +152,8 @@ func loadTestData() []Test {
 			line := scanner.Text()
 			if len(line) <= 1 || line[0] == '#' {
 				if m := versionRe.FindStringSubmatch(line); m != nil {
-					if m[1] != unicode.Version {
-						log.Printf("warning:%s: version is %s; want %s", f.Name, m[1], unicode.Version)
+					if m[1] != gen.UnicodeVersion() {
+						log.Printf("warning:%s: version is %s; want %s", f.Name, m[1], gen.UnicodeVersion())
 					}
 				}
 				continue
@@ -211,59 +190,40 @@ func loadTestData() []Test {
 
 var errorCount int
 
-func fail(t Test, pattern string, args ...interface{}) {
-	format := fmt.Sprintf("error:%s:%s", t.name, pattern)
-	log.Printf(format, args...)
-	errorCount++
-	if errorCount > 30 {
-		log.Fatal("too many errors")
-	}
-}
-
 func runes(b []byte) []rune {
 	return []rune(string(b))
 }
 
 var shifted = language.MustParse("und-u-ka-shifted-ks-level4")
 
-func doTest(t Test) {
+func doTest(t *testing.T, tc Test) {
 	bld := build.NewBuilder()
 	parseUCA(bld)
 	w, err := bld.Build()
 	Error(err)
 	var tag language.Tag
-	if !strings.Contains(t.name, "NON_IGNOR") {
+	if !strings.Contains(tc.name, "NON_IGNOR") {
 		tag = shifted
 	}
-	c := collate.NewFromTable(w, collate.OptionsFromTag(tag))
-	b := &collate.Buffer{}
-	prev := t.str[0]
-	for i := 1; i < len(t.str); i++ {
+	c := NewFromTable(w, OptionsFromTag(tag))
+	b := &Buffer{}
+	prev := tc.str[0]
+	for i := 1; i < len(tc.str); i++ {
 		b.Reset()
-		s := t.str[i]
+		s := tc.str[i]
 		ka := c.Key(b, prev)
 		kb := c.Key(b, s)
 		if r := bytes.Compare(ka, kb); r == 1 {
-			fail(t, "%d: Key(%.4X) < Key(%.4X) (%X < %X) == %d; want -1 or 0", i, []rune(string(prev)), []rune(string(s)), ka, kb, r)
+			t.Errorf("%s:%d: Key(%.4X) < Key(%.4X) (%X < %X) == %d; want -1 or 0", tc.name, i, []rune(string(prev)), []rune(string(s)), ka, kb, r)
 			prev = s
 			continue
 		}
 		if r := c.Compare(prev, s); r == 1 {
-			fail(t, "%d: Compare(%.4X, %.4X) == %d; want -1 or 0", i, runes(prev), runes(s), r)
+			t.Errorf("%s:%d: Compare(%.4X, %.4X) == %d; want -1 or 0", tc.name, i, runes(prev), runes(s), r)
 		}
 		if r := c.Compare(s, prev); r == -1 {
-			fail(t, "%d: Compare(%.4X, %.4X) == %d; want 1 or 0", i, runes(s), runes(prev), r)
+			t.Errorf("%s:%d: Compare(%.4X, %.4X) == %d; want 1 or 0", tc.name, i, runes(s), runes(prev), r)
 		}
 		prev = s
-	}
-}
-
-func main() {
-	flag.Parse()
-	for _, test := range loadTestData() {
-		doTest(test)
-	}
-	if errorCount == 0 {
-		fmt.Println("PASS")
 	}
 }
