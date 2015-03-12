@@ -59,3 +59,77 @@ func (foldTransform) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 	}
 	return nDst, nSrc, nil
 }
+
+type narrowTransform struct {
+	transform.NopResetter
+}
+
+func (narrowTransform) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	for nSrc < len(src) {
+		// TODO: ASCII fast path.
+		v, size := trie.lookup(src[nSrc:])
+		if size == 0 { // incomplete UTF-8 encoding
+			if !atEOF {
+				return nDst, nSrc, transform.ErrShortSrc
+			}
+			size = 1 // gobble 1 byte
+		}
+		if k := elem(v).kind(); byte(v) == 0 || k != EastAsianFullwidth && k != EastAsianWide && k != EastAsianAmbiguous {
+			if size != copy(dst[nDst:], src[nSrc:nSrc+size]) {
+				return nDst, nSrc, transform.ErrShortDst
+			}
+			nDst += size
+		} else {
+			data := inverseData[byte(v)]
+			if len(dst)-nDst < int(data[0]) {
+				return nDst, nSrc, transform.ErrShortDst
+			}
+			i := 1
+			for end := int(data[0]); i < end; i++ {
+				dst[nDst] = data[i]
+				nDst++
+			}
+			dst[nDst] = data[i] ^ src[nSrc+size-1]
+			nDst++
+		}
+		nSrc += size
+	}
+	return nDst, nSrc, nil
+}
+
+type wideTransform struct {
+	transform.NopResetter
+}
+
+func (wideTransform) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	for nSrc < len(src) {
+		// TODO: ASCII fast path.
+		v, size := trie.lookup(src[nSrc:])
+		if size == 0 { // incomplete UTF-8 encoding
+			if !atEOF {
+				return nDst, nSrc, transform.ErrShortSrc
+			}
+			size = 1 // gobble 1 byte
+		}
+		if k := elem(v).kind(); byte(v) == 0 || k != EastAsianHalfwidth && k != EastAsianNarrow {
+			if size != copy(dst[nDst:], src[nSrc:nSrc+size]) {
+				return nDst, nSrc, transform.ErrShortDst
+			}
+			nDst += size
+		} else {
+			data := inverseData[byte(v)]
+			if len(dst)-nDst < int(data[0]) {
+				return nDst, nSrc, transform.ErrShortDst
+			}
+			i := 1
+			for end := int(data[0]); i < end; i++ {
+				dst[nDst] = data[i]
+				nDst++
+			}
+			dst[nDst] = data[i] ^ src[nSrc+size-1]
+			nDst++
+		}
+		nSrc += size
+	}
+	return nDst, nSrc, nil
+}

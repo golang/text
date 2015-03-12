@@ -44,17 +44,24 @@ const (
 	// halfwidth counterparts.
 	EastAsianWide
 
-	// EastAsianNarrow characters are narrow in its usual form. They have
+	// EastAsianNarrow characters are narrow in its usual form. They often have
 	// fullwidth counterparts.
 	EastAsianNarrow
+
+	// Note: there exist Narrow runes that do not have fullwidth or wide
+	// counterparts, despite what the definition says (e.g. U+27E6).
 
 	// EastAsianFullwidth characters have a compatibility decompositions of type
 	// wide that map to a narrow counterpart.
 	EastAsianFullwidth
 
 	// EastAsianHalfwidth characters have a compatibility decomposition of type
-	// narrow that map to a wide counterpart, plus U+20A9 ₩ WON SIGN.
+	// narrow that map to a wide or ambiguous counterpart, plus U+20A9 ₩ WON
+	// SIGN.
 	EastAsianHalfwidth
+
+	// Note: there exist runes that have a halfwidth counterparts but that are
+	// classified as Ambiguous, rather than wide (e.g. U+2190).
 )
 
 // TODO: the generated tries need to return size 1 for invalid runes for the
@@ -81,7 +88,11 @@ func LookupRune(r rune) Properties {
 	var buf [4]byte
 	n := utf8.EncodeRune(buf[:], r)
 	v, _ := trie.lookup(buf[:n])
-	return Properties{elem(v), 0x80 + byte(r&0x3f)}
+	last := byte(r)
+	if r >= utf8.RuneSelf {
+		last = 0x80 + byte(r&0x3f)
+	}
+	return Properties{elem(v), last}
 }
 
 // Properties provides access to width properties of a rune.
@@ -90,16 +101,43 @@ type Properties struct {
 	last byte
 }
 
+func (e elem) kind() Kind {
+	return Kind(e >> typeShift)
+}
+
 // Kind returns the Kind of a rune as defined in Unicode TR #11.
 // See http://unicode.org/reports/tr11/ for more details.
 func (p Properties) Kind() Kind {
-	v := p.elem
-	return Kind(v >> typeShift)
+	return p.elem.kind()
 }
 
 // Folded returns the folded variant of a rune or 0 if the rune is canonical.
 func (p Properties) Folded() rune {
 	if p.elem&tagNeedsFold != 0 {
+		buf := inverseData[byte(p.elem)]
+		buf[buf[0]] ^= p.last
+		r, _ := utf8.DecodeRune(buf[1 : 1+buf[0]])
+		return r
+	}
+	return 0
+}
+
+// Narrow returns the narrow variant of a rune or 0 if the rune is already
+// narrow or doesn't have a narrow variant.
+func (p Properties) Narrow() rune {
+	if k := p.elem.kind(); byte(p.elem) != 0 && (k == EastAsianFullwidth || k == EastAsianWide || k == EastAsianAmbiguous) {
+		buf := inverseData[byte(p.elem)]
+		buf[buf[0]] ^= p.last
+		r, _ := utf8.DecodeRune(buf[1 : 1+buf[0]])
+		return r
+	}
+	return 0
+}
+
+// Wide returns the wide variant of a rune or 0 if the rune is already
+// wide or doesn't have a wide variant.
+func (p Properties) Wide() rune {
+	if k := p.elem.kind(); byte(p.elem) != 0 && (k == EastAsianHalfwidth || k == EastAsianNarrow) {
 		buf := inverseData[byte(p.elem)]
 		buf[buf[0]] ^= p.last
 		r, _ := utf8.DecodeRune(buf[1 : 1+buf[0]])
@@ -138,18 +176,26 @@ func (t Transformer) String(s string) string {
 	return s
 }
 
-// Fold returns a transform that maps all runes to their canonical width.
-//
-// Note that the NFKC and NFKD transforms in golang.org/x/text/unicode/norm
-// provide a more generic folding mechanism.
-func Fold() Transformer {
-	return Transformer{foldTransform{}}
-}
+var (
+	// Fold is a transform that maps all runes to their canonical width.
+	//
+	// Note that the NFKC and NFKD transforms in golang.org/x/text/unicode/norm
+	// provide a more generic folding mechanism.
+	Fold = Transformer{foldTransform{}}
 
-// TODO: Widening or narrowing all possible runes:
-//   - Widen   Convert anything with a wide variant to wide (including to Fullwidth).
-//   - Narrow  Convert anything with a narrow variant to narrow (including Halfwidth).
-//
-// We opt to not support folding only fullwidth or halfwidth variants. We could
-// later do so with options, but the preferred approach is allow applying
-// filters to transforms.
+	// Widen is a transform that maps runes to their wide variant, if
+	// available.
+	Widen = Transformer{wideTransform{}}
+
+	// Narrow is a transform that maps runes to their narrow variant, if
+	// available.
+	Narrow = Transformer{narrowTransform{}}
+)
+
+// TODO: Consider the following options:
+// - Treat Ambiguous runes that have a halfwidth counterpart as wide, or some
+//   generalized variant of this.
+// - Consider a wide Won character to be the default width (or some generalized
+//   variant of this).
+// - Filter the set of characters that gets converted (the preferred approach is
+//   to allow applying filters to transforms).

@@ -33,10 +33,10 @@ func main() {
 
 func genTables() {
 	t := triegen.NewTrie("width")
-	mapping := map[[4]byte]int{}
-	// fold and inverse mappings. See inverseDataComment for a description of
-	// the format of each entry.
-	inverse := [][4]byte{}
+	// fold and inverse mappings. See mapComment for a description of the format
+	// of each entry. Add dummy value to make an index of 0 mean no mapping.
+	inverse := [][4]byte{{}}
+	mapping := map[[4]byte]int{[4]byte{}: 0}
 
 	getWidthData(func(r rune, tag elem, alt rune) {
 		idx := 0
@@ -103,23 +103,13 @@ func writeMappings(w io.Writer, data [][4]byte) int {
 }
 
 func genTests() {
-	type keyval struct{ key, val rune }
-	m := []keyval{}
-
+	w := &bytes.Buffer{}
+	fmt.Fprintf(w, "\nvar mapRunes = map[rune]struct{r rune; e elem}{\n")
 	getWidthData(func(r rune, tag elem, alt rune) {
 		if alt != 0 {
-			if tag&tagNeedsFold != 0 {
-				m = append(m, keyval{r, alt})
-			}
+			fmt.Fprintf(w, "\t0x%X: {0x%X, 0x%X},\n", r, alt, tag)
 		}
 	})
-
-	w := &bytes.Buffer{}
-
-	fmt.Fprintf(w, "\nvar foldRunes = map[rune]rune{\n")
-	for _, kv := range m {
-		fmt.Fprintf(w, "\t0x%X: 0x%X,\n", kv.key, kv.val)
-	}
 	fmt.Fprintln(w, "}")
 	gen.WriteGoFile("runes_test.go", "width", w.Bytes())
 }

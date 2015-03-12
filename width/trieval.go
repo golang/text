@@ -20,10 +20,9 @@ const (
 	numTypeBits = 3
 	typeShift   = 16 - numTypeBits
 
-	tagHasMapping = 0x1000
 	// tagNeedsFold is true for all fullwidth and halfwidth runes except for
 	// the Won sign U+20A9.
-	tagNeedsFold = 0x0800
+	tagNeedsFold = 0x1000
 
 	// The Korean Won sign is halfwidth, but SHOULD NOT be mapped to a wide
 	// variant.
