@@ -181,15 +181,15 @@ var (
 	//
 	// Note that the NFKC and NFKD transforms in golang.org/x/text/unicode/norm
 	// provide a more generic folding mechanism.
-	Fold = Transformer{foldTransform{}}
+	Fold Transformer = Transformer{foldTransform{}}
 
 	// Widen is a transform that maps runes to their wide variant, if
 	// available.
-	Widen = Transformer{wideTransform{}}
+	Widen Transformer = Transformer{wideTransform{}}
 
 	// Narrow is a transform that maps runes to their narrow variant, if
 	// available.
-	Narrow = Transformer{narrowTransform{}}
+	Narrow Transformer = Transformer{narrowTransform{}}
 )
 
 // TODO: Consider the following options:
