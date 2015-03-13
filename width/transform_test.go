@@ -115,6 +115,30 @@ func TestFold(t *testing.T) {
 		nSrc:  1,
 		atEOF: false,
 		err:   transform.ErrShortDst,
+	}, {
+		desc:  "short dst 2",
+		src:   "不夠",
+		dst:   "不",
+		nDst:  3,
+		nSrc:  3,
+		atEOF: true,
+		err:   transform.ErrShortDst,
+	}, {
+		desc:  "short dst fast path",
+		src:   "fast",
+		dst:   "fas",
+		nDst:  3,
+		nSrc:  3,
+		atEOF: true,
+		err:   transform.ErrShortDst,
+	}, {
+		desc:  "fast path alternation",
+		src:   "fast路徑fast路徑",
+		dst:   "fast路徑fast路徑",
+		nDst:  20,
+		nSrc:  20,
+		atEOF: true,
+		err:   nil,
 	}} {
 		b := make([]byte, tc.nDst)
 		nDst, nSrc, err := Fold.Transform(b, []byte(tc.src), tc.atEOF)
@@ -208,6 +232,22 @@ func TestWiden(t *testing.T) {
 		nDst:  4,
 		nSrc:  1,
 		atEOF: false,
+		err:   transform.ErrShortDst,
+	}, {
+		desc:  "short dst 2",
+		src:   "不夠",
+		dst:   "不",
+		nDst:  3,
+		nSrc:  3,
+		atEOF: true,
+		err:   transform.ErrShortDst,
+	}, {
+		desc:  "short dst ascii",
+		src:   "ascii",
+		dst:   "\uff41",
+		nDst:  3,
+		nSrc:  1,
+		atEOF: true,
 		err:   transform.ErrShortDst,
 	}, {
 		desc:  "ambiguous",
@@ -312,6 +352,14 @@ func TestNarrow(t *testing.T) {
 		atEOF: false,
 		err:   transform.ErrShortDst,
 	}, {
+		desc:  "short dst 2",
+		src:   "不夠",
+		dst:   "不",
+		nDst:  3,
+		nSrc:  3,
+		atEOF: true,
+		err:   transform.ErrShortDst,
+	}, {
 		// Create a narrow variant of ambiguous runes, if they exist.
 		desc:  "ambiguous",
 		src:   "\u2190",
@@ -319,6 +367,22 @@ func TestNarrow(t *testing.T) {
 		nDst:  4,
 		nSrc:  3,
 		atEOF: false,
+		err:   nil,
+	}, {
+		desc:  "short dst fast path",
+		src:   "fast",
+		dst:   "fas",
+		nDst:  3,
+		nSrc:  3,
+		atEOF: true,
+		err:   transform.ErrShortDst,
+	}, {
+		desc:  "fast path alternation",
+		src:   "fast路徑fast路徑",
+		dst:   "fast路徑fast路徑",
+		nDst:  20,
+		nSrc:  20,
+		atEOF: true,
 		err:   nil,
 	}} {
 		b := make([]byte, tc.nDst)
