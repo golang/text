@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:generate go run maketables.go
+// TODO: remove hard-coded versions when we have implemented fractional weights.
+// The current implementation is incompatible with later CLDR versions.
+//go:generate go run maketables.go -cldr=23 -unicode=6.2.0
 
 // Package collate contains types for comparing and sorting Unicode strings
 // according to a given collation order.  Package locale provides a high-level
