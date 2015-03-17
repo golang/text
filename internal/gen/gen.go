@@ -110,13 +110,20 @@ func OpenUnicodeFile(category, version, file string) io.ReadCloser {
 // iana directory in the local mirror. It will call log.Fatal if there are any
 // errors.
 func OpenIANAFile(path string) io.ReadCloser {
+	return Open(*iana, "iana", path)
+}
+
+// Open opens subdir/path if a local directory is specified and the file exists,
+// where subdir is a directory relative to the local root, or fetches it from
+// urlRoot/path otherwise. It will call log.Fatal if there are any errors.
+func Open(urlRoot, subdir, path string) io.ReadCloser {
 	if *localDir != "" {
 		path = filepath.FromSlash(path)
-		if f, err := os.Open(filepath.Join(*localDir, "iana", path)); err == nil {
+		if f, err := os.Open(filepath.Join(*localDir, subdir, path)); err == nil {
 			return f
 		}
 	}
-	return get(*iana, path)
+	return get(urlRoot, path)
 }
 
 func openUnicode(path string) io.ReadCloser {
