@@ -496,9 +496,9 @@ func (b *builder) writeSliceAddSize(name string, extraSize int, ss interface{}) 
 	fmt.Fprintf(b.w, `var %s = [%d]%s{`, name, v.Len(), tn)
 	for i := 0; i < v.Len(); i++ {
 		if t.Kind() == reflect.Struct {
-			line := fmt.Sprintf("\n\t%#v, ", v.Index(i).Interface())
-			line = strings.Replace(line, "main.", "", 1)
-			fmt.Fprintf(b.w, line)
+			line := fmt.Sprintf("%#v, ", v.Index(i).Interface())
+			line = line[strings.IndexByte(line, '{'):]
+			fmt.Fprintf(b.w, "\n\t%s", line)
 		} else {
 			if i%12 == 0 {
 				fmt.Fprintf(b.w, "\n\t")
