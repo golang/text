@@ -14,6 +14,33 @@ import (
 	"golang.org/x/text/transform"
 )
 
+// TODO: UTF-16 SHOULD default to BigEndian (or here the Endianess given) if no
+// BOM is present (RFC 2781:4.3). WhatWG does not define this explicitly because
+// UTF-16 is implemented through the alias resolution + decode mechanism, rather
+// than by the defined encoding.
+
+// TODO: implement DecodeBOM (http://www.w3.org/TR/encoding/#shared-utf-16-decoder)
+// DecodeBOM tries to interpret a BOM code and falls back to the given Encoding
+// if none can be found.
+// func DecodeBOM(fallback Encoding) Encoding.
+
+// TODO: UTF-16BE/LE may gobble initial BOM (RFC 2781:4.1). This is maybe not
+// defined in WhatWG, because the "decode" wrapper defined there already takes
+// care of this. "May" implies this behavior is optional. It seems
+// recommendable.
+
+// TODO: I think the Transformers really should return errors on unmatched
+// surrogate pairs and odd numbers of bytes. This is not required by RFC 2781,
+// which leaves it open, but is suggested by WhatWG. It will allow for all error
+// modes as defined by WhatWG: fatal, HTML and Replacement. This would require
+// the introduction of some kind of error type for conveying the erroneous code
+// point.
+
+// TODO:
+// - Define All list of recommended RFC 2781 versions.
+// - Define UTF-8 (mostly for BOM handling.)
+// - Define UTF-32?
+
 // UTF16 returns a UTF-16 Encoding for the given default endianness and byte
 // order mark (BOM) policy.
 //
@@ -129,25 +156,39 @@ func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 		nSrc = 2
 	}
 
-	for nSrc+1 < len(src) {
-		x := uint16(src[nSrc+0])<<8 | uint16(src[nSrc+1])
-		if u.endianness == LittleEndian {
-			x = x>>8 | x<<8
-		}
-		r, sSize := rune(x), 2
-		if utf16.IsSurrogate(r) {
-			if nSrc+3 >= len(src) {
-				break
-			}
-			x = uint16(src[nSrc+2])<<8 | uint16(src[nSrc+3])
+	var r rune
+	var dSize, sSize int
+	for nSrc < len(src) {
+		if nSrc+1 < len(src) {
+			x := uint16(src[nSrc+0])<<8 | uint16(src[nSrc+1])
 			if u.endianness == LittleEndian {
 				x = x>>8 | x<<8
 			}
-			r, sSize = utf16.DecodeRune(r, rune(x)), 4
-		}
-		dSize := utf8.RuneLen(r)
-		if dSize < 0 {
-			r, dSize = utf8.RuneError, 3
+			r, sSize = rune(x), 2
+			if utf16.IsSurrogate(r) {
+				if nSrc+3 < len(src) {
+					x = uint16(src[nSrc+2])<<8 | uint16(src[nSrc+3])
+					if u.endianness == LittleEndian {
+						x = x>>8 | x<<8
+					}
+					// Safe for next iteration if it is not a high surrogate.
+					if isHighSurrogate(rune(x)) {
+						r, sSize = utf16.DecodeRune(r, rune(x)), 4
+					}
+				} else if !atEOF {
+					err = transform.ErrShortSrc
+					break
+				}
+			}
+			if dSize = utf8.RuneLen(r); dSize < 0 {
+				r, dSize = utf8.RuneError, 3
+			}
+		} else if atEOF {
+			// Single trailing byte.
+			r, dSize, sSize = utf8.RuneError, 3, 1
+		} else {
+			err = transform.ErrShortSrc
+			break
 		}
 		if nDst+dSize > len(dst) {
 			err = transform.ErrShortDst
@@ -156,11 +197,11 @@ func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 		nDst += utf8.EncodeRune(dst[nDst:], r)
 		nSrc += sSize
 	}
-
-	if err == nil && nSrc != len(src) {
-		err = transform.ErrShortSrc
-	}
 	return nDst, nSrc, err
+}
+
+func isHighSurrogate(r rune) bool {
+	return 0xDC00 <= r && r <= 0xDFFF
 }
 
 type utf16Encoder struct {

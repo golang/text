@@ -192,7 +192,7 @@ var basicTestCases = []struct {
 		utf8:    "\x57\u00e4\U0001d565",
 	},
 	{
-		e:         unicode.UTF16(unicode.BigEndian, unicode.ExpectBOM),
+		e:         utf16BEEB,
 		encPrefix: "\xfe\xff",
 		encoded:   "\x00\x57\x00\xe4\xd8\x35\xdd\x65",
 		utf8:      "\x57\u00e4\U0001d565",
@@ -203,7 +203,7 @@ var basicTestCases = []struct {
 		utf8:    "\x57\u00e4\U0001d565",
 	},
 	{
-		e:         unicode.UTF16(unicode.LittleEndian, unicode.ExpectBOM),
+		e:         utf16LEEB,
 		encPrefix: "\xff\xfe",
 		encoded:   "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
 		utf8:      "\x57\u00e4\U0001d565",
@@ -655,13 +655,230 @@ func TestUTF8Validator(t *testing.T) {
 	}
 }
 
-// TODO: UTF-16-specific tests:
-// - inputs with multiple U+FEFF and U+FFFE runes. These should not be replaced
-//   by U+FFFD.
-// - malformed input: an odd number of bytes (and atEOF), or unmatched
-//   surrogates. These should be replaced with U+FFFD.
+var (
+	utf16LEIB = unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM) // UTF-16LE (atypical interpretation)
+	utf16LEEB = unicode.UTF16(unicode.LittleEndian, unicode.ExpectBOM) // UTF-16, LE default (approximate, but incorrect)
+	utf16BEIB = unicode.UTF16(unicode.BigEndian, unicode.IgnoreBOM)    // UTF-16BE (atypical interpretation)
+	utf16BEEB = unicode.UTF16(unicode.BigEndian, unicode.ExpectBOM)    // UTF-16 (approximate, but incorrect)
+)
 
-var utf16LEIB = unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM)
+func TestUTF16(t *testing.T) {
+	testCases := []struct {
+		desc    string
+		src     string
+		notEOF  bool // the inverse of atEOF
+		sizeDst int
+		want    string
+		nSrc    int
+		err     error
+		t       transform.Transformer
+	}{{
+		desc:    "utf-16 dec: BOM determines encoding BE (RFC 2781:3.3)",
+		src:     "\xFE\xFF\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
+		sizeDst: 100,
+		want:    "\U00012345=Ra",
+		nSrc:    12,
+		t:       utf16BEEB.NewDecoder(),
+	}, {
+		desc:    "utf-16 dec: BOM determines encoding LE (RFC 2781:3.3)",
+		src:     "\xFF\xFE\x08\xD8\x45\xDF\x3D\x00\x52\x00\x61\x00",
+		sizeDst: 100,
+		want:    "\U00012345=Ra",
+		nSrc:    12,
+		t:       utf16LEEB.NewDecoder(),
+	}, {
+		desc:    "utf-16 dec: BOM determines encoding LE, change default (RFC 2781:3.3)",
+		src:     "\xFF\xFE\x08\xD8\x45\xDF\x3D\x00\x52\x00\x61\x00",
+		sizeDst: 100,
+		want:    "\U00012345=Ra",
+		nSrc:    12,
+		t:       utf16BEEB.NewDecoder(),
+	}, {
+		// TODO: this is non-standard. We should have a separate BOMPolicy for
+		// this.
+		desc:    "utf-16 dec: Fail on missing BOM when required",
+		src:     "\x08\xD8\x45\xDF\x3D\x00\xFF\xFE\xFE\xFF\x00\x52\x00\x61",
+		sizeDst: 100,
+		want:    "",
+		nSrc:    0,
+		err:     unicode.ErrMissingBOM,
+		t:       utf16BEEB.NewDecoder(),
+		// }, { // TODO:
+		// 	desc: "utf-16 dec: SHOULD interpret text as big-endian when BOM not present (RFC 2781:4.3)",
+		// 	// Note: In HTML 5 it is suggested to be little-endian, but this is
+		// 	// implemented through the alias resolution and "decode" algorithm,
+		// 	// not through altering the RFC's standard recommendation.
+		// 	src:     "\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
+		// 	sizeDst: 100,
+		// 	want:    "\U00012345=Ra",
+		// 	nSrc:    10,
+		// 	t:       utf16BEEB.NewDecoder(),
+	}, {
+		// This is an error according to RFC 2781. But errors in RFC 2781 are
+		// open to interpretations, so I guess this is fine.
+		desc:    "utf-16le dec: incorrect BOM is an error (RFC 2781:4.1)",
+		src:     "\xFE\xFF\x08\xD8\x45\xDF\x3D\x00\x52\x00\x61\x00",
+		sizeDst: 100,
+		want:    "\uFFFE\U00012345=Ra",
+		nSrc:    12,
+		t:       utf16LEIB.NewDecoder(),
+	}, {
+		desc:    "utf-16 enc: SHOULD write BOM (RFC 2781:3.3)",
+		src:     "\U00012345=Ra",
+		sizeDst: 100,
+		want:    "\xFF\xFE\x08\xD8\x45\xDF\x3D\x00\x52\x00\x61\x00",
+		nSrc:    7,
+		t:       utf16LEEB.NewEncoder(),
+	}, {
+		desc:    "utf-16 enc: SHOULD write BOM (RFC 2781:3.3)",
+		src:     "\U00012345=Ra",
+		sizeDst: 100,
+		want:    "\xFE\xFF\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
+		nSrc:    7,
+		t:       utf16BEEB.NewEncoder(),
+	}, {
+		desc:    "utf-16le enc: MUST NOT write BOM (RFC 2781:3.3)",
+		src:     "\U00012345=Ra",
+		sizeDst: 100,
+		want:    "\x08\xD8\x45\xDF\x3D\x00\x52\x00\x61\x00",
+		nSrc:    7,
+		t:       utf16LEIB.NewEncoder(),
+	}, {
+		desc:    "utf-16be dec: incorrect UTF-16: odd bytes",
+		src:     "\x00",
+		sizeDst: 100,
+		want:    "\uFFFD",
+		nSrc:    1,
+		t:       utf16BEIB.NewDecoder(),
+	}, {
+		desc:    "utf-16be dec: unpaired surrogate, odd bytes",
+		src:     "\xD8\x45\x00",
+		sizeDst: 100,
+		want:    "\uFFFD\uFFFD",
+		nSrc:    3,
+		t:       utf16BEIB.NewDecoder(),
+	}, {
+		desc:    "utf-16be dec: unpaired low surrogate + valid text",
+		src:     "\xD8\x45\x00a",
+		sizeDst: 100,
+		want:    "\uFFFDa",
+		nSrc:    4,
+		t:       utf16BEIB.NewDecoder(),
+	}, {
+		desc:    "utf-16be dec: unpaired low surrogate + valid text + single byte",
+		src:     "\xD8\x45\x00ab",
+		sizeDst: 100,
+		want:    "\uFFFDa\uFFFD",
+		nSrc:    5,
+		t:       utf16BEIB.NewDecoder(),
+	}, {
+		desc:    "utf-16le dec: unpaired high surrogate",
+		src:     "\x00\x00\x00\xDC\x12\xD8",
+		sizeDst: 100,
+		want:    "\x00\uFFFD\uFFFD",
+		nSrc:    6,
+		t:       utf16LEIB.NewDecoder(),
+	}, {
+		desc:    "utf-16be dec: two unpaired low surrogates",
+		src:     "\xD8\x45\xD8\x12",
+		sizeDst: 100,
+		want:    "\uFFFD\uFFFD",
+		nSrc:    4,
+		t:       utf16BEIB.NewDecoder(),
+	}, {
+		desc:    "utf-16be dec: short dst",
+		src:     "\x00a",
+		sizeDst: 0,
+		want:    "",
+		nSrc:    0,
+		t:       utf16BEIB.NewDecoder(),
+		err:     transform.ErrShortDst,
+	}, {
+		desc:    "utf-16be dec: short dst surrogate",
+		src:     "\xD8\xF5\xDC\x12",
+		sizeDst: 3,
+		want:    "",
+		nSrc:    0,
+		t:       utf16BEIB.NewDecoder(),
+		err:     transform.ErrShortDst,
+	}, {
+		desc:    "utf-16be dec: short dst trailing byte",
+		src:     "\x00",
+		sizeDst: 2,
+		want:    "",
+		nSrc:    0,
+		t:       utf16BEIB.NewDecoder(),
+		err:     transform.ErrShortDst,
+	}, {
+		desc:    "utf-16be dec: short src",
+		src:     "\x00",
+		notEOF:  true,
+		sizeDst: 3,
+		want:    "",
+		nSrc:    0,
+		t:       utf16BEIB.NewDecoder(),
+		err:     transform.ErrShortSrc,
+	}, {
+		desc:    "utf-16 enc",
+		src:     "\U00012345=Ra",
+		sizeDst: 100,
+		want:    "\xFE\xFF\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
+		nSrc:    7,
+		t:       utf16BEEB.NewEncoder(),
+	}, {
+		desc:    "utf-16 enc: short dst normal",
+		src:     "\U00012345=Ra",
+		sizeDst: 9,
+		want:    "\xD8\x08\xDF\x45\x00\x3D\x00\x52",
+		nSrc:    6,
+		t:       utf16BEIB.NewEncoder(),
+		err:     transform.ErrShortDst,
+	}, {
+		desc:    "utf-16 enc: short dst surrogate",
+		src:     "\U00012345=Ra",
+		sizeDst: 3,
+		want:    "",
+		nSrc:    0,
+		t:       utf16BEIB.NewEncoder(),
+		err:     transform.ErrShortDst,
+	}, {
+		desc:    "utf-16 enc: short src",
+		src:     "\U00012345=Ra\xC1",
+		notEOF:  true,
+		sizeDst: 100,
+		want:    "\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
+		nSrc:    7,
+		t:       utf16BEIB.NewEncoder(),
+		err:     transform.ErrShortSrc,
+	}, {
+		desc:    "utf-16be dec: don't change byte order mid-stream",
+		src:     "\xFE\xFF\xD8\x08\xDF\x45\x00\x3D\xFF\xFE\x00\x52\x00\x61",
+		sizeDst: 100,
+		want:    "\U00012345=\ufffeRa",
+		nSrc:    14,
+		t:       utf16BEEB.NewDecoder(),
+	}, {
+		desc:    "utf-16le dec: don't change byte order mid-stream",
+		src:     "\xFF\xFE\x08\xD8\x45\xDF\x3D\x00\xFF\xFE\xFE\xFF\x52\x00\x61\x00",
+		sizeDst: 100,
+		want:    "\U00012345=\ufeff\ufffeRa",
+		nSrc:    16,
+		t:       utf16LEEB.NewDecoder(),
+	}}
+	for i, tc := range testCases {
+		b := make([]byte, tc.sizeDst)
+		nDst, nSrc, err := tc.t.Transform(b, []byte(tc.src), !tc.notEOF)
+		if err != tc.err {
+			t.Errorf("%d:%s: error was %v; want %v", i, tc.desc, err, tc.err)
+		}
+		if got := string(b[:nDst]); got != tc.want {
+			t.Errorf("%d:%s: result was %q: want %q", i, tc.desc, got, tc.want)
+		}
+		if nSrc != tc.nSrc {
+			t.Errorf("%d:%s: nSrc was %d; want %d", i, tc.desc, nSrc, tc.nSrc)
+		}
+	}
+}
 
 // testdataFiles are files in testdata/*.txt.
 var testdataFiles = []struct {
