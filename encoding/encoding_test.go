@@ -880,6 +880,50 @@ func TestUTF16(t *testing.T) {
 	}
 }
 
+func TestBOMOverride(t *testing.T) {
+	dec := unicode.BOMOverride(charmap.CodePage437.NewDecoder())
+	dst := make([]byte, 100)
+	for i, tc := range []struct {
+		src   string
+		atEOF bool
+		dst   string
+		nSrc  int
+		err   error
+	}{
+		0:  {"H\x82ll\x93", true, "Héllô", 5, nil},
+		1:  {"\uFEFFHéllö", true, "Héllö", 10, nil},
+		2:  {"\xFE\xFF\x00H\x00e\x00l\x00l\x00o", true, "Hello", 12, nil},
+		3:  {"\xFF\xFEH\x00e\x00l\x00l\x00o\x00", true, "Hello", 12, nil},
+		4:  {"\uFEFF", true, "", 3, nil},
+		5:  {"\xFE\xFF", true, "", 2, nil},
+		6:  {"\xFF\xFE", true, "", 2, nil},
+		7:  {"\xEF\xBB", true, "\u2229\u2557", 2, nil},
+		8:  {"\xEF", true, "\u2229", 1, nil},
+		9:  {"", true, "", 0, nil},
+		10: {"\xFE", true, "\u220e", 1, nil},
+		11: {"\xFF", true, "\u00a0", 1, nil},
+		12: {"\xEF\xBB", false, "", 0, transform.ErrShortSrc},
+		13: {"\xEF", false, "", 0, transform.ErrShortSrc},
+		14: {"", false, "", 0, transform.ErrShortSrc},
+		15: {"\xFE", false, "", 0, transform.ErrShortSrc},
+		16: {"\xFF", false, "", 0, transform.ErrShortSrc},
+		17: {"\xFF\xFE", false, "", 0, transform.ErrShortSrc},
+	} {
+		dec.Reset()
+		nDst, nSrc, err := dec.Transform(dst, []byte(tc.src), tc.atEOF)
+		got := string(dst[:nDst])
+		if nSrc != tc.nSrc {
+			t.Errorf("%d: nSrc: got %d; want %d", i, nSrc, tc.nSrc)
+		}
+		if got != tc.dst {
+			t.Errorf("%d: got %+q; want %+q", i, got, tc.dst)
+		}
+		if err != tc.err {
+			t.Errorf("%d: error: got %v; want %v", i, err, tc.err)
+		}
+	}
+}
+
 // testdataFiles are files in testdata/*.txt.
 var testdataFiles = []struct {
 	enc           encoding.Encoding

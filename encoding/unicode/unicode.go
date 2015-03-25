@@ -19,11 +19,6 @@ import (
 // UTF-16 is implemented through the alias resolution + decode mechanism, rather
 // than by the defined encoding.
 
-// TODO: implement DecodeBOM (http://www.w3.org/TR/encoding/#shared-utf-16-decoder)
-// DecodeBOM tries to interpret a BOM code and falls back to the given Encoding
-// if none can be found.
-// func DecodeBOM(fallback Encoding) Encoding.
-
 // TODO: UTF-16BE/LE may gobble initial BOM (RFC 2781:4.1). This is maybe not
 // defined in WhatWG, because the "decode" wrapper defined there already takes
 // care of this. "May" implies this behavior is optional. It seems
