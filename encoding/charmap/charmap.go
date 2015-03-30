@@ -19,16 +19,16 @@ import (
 // coded character set is identical and a single implementation can be shared.
 var (
 	// ISO8859_6E is the ISO 8859-6E encoding.
-	ISO8859_6E encoding.Encoding = iso8859_6E
+	ISO8859_6E encoding.Encoding = &iso8859_6E
 
 	// ISO8859_6I is the ISO 8859-6I encoding.
-	ISO8859_6I encoding.Encoding = iso8859_6I
+	ISO8859_6I encoding.Encoding = &iso8859_6I
 
 	// ISO8859_8E is the ISO 8859-8E encoding.
-	ISO8859_8E encoding.Encoding = iso8859_8E
+	ISO8859_8E encoding.Encoding = &iso8859_8E
 
 	// ISO8859_8I is the ISO 8859-8I encoding.
-	ISO8859_8I encoding.Encoding = iso8859_8I
+	ISO8859_8I encoding.Encoding = &iso8859_8I
 
 	iso8859_6E = internal.Encoding{
 		ISO8859_6,
@@ -45,13 +45,13 @@ var (
 	iso8859_8E = internal.Encoding{
 		ISO8859_8,
 		"ISO-8859-8E",
-		identifier.ISO88596E,
+		identifier.ISO88598E,
 	}
 
 	iso8859_8I = internal.Encoding{
 		ISO8859_8,
 		"ISO-8859-8I",
-		identifier.ISO88596I,
+		identifier.ISO88598I,
 	}
 )
 
