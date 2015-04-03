@@ -657,9 +657,11 @@ func TestUTF8Validator(t *testing.T) {
 
 var (
 	utf16LEIB = unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM) // UTF-16LE (atypical interpretation)
-	utf16LEEB = unicode.UTF16(unicode.LittleEndian, unicode.ExpectBOM) // UTF-16, LE default (approximate, but incorrect)
+	utf16LEUB = unicode.UTF16(unicode.LittleEndian, unicode.UseBOM)    // UTF-16, LE
+	utf16LEEB = unicode.UTF16(unicode.LittleEndian, unicode.ExpectBOM) // UTF-16, LE, Expect
 	utf16BEIB = unicode.UTF16(unicode.BigEndian, unicode.IgnoreBOM)    // UTF-16BE (atypical interpretation)
-	utf16BEEB = unicode.UTF16(unicode.BigEndian, unicode.ExpectBOM)    // UTF-16 (approximate, but incorrect)
+	utf16BEUB = unicode.UTF16(unicode.BigEndian, unicode.UseBOM)       // UTF-16 default
+	utf16BEEB = unicode.UTF16(unicode.BigEndian, unicode.ExpectBOM)    // UTF-16 Expect
 )
 
 func TestUTF16(t *testing.T) {
@@ -678,24 +680,22 @@ func TestUTF16(t *testing.T) {
 		sizeDst: 100,
 		want:    "\U00012345=Ra",
 		nSrc:    12,
-		t:       utf16BEEB.NewDecoder(),
+		t:       utf16BEUB.NewDecoder(),
 	}, {
 		desc:    "utf-16 dec: BOM determines encoding LE (RFC 2781:3.3)",
 		src:     "\xFF\xFE\x08\xD8\x45\xDF\x3D\x00\x52\x00\x61\x00",
 		sizeDst: 100,
 		want:    "\U00012345=Ra",
 		nSrc:    12,
-		t:       utf16LEEB.NewDecoder(),
+		t:       utf16LEUB.NewDecoder(),
 	}, {
 		desc:    "utf-16 dec: BOM determines encoding LE, change default (RFC 2781:3.3)",
 		src:     "\xFF\xFE\x08\xD8\x45\xDF\x3D\x00\x52\x00\x61\x00",
 		sizeDst: 100,
 		want:    "\U00012345=Ra",
 		nSrc:    12,
-		t:       utf16BEEB.NewDecoder(),
+		t:       utf16BEUB.NewDecoder(),
 	}, {
-		// TODO: this is non-standard. We should have a separate BOMPolicy for
-		// this.
 		desc:    "utf-16 dec: Fail on missing BOM when required",
 		src:     "\x08\xD8\x45\xDF\x3D\x00\xFF\xFE\xFE\xFF\x00\x52\x00\x61",
 		sizeDst: 100,
@@ -703,16 +703,13 @@ func TestUTF16(t *testing.T) {
 		nSrc:    0,
 		err:     unicode.ErrMissingBOM,
 		t:       utf16BEEB.NewDecoder(),
-		// }, { // TODO:
-		// 	desc: "utf-16 dec: SHOULD interpret text as big-endian when BOM not present (RFC 2781:4.3)",
-		// 	// Note: In HTML 5 it is suggested to be little-endian, but this is
-		// 	// implemented through the alias resolution and "decode" algorithm,
-		// 	// not through altering the RFC's standard recommendation.
-		// 	src:     "\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
-		// 	sizeDst: 100,
-		// 	want:    "\U00012345=Ra",
-		// 	nSrc:    10,
-		// 	t:       utf16BEEB.NewDecoder(),
+	}, {
+		desc:    "utf-16 dec: SHOULD interpret text as big-endian when BOM not present (RFC 2781:4.3)",
+		src:     "\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
+		sizeDst: 100,
+		want:    "\U00012345=Ra",
+		nSrc:    10,
+		t:       utf16BEUB.NewDecoder(),
 	}, {
 		// This is an error according to RFC 2781. But errors in RFC 2781 are
 		// open to interpretations, so I guess this is fine.
@@ -728,14 +725,14 @@ func TestUTF16(t *testing.T) {
 		sizeDst: 100,
 		want:    "\xFF\xFE\x08\xD8\x45\xDF\x3D\x00\x52\x00\x61\x00",
 		nSrc:    7,
-		t:       utf16LEEB.NewEncoder(),
+		t:       utf16LEUB.NewEncoder(),
 	}, {
 		desc:    "utf-16 enc: SHOULD write BOM (RFC 2781:3.3)",
 		src:     "\U00012345=Ra",
 		sizeDst: 100,
 		want:    "\xFE\xFF\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
 		nSrc:    7,
-		t:       utf16BEEB.NewEncoder(),
+		t:       utf16BEUB.NewEncoder(),
 	}, {
 		desc:    "utf-16le enc: MUST NOT write BOM (RFC 2781:3.3)",
 		src:     "\U00012345=Ra",
@@ -824,7 +821,7 @@ func TestUTF16(t *testing.T) {
 		sizeDst: 100,
 		want:    "\xFE\xFF\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
 		nSrc:    7,
-		t:       utf16BEEB.NewEncoder(),
+		t:       utf16BEUB.NewEncoder(),
 	}, {
 		desc:    "utf-16 enc: short dst normal",
 		src:     "\U00012345=Ra",
@@ -856,14 +853,14 @@ func TestUTF16(t *testing.T) {
 		sizeDst: 100,
 		want:    "\U00012345=\ufffeRa",
 		nSrc:    14,
-		t:       utf16BEEB.NewDecoder(),
+		t:       utf16BEUB.NewDecoder(),
 	}, {
 		desc:    "utf-16le dec: don't change byte order mid-stream",
 		src:     "\xFF\xFE\x08\xD8\x45\xDF\x3D\x00\xFF\xFE\xFE\xFF\x52\x00\x61\x00",
 		sizeDst: 100,
 		want:    "\U00012345=\ufeff\ufffeRa",
 		nSrc:    16,
-		t:       utf16LEEB.NewDecoder(),
+		t:       utf16LEUB.NewDecoder(),
 	}}
 	for i, tc := range testCases {
 		b := make([]byte, tc.sizeDst)

@@ -11,18 +11,9 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/internal/identifier"
 	"golang.org/x/text/transform"
 )
-
-// TODO: UTF-16 SHOULD default to BigEndian (or here the Endianess given) if no
-// BOM is present (RFC 2781:4.3). WhatWG does not define this explicitly because
-// UTF-16 is implemented through the alias resolution + decode mechanism, rather
-// than by the defined encoding.
-
-// TODO: UTF-16BE/LE may gobble initial BOM (RFC 2781:4.1). This is maybe not
-// defined in WhatWG, because the "decode" wrapper defined there already takes
-// care of this. "May" implies this behavior is optional. It seems
-// recommendable.
 
 // TODO: I think the Transformers really should return errors on unmatched
 // surrogate pairs and odd numbers of bytes. This is not required by RFC 2781,
@@ -32,7 +23,6 @@ import (
 // point.
 
 // TODO:
-// - Define All list of recommended RFC 2781 versions.
 // - Define UTF-8 (mostly for BOM handling.)
 // - Define UTF-32?
 
@@ -42,18 +32,18 @@ import (
 // When decoding from UTF-16 to UTF-8, if the BOMPolicy is IgnoreBOM then
 // neither BOMs U+FEFF nor noncharacters U+FFFE in the input stream will affect
 // the endianness used for decoding, and will instead be output as their
-// standard UTF-8 encodings: "\xef\xbb\xbf" and "\xef\xbf\xbe". If the
-// BOMPolicy is ExpectBOM then the input stream is expected to start with a
-// BOM, and the transformation will return early with an ErrMissingBOM error if
-// it does not. That starting BOM is not written to the UTF-8 output. Instead,
-// it overrides the default endianness e for the remainder of the
+// standard UTF-8 encodings: "\xef\xbb\xbf" and "\xef\xbf\xbe". If the BOMPolicy
+// is UseBOM or ExpectBOM a staring BOM is not written to the UTF-8 output.
+// Instead, it overrides the default endianness e for the remainder of the
 // transformation. Any subsequent BOMs U+FEFF or noncharacters U+FFFE will not
 // affect the endianness used, and will instead be output as their standard
-// UTF-8 encodings.
+// UTF-8 encodings. For UseBOM, if there is no starting BOM, it will proceed
+// with the default Endianness. For ExpectBOM, in that case, the transformation
+// will return early with an ErrMissingBOM error.
 //
 // When encoding from UTF-8 to UTF-16, a BOM will be inserted at the start of
-// the output if the BOMPolicy is ExpectBOM. Otherwise, a BOM will not be
-// inserted. The UTF-8 input does not need to contain a BOM.
+// the output if the BOMPolicy is UseBOM or ExpectBOM. Otherwise, a BOM will not
+// be inserted. The UTF-8 input does not need to contain a BOM.
 //
 // There is no concept of a 'native' endianness. If the UTF-16 data is produced
 // and consumed in a greater context that implies a certain endianness, use
@@ -64,18 +54,67 @@ import (
 // BOM should not be used" and ExpectBOM corresponds to "A particular
 // protocol... may require use of the BOM".
 func UTF16(e Endianness, b BOMPolicy) encoding.Encoding {
-	return utf16Encoding{e, b}
+	return utf16Encoding{config{e, b}, mibValue[e][b&bomMask]}
 }
 
+// mibValue maps Endianness and BOMPolicy settings to MIB constants. Note that
+// some configurations map to the same MIB identifier. RFC 2781 has requirements
+// and recommendations. Some of the "configurations" are merely recommendations,
+// so multiple configurations could match.
+var mibValue = map[Endianness][numBOMValues]identifier.MIB{
+	BigEndian: [numBOMValues]identifier.MIB{
+		IgnoreBOM: identifier.UTF16BE,
+		UseBOM:    identifier.UTF16, // BigEnding default is preferred by RFC 2781.
+		// TODO: acceptBOM | strictBOM would map to UTF16BE as well.
+	},
+	LittleEndian: [numBOMValues]identifier.MIB{
+		IgnoreBOM: identifier.UTF16LE,
+		UseBOM:    identifier.UTF16, // LittleEndian default is allowed and preferred on Windows.
+		// TODO: acceptBOM | strictBOM would map to UTF16LE as well.
+	},
+	// ExpectBOM is not widely used and has no valid MIB identifier.
+}
+
+// All lists a configuration for each IANA-defined UTF-16 variant.
+var All = []encoding.Encoding{
+	UTF16(BigEndian, UseBOM),
+	UTF16(BigEndian, IgnoreBOM),
+	UTF16(LittleEndian, IgnoreBOM),
+}
+
+// TODO: also include UTF-8
+
 // BOMPolicy is a UTF-16 encoding's byte order mark policy.
-type BOMPolicy bool
+type BOMPolicy uint8
 
 const (
+	writeBOM     BOMPolicy = 0x01
+	acceptBOM    BOMPolicy = 0x02
+	requireBOM   BOMPolicy = 0x04
+	bomMask      BOMPolicy = 0x07
+	numBOMValues           = 8
+
 	// IgnoreBOM means to ignore any byte order marks.
-	IgnoreBOM BOMPolicy = false
-	// ExpectBOM means that the UTF-16 form is expected to start with a
-	// byte order mark.
-	ExpectBOM BOMPolicy = true
+	IgnoreBOM BOMPolicy = 0
+	// Common and RFC 2781-compliant interpretation for UTF-16BE/LE.
+
+	// UseBOM means that the UTF-16 form may start with a byte order mark, which
+	// will be used to override the default encoding.
+	UseBOM BOMPolicy = writeBOM | acceptBOM
+	// Common and RFC 2781-compliant interpretation for UTF-16.
+
+	// ExpectBOM means that the UTF-16 form must start with a byte order mark,
+	// which will be used to override the default encoding.
+	ExpectBOM BOMPolicy = writeBOM | acceptBOM | requireBOM
+	// Used in Java as Unicode (not to be confused with Java's UTF-16) and
+	// ICU's UTF-16,version=1. Not compliant with RFC 2781.
+
+	// TODO (maybe): strictBOM: BOM must match Endianness. This would allow:
+	// - UTF-16(B|L)E,version=1: writeBOM | acceptBOM | requireBOM | strictBOM
+	//    (UnicodeBig and UnicodeLittle in Java)
+	// - RFC 2781-compliant, but less common interpretation for UTF-16(B|L)E:
+	//    acceptBOM | strictBOM (e.g. assigned to CheckBOM).
+	// This addition would be consistent with supporting ExpectBOM.
 )
 
 // Endianness is a UTF-16 encoding's default endianness.
@@ -93,15 +132,19 @@ const (
 var ErrMissingBOM = errors.New("encoding: missing byte order mark")
 
 type utf16Encoding struct {
+	config
+	mib identifier.MIB
+}
+
+type config struct {
 	endianness Endianness
 	bomPolicy  BOMPolicy
 }
 
 func (u utf16Encoding) NewDecoder() transform.Transformer {
 	return &utf16Decoder{
-		endianness:       u.endianness,
-		initialBOMPolicy: u.bomPolicy,
-		currentBOMPolicy: u.bomPolicy,
+		initial: u.config,
+		current: u.config,
 	}
 }
 
@@ -113,42 +156,53 @@ func (u utf16Encoding) NewEncoder() transform.Transformer {
 	}
 }
 
+func (u utf16Encoding) ID() (mib identifier.MIB, other string) {
+	return u.mib, ""
+}
+
 func (u utf16Encoding) String() string {
-	e, b := "B", "Ignore"
+	e, b := "B", ""
 	if u.endianness == LittleEndian {
 		e = "L"
 	}
-	if u.bomPolicy == ExpectBOM {
+	switch u.bomPolicy {
+	case ExpectBOM:
 		b = "Expect"
+	case UseBOM:
+		b = "Use"
+	case IgnoreBOM:
+		b = "Ignore"
 	}
 	return "UTF-16" + e + "E (" + b + " BOM)"
 }
 
 type utf16Decoder struct {
-	endianness       Endianness
-	initialBOMPolicy BOMPolicy
-	currentBOMPolicy BOMPolicy
+	initial config
+	current config
 }
 
 func (u *utf16Decoder) Reset() {
-	u.currentBOMPolicy = u.initialBOMPolicy
+	u.current = u.initial
 }
 
 func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
-	if u.currentBOMPolicy == ExpectBOM {
+	if u.current.bomPolicy&acceptBOM != 0 {
 		if len(src) < 2 {
 			return 0, 0, transform.ErrShortSrc
 		}
 		switch {
 		case src[0] == 0xfe && src[1] == 0xff:
-			u.endianness = BigEndian
+			u.current.endianness = BigEndian
+			nSrc = 2
 		case src[0] == 0xff && src[1] == 0xfe:
-			u.endianness = LittleEndian
+			u.current.endianness = LittleEndian
+			nSrc = 2
 		default:
-			return 0, 0, ErrMissingBOM
+			if u.current.bomPolicy&requireBOM != 0 {
+				return 0, 0, ErrMissingBOM
+			}
 		}
-		u.currentBOMPolicy = IgnoreBOM
-		nSrc = 2
+		u.current.bomPolicy = IgnoreBOM
 	}
 
 	var r rune
@@ -156,17 +210,17 @@ func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 	for nSrc < len(src) {
 		if nSrc+1 < len(src) {
 			x := uint16(src[nSrc+0])<<8 | uint16(src[nSrc+1])
-			if u.endianness == LittleEndian {
+			if u.current.endianness == LittleEndian {
 				x = x>>8 | x<<8
 			}
 			r, sSize = rune(x), 2
 			if utf16.IsSurrogate(r) {
 				if nSrc+3 < len(src) {
 					x = uint16(src[nSrc+2])<<8 | uint16(src[nSrc+3])
-					if u.endianness == LittleEndian {
+					if u.current.endianness == LittleEndian {
 						x = x>>8 | x<<8
 					}
-					// Safe for next iteration if it is not a high surrogate.
+					// Save for next iteration if it is not a high surrogate.
 					if isHighSurrogate(rune(x)) {
 						r, sSize = utf16.DecodeRune(r, rune(x)), 4
 					}
@@ -210,7 +264,7 @@ func (u *utf16Encoder) Reset() {
 }
 
 func (u *utf16Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
-	if u.currentBOMPolicy == ExpectBOM {
+	if u.currentBOMPolicy&writeBOM != 0 {
 		if len(dst) < 2 {
 			return 0, 0, transform.ErrShortDst
 		}
