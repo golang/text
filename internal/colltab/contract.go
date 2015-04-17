@@ -6,7 +6,7 @@ package colltab
 
 import "unicode/utf8"
 
-// For a description of contractTrieSet, see exp/locale/collate/build/contract.go.
+// For a description of contractTrieSet, see text/collate/build/contract.go.
 
 type contractTrieSet []struct{ l, h, n, i uint8 }
 

@@ -14,20 +14,19 @@ type lookupStrings struct {
 	n      int // bytes consumed from input
 }
 
-type LookupTest struct {
+var lookupTests = []struct {
 	lookup []lookupStrings
 	n      int
 	tries  contractTrieSet
-}
-
-var lookupTests = []LookupTest{
-	{[]lookupStrings{
-		{"abc", 1, 3},
-		{"a", 0, 0},
-		{"b", 0, 0},
-		{"c", 0, 0},
-		{"d", 0, 0},
-	},
+}{
+	{
+		[]lookupStrings{
+			{"abc", 1, 3},
+			{"a", 0, 0},
+			{"b", 0, 0},
+			{"c", 0, 0},
+			{"d", 0, 0},
+		},
 		1,
 		contractTrieSet{
 			{'a', 0, 1, 0xFF},
@@ -35,15 +34,16 @@ var lookupTests = []LookupTest{
 			{'c', 'c', 0, 1},
 		},
 	},
-	{[]lookupStrings{
-		{"abc", 1, 3},
-		{"abd", 2, 3},
-		{"abe", 3, 3},
-		{"a", 0, 0},
-		{"ab", 0, 0},
-		{"d", 0, 0},
-		{"f", 0, 0},
-	},
+	{
+		[]lookupStrings{
+			{"abc", 1, 3},
+			{"abd", 2, 3},
+			{"abe", 3, 3},
+			{"a", 0, 0},
+			{"ab", 0, 0},
+			{"d", 0, 0},
+			{"f", 0, 0},
+		},
 		1,
 		contractTrieSet{
 			{'a', 0, 1, 0xFF},
@@ -51,13 +51,14 @@ var lookupTests = []LookupTest{
 			{'c', 'e', 0, 1},
 		},
 	},
-	{[]lookupStrings{
-		{"abc", 1, 3},
-		{"ab", 2, 2},
-		{"a", 3, 1},
-		{"abcd", 1, 3},
-		{"abe", 2, 2},
-	},
+	{
+		[]lookupStrings{
+			{"abc", 1, 3},
+			{"ab", 2, 2},
+			{"a", 3, 1},
+			{"abcd", 1, 3},
+			{"abe", 2, 2},
+		},
 		1,
 		contractTrieSet{
 			{'a', 0, 1, 3},
@@ -65,15 +66,16 @@ var lookupTests = []LookupTest{
 			{'c', 'c', 0, 1},
 		},
 	},
-	{[]lookupStrings{
-		{"abc", 1, 3},
-		{"abd", 2, 3},
-		{"ab", 3, 2},
-		{"ac", 4, 2},
-		{"a", 5, 1},
-		{"b", 6, 1},
-		{"ba", 6, 1},
-	},
+	{
+		[]lookupStrings{
+			{"abc", 1, 3},
+			{"abd", 2, 3},
+			{"ab", 3, 2},
+			{"ac", 4, 2},
+			{"a", 5, 1},
+			{"b", 6, 1},
+			{"ba", 6, 1},
+		},
 		2,
 		contractTrieSet{
 			{'b', 'b', 0, 6},
@@ -83,15 +85,16 @@ var lookupTests = []LookupTest{
 			{'c', 'd', 0, 1},
 		},
 	},
-	{[]lookupStrings{
-		{"bcde", 2, 4},
-		{"bc", 7, 2},
-		{"ab", 6, 2},
-		{"bcd", 5, 3},
-		{"abcd", 1, 4},
-		{"abc", 4, 3},
-		{"bcdf", 3, 4},
-	},
+	{
+		[]lookupStrings{
+			{"bcde", 2, 4},
+			{"bc", 7, 2},
+			{"ab", 6, 2},
+			{"bcd", 5, 3},
+			{"abcd", 1, 4},
+			{"abc", 4, 3},
+			{"bcdf", 3, 4},
+		},
 		2,
 		contractTrieSet{
 			{'b', 3, 1, 0xFF},
@@ -118,7 +121,7 @@ func TestLookupContraction(t *testing.T) {
 		for j, lu := range tt.lookup {
 			str := lu.str
 			for _, s := range []string{str, str + "X"} {
-				const msg = `%d:%d: %s of "%s" %v; want %v`
+				const msg = "%d:%d: %s of %q %v; want %v"
 				offset, n := lookup(&cts, tt.n, []byte(s))
 				if offset != lu.offset {
 					t.Errorf(msg, i, j, "offset", s, offset, lu.offset)
