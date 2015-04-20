@@ -44,6 +44,33 @@ func Predicate(f func(rune) bool) Set {
 	return setFunc(f)
 }
 
+// Transformer implements the transform.Transformer interface.
+type Transformer struct {
+	transform.Transformer
+}
+
+// Bytes returns a new byte slice with the result of converting b using t.  It
+// calls Reset on t. It returns nil if any error was found. This can only happen
+// if an error-producing Transformer is passed to If.
+func (t Transformer) Bytes(b []byte) []byte {
+	b, _, err := transform.Bytes(t, b)
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
+// String returns a string with the result of converting s using t. It calls
+// Reset on t. It returns the empty string if any error was found. This can only
+// happen if an error-producing Transformer is passed to If.
+func (t Transformer) String(s string) string {
+	s, _, err := transform.String(t, s)
+	if err != nil {
+		return ""
+	}
+	return s
+}
+
 // TODO:
 // - Copy: copying strings and bytes in whole-rune units.
 // - Validation (maybe)
@@ -53,14 +80,14 @@ const runeErrorString = string(utf8.RuneError)
 
 // Remove returns a Transformer that removes runes r for which s.Contains(r).
 // Illegal input bytes are replaced by RuneError before being passed to f.
-func Remove(s Set) transform.Transformer {
+func Remove(s Set) Transformer {
 	if f, ok := s.(setFunc); ok {
 		// This little trick cuts the running time of BenchmarkRemove for sets
 		// created by Predicate roughly in half.
 		// TODO: special-case RangeTables as well.
-		return remove(f)
+		return Transformer{remove(f)}
 	}
-	return remove(s.Contains)
+	return Transformer{remove(s.Contains)}
 }
 
 // TODO: remove transform.RemoveFunc.
@@ -122,8 +149,8 @@ func (t remove) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err erro
 // Map returns a Transformer that maps the runes in the input using the given
 // mapping. Illegal bytes in the input are converted to utf8.RuneError before
 // being passed to the mapping func.
-func Map(mapping func(rune) rune) transform.Transformer {
-	return mapper(mapping)
+func Map(mapping func(rune) rune) Transformer {
+	return Transformer{mapper(mapping)}
 }
 
 type mapper func(rune) rune

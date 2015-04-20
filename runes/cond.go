@@ -31,9 +31,9 @@ import (
 // substitute a nil value passed to tIn or tNotIn. Invalid UTF-8 is translated
 // to RuneError to determine which transformer to apply, but is passed as is to
 // the respective transformer.
-func If(s Set, tIn, tNotIn transform.Transformer) transform.Transformer {
+func If(s Set, tIn, tNotIn transform.Transformer) Transformer {
 	if tIn == nil && tNotIn == nil {
-		return transform.Nop
+		return Transformer{transform.Nop}
 	}
 	if tIn == nil {
 		tIn = transform.Nop
@@ -47,7 +47,7 @@ func If(s Set, tIn, tNotIn transform.Transformer) transform.Transformer {
 		f:      s.Contains,
 	}
 	a.Reset()
-	return a
+	return Transformer{a}
 }
 
 type cond struct {
