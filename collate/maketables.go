@@ -49,7 +49,7 @@ var (
 	include = flagStringSet("include", "", "",
 		"comma-separated list of languages to include. Include trumps exclude.")
 	types = flagStringSetAllowAll("types", "", "",
-		"comma-separated list of types that should be included in addition to the standard type.")
+		"comma-separated list of types that should be included.")
 )
 
 // stringSet implements an ordered set based on a list.  It implements flag.Value
@@ -424,8 +424,10 @@ func parseCollation(b *build.Builder) {
 		}
 		cs := x.Collations.Collation
 		sl := cldr.MakeSlice(&cs)
-		if !types.all {
-			sl.SelectAnyOf("type", append(types.s, x.Collations.Default())...)
+		if len(types.s) == 0 {
+			sl.SelectAnyOf("type", x.Collations.Default())
+		} else if !types.all {
+			sl.SelectAnyOf("type", types.s...)
 		}
 		sl.SelectOnePerGroup("alt", altInclude())
 
@@ -445,7 +447,9 @@ func parseCollation(b *build.Builder) {
 			} else {
 				d = x.Collations.DefaultCollation.Data()
 			}
-			if d != c.Type {
+			// We assume tables are being built either for search or collation,
+			// but not both. For search the default is always "search".
+			if d != c.Type && c.Type != "search" {
 				id, err = id.SetTypeForKey("co", c.Type)
 				failOnError(err)
 			}

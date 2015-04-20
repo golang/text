@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run ../collate/maketables.go -cldr=23 -unicode=6.2.0 -types=search,searchjl -package=search
+
 // Package search provides language-specific search and string matching.
 //
 // Natural language matching can be intricate. For example, Danish will insist
