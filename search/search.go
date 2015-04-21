@@ -16,7 +16,10 @@
 package search
 
 import (
+	"strings"
+
 	"golang.org/x/text/collate/colltab"
+	newcolltab "golang.org/x/text/internal/colltab"
 	"golang.org/x/text/language"
 )
 
@@ -45,9 +48,31 @@ var (
 	IgnoreWidth Option = nil
 )
 
+var (
+	// Supported lists the languages for which search differs from its parent.
+	Supported language.Coverage
+
+	tags []language.Tag
+)
+
+func init() {
+	ids := strings.Split(availableLocales, ",")
+	tags = make([]language.Tag, len(ids))
+	for i, s := range ids {
+		tags[i] = language.Raw.MustParse(s)
+	}
+	Supported = language.NewCoverage(tags)
+}
+
 // New returns a new Matcher for the given language and options.
 func New(t language.Tag, opts ...Option) *Matcher {
-	panic("TODO: implement")
+	m := &Matcher{
+		w: colltab.Init(locales[newcolltab.MatchLang(t, tags)]),
+	}
+	for _, f := range opts {
+		f(m)
+	}
+	return m
 }
 
 // A Matcher implements language-specific string matching.
@@ -142,9 +167,6 @@ func (p *Pattern) Index(b []byte, opts ...IndexOption) (start, end int) {
 func (p *Pattern) IndexString(s string, opts ...IndexOption) (start, end int) {
 	panic("TODO: implement")
 }
-
-// Supported lists the languages for which search differs from its parent.
-var Supported language.Coverage // TODO: implement.
 
 // TODO:
 // - Maybe IndexAll methods (probably not necessary).

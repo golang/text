@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"golang.org/x/text/collate/colltab"
+	newcolltab "golang.org/x/text/internal/colltab"
 	"golang.org/x/text/language"
 )
 
@@ -36,23 +37,27 @@ func (c *Collator) iter(i int) *iter {
 
 // Supported returns the list of languages for which collating differs from its parent.
 func Supported() []language.Tag {
+	// TODO: use language.Coverage instead.
+
+	t := make([]language.Tag, len(tags))
+	copy(t, tags)
+	return t
+}
+
+func init() {
 	ids := strings.Split(availableLocales, ",")
 	tags := make([]language.Tag, len(ids))
 	for i, s := range ids {
-		tags[i] = language.Make(s)
+		tags[i] = language.Raw.MustParse(s)
 	}
-	return tags
 }
 
-var matcher = language.NewMatcher(Supported())
+var tags []language.Tag
 
 // New returns a new Collator initialized for the given locale.
 func New(t language.Tag, o ...Option) *Collator {
-	tt, index, _ := matcher.Match(t)
+	index := newcolltab.MatchLang(t, tags)
 	c := newCollator(colltab.Init(locales[index]))
-
-	// Set the default options for the retrieved locale.
-	c.setFromTag(tt)
 
 	// Set options from the user-supplied tag.
 	c.setFromTag(t)
