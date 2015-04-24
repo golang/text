@@ -517,7 +517,7 @@ func String(t Transformer, s string) (result string, n int, err error) {
 	// Allocate only once. Note that both dst and src escape when passed to
 	// Transform.
 	buf := [2 * initialBufSize]byte{}
-	dst := buf[:initialBufSize:initialBufSize]
+	dst := buf[:initialBufSize]
 	src := buf[initialBufSize : 2*initialBufSize]
 
 	// Avoid allocation if the transformed string is identical to the original.
