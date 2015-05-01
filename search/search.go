@@ -36,17 +36,26 @@ var (
 	Exact Option = nil
 
 	// Loose causes case, diacritics and width to be ignored.
-	Loose Option = nil //
+	Loose Option = loose
 
 	// IgnoreCase enables case-insensitive search.
-	IgnoreCase Option = nil
+	IgnoreCase Option = ignoreCase
 
 	// IgnoreDiacritics causes diacritics to be ignored ("ö" == "o").
-	IgnoreDiacritics Option = nil
+	IgnoreDiacritics Option = ignoreDiacritics
 
-	// IgnoreWidth equates fullwidth with halfwidth variants.
-	IgnoreWidth Option = nil
+	// IgnoreWidth equates narrow with wide variants.
+	IgnoreWidth Option = ignoreWidth
 )
+
+func ignoreDiacritics(m *Matcher) { m.ignoreDiacritics = true }
+func ignoreCase(m *Matcher)       { m.ignoreCase = true }
+func ignoreWidth(m *Matcher)      { m.ignoreWidth = true }
+func loose(m *Matcher) {
+	ignoreDiacritics(m)
+	ignoreCase(m)
+	ignoreWidth(m)
+}
 
 var (
 	// Supported lists the languages for which search differs from its parent.
@@ -77,7 +86,10 @@ func New(t language.Tag, opts ...Option) *Matcher {
 
 // A Matcher implements language-specific string matching.
 type Matcher struct {
-	w colltab.Weighter
+	w                colltab.Weighter
+	ignoreCase       bool
+	ignoreWidth      bool
+	ignoreDiacritics bool
 }
 
 // An IndexOption specifies how the Index methods of Pattern or Matcher should
@@ -87,28 +99,13 @@ type IndexOption byte
 const (
 	// Anchor restricts the search to the start (or end for Backwards) of the
 	// text.
-	Anchor IndexOption = iota
+	Anchor IndexOption = 1 << iota
 
 	// Backwards starts the search from the end of the text.
 	Backwards
-)
 
-// Design note (TODO remove):
-// We use IndexOption, instead of having Index, IndexString, IndexLast,
-// IndexLastString, IndexPrefix, IndexPrefixString, ....
-// (Note: HasPrefix would have reduced utility compared to those in the  strings
-// and bytes packages as the matched prefix in the searched strings may be of
-// different lengths, so we need to return an additional index.)
-// Advantage:
-// - Avoid combinatorial explosion of method calls (now 2 Index variants,
-//   instead of 8, or 16 if we have All variants).
-// - Compared to an API where these options are set on Matcher or Pattern, it
-//   will be clearer when Index*() is invoked with certain options.
-// - Small API and still normal Index() call for the by far most common case.
-// Disadvantage:
-// - Slightly different from analogous packages in the core library (even though
-//   there things are not entirely consistent anyway.)
-// - Little bit of overhead on each Index call (one branch for the common case.)
+	anchorBackwards = Anchor | Backwards
+)
 
 // Index reports the start and end position of the first occurrence of pat in b
 // or -1, -1 if pat is not present.
@@ -138,17 +135,19 @@ func (m *Matcher) EqualString(a, b string) bool {
 
 // Compile compiles and returns a pattern that can be used for faster searching.
 func (m *Matcher) Compile(b []byte) *Pattern {
-	panic("TODO: implement")
+	return compile(source{m: m, b: b})
 }
 
 // CompileString compiles and returns a pattern that can be used for faster
 // searching.
-func (m *Matcher) CompileString(str string) *Pattern {
-	panic("TODO: implement")
+func (m *Matcher) CompileString(s string) *Pattern {
+	return compile(source{m: m, s: s})
 }
 
 // A Pattern is a compiled search string. It is safe for concurrent use.
 type Pattern struct {
+	m  *Matcher
+	ce []colltab.Elem
 }
 
 // Design note (TODO remove):
@@ -159,13 +158,51 @@ type Pattern struct {
 // Index reports the start and end position of the first occurrence of p in b
 // or -1, -1 if p is not present.
 func (p *Pattern) Index(b []byte, opts ...IndexOption) (start, end int) {
-	panic("TODO: implement")
+	sr := searcher{
+		source:  source{m: p.m, b: b},
+		Pattern: p,
+	}
+
+	var optMask IndexOption
+	for _, o := range opts {
+		optMask |= o
+	}
+
+	switch optMask {
+	case 0:
+		return sr.forwardSearch()
+	case Anchor:
+		return sr.anchoredForwardSearch()
+	case Backwards, anchorBackwards:
+		panic("TODO: implement")
+	default:
+		panic("unrecognized option")
+	}
 }
 
 // IndexString reports the start and end position of the first occurrence of p
 // in s or -1, -1 if p is not present.
 func (p *Pattern) IndexString(s string, opts ...IndexOption) (start, end int) {
-	panic("TODO: implement")
+	sr := searcher{
+		source:  source{m: p.m, s: s},
+		Pattern: p,
+	}
+
+	var optMask IndexOption
+	for _, o := range opts {
+		optMask |= o
+	}
+
+	switch optMask {
+	case 0:
+		return sr.forwardSearch()
+	case Anchor:
+		return sr.anchoredForwardSearch()
+	case Backwards, anchorBackwards:
+		panic("TODO: implement")
+	default:
+		panic("unrecognized option")
+	}
 }
 
 // TODO:
