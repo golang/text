@@ -190,6 +190,7 @@ type SupplementalData struct {
 		Common
 		MeasurementSystem []*struct {
 			Common
+			Category    string `xml:"category,attr"`
 			Territories string `xml:"territories,attr"`
 		} `xml:"measurementSystem"`
 		PaperSize []*struct {
@@ -490,7 +491,7 @@ type SupplementalData struct {
 			} `xml:"languageMatch"`
 		} `xml:"languageMatches"`
 	} `xml:"languageMatching"`
-	DayPeriodRuleSet *struct {
+	DayPeriodRuleSet []*struct {
 		Common
 		DayPeriodRules []*struct {
 			Common
@@ -796,6 +797,14 @@ type LDML struct {
 			} `xml:"ruleset"`
 		} `xml:"rulesetGrouping"`
 	} `xml:"rbnf"`
+	Annotations *struct {
+		Common
+		Annotation []*struct {
+			Common
+			Cp  string `xml:"cp,attr"`
+			Tts string `xml:"tts,attr"`
+		} `xml:"annotation"`
+	} `xml:"annotations"`
 	Metadata *struct {
 		Common
 		CasingData *struct {
@@ -1374,4 +1383,4 @@ type Numbers struct {
 }
 
 // Version is the version of CLDR from which the XML definitions are generated.
-const Version = "26"
+const Version = "27.0.1"

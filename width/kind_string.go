@@ -6,16 +6,11 @@ import "fmt"
 
 const _Kind_name = "NeutralEastAsianAmbiguousEastAsianWideEastAsianNarrowEastAsianFullwidthEastAsianHalfwidth"
 
-var _Kind_index = [...]uint8{7, 25, 38, 53, 71, 89}
+var _Kind_index = [...]uint8{0, 7, 25, 38, 53, 71, 89}
 
 func (i Kind) String() string {
-	if i < 0 || i >= Kind(len(_Kind_index)) {
+	if i < 0 || i+1 >= Kind(len(_Kind_index)) {
 		return fmt.Sprintf("Kind(%d)", i)
 	}
-	hi := _Kind_index[i]
-	lo := uint8(0)
-	if i > 0 {
-		lo = _Kind_index[i-1]
-	}
-	return _Kind_name[lo:hi]
+	return _Kind_name[_Kind_index[i]:_Kind_index[i+1]]
 }

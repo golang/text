@@ -25,10 +25,10 @@ var (
 	Greek                *Dictionary = &el        // el
 	English              *Dictionary = &en        // en
 	AmericanEnglish      *Dictionary = English    // en-US
-	BritishEnglish       *Dictionary = &enGB      // en-GB
+	BritishEnglish       *Dictionary = English    // en-GB
 	Spanish              *Dictionary = &es        // es
 	EuropeanSpanish      *Dictionary = Spanish    // es-ES
-	LatinAmericanSpanish *Dictionary = &es419     // es-419
+	LatinAmericanSpanish *Dictionary = Spanish    // es-419
 	Estonian             *Dictionary = &et        // et
 	Persian              *Dictionary = &fa        // fa
 	Finnish              *Dictionary = &fi        // fi
@@ -74,6 +74,7 @@ var (
 	Slovenian            *Dictionary = &sl        // sl
 	Albanian             *Dictionary = &sq        // sq
 	Serbian              *Dictionary = &sr        // sr
+	SerbianLatin         *Dictionary = &srLatn    // sr
 	Swedish              *Dictionary = &sv        // sv
 	Swahili              *Dictionary = &sw        // sw
 	Tamil                *Dictionary = &ta        // ta

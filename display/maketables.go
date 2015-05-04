@@ -52,8 +52,8 @@ func dictTags() (tag []language.Tag) {
 	const str = "af am ar ar-001 az bg bn ca cs da de el en en-US en-GB " +
 		"es es-ES es-419 et fa fi fil fr fr-CA gu he hi hr hu hy id is it ja " +
 		"ka kk km kn ko ky lo lt lv mk ml mn mr ms my ne nl no pa pl pt pt-BR " +
-		"pt-PT ro ru si sk sl sq sr sv sw ta te th tr uk ur uz vi zh zh-Hans " +
-		"zh-Hant zu"
+		"pt-PT ro ru si sk sl sq sr sr-Latn sv sw ta te th tr uk ur uz vi " +
+		"zh zh-Hans zh-Hant zu"
 
 	for _, s := range strings.Split(str, " ") {
 		tag = append(tag, language.MustParse(s))

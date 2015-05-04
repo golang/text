@@ -135,6 +135,7 @@ var (
 	Slovenian            Tag = Tag{lang: _sl}                //  sl
 	Albanian             Tag = Tag{lang: _sq}                //  sq
 	Serbian              Tag = Tag{lang: _sr}                //  sr
+	SerbianLatin         Tag = Tag{lang: _sr, script: _Latn} //  sr-Latn
 	Swedish              Tag = Tag{lang: _sv}                //  sv
 	Swahili              Tag = Tag{lang: _sw}                //  sw
 	Tamil                Tag = Tag{lang: _ta}                //  ta

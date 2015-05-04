@@ -289,7 +289,7 @@ func TestScript(t *testing.T) {
 		{"en", "Arab", "Arabic"},
 		{"en", "Zzzz", "Unknown Script"},
 		{"zh-Hant", "Hang", "韓文字"},
-		{"zh-Hant-HK", "Hang", "韓文字母"},
+		{"zh-Hant-HK", "Hang", "韓文字"},
 		{"zh", "Arab", "阿拉伯文"},
 		{"zh-Hans-HK", "Arab", "阿拉伯文"}, // same as zh
 		{"zh-Hant", "Arab", "阿拉伯文"},

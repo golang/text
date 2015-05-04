@@ -40,8 +40,12 @@ var (
 	iana = flag.String("iana",
 		"http://www.iana.org",
 		"URL of the IANA repository")
-	unicodeVersion = flag.String("unicode", unicode.Version, "unicode version to use")
-	cldrVersion    = flag.String("cldr", cldr.Version, "cldr version to use")
+	unicodeVersion = flag.String("unicode",
+		getEnv("UNICODE_VERSION", unicode.Version),
+		"unicode version to use")
+	cldrVersion = flag.String("cldr",
+		getEnv("CLDR_VERSION", cldr.Version),
+		"cldr version to use")
 	// Allow an environment variable to specify the local directory.
 	// go generate doesn't allow specifying arguments; this is a useful
 	// alternative to specifying a local mirror.
@@ -49,6 +53,13 @@ var (
 		os.Getenv("UNICODE_DIR"),
 		"directory containing local data files; for debugging only.")
 )
+
+func getEnv(name, def string) string {
+	if v := os.Getenv(name); v != "" {
+		return v
+	}
+	return def
+}
 
 // Init performs common initialization for a gen command. It parses the flags
 // and sets up the standard logging parameters.

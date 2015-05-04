@@ -694,21 +694,21 @@ func TestParent(t *testing.T) {
 		// extra
 		{"nl-Cyrl", "und"},
 
-		// World english inherits from en-GB.
-		{"en-150", "en-GB"},
-		{"en-AU", "en-GB"},
-		{"en-BE", "en-GB"},
-		{"en-GG", "en-GB"},
-		{"en-GI", "en-GB"},
-		{"en-HK", "en-GB"},
-		{"en-IE", "en-GB"},
-		{"en-IM", "en-GB"},
-		{"en-IN", "en-GB"},
-		{"en-JE", "en-GB"},
-		{"en-MT", "en-GB"},
-		{"en-NZ", "en-GB"},
-		{"en-PK", "en-GB"},
-		{"en-SG", "en-GB"},
+		// World english inherits from en-001.
+		{"en-150", "en-001"},
+		{"en-AU", "en-001"},
+		{"en-BE", "en-001"},
+		{"en-GG", "en-001"},
+		{"en-GI", "en-001"},
+		{"en-HK", "en-001"},
+		{"en-IE", "en-001"},
+		{"en-IM", "en-001"},
+		{"en-IN", "en-001"},
+		{"en-JE", "en-001"},
+		{"en-MT", "en-001"},
+		{"en-NZ", "en-001"},
+		{"en-PK", "en-001"},
+		{"en-SG", "en-001"},
 
 		// Spanish in Latin-American countries have es-419 as parent.
 		{"es-AR", "es-419"},

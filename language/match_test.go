@@ -200,7 +200,7 @@ func TestParentDistance(t *testing.T) {
 		tag    string
 		d      uint8
 	}{
-		{"en-GB", "en-AU", 1},
+		{"en-001", "en-AU", 1},
 		{"pt-PT", "pt-AO", 1},
 		{"pt", "pt-AO", 2},
 		{"en-AU", "en-GB", 255},

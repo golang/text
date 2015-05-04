@@ -18,7 +18,6 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"golang.org/x/text/internal/gen"
@@ -42,7 +41,7 @@ func main() {
 
 	var buf bytes.Buffer
 
-	var version uint64
+	version := gen.CLDRVersion()
 
 	for _, dtd := range files {
 		for _, f := range z.File {
@@ -54,17 +53,16 @@ func main() {
 				b.parseDTD(r)
 				b.resolve(b.index[dtd.top[0]])
 				b.write()
-				if version == 0 {
-					version = b.version
-				} else if b.version != 0 && version != b.version {
-					log.Fatalf("main: inconsistent versions: found %d; want %d", b.version, version)
+				if b.version != "" && version != b.version {
+					println(f.Name)
+					log.Fatalf("main: inconsistent versions: found %s; want %s", b.version, version)
 				}
 				break
 			}
 		}
 	}
 	fmt.Fprintln(&buf, "// Version is the version of CLDR from which the XML definitions are generated.")
-	fmt.Fprintf(&buf, "const Version = \"%d\"\n", version)
+	fmt.Fprintf(&buf, "const Version = %q\n", version)
 
 	gen.WriteGoFile(*outputFile, "cldr", buf.Bytes())
 }
@@ -187,7 +185,7 @@ type attribute struct {
 
 var (
 	reHead  = regexp.MustCompile(` *(\w+) +([\w\-]+)`)
-	reAttr  = regexp.MustCompile(` *(\w+) *(?:(\w+)|\(([\w\- \|]+)\)) *(?:#([A-Z]*) *(?:\"(\d+)[\.\d]*\")?)? *("[\w\-:]*")?`)
+	reAttr  = regexp.MustCompile(` *(\w+) *(?:(\w+)|\(([\w\- \|]+)\)) *(?:#([A-Z]*) *(?:\"([\.\d+])\")?)? *("[\w\-:]*")?`)
 	reElem  = regexp.MustCompile(`^ *(EMPTY|ANY|\(.*\)[\*\+\?]?) *$`)
 	reToken = regexp.MustCompile(`\w\-`)
 )
@@ -199,7 +197,7 @@ type builder struct {
 	index   map[string]*element
 	elem    []*element
 	info    dtd
-	version uint64
+	version string
 }
 
 func makeBuilder(w io.Writer, d dtd) builder {
@@ -255,8 +253,7 @@ func (b *builder) parseDTD(r io.Reader) {
 				log.Fatal(fmt.Errorf("parseDTD: invalid attribute %q", string(dir)))
 			}
 			if m[4] == "FIXED" {
-				b.version, err = strconv.ParseUint(m[5], 10, 16)
-				failOnError(err)
+				b.version = m[5]
 			} else {
 				switch m[1] {
 				case "draft", "references", "alt", "validSubLocales", "standard" /* in Common */ :

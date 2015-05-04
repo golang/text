@@ -198,7 +198,7 @@ func ExampleParent() {
 	}
 	p("zh-CN")
 
-	// Australian English inherits from British English.
+	// Australian English inherits from World English.
 	p("en-AU")
 
 	// If the tag has a different maximized script from its parent, a tag with
@@ -221,7 +221,7 @@ func ExampleParent() {
 
 	// Output:
 	// parent(zh-CN): zh
-	// parent(en-AU): en-GB
+	// parent(en-AU): en-001
 	// parent(zh-HK): zh-Hant
 	// parent(zh-Hant): und
 	// parent(de-1994-u-co-phonebk): de
@@ -255,7 +255,7 @@ func ExampleMatcher() {
 	fmt.Println(m.Match(language.Make("en-AU")))
 
 	// Default to the first tag passed to the Matcher if there is no match.
-	fmt.Println(m.Match(language.Make("zu")))
+	fmt.Println(m.Match(language.Make("ar")))
 
 	// Get the default tag.
 	fmt.Println(m.Match())
@@ -279,8 +279,8 @@ func ExampleMatcher() {
 	fmt.Println(m.Match(language.Portuguese))
 
 	// Pick the first value passed to Match in case of a tie.
-	fmt.Println(m.Match(language.Dutch, language.Make("en-AU"), language.Make("af-NA")))
-	fmt.Println(m.Match(language.Dutch, language.Make("af-NA"), language.Make("en-AU")))
+	fmt.Println(m.Match(language.Dutch, language.Make("fr-BE"), language.Make("af-NA")))
+	fmt.Println(m.Match(language.Dutch, language.Make("af-NA"), language.Make("fr-BE")))
 
 	fmt.Println("----")
 
@@ -303,7 +303,7 @@ func ExampleMatcher() {
 	// hr 6 High
 	// ----
 	// pt-BR 4 High
-	// en-GB 1 High
+	// fr 2 High
 	// af 3 High
 	// ----
 	// iw 9 Exact
