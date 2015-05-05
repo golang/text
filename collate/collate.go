@@ -46,7 +46,7 @@ func Supported() []language.Tag {
 
 func init() {
 	ids := strings.Split(availableLocales, ",")
-	tags := make([]language.Tag, len(ids))
+	tags = make([]language.Tag, len(ids))
 	for i, s := range ids {
 		tags[i] = language.Raw.MustParse(s)
 	}
