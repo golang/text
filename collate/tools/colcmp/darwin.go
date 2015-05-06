@@ -77,13 +77,13 @@ func (c osx16Collator) Compare(a, b Input) int {
 		nil,
 		osxCharP(a.UTF16),
 		C.CFIndex(len(a.UTF16)),
-		C.kCFAllocatorNull,
+		nil,
 	)
 	sb := C.CFStringCreateWithCharactersNoCopy(
 		nil,
 		osxCharP(b.UTF16),
 		C.CFIndex(len(b.UTF16)),
-		C.kCFAllocatorNull,
+		nil,
 	)
 	_range := C.CFRangeMake(0, C.CFStringGetLength(sa))
 	return int(C.CFStringCompareWithOptionsAndLocale(sa, sb, _range, c.opt, c.loc))
@@ -96,7 +96,7 @@ func (c osx8Collator) Compare(a, b Input) int {
 		C.CFIndex(len(a.UTF8)),
 		C.kCFStringEncodingUTF8,
 		C.Boolean(0),
-		C.kCFAllocatorNull,
+		nil,
 	)
 	sb := C.CFStringCreateWithBytesNoCopy(
 		nil,
@@ -104,7 +104,7 @@ func (c osx8Collator) Compare(a, b Input) int {
 		C.CFIndex(len(b.UTF8)),
 		C.kCFStringEncodingUTF8,
 		C.Boolean(0),
-		C.kCFAllocatorNull,
+		nil,
 	)
 	_range := C.CFRangeMake(0, C.CFStringGetLength(sa))
 	return int(C.CFStringCompareWithOptionsAndLocale(sa, sb, _range, c.opt, c.loc))
