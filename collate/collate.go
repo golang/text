@@ -107,8 +107,8 @@ func (b *Buffer) Reset() {
 func (c *Collator) Compare(a, b []byte) int {
 	// TODO: skip identical prefixes once we have a fast way to detect if a rune is
 	// part of a contraction. This would lead to roughly a 10% speedup for the colcmp regtest.
-	c.iter(0).setInput(a)
-	c.iter(1).setInput(b)
+	c.iter(0).SetInput(a)
+	c.iter(1).SetInput(b)
 	if res := c.compare(); res != 0 {
 		return res
 	}
@@ -123,8 +123,8 @@ func (c *Collator) Compare(a, b []byte) int {
 func (c *Collator) CompareString(a, b string) int {
 	// TODO: skip identical prefixes once we have a fast way to detect if a rune is
 	// part of a contraction. This would lead to roughly a 10% speedup for the colcmp regtest.
-	c.iter(0).setInputString(a)
-	c.iter(1).setInputString(b)
+	c.iter(0).SetInputString(a)
+	c.iter(1).SetInputString(b)
 	if res := c.compare(); res != 0 {
 		return res
 	}
@@ -219,166 +219,41 @@ func (c *Collator) key(buf *Buffer, w []colltab.Elem) []byte {
 
 func (c *Collator) getColElems(str []byte) []colltab.Elem {
 	i := c.iter(0)
-	i.setInput(str)
-	for i.next() {
+	i.SetInput(str)
+	for i.Next() {
 	}
-	return i.ce
+	return i.Elems
 }
 
 func (c *Collator) getColElemsString(str string) []colltab.Elem {
 	i := c.iter(0)
-	i.setInputString(str)
-	for i.next() {
+	i.SetInputString(str)
+	for i.Next() {
 	}
-	return i.ce
+	return i.Elems
 }
 
 type iter struct {
-	bytes []byte
-	str   string
+	wa [512]colltab.Elem
 
-	wa  [512]colltab.Elem
-	ce  []colltab.Elem
+	newcolltab.Iter
 	pce int
-	nce int // nce <= len(nce)
-
-	prevCCC  uint8
-	pStarter int
-
-	t colltab.Weighter
 }
 
 func (i *iter) init(c *Collator) {
-	i.t = c.t
-	i.ce = i.wa[:0]
-}
-
-func (i *iter) reset() {
-	i.ce = i.ce[:0]
-	i.nce = 0
-	i.prevCCC = 0
-	i.pStarter = 0
-}
-
-func (i *iter) setInput(s []byte) *iter {
-	i.bytes = s
-	i.str = ""
-	i.reset()
-	return i
-}
-
-func (i *iter) setInputString(s string) *iter {
-	i.str = s
-	i.bytes = nil
-	i.reset()
-	return i
-}
-
-func (i *iter) done() bool {
-	return len(i.str) == 0 && len(i.bytes) == 0
-}
-
-func (i *iter) tail(n int) {
-	if i.bytes == nil {
-		i.str = i.str[n:]
-	} else {
-		i.bytes = i.bytes[n:]
-	}
-}
-
-func (i *iter) appendNext() int {
-	var sz int
-	if i.bytes == nil {
-		i.ce, sz = i.t.AppendNextString(i.ce, i.str)
-	} else {
-		i.ce, sz = i.t.AppendNext(i.ce, i.bytes)
-	}
-	return sz
-}
-
-// next appends Elems to the internal array until it adds an element with CCC=0.
-// In the majority of cases, a Elem with a primary value > 0 will have
-// a CCC of 0. The CCC values of colation elements are also used to detect if the
-// input string was not normalized and to adjust the result accordingly.
-func (i *iter) next() bool {
-	for !i.done() {
-		p0 := len(i.ce)
-		sz := i.appendNext()
-		i.tail(sz)
-		last := len(i.ce) - 1
-		if ccc := i.ce[last].CCC(); ccc == 0 {
-			i.nce = len(i.ce)
-			i.pStarter = last
-			i.prevCCC = 0
-			return true
-		} else if p0 < last && i.ce[p0].CCC() == 0 {
-			// set i.nce to only cover part of i.ce for which ccc == 0 and
-			// use rest the next call to next.
-			for p0++; p0 < last && i.ce[p0].CCC() == 0; p0++ {
-			}
-			i.nce = p0
-			i.pStarter = p0 - 1
-			i.prevCCC = ccc
-			return true
-		} else if ccc < i.prevCCC {
-			i.doNorm(p0, ccc) // should be rare for most common cases
-		} else {
-			i.prevCCC = ccc
-		}
-	}
-	if len(i.ce) != i.nce {
-		i.nce = len(i.ce)
-		return true
-	}
-	return false
-}
-
-// nextPlain is the same as next, but does not "normalize" the collation
-// elements.
-// TODO: remove this function. Using this instead of next does not seem
-// to improve performance in any significant way. We retain this until
-// later for evaluation purposes.
-func (i *iter) nextPlain() bool {
-	if i.done() {
-		return false
-	}
-	sz := i.appendNext()
-	i.tail(sz)
-	i.nce = len(i.ce)
-	return true
-}
-
-const maxCombiningCharacters = 30
-
-// doNorm reorders the collation elements in i.ce.
-// It assumes that blocks of collation elements added with appendNext
-// either start and end with the same CCC or start with CCC == 0.
-// This allows for a single insertion point for the entire block.
-// The correctness of this assumption is verified in builder.go.
-func (i *iter) doNorm(p int, ccc uint8) {
-	if p-i.pStarter > maxCombiningCharacters {
-		i.prevCCC = i.ce[len(i.ce)-1].CCC()
-		i.pStarter = len(i.ce) - 1
-		return
-	}
-	n := len(i.ce)
-	k := p
-	for p--; p > i.pStarter && ccc < i.ce[p-1].CCC(); p-- {
-	}
-	i.ce = append(i.ce, i.ce[p:k]...)
-	copy(i.ce[p:], i.ce[k:])
-	i.ce = i.ce[:n]
+	i.Weighter = c.t
+	i.Elems = i.wa[:0]
 }
 
 func (i *iter) nextPrimary() int {
 	for {
-		for ; i.pce < i.nce; i.pce++ {
-			if v := i.ce[i.pce].Primary(); v != 0 {
+		for ; i.pce < i.N; i.pce++ {
+			if v := i.Elems[i.pce].Primary(); v != 0 {
 				i.pce++
 				return v
 			}
 		}
-		if !i.next() {
+		if !i.Next() {
 			return 0
 		}
 	}
@@ -386,8 +261,8 @@ func (i *iter) nextPrimary() int {
 }
 
 func (i *iter) nextSecondary() int {
-	for ; i.pce < len(i.ce); i.pce++ {
-		if v := i.ce[i.pce].Secondary(); v != 0 {
+	for ; i.pce < len(i.Elems); i.pce++ {
+		if v := i.Elems[i.pce].Secondary(); v != 0 {
 			i.pce++
 			return v
 		}
@@ -396,8 +271,8 @@ func (i *iter) nextSecondary() int {
 }
 
 func (i *iter) prevSecondary() int {
-	for ; i.pce < len(i.ce); i.pce++ {
-		if v := i.ce[len(i.ce)-i.pce-1].Secondary(); v != 0 {
+	for ; i.pce < len(i.Elems); i.pce++ {
+		if v := i.Elems[len(i.Elems)-i.pce-1].Secondary(); v != 0 {
 			i.pce++
 			return v
 		}
@@ -406,8 +281,8 @@ func (i *iter) prevSecondary() int {
 }
 
 func (i *iter) nextTertiary() int {
-	for ; i.pce < len(i.ce); i.pce++ {
-		if v := i.ce[i.pce].Tertiary(); v != 0 {
+	for ; i.pce < len(i.Elems); i.pce++ {
+		if v := i.Elems[i.pce].Tertiary(); v != 0 {
 			i.pce++
 			return int(v)
 		}
@@ -416,8 +291,8 @@ func (i *iter) nextTertiary() int {
 }
 
 func (i *iter) nextQuaternary() int {
-	for ; i.pce < len(i.ce); i.pce++ {
-		if v := i.ce[i.pce].Quaternary(); v != 0 {
+	for ; i.pce < len(i.Elems); i.pce++ {
+		if v := i.Elems[i.pce].Quaternary(); v != 0 {
 			i.pce++
 			return v
 		}
