@@ -190,7 +190,7 @@ func (ce Elem) Mask(l Level) uint32 {
 	return 0
 }
 
-// CCC returns the canoncial combining class associated with the underlying character,
+// CCC returns the canonical combining class associated with the underlying character,
 // if applicable, or 0 otherwise.
 func (ce Elem) CCC() uint8 {
 	if ce&ceType3or4 != 0 {
