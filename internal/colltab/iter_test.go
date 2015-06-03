@@ -48,20 +48,16 @@ func TestDoNorm(t *testing.T) {
 	}
 	for j, tt := range tests {
 		i := Iter{}
-		var w, p, s int
+		var w, p int
 		for k, cc := range tt.in {
-			if cc == 0 {
-				s = 0
-			}
+
 			if cc == div {
 				w = 100
 				p = k
-				i.pStarter = s
 				continue
 			}
 			i.Elems = append(i.Elems, makeCE([]int{w, defaultSecondary, 2, cc}))
 		}
-		i.prevCCC = i.Elems[p-1].CCC()
 		i.doNorm(p, i.Elems[p].CCC())
 		if len(i.Elems) != len(tt.out) {
 			t.Errorf("%d: length was %d; want %d", j, len(i.Elems), len(tt.out))
@@ -76,22 +72,6 @@ func TestDoNorm(t *testing.T) {
 			}
 		}
 	}
-	// test cutoff of large sequence of combining characters.
-	result := []uint8{8, 8, 8, 5, 5}
-	for o := -2; o <= 2; o++ {
-		i := Iter{pStarter: 2, prevCCC: 8}
-		n := maxCombiningCharacters + 1 + o
-		for j := 1; j < n+i.pStarter; j++ {
-			i.Elems = append(i.Elems, makeCE([]int{100, defaultSecondary, 2, 8}))
-		}
-		p := len(i.Elems)
-		i.Elems = append(i.Elems, makeCE([]int{0, defaultSecondary, 2, 5}))
-		i.doNorm(p, 5)
-		if i.prevCCC != result[o+2] {
-			t.Errorf("%d: i.prevCCC was %d; want %d", n, i.prevCCC, result[o+2])
-		}
-		if result[o+2] == 5 && i.pStarter != p {
-			t.Errorf("%d: i.pStarter was %d; want %d", n, i.pStarter, p)
-		}
-	}
+
+	// Combining rune overflow is tested in search/pattern_test.go.
 }

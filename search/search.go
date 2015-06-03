@@ -135,13 +135,25 @@ func (m *Matcher) EqualString(a, b string) bool {
 
 // Compile compiles and returns a pattern that can be used for faster searching.
 func (m *Matcher) Compile(b []byte) *Pattern {
-	return compile(source{m: m, b: b})
+	p := &Pattern{m: m}
+	iter := newcolltab.Iter{Weighter: m.w}
+	for iter.SetInput(b); iter.Next(); {
+	}
+	p.ce = iter.Elems
+	p.deleteEmptyElements()
+	return p
 }
 
 // CompileString compiles and returns a pattern that can be used for faster
 // searching.
 func (m *Matcher) CompileString(s string) *Pattern {
-	return compile(source{m: m, s: s})
+	p := &Pattern{m: m}
+	iter := newcolltab.Iter{Weighter: m.w}
+	for iter.SetInputString(s); iter.Next(); {
+	}
+	p.ce = iter.Elems
+	p.deleteEmptyElements()
+	return p
 }
 
 // A Pattern is a compiled search string. It is safe for concurrent use.
@@ -158,10 +170,15 @@ type Pattern struct {
 // Index reports the start and end position of the first occurrence of p in b
 // or -1, -1 if p is not present.
 func (p *Pattern) Index(b []byte, opts ...IndexOption) (start, end int) {
-	sr := searcher{
-		source:  source{m: p.m, b: b},
-		Pattern: p,
+	// Pick a large enough buffer such that we likely do not need to allocate
+	// and small enough to not cause too much overhead initializing.
+	var buf [8]colltab.Elem
+
+	it := &newcolltab.Iter{
+		Weighter: p.m.w,
+		Elems:    buf[:0],
 	}
+	it.SetInput(b)
 
 	var optMask IndexOption
 	for _, o := range opts {
@@ -170,9 +187,9 @@ func (p *Pattern) Index(b []byte, opts ...IndexOption) (start, end int) {
 
 	switch optMask {
 	case 0:
-		return sr.forwardSearch()
+		return p.forwardSearch(it)
 	case Anchor:
-		return sr.anchoredForwardSearch()
+		return p.anchoredForwardSearch(it)
 	case Backwards, anchorBackwards:
 		panic("TODO: implement")
 	default:
@@ -183,10 +200,15 @@ func (p *Pattern) Index(b []byte, opts ...IndexOption) (start, end int) {
 // IndexString reports the start and end position of the first occurrence of p
 // in s or -1, -1 if p is not present.
 func (p *Pattern) IndexString(s string, opts ...IndexOption) (start, end int) {
-	sr := searcher{
-		source:  source{m: p.m, s: s},
-		Pattern: p,
+	// Pick a large enough buffer such that we likely do not need to allocate
+	// and small enough to not cause too much overhead initializing.
+	var buf [8]colltab.Elem
+
+	it := &newcolltab.Iter{
+		Weighter: p.m.w,
+		Elems:    buf[:0],
 	}
+	it.SetInputString(s)
 
 	var optMask IndexOption
 	for _, o := range opts {
@@ -195,9 +217,9 @@ func (p *Pattern) IndexString(s string, opts ...IndexOption) (start, end int) {
 
 	switch optMask {
 	case 0:
-		return sr.forwardSearch()
+		return p.forwardSearch(it)
 	case Anchor:
-		return sr.anchoredForwardSearch()
+		return p.anchoredForwardSearch(it)
 	case Backwards, anchorBackwards:
 		panic("TODO: implement")
 	default:

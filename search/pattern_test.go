@@ -5,6 +5,8 @@
 package search
 
 import (
+	"reflect"
+	"strings"
 	"testing"
 
 	"golang.org/x/text/language"
@@ -66,6 +68,39 @@ func TestCompile(t *testing.T) {
 		p := m.CompileString(tc.pattern)
 		if len(p.ce) != tc.n {
 			t.Errorf("%d:%s: Compile(%+q): got %d; want %d", i, tc.desc, tc.pattern, len(p.ce), tc.n)
+		}
+	}
+}
+
+func TestNorm(t *testing.T) {
+	// U+0300: COMBINING GRAVE ACCENT (CCC=230)
+	// U+031B: COMBINING HORN (CCC=216)
+	for _, tc := range []struct {
+		desc string
+		a    string
+		b    string
+		want bool // a and b compile into the same pattern?
+	}{{
+		"simple",
+		"eee\u0300\u031b",
+		"eee\u031b\u0300",
+		true,
+	}, {
+		"large number of modifiers in pattern",
+		strings.Repeat("\u0300", 29) + "\u0318",
+		"\u0318" + strings.Repeat("\u0300", 29),
+		true,
+	}, {
+		"modifier overflow in pattern",
+		strings.Repeat("\u0300", 30) + "\u0318",
+		"\u0318" + strings.Repeat("\u0300", 30),
+		false,
+	}} {
+		m := New(language.Und)
+		a := m.CompileString(tc.a)
+		b := m.CompileString(tc.b)
+		if got := reflect.DeepEqual(a, b); got != tc.want {
+			t.Errorf("Compile(a) == Compile(b) == %v; want %v", got, tc.want)
 		}
 	}
 }
@@ -276,6 +311,22 @@ func TestForwardSearch(t *testing.T) {
 		pattern: "eee\u0300\u0300", // U+0300: COMBINING GRAVE ACCENT
 		text:    "123 eee 123",
 		want:    []int{4, 7},
+	}, {
+		desc: "match non-normalized pattern",
+		tag:  "und",
+		// U+0300: COMBINING GRAVE ACCENT (CCC=230)
+		// U+031B: COMBINING HORN (CCC=216)
+		pattern: "eee\u0300\u031b",
+		text:    "123 eee\u031b\u0300 123",
+		want:    []int{4, 11},
+	}, {
+		desc: "match non-normalized text",
+		tag:  "und",
+		// U+0300: COMBINING GRAVE ACCENT (CCC=230)
+		// U+031B: COMBINING HORN (CCC=216)
+		pattern: "eee\u031b\u0300",
+		text:    "123 eee\u0300\u031b 123",
+		want:    []int{4, 11},
 	}} {
 		m := New(language.MustParse(tc.tag), tc.options...)
 		p := m.CompileString(tc.pattern)
@@ -294,6 +345,7 @@ func TestForwardSearch(t *testing.T) {
 			}
 			if tc.want[0] != start || tc.want[1] != end {
 				t.Errorf("%d:%s: got [%d %d]; want %v", i, tc.desc, start, end, tc.want[:2])
+				tc.want = tc.want[2:]
 				break
 			}
 			tc.want = tc.want[2:]

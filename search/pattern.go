@@ -6,40 +6,12 @@ package search
 
 import (
 	"golang.org/x/text/collate/colltab"
+	newcolltab "golang.org/x/text/internal/colltab"
 )
 
 // TODO: handle variable primary weights?
 
-type source struct {
-	m *Matcher
-	b []byte
-	s string
-}
-
-func (s *source) appendNext(a []colltab.Elem, p int) ([]colltab.Elem, int) {
-	if s.b != nil {
-		return s.m.w.AppendNext(a, s.b[p:])
-	}
-	return s.m.w.AppendNextString(a, s.s[p:])
-}
-
-func (s *source) len() int {
-	if s.b != nil {
-		return len(s.b)
-	}
-	return len(s.s)
-}
-
-// compile compiles and returns a pattern that can be used for faster searching.
-func compile(src source) *Pattern {
-	p := &Pattern{m: src.m}
-
-	// Convert the full input to collation elements.
-	for m, i, nSrc := 0, 0, src.len(); i < nSrc; i += m {
-		p.ce, m = src.appendNext(p.ce, i)
-	}
-
-	// Remove empty elements.
+func (p *Pattern) deleteEmptyElements() {
 	k := 0
 	for _, e := range p.ce {
 		if !isIgnorable(p.m, e) {
@@ -48,8 +20,6 @@ func compile(src source) *Pattern {
 		}
 	}
 	p.ce = p.ce[:k]
-
-	return p
 }
 
 func isIgnorable(m *Matcher, e colltab.Elem) bool {
@@ -72,33 +42,24 @@ func isIgnorable(m *Matcher, e colltab.Elem) bool {
 	return true
 }
 
-type searcher struct {
-	source
-	*Pattern
-	seg []colltab.Elem // current segment of collation elements
-}
-
 // TODO: Use a Boyer-Moore-like algorithm (probably Sunday) for searching.
 
-func (s *searcher) forwardSearch() (start, end int) {
-	// Pick a large enough buffer such that we likely do not need to allocate
-	// and small enough to not cause too much overhead initializing.
-	var buf [8]colltab.Elem
-
-	for m, i, nText := 0, 0, s.len(); i < nText; i += m {
-		s.seg, m = s.appendNext(buf[:0], i)
-		if end := s.searchOnce(i, m); end != -1 {
-			return i, end
+func (p *Pattern) forwardSearch(it *newcolltab.Iter) (start, end int) {
+	for start := 0; it.Next(); it.Reset(start) {
+		nextStart := it.End()
+		if end := p.searchOnce(it); end != -1 {
+			return start, end
 		}
+		start = nextStart
 	}
 	return -1, -1
 }
 
-func (s *searcher) anchoredForwardSearch() (start, end int) {
-	var buf [8]colltab.Elem
-	s.seg, end = s.appendNext(buf[:0], 0)
-	if end := s.searchOnce(0, end); end != -1 {
-		return 0, end
+func (p *Pattern) anchoredForwardSearch(it *newcolltab.Iter) (start, end int) {
+	if it.Next() {
+		if end := p.searchOnce(it); end != -1 {
+			return 0, end
+		}
 	}
 	return -1, -1
 }
@@ -111,12 +72,16 @@ func (p *Pattern) next(i *int, f func(colltab.Elem) int) (weight int, ok bool) {
 		v := f(p.ce[*i])
 		*i++
 		if v != 0 {
+			// Skip successive ignorable values.
+			for ; *i < len(p.ce) && f(p.ce[*i]) == 0; *i++ {
+			}
 			return v, true
 		}
 	}
 	return 0, false
 }
 
+// TODO: remove this function once Elem is internal and Tertiary returns int.
 func tertiary(e colltab.Elem) int {
 	return int(e.Tertiary())
 }
@@ -125,29 +90,26 @@ func tertiary(e colltab.Elem) int {
 // to be filled with collation elements of the first segment, where n is the
 // number of source bytes consumed for this segment. It will return the end
 // position of the match or -1.
-func (s *searcher) searchOnce(i, n int) (end int) {
+func (p *Pattern) searchOnce(it *newcolltab.Iter) (end int) {
 	var pLevel [4]int
 
-	// TODO: patch non-normalized strings (see collate.go).
-
-	m := s.Pattern.m
-	nSrc := s.len()
+	m := p.m
 	for {
 		k := 0
-		for ; k < len(s.seg); k++ {
-			if v := s.seg[k].Primary(); v > 0 {
-				if w, ok := s.next(&pLevel[0], colltab.Elem.Primary); !ok || v != w {
+		for ; k < it.N; k++ {
+			if v := it.Elems[k].Primary(); v > 0 {
+				if w, ok := p.next(&pLevel[0], colltab.Elem.Primary); !ok || v != w {
 					return -1
 				}
 			}
 
 			if !m.ignoreDiacritics {
-				if v := s.seg[k].Secondary(); v > 0 {
-					if w, ok := s.next(&pLevel[1], colltab.Elem.Secondary); !ok || v != w {
+				if v := it.Elems[k].Secondary(); v > 0 {
+					if w, ok := p.next(&pLevel[1], colltab.Elem.Secondary); !ok || v != w {
 						return -1
 					}
 				}
-			} else if s.seg[k].Primary() == 0 {
+			} else if it.Elems[k].Primary() == 0 {
 				// We ignore tertiary values of collation elements of the
 				// secondary level.
 				continue
@@ -156,49 +118,39 @@ func (s *searcher) searchOnce(i, n int) (end int) {
 			// TODO: distinguish between case and width. This will be easier to
 			// implement after we moved to the new collation implementation.
 			if !m.ignoreWidth && !m.ignoreCase {
-				if v := s.seg[k].Tertiary(); v > 0 {
-					if w, ok := s.next(&pLevel[2], tertiary); !ok || int(v) != w {
+				if v := it.Elems[k].Tertiary(); v > 0 {
+					if w, ok := p.next(&pLevel[2], tertiary); !ok || int(v) != w {
 						return -1
 					}
 				}
 			}
 			// TODO: check quaternary weight
 		}
-		i += n
+		it.Discard() // Remove the current segment from the buffer.
 
 		// Check for completion.
 		switch {
 		// If any of these cases match, we are not at the end.
-		case pLevel[0] < len(s.ce):
-		case !m.ignoreDiacritics && pLevel[1] < len(s.ce):
-		case !(m.ignoreWidth || m.ignoreCase) && pLevel[2] < len(s.ce):
+		case pLevel[0] < len(p.ce):
+		case !m.ignoreDiacritics && pLevel[1] < len(p.ce):
+		case !(m.ignoreWidth || m.ignoreCase) && pLevel[2] < len(p.ce):
 		default:
 			// At this point, both the segment and pattern has matched fully.
-			// However, appendNext does not guarantee a segment is on a grapheme
-			// boundary. The proper way to check this is whether the text is
-			// followed by a modifier. We inspecting the properties of the
-			// collation element as an alternative to using unicode/norm or
-			// range tables.
-			// TODO: verify correctness of this algorithm and verify space/time
-			// trade-offs of the other approaches.
-			for ; i < nSrc; i += n {
-				// TODO: implement different behavior for WholeGrapheme(false).
-				s.seg, n = s.appendNext(s.seg[:0], i)
-				if s.seg[0].Primary() != 0 {
-					break
-				}
+			// However, the segment may still be have trailing modifiers.
+			// This can be verified by another call to next.
+			end = it.End()
+			if it.Next() && it.Elems[0].Primary() == 0 {
 				if !m.ignoreDiacritics {
 					return -1
 				}
+				end = it.End()
 			}
-			return i
-		}
-
-		if i >= nSrc {
-			return -1
+			return end
 		}
 
 		// Fill the buffer with the next batch of collation elements.
-		s.seg, n = s.appendNext(s.seg[:0], i)
+		if !it.Next() {
+			return -1
+		}
 	}
 }
