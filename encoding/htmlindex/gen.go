@@ -77,7 +77,7 @@ func main() {
 	}
 	fmt.Fprint(w, "}\n\n")
 
-	fmt.Fprintf(w, "const locales = %q", strings.Join(tags, " "))
+	fmt.Fprintf(w, "const locales = %q\n", strings.Join(tags, " "))
 
 	gen.WriteGoFile("tables.go", "htmlindex", w.Bytes())
 }
