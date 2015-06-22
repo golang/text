@@ -88,11 +88,17 @@ var All = []encoding.Encoding{
 type BOMPolicy uint8
 
 const (
-	writeBOM     BOMPolicy = 0x01
-	acceptBOM    BOMPolicy = 0x02
-	requireBOM   BOMPolicy = 0x04
-	bomMask      BOMPolicy = 0x07
-	numBOMValues           = 8
+	writeBOM   BOMPolicy = 0x01
+	acceptBOM  BOMPolicy = 0x02
+	requireBOM BOMPolicy = 0x04
+	bomMask    BOMPolicy = 0x07
+
+	// HACK: numBOMValues == 8 triggers a bug in the 1.4 compiler (cannot have a
+	// map of an array of length 8 of a type that is also used as a key or value
+	// in another map). See golang.org/issue/11354.
+	// TODO: consider changing this value back to 8 if the use of 1.4.* has
+	// been minimized.
+	numBOMValues = 8 + 1
 
 	// IgnoreBOM means to ignore any byte order marks.
 	IgnoreBOM BOMPolicy = 0
