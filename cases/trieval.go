@@ -16,8 +16,10 @@ package cases
 //
 //   if (exception) {
 //     15..5  unsigned exception index
+//         4  unused
 //   } else {
-//     15..6  XOR pattern for case mapping
+//     15..7  XOR pattern or index to XOR pattern for case mapping
+//         6  index: interpret the XOR pattern as an index
 //      5..4  CCC: zero (normal or break), above or other
 //   }
 //      3  exception: interpret this value as an exception index
@@ -42,9 +44,8 @@ const (
 	exceptionShift   = 5
 	numExceptionBits = 11
 
-	xorShift       = 6
-	xorBitsPerByte = 6
-	numXORBits     = 10
+	xorIndexBit = 1 << 6
+	xorShift    = 7
 
 	// There is no mapping if all xor bits and the exception bit are zero.
 	hasMappingMask = 0xffc0 | exceptionBit

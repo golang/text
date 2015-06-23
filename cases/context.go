@@ -132,15 +132,21 @@ func (c *context) copyXOR() bool {
 	if !c.copy() {
 		return false
 	}
-	if xor := c.info >> xorShift; xor < 1<<6 {
+	if c.info&xorIndexBit == 0 {
 		// Fast path for 6-bit XOR pattern, which covers most cases.
-		// Note that this if statement also implicitly verifies the length of
-		// the string. A 2-byte xor pattern can only occur if the current rune
-		// is at least 2 bytes long.
-		c.dst[c.pDst-1] ^= byte(xor)
+		c.dst[c.pDst-1] ^= byte(c.info >> xorShift)
 	} else {
-		c.dst[c.pDst-1] ^= byte(xor & 0x3F)
-		c.dst[c.pDst-2] ^= byte(xor >> xorBitsPerByte)
+		// Interpret XOR bits as an index.
+		// TODO: test performance for unrolling this loop. Verify that we have
+		// at least two bytes and at most three.
+		idx := c.info >> xorShift
+		for p := c.pDst - 1; ; p-- {
+			c.dst[p] ^= xorData[idx]
+			idx--
+			if xorData[idx] == 0 {
+				break
+			}
+		}
 	}
 	return true
 }

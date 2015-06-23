@@ -221,6 +221,9 @@ func genTables() {
 		log.Fatal(err)
 	}
 
+	fmt.Fprintf(w, "// xorData: %d bytes\n", len(xorData))
+	fmt.Fprintf(w, "var xorData = %+q\n\n", string(xorData))
+
 	fmt.Fprintf(w, "// exceptions: %d bytes\n", len(exceptionData))
 	fmt.Fprintf(w, "var exceptions = %q\n\n", string(exceptionData))
 
@@ -283,33 +286,39 @@ func makeEntry(ri *runeInfo) {
 
 	n := len(orig)
 
-	// XOR pattern is only possible for the 10 least-significant bits.
-	if n > 2 && orig[:n-2] != mapped[:n-2] {
-		makeException(ri)
+	// Create per-byte XOR mask.
+	var b []byte
+	for i := 0; i < n; i++ {
+		b = append(b, orig[i]^mapped[i])
+	}
+
+	// Remove leading 0 bytes, but keep at least one byte.
+	for ; len(b) > 1 && b[0] == 0; b = b[1:] {
+	}
+
+	if len(b) == 1 && b[0]&0xc0 == 0 {
+		ri.entry |= info(b[0]) << xorShift
 		return
 	}
 
-	v1 := int(orig[n-1])
-	v2 := int(mapped[n-1])
-	if n > 1 {
-		v1 += int(orig[n-2]) << 8
-		v2 += int(mapped[n-2]) << 8
-	}
+	key := string(b)
+	x, ok := xorCache[key]
+	if !ok {
+		xorData = append(xorData, 0) // for detecting start of sequence
+		xorData = append(xorData, b...)
 
-	// Ensure that the two most-significant bits of the last byte are always the
-	// same. It is possible that they are not for ASCII, except that we know
-	// it doesn't occur.
-	if v1&0xc0 != v2&0xc0 {
-		log.Fatalf("%U: 2 msb of least-significant bytes differ (%x and %x)", ri.Rune, v1, v2)
+		x = len(xorData) - 1
+		xorCache[key] = x
 	}
-
-	x := v2 ^ v1
-	if x >= 1<<(numXORBits+2) {
-		makeException(ri)
-		return
-	}
-	ri.entry |= info((x&0xFF00)<<(xorShift-2) + (x&0x3F)<<xorShift)
+	ri.entry |= info(x<<xorShift) | xorIndexBit
 }
+
+var xorCache = map[string]int{}
+
+// xorData contains byte-wise XOR data for the least significant bytes of a
+// UTF-8 encoded rune. An index points to the last byte. The sequence starts
+// with a zero terminator.
+var xorData = []byte{}
 
 // See the comments in gen_trieval.go re "the exceptions slice".
 var exceptionData = []byte{0}
