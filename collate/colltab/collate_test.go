@@ -43,7 +43,7 @@ func TestNumericCompare(t *testing.T) {
 }
 
 // This implementation of collation uses an out of date Unicode table, as the
-// current implemenation uses CLDR 24, which uses Unicode 6.3.0. This will
+// current implementation uses CLDR 24, which uses Unicode 6.3.0. This will
 // be resolved once we move to CLDR version 25 (or later), which introduces
 // significant changes.
 // We skip digits that are not known as digits by the Weighter.
@@ -56,6 +56,7 @@ var notSupported = map[rune]bool{
 	0x000114d0: true,
 	0x00011650: true,
 	0x000118e0: true,
+	0x00011730: true,
 	0x00016a60: true,
 	0x00016b50: true,
 }
