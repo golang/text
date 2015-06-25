@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package rangetable creates new unicode.RangeTables.
 package rangetable
 
 import (
@@ -110,10 +109,10 @@ type tableIndex struct {
 
 type tablesIter []tableIndex
 
-// sort does an insertion sort using the next field of tableIndex. We do not use
-// the sort package as it is giving bootstrapping issues with ./all.bash.
+// sortIter does an insertion sort using the next field of tableIndex. We do not
+// use the sort package as it is giving bootstrapping issues with ./all.bash.
 // Insertion sort is also a good sorting algorithm for this problem.
-func sort(t []tableIndex) {
+func sortIter(t []tableIndex) {
 	for i := range t {
 		for j := i; j > 0 && t[j-1].next > t[j].next; j-- {
 			t[j], t[j-1] = t[j-1], t[j]
@@ -126,7 +125,7 @@ func sort(t []tableIndex) {
 // elements are not fully subsumed. It returns a zero range if there are no more
 // ranges.
 func (ti tablesIter) next16() unicode.Range16 {
-	sort(ti)
+	sortIter(ti)
 
 	t0 := ti[0]
 	if t0.next == atEnd {
@@ -196,7 +195,7 @@ func (ti tablesIter) next16() unicode.Range16 {
 // elements are not fully subsumed. It returns a zero range if there are no more
 // ranges.
 func (ti tablesIter) next32() unicode.Range32 {
-	sort(ti)
+	sortIter(ti)
 
 	t0 := ti[0]
 	if t0.next == atEnd {

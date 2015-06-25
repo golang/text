@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"unicode"
@@ -69,8 +70,9 @@ func main() {
 	}
 	var (
 		cldr     = generate("cldr")
-		norm     = generate("unicode/norm")
 		language = generate("language", cldr)
+		norm     = generate("unicode/norm")
+		_        = generate("unicode/rangetable")
 		_        = generate("width")
 		_        = generate("display", cldr, language)
 		_        = generate("cases", norm)
@@ -120,7 +122,7 @@ func generate(pkg string, deps ...*dependency) *dependency {
 			args = append(args, "-v")
 		}
 		args = append(args, "./"+pkg)
-		cmd := exec.Command(filepath.Join(os.Getenv("GOROOT"), "bin", "go"), args...)
+		cmd := exec.Command(filepath.Join(runtime.GOROOT(), "bin", "go"), args...)
 		w := &bytes.Buffer{}
 		cmd.Stderr = w
 		cmd.Stdout = w
