@@ -25,6 +25,9 @@ type Coverage interface {
 
 	// Regions returns the list of supported regions.
 	Regions() []Region
+
+	// Currencies returns the list of supported currencies.
+	Currencies() []Currency
 }
 
 var (
@@ -34,14 +37,14 @@ var (
 )
 
 // TODO:
-// - Support Currencies, Variants, numbering systems.
+// - Support Variants, numbering systems.
 // - CLDR coverage levels.
 // - Set of common tags defined in this package.
 
 type allSubtags struct{}
 
 // Regions returns the list of supported regions. As all regions are in a
-// consecutive range, it simply returns an array of numbers in increasing order.
+// consecutive range, it simply returns a slice of numbers in increasing order.
 // The "undefined" region is not returned.
 func (s allSubtags) Regions() []Region {
 	reg := make([]Region, numRegions)
@@ -52,7 +55,7 @@ func (s allSubtags) Regions() []Region {
 }
 
 // Scripts returns the list of supported scripts. As all scripts are in a
-// consecutive range, it simply returns an array of numbers in increasing order.
+// consecutive range, it simply returns a slice of numbers in increasing order.
 // The "undefined" script is not returned.
 func (s allSubtags) Scripts() []Script {
 	scr := make([]Script, numScripts)
@@ -85,6 +88,17 @@ func (s allSubtags) BaseLanguages() []Base {
 	return base
 }
 
+// Currencies returns the list of supported currencies. As all currencies are in
+// a consecutive range, it simply returns a slice of numbers in increasing
+// order. The "undefined" currency is not returned.
+func (s allSubtags) Currencies() []Currency {
+	cur := make([]Currency, numCurrencies)
+	for i := range cur {
+		cur[i] = Currency{currencyID(i + 1)}
+	}
+	return cur
+}
+
 // Tags always returns nil.
 func (s allSubtags) Tags() []Tag {
 	return nil
@@ -96,10 +110,11 @@ func (s allSubtags) Tags() []Tag {
 // convenient way to do this. Moreover, packages using NewCoverage, instead of
 // their own implementation, will not break if later new slice types are added.
 type coverage struct {
-	tags    func() []Tag
-	bases   func() []Base
-	scripts func() []Script
-	regions func() []Region
+	tags       func() []Tag
+	bases      func() []Base
+	scripts    func() []Script
+	regions    func() []Region
+	currencies func() []Currency
 }
 
 func (s *coverage) Tags() []Tag {
@@ -163,6 +178,13 @@ func (s *coverage) Regions() []Region {
 	return s.regions()
 }
 
+func (s *coverage) Currencies() []Currency {
+	if s.currencies == nil {
+		return nil
+	}
+	return s.currencies()
+}
+
 // NewCoverage returns a Coverage for the given lists. It is typically used by
 // packages providing internationalization services to define their level of
 // coverage. A list may be of type []T or func() []T, where T is either Tag,
@@ -181,6 +203,8 @@ func NewCoverage(list ...interface{}) Coverage {
 			s.regions = v
 		case func() []Tag:
 			s.tags = v
+		case func() []Currency:
+			s.currencies = v
 		case []Base:
 			s.bases = func() []Base { return v }
 		case []Script:
@@ -189,6 +213,8 @@ func NewCoverage(list ...interface{}) Coverage {
 			s.regions = func() []Region { return v }
 		case []Tag:
 			s.tags = func() []Tag { return v }
+		case []Currency:
+			s.currencies = func() []Currency { return v }
 		default:
 			panic(fmt.Sprintf("language: unsupported set type %T", v))
 		}

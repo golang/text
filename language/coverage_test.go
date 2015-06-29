@@ -11,13 +11,14 @@ import (
 )
 
 func TestSupported(t *testing.T) {
-	// To prove the results are correct for a type,  we test that the number of
+	// To prove the results are correct for a type, we test that the number of
 	// results is identical to the number of results on record, that all results
 	// are distinct and that all results are valid.
 	tests := map[string]int{
 		"BaseLanguages": numLanguages,
 		"Scripts":       numScripts,
 		"Regions":       numRegions,
+		"Currencies":    numCurrencies,
 		"Tags":          0,
 	}
 	sup := reflect.ValueOf(Supported)

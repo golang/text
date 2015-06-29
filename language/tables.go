@@ -11,6 +11,8 @@ const numScripts = 223
 
 const numRegions = 354
 
+const numCurrencies = 296
+
 type fromTo struct {
 	from uint16
 	to   uint16
@@ -2768,4 +2770,4 @@ var parents = [4]parentRel{
 	{lang: 0x2b1, script: 0x33, maxScript: 0x33, toRegion: 0x8b, fromRegion: []uint16{0xc4}},
 }
 
-// Size: 20.6K (21051 bytes); Check: 96C131F9
+// Size: 20.6K (21051 bytes); Check: AC4585D5

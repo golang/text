@@ -719,6 +719,7 @@ func (b *builder) parseIndices() {
 	b.writeConst("numLanguages", len(b.lang.slice())+len(b.langNoIndex.slice()))
 	b.writeConst("numScripts", len(b.script.slice()))
 	b.writeConst("numRegions", len(b.region.slice()))
+	b.writeConst("numCurrencies", len(b.currency.slice()))
 
 	// Add dummy codes at the start of each list to represent "unspecified".
 	b.lang.add("---")
