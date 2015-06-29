@@ -32,6 +32,7 @@ func trim(s string) string {
 var basicTestCases = []struct {
 	e         encoding.Encoding
 	encPrefix string
+	encSuffix string
 	encoded   string
 	utf8      string
 }{
@@ -298,15 +299,17 @@ var basicTestCases = []struct {
 		utf8: "月日は百代の過客にして、行かふ年も又旅人也。",
 	},
 	{
-		e: japanese.ISO2022JP,
-		encoded: "\x1b(I\x21\x36\x5f\x1b(B " +
-			"0208: \x1b$B\x21\x21\x21\x22\x21\x5f\x21\x60\x21\x7d\x21\x7e\x22\x21\x22\x22\x74\x26",
+		e:         japanese.ISO2022JP,
+		encSuffix: "\x1b\x28\x42",
+		encoded: "\x1b\x28\x49\x21\x36\x5f\x1b\x28\x42 " +
+			"0208: \x1b\x24\x42\x21\x21\x21\x22\x21\x5f\x21\x60\x21\x7d\x21\x7e\x22\x21\x22\x22\x74\x26",
 		utf8: "｡ｶﾟ " +
 			"0208: \u3000\u3001\u00d7\u00f7\u25ce\u25c7\u25c6\u25a1\u7199",
 	},
 	{
 		e:         japanese.ISO2022JP,
 		encPrefix: "\x1b\x24\x42",
+		encSuffix: "\x1b\x28\x42",
 		encoded: "\x37\x6e\x46\x7c\x24\x4f\x49\x34\x42\x65\x24\x4e\x32\x61\x35\x52" +
 			"\x24\x4b\x24\x37\x24\x46\x21\x22\x39\x54\x24\x2b\x24\x55\x47\x2f" +
 			"\x24\x62\x4b\x74\x4e\x39\x3f\x4d\x4c\x69\x21\x23",
@@ -349,39 +352,39 @@ func TestBasics(t *testing.T) {
 	for _, tc := range basicTestCases {
 		for _, direction := range []string{"Decode", "Encode"} {
 			newTransformer, want, src := (func() transform.Transformer)(nil), "", ""
-			wPrefix, sPrefix := "", ""
+			wPrefix, sPrefix, wSuffix, sSuffix := "", "", "", ""
 			if direction == "Decode" {
 				newTransformer, want, src = tc.e.NewDecoder, tc.utf8, tc.encoded
-				wPrefix, sPrefix = "", tc.encPrefix
+				wPrefix, sPrefix, wSuffix, sSuffix = "", tc.encPrefix, "", tc.encSuffix
 			} else {
 				newTransformer, want, src = tc.e.NewEncoder, tc.encoded, tc.utf8
-				wPrefix, sPrefix = tc.encPrefix, ""
+				wPrefix, sPrefix, wSuffix, sSuffix = tc.encPrefix, "", tc.encSuffix, ""
 			}
 
-			dst := make([]byte, len(wPrefix)+len(want))
-			nDst, nSrc, err := newTransformer().Transform(dst, []byte(sPrefix+src), true)
+			dst := make([]byte, len(wPrefix)+len(want)+len(wSuffix))
+			nDst, nSrc, err := newTransformer().Transform(dst, []byte(sPrefix+src+sSuffix), true)
 			if err != nil {
 				t.Errorf("%v: %s: %v", tc.e, direction, err)
 				continue
 			}
-			if nDst != len(wPrefix)+len(want) {
+			if nDst != len(wPrefix)+len(want)+len(wSuffix) {
 				t.Errorf("%v: %s: nDst got %d, want %d",
-					tc.e, direction, nDst, len(wPrefix)+len(want))
+					tc.e, direction, nDst, len(wPrefix)+len(want)+len(wSuffix))
 				continue
 			}
-			if nSrc != len(sPrefix)+len(src) {
+			if nSrc != len(sPrefix)+len(src)+len(sSuffix) {
 				t.Errorf("%v: %s: nSrc got %d, want %d",
-					tc.e, direction, nSrc, len(sPrefix)+len(src))
+					tc.e, direction, nSrc, len(sPrefix)+len(src)+len(sSuffix))
 				continue
 			}
-			if got := string(dst); got != wPrefix+want {
+			if got := string(dst); got != wPrefix+want+wSuffix {
 				t.Errorf("%v: %s:\ngot  %q\nwant %q",
-					tc.e, direction, got, wPrefix+want)
+					tc.e, direction, got, wPrefix+want+wSuffix)
 				continue
 			}
 
 			for _, n := range []int{0, 1, 2, 10, 123, 4567} {
-				input := sPrefix + strings.Repeat(src, n)
+				input := sPrefix + strings.Repeat(src, n) + sSuffix
 				sr := strings.NewReader(input)
 				g, err := ioutil.ReadAll(transform.NewReader(sr, newTransformer()))
 				if err != nil {
@@ -393,7 +396,7 @@ func TestBasics(t *testing.T) {
 					// regardless of whatever wPrefix is.
 					continue
 				}
-				got1, want1 := string(g), wPrefix+strings.Repeat(want, n)
+				got1, want1 := string(g), wPrefix+strings.Repeat(want, n)+wSuffix
 				if got1 != want1 {
 					t.Errorf("%v: %s: ReadAll: n=%d\ngot  %q\nwant %q",
 						tc.e, direction, n, trim(got1), trim(want1))

@@ -269,5 +269,16 @@ func (e *iso2022JPEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc in
 		nDst++
 		continue
 	}
+	if atEOF && err == nil && *e != asciiState {
+		if nDst+3 > len(dst) {
+			err = transform.ErrShortDst
+		} else {
+			*e = asciiState
+			dst[nDst+0] = asciiEsc
+			dst[nDst+1] = '('
+			dst[nDst+2] = 'B'
+			nDst += 3
+		}
+	}
 	return nDst, nSrc, err
 }
