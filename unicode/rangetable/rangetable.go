@@ -60,3 +60,11 @@ func Visit(rt *unicode.RangeTable, fn func(rune)) {
 		}
 	}
 }
+
+// Assigned returns a RangeTable with all assigned code points for a given
+// Unicode version. This includes graphic, format, control, and private-use
+// characters. It returns nil if the data for the given version is not
+// available.
+func Assigned(version string) *unicode.RangeTable {
+	return assigned[version]
+}
