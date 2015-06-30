@@ -109,9 +109,8 @@ type tableIndex struct {
 
 type tablesIter []tableIndex
 
-// sortIter does an insertion sort using the next field of tableIndex. We do not
-// use the sort package as it is giving bootstrapping issues with ./all.bash.
-// Insertion sort is also a good sorting algorithm for this problem.
+// sortIter does an insertion sort using the next field of tableIndex. Insertion
+// sort is a good sorting algorithm for this case.
 func sortIter(t []tableIndex) {
 	for i := range t {
 		for j := i; j > 0 && t[j-1].next > t[j].next; j-- {
