@@ -77,6 +77,7 @@ func main() {
 	}
 
 	w := &bytes.Buffer{}
+	gen.WriteCLDRVersion(w)
 
 	b := builder{
 		w:     w,

@@ -528,6 +528,10 @@ func main() {
 		testCollator(collate.NewFromTable(c))
 	} else {
 		w := &bytes.Buffer{}
+
+		gen.WriteUnicodeVersion(w)
+		gen.WriteCLDRVersion(w)
+
 		if tables.contains("collate") {
 			_, err = b.Print(w)
 			failOnError(err)

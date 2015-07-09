@@ -2,6 +2,12 @@
 
 package search
 
+// UnicodeVersion is the Unicode version from which the tables in this package are derived.
+const UnicodeVersion = "6.2.0"
+
+// CLDRVersion is the CLDR version from which the tables in this package are derived.
+const CLDRVersion = "23"
+
 var availableLocales = "und,az,bs,ca,cs,da,de,en,en-US,es,fi,fo,fr,he,hr,is,kl,ko,ko-u-co-searchjl,nb,nn,se,sk,sr-Latn,sv,tr"
 
 const varTop = 0x30e

@@ -221,6 +221,11 @@ func genTables() {
 		log.Fatal(err)
 	}
 
+	gen.WriteUnicodeVersion(w)
+	// TODO: write CLDR version after adding a mechanism to detect that the
+	// tables on which the manually created locale-sensitive casing code is
+	// based hasn't changed.
+
 	fmt.Fprintf(w, "// xorData: %d bytes\n", len(xorData))
 	fmt.Fprintf(w, "var xorData = %+q\n\n", string(xorData))
 

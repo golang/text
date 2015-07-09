@@ -161,6 +161,22 @@ func get(root, path string) io.ReadCloser {
 	return resp.Body
 }
 
+// TODO: use Write*Version in all applicable packages.
+
+// WriteUnicodeVersion writes a constant for the Unicode version from which the
+// tables are generated.
+func WriteUnicodeVersion(w io.Writer) {
+	fmt.Fprintf(w, "// UnicodeVersion is the Unicode version from which the tables in this package are derived.\n")
+	fmt.Fprintf(w, "const UnicodeVersion = %q\n\n", UnicodeVersion())
+}
+
+// WriteCLDRVersion writes a constant for the CLDR version from which the
+// tables are generated.
+func WriteCLDRVersion(w io.Writer) {
+	fmt.Fprintf(w, "// CLDRVersion is the CLDR version from which the tables in this package are derived.\n")
+	fmt.Fprintf(w, "const CLDRVersion = %q\n\n", CLDRVersion())
+}
+
 // WriteGoFiles prepends a standard file comment and package statement to the
 // given bytes, applies gofmt, and writes them to a file with the given name.
 // It will call log.Fatal if there are any errors.

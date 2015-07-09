@@ -2,6 +2,9 @@
 
 package width
 
+// UnicodeVersion is the Unicode version from which the tables in this package are derived.
+const UnicodeVersion = "8.0.0"
+
 // lookup returns the trie value for the first UTF-8 encoding in s and
 // the width in bytes of this encoding. The size will be 0 if s does not
 // hold enough bytes to complete the encoding. len(s) must be greater than 0.

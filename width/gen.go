@@ -59,6 +59,7 @@ func genTables() {
 	})
 
 	w := &bytes.Buffer{}
+	gen.WriteUnicodeVersion(w)
 
 	sz, err := t.Gen(w)
 	if err != nil {
