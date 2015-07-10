@@ -14,14 +14,19 @@ import (
 
 	"golang.org/x/text/collate"
 	"golang.org/x/text/language"
+	"golang.org/x/text/unicode/rangetable"
 )
+
+// assigned is used to only test runes that are inside the scope of the Unicode
+// version used to generation the collation table.
+var assigned = rangetable.Assigned(collate.UnicodeVersion)
 
 func TestNonDigits(t *testing.T) {
 	c := collate.New(language.English, collate.Loose, collate.Numeric)
 
 	// Verify that all non-digit numbers sort outside of the number range.
 	for r, hi := rune(unicode.N.R16[0].Lo), rune(unicode.N.R32[0].Hi); r <= hi; r++ {
-		if unicode.In(r, unicode.Nd) {
+		if unicode.In(r, unicode.Nd) || !unicode.In(r, assigned) {
 			continue
 		}
 		if a := string(r); c.CompareString(a, "0") != -1 && c.CompareString(a, "999999") != 1 {
@@ -42,27 +47,8 @@ func TestNumericCompare(t *testing.T) {
 	}
 }
 
-// This implementation of collation uses an out of date Unicode table, as the
-// current implementation uses CLDR 24, which uses Unicode 6.3.0. This will
-// be resolved once we move to CLDR version 25 (or later), which introduces
-// significant changes.
-// We skip digits that are not known as digits by the Weighter.
-//
-// TODO: remove once we upgrade collation to newer tables.
-var notSupported = map[rune]bool{
-	0x0de6:     true,
-	0xa9f0:     true,
-	0x000112f0: true,
-	0x000114d0: true,
-	0x00011650: true,
-	0x000118e0: true,
-	0x00011730: true,
-	0x00016a60: true,
-	0x00016b50: true,
-}
-
 func testDigitCompare(t *testing.T, c *collate.Collator, zero, nine rune) {
-	if notSupported[zero] {
+	if !unicode.In(zero, assigned) {
 		return
 	}
 	n := int(nine - zero + 1)
