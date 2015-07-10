@@ -31,9 +31,9 @@ func New(r ...rune) *unicode.RangeTable {
 	var rt unicode.RangeTable
 	for _, r := range r[:k] {
 		if r <= 0xFFFF {
-			rt.R16 = append(rt.R16, unicode.Range16{uint16(r), uint16(r), 1})
+			rt.R16 = append(rt.R16, unicode.Range16{Lo: uint16(r), Hi: uint16(r), Stride: 1})
 		} else {
-			rt.R32 = append(rt.R32, unicode.Range32{uint32(r), uint32(r), 1})
+			rt.R32 = append(rt.R32, unicode.Range32{Lo: uint32(r), Hi: uint32(r), Stride: 1})
 		}
 	}
 
