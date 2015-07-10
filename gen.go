@@ -76,7 +76,8 @@ func main() {
 		_        = generate("width")
 		_        = generate("display", cldr, language)
 		_        = generate("cases", norm)
-		_        = generate("collate", cldr, language)
+		_        = generate("collate", norm, cldr, language)
+		_        = generate("search", norm, cldr, language)
 	)
 	all.Wait()
 
