@@ -12,6 +12,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
+	"golang.org/x/text/unicode/rangetable"
 )
 
 // The following definitions are taken directly from Chapter 3 of The Unicode
@@ -62,7 +63,11 @@ func contextFromRune(r rune) *context {
 }
 
 func TestCaseProperties(t *testing.T) {
+	assigned := rangetable.Assigned(UnicodeVersion)
 	for r := rune(0); r <= lastRuneForTesting; r++ {
+		if !unicode.In(r, assigned) || !unicode.In(unicode.SimpleFold(r), assigned) {
+			continue
+		}
 		c := contextFromRune(r)
 		if got, want := c.info.isCaseIgnorable(), propIgnore(r); got != want {
 			t.Errorf("caseIgnorable(%U): got %v; want %v (%x)", r, got, want, c.info)
@@ -84,6 +89,7 @@ func TestCaseProperties(t *testing.T) {
 }
 
 func TestMapping(t *testing.T) {
+	assigned := rangetable.Assigned(UnicodeVersion)
 	apply := func(r rune, f func(c *context) bool) string {
 		c := contextFromRune(r)
 		f(c)
@@ -103,6 +109,9 @@ func TestMapping(t *testing.T) {
 	}
 
 	for r := rune(0); r <= lastRuneForTesting; r++ {
+		if !unicode.In(r, assigned) || !unicode.In(unicode.SimpleFold(r), assigned) {
+			continue
+		}
 		if _, ok := special[r]; ok {
 			continue
 		}
