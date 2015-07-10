@@ -75,8 +75,6 @@ package %s
 
 `
 
-// TODO: generate standardized version info.
-
 // UnicodeVersion reports the requested Unicode version.
 func UnicodeVersion() string {
 	return *unicodeVersion
