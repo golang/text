@@ -24,27 +24,113 @@ var (
 	lastTagZhHant = language.MustParse("zh-Hant")
 )
 
+// TestValues tests that for all languages, regions, and scripts in Values, at
+// least one language has a name defined for it by checking it exists in
+// English, which is assumed to be the most comprehensive. It is also tested
+// that a Namer returns "" for unsupported values.
+func TestValues(t *testing.T) {
+	type testcase struct {
+		kind string
+		n    Namer
+	}
+	// checkDefined checks that a value exists in a Namer.
+	checkDefined := func(x interface{}, namers []testcase) {
+		for _, n := range namers {
+			if n.n.Name(x) == "" {
+				t.Errorf("%s.Name(%s): supported but no result", n.kind, x)
+			}
+		}
+	}
+	// checkUnsupported checks that a value does not exist in a Namer.
+	checkUnsupported := func(x interface{}, namers []testcase) {
+		for _, n := range namers {
+			if got := n.n.Name(x); got != "" {
+				t.Fatalf("%s.Name(%s): unsupported tag gave non-empty result: %q", n.kind, x, got)
+			}
+		}
+	}
+
+	tags := map[language.Tag]bool{}
+	namers := []testcase{
+		{"Languages(en)", Languages(language.English)},
+		{"Tags(en)", Tags(language.English)},
+		{"English.Languages()", English.Languages()},
+		{"English.Tags()", English.Tags()},
+	}
+	for _, tag := range Values.Tags() {
+		checkDefined(tag, namers)
+		tags[tag] = true
+	}
+	for _, base := range language.Supported.BaseLanguages() {
+		tag, _ := language.All.Compose(base)
+		if !tags[tag] {
+			checkUnsupported(tag, namers)
+		}
+	}
+
+	regions := map[language.Region]bool{}
+	namers = []testcase{
+		{"Regions(en)", Regions(language.English)},
+		{"English.Regions()", English.Regions()},
+	}
+	for _, r := range Values.Regions() {
+		checkDefined(r, namers)
+		regions[r] = true
+	}
+	for _, r := range language.Supported.Regions() {
+		if r = r.Canonicalize(); !regions[r] {
+			checkUnsupported(r, namers)
+		}
+	}
+
+	scripts := map[language.Script]bool{}
+	namers = []testcase{
+		{"Scripts(en)", Scripts(language.English)},
+		{"English.Scripts()", English.Scripts()},
+	}
+	for _, s := range Values.Scripts() {
+		checkDefined(s, namers)
+		scripts[s] = true
+	}
+	for _, s := range language.Supported.Scripts() {
+		// Canonicalize the script.
+		tag, _ := language.DeprecatedScript.Compose(s)
+		if _, s, _ = tag.Raw(); !scripts[s] {
+			checkUnsupported(s, namers)
+		}
+	}
+}
+
+// TestSupported tests that we have at least some Namers for languages that we
+// claim to support. To test the claims in the documentation, it also verifies
+// that if a Namer is returned, it will have at least some data.
 func TestSupported(t *testing.T) {
 	supportedTags := Supported.Tags()
 	if len(supportedTags) != numSupported {
 		t.Errorf("number of supported was %d; want %d", len(supportedTags), numSupported)
 	}
 
-	tags := make(map[language.Tag]bool)
-	namers := make(map[Namer]bool)
-	// isNil verifies that the namer is unique and returns whether it is nil.
-	isNil := func(n Namer) bool {
-		if n != nil {
-			if namers[n] {
-				t.Errorf("%s: duplicate namer", n)
-			}
-			namers[n] = true
-		}
-		return n == nil
+	namerFuncs := []struct {
+		kind string
+		fn   func(language.Tag) Namer
+	}{
+		{"Tags", Tags},
+		{"Languages", Languages},
+		{"Regions", Regions},
+		{"Scripts", Scripts},
 	}
 
+	// Verify that we have at least one Namer for all tags we claim to support.
+	tags := make(map[language.Tag]bool)
 	for _, tag := range supportedTags {
-		if isNil(Languages(tag)) && isNil(Regions(tag)) && isNil(Scripts(tag)) {
+		// Test we have at least one Namer for this supported Tag.
+		found := false
+		for _, kind := range namerFuncs {
+			if defined(t, kind.kind, kind.fn(tag), tag) {
+				found = true
+			}
+		}
+		if !found {
 			t.Errorf("%s: supported, but no data available", tag)
 		}
 		if tags[tag] {
@@ -52,6 +138,57 @@ func TestSupported(t *testing.T) {
 		}
 		tags[tag] = true
 	}
+
+	// Verify that we have no Namers for tags we don't claim to support.
+	for _, base := range language.Supported.BaseLanguages() {
+		tag, _ := language.All.Compose(base)
+		// Skip tags that are supported after matching.
+		if _, _, conf := matcher.Match(tag); conf != language.No {
+			continue
+		}
+		// Test there are no Namers for this tag.
+		for _, kind := range namerFuncs {
+			if defined(t, kind.kind, kind.fn(tag), tag) {
+				t.Errorf("%[1]s(%[2]s) returns a Namer, but %[2]s is not in the set of supported Tags.", kind.kind, tag)
+			}
+		}
+	}
+}
+
+// defined reports whether n is a proper Namer, which means it is non-nil and
+// must have at least one non-empty value.
+func defined(t *testing.T, kind string, n Namer, tag language.Tag) bool {
+	if n == nil {
+		return false
+	}
+	switch kind {
+	case "Tags":
+		for _, t := range Values.Tags() {
+			if n.Name(t) != "" {
+				return true
+			}
+		}
+	case "Languages":
+		for _, t := range Values.BaseLanguages() {
+			if n.Name(t) != "" {
+				return true
+			}
+		}
+	case "Regions":
+		for _, t := range Values.Regions() {
+			if n.Name(t) != "" {
+				return true
+			}
+		}
+	case "Scripts":
+		for _, t := range Values.Scripts() {
+			if n.Name(t) != "" {
+				return true
+			}
+		}
+	}
+	t.Errorf("%s(%s) returns non-nil Namer without content", kind, tag)
+	return false
 }
 
 func TestCoverage(t *testing.T) {
@@ -175,6 +312,7 @@ func TestTag(t *testing.T) {
 		tag  string
 		name string
 	}{
+		{"agq", "sr", ""}, // sr is in Value.Languages(), but is not supported by agq.
 		{"nl", "nl", "Nederlands"},
 		{"nl", "nl-BE", "Vlaams"},
 		{"en", "en", "English"},
@@ -191,7 +329,7 @@ func TestTag(t *testing.T) {
 		{"en", lastTagZhHant.String(), "Traditional Chinese"},
 		{"en", "aaa", ""},
 		{"en", "zzj", ""},
-		// If full tag doesn't match, try without script or retion.
+		// If full tag doesn't match, try without script or region.
 		{"en", "aa-Hans", "Afar (Simplified Han)"},
 		{"en", "af-Arab", "Afrikaans (Arabic)"},
 		{"en", "zu-Cyrl", "Zulu (Cyrillic)"},
@@ -234,6 +372,7 @@ func TestLanguage(t *testing.T) {
 		tag  string
 		name string
 	}{
+		{"agq", "sr", ""}, // sr is in Value.Languages(), but is not supported by agq.
 		{"nl", "nl", "Nederlands"},
 		{"nl", "nl-BE", "Vlaams"},
 		{"en", "pt", "Portuguese"},
@@ -417,6 +556,66 @@ func TestSelf(t *testing.T) {
 		d := Self
 		if n := d.Name(language.Raw.MustParse(tt.tag)); n != tt.name {
 			t.Errorf("%d:%s: was %q; want %q", i, tt.tag, n, tt.name)
+		}
+	}
+}
+
+func TestDictionaryLang(t *testing.T) {
+	tests := []struct {
+		d    *Dictionary
+		tag  string
+		name string
+	}{
+		{English, "en", "English"},
+		{Portuguese, "af", "africâner"},
+		{EuropeanPortuguese, "af", "africânder"},
+		{English, "nl-BE", "Flemish"},
+	}
+	for i, test := range tests {
+		tag := language.MustParse(test.tag)
+		if got := test.d.Tags().Name(tag); got != test.name {
+			t.Errorf("%d:%v: got %s; want %s", i, tag, got, test.name)
+		}
+		if base, _ := language.Compose(tag.Base()); base == tag {
+			if got := test.d.Languages().Name(base); got != test.name {
+				t.Errorf("%d:%v: got %s; want %s", i, tag, got, test.name)
+			}
+		}
+	}
+}
+
+func TestDictionaryRegion(t *testing.T) {
+	tests := []struct {
+		d      *Dictionary
+		region string
+		name   string
+	}{
+		{English, "FR", "France"},
+		{Portuguese, "009", "Oceania"},
+		{EuropeanPortuguese, "009", "Oceânia"},
+	}
+	for i, test := range tests {
+		tag := language.MustParseRegion(test.region)
+		if got := test.d.Regions().Name(tag); got != test.name {
+			t.Errorf("%d:%v: got %s; want %s", i, tag, got, test.name)
+		}
+	}
+}
+
+func TestDictionaryScript(t *testing.T) {
+	tests := []struct {
+		d      *Dictionary
+		script string
+		name   string
+	}{
+		{English, "Cyrl", "Cyrillic"},
+		{Portuguese, "Gujr", "gujerati"},
+		{EuropeanPortuguese, "Gujr", "guzerate"},
+	}
+	for i, test := range tests {
+		tag := language.MustParseScript(test.script)
+		if got := test.d.Scripts().Name(tag); got != test.name {
+			t.Errorf("%d:%v: got %s; want %s", i, tag, got, test.name)
 		}
 	}
 }

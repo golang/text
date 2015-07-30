@@ -93,13 +93,23 @@ func (n languageNamer) Name(x interface{}) string {
 	return nameLanguage(n, x)
 }
 
+// nonEmptyIndex walks up the parent chain until a non-empty header is found.
+// It returns -1 if no index could be found.
+func nonEmptyIndex(h []header, index int) int {
+	for ; index != -1 && h[index].data == ""; index = int(parents[index]) {
+	}
+	return index
+}
+
 // Scripts returns a Namer for naming scripts. It returns nil if there is no
 // data for the given tag. The type passed to Name must be either a
 // language.Script or a language.Tag. It will not attempt to infer a script for
 // tags with an unspecified script.
 func Scripts(t language.Tag) Namer {
 	if _, index, conf := matcher.Match(t); conf != language.No {
-		return scriptNamer(index)
+		if index = nonEmptyIndex(scriptHeaders[:], index); index != -1 {
+			return scriptNamer(index)
+		}
 	}
 	return nil
 }
@@ -121,7 +131,9 @@ func (n scriptNamer) Name(x interface{}) string {
 // tags with an unspecified region.
 func Regions(t language.Tag) Namer {
 	if _, index, conf := matcher.Match(t); conf != language.No {
-		return regionNamer(index)
+		if index = nonEmptyIndex(regionHeaders[:], index); index != -1 {
+			return regionNamer(index)
+		}
 	}
 	return nil
 }
@@ -158,9 +170,6 @@ func (n tagNamer) Name(x interface{}) string {
 // lookup finds the name for an entry in a global table, traversing the
 // inheritance hierarchy if needed.
 func lookup(table []header, dict, want int) string {
-	if want == -1 || dict == -1 {
-		return ""
-	}
 	for dict != -1 {
 		if s := table[dict].name(want); s != "" {
 			return s

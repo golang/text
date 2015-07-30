@@ -96,7 +96,7 @@ type header struct {
 
 // name looks up the name for a tag in the dictionary, given its index.
 func (h *header) name(i int) string {
-	if i < len(h.index)-1 {
+	if 0 <= i && i < len(h.index)-1 {
 		return h.data[h.index[i]:h.index[i+1]]
 	}
 	return ""
