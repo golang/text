@@ -182,9 +182,7 @@ func TestTag(t *testing.T) {
 		{"en", "en-US", "American English"}, // American English in CLDR 24+
 		{"ru", "ru", "русский"},
 		{"ru", "ru-RU", "русский (Россия)"},
-		// TODO: Script capitalization changed in CLDR 26, but the change seems
-		// aribitrary as for most scripts it did not.
-		{"ru", "ru-Cyrl", "русский (Кириллица)"},
+		{"ru", "ru-Cyrl", "русский (кириллица)"},
 		{"en", lastLang2zu.String(), "Zulu"},
 		{"en", firstLang2aa.String(), "Afar"},
 		{"en", lastLang3zza.String(), "Zaza"},
@@ -209,7 +207,7 @@ func TestTag(t *testing.T) {
 		// correct and consistent with the way zh-[Hant-]TW is handled. It will
 		// also give results more in line with the expectations if users
 		// explicitly use "sh".
-		{"sr-Latn", "sr-ME", "Srpski (Crna Gora)"},
+		{"sr-Latn", "sr-ME", "srpski (Crna Gora)"},
 		{"sr-Latn", "sr-Latn-ME", "Srpskohrvatski (Crna Gora)"},
 		// Double script and region
 		{"nl", "en-Cyrl-BE", "Engels (Cyrillisch, België)"},
@@ -220,9 +218,12 @@ func TestTag(t *testing.T) {
 	for i, tt := range tests {
 		d := Tags(language.MustParse(tt.dict))
 		if n := d.Name(language.Raw.MustParse(tt.tag)); n != tt.name {
-			// Change back to Errorf when CLDR ticker
-			// http://unicode.org/cldr/trac/ticket/8051 is resolved.
-			t.Skipf("%d:%s:%s: was %q; want %q", i, tt.dict, tt.tag, n, tt.name)
+			// There are inconsistencies w.r.t. capitalization in the tests
+			// due to CLDR's update procedure which treats modern and other
+			// languages differently.
+			// See http://unicode.org/cldr/trac/ticket/8051.
+			// TODO: use language capitalization to sanitize the strings.
+			t.Errorf("%d:%s:%s: was %q; want %q", i, tt.dict, tt.tag, n, tt.name)
 		}
 	}
 }
