@@ -513,12 +513,22 @@ func TestCanonicalize(t *testing.T) {
 		{"und-YD", "und-YD", DeprecatedBase},
 		{"und-Qaai", "und-Zinh", DeprecatedScript},
 		{"und-Qaai", "und-Qaai", DeprecatedBase},
+		{"drh", "mn", All}, // drh -> khk -> mn
 	}
 	for i, tt := range tests {
 		in, _ := Raw.Parse(tt.in)
 		in, _ = tt.option.Canonicalize(in)
 		if in.String() != tt.out {
 			t.Errorf("%d:%s: was %s; want %s", i, tt.in, in.String(), tt.out)
+		}
+	}
+	// Test idempotence.
+	for _, base := range Supported.BaseLanguages() {
+		tag, _ := Raw.Compose(base)
+		got, _ := All.Canonicalize(tag)
+		want, _ := All.Canonicalize(got)
+		if got != want {
+			t.Errorf("idem(%s): got %s; want %s", tag, got, want)
 		}
 	}
 }

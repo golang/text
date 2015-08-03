@@ -156,44 +156,49 @@ func (t Tag) canonicalize(c CanonType) (Tag, bool) {
 		}
 	}
 	if c&canonLang != 0 {
-		if l, aliasType := normLang(t.lang); l != t.lang {
-			switch aliasType {
-			case langLegacy:
-				if c&Legacy != 0 {
-					if t.lang == _sh && t.script == 0 {
-						t.script = _Latn
-					}
-					t.lang = l
-					changed = true
-				}
-			case langMacro:
-				if c&Macro != 0 {
-					// We deviate here from CLDR. The mapping "nb" -> "no"
-					// qualifies as a typical Macro language mapping.  However,
-					// for legacy reasons, CLDR maps "no", the macro language
-					// code for Norwegian, to the dominant variant "nb". This
-					// change is currently under consideration for CLDR as well.
-					// See http://unicode.org/cldr/trac/ticket/2698 and also
-					// http://unicode.org/cldr/trac/ticket/1790 for some of the
-					// practical implications. TODO: this check could be removed
-					// if CLDR adopts this change.
-					if c&CLDR == 0 || t.lang != _nb {
-						changed = true
+		for {
+			if l, aliasType := normLang(t.lang); l != t.lang {
+				switch aliasType {
+				case langLegacy:
+					if c&Legacy != 0 {
+						if t.lang == _sh && t.script == 0 {
+							t.script = _Latn
+						}
 						t.lang = l
+						changed = true
+					}
+				case langMacro:
+					if c&Macro != 0 {
+						// We deviate here from CLDR. The mapping "nb" -> "no"
+						// qualifies as a typical Macro language mapping.  However,
+						// for legacy reasons, CLDR maps "no", the macro language
+						// code for Norwegian, to the dominant variant "nb". This
+						// change is currently under consideration for CLDR as well.
+						// See http://unicode.org/cldr/trac/ticket/2698 and also
+						// http://unicode.org/cldr/trac/ticket/1790 for some of the
+						// practical implications. TODO: this check could be removed
+						// if CLDR adopts this change.
+						if c&CLDR == 0 || t.lang != _nb {
+							changed = true
+							t.lang = l
+						}
+					}
+				case langDeprecated:
+					if c&DeprecatedBase != 0 {
+						if t.lang == _mo && t.region == 0 {
+							t.region = _MD
+						}
+						t.lang = l
+						changed = true
+						// Other canonicalization types may still apply.
+						continue
 					}
 				}
-			case langDeprecated:
-				if c&DeprecatedBase != 0 {
-					if t.lang == _mo && t.region == 0 {
-						t.region = _MD
-					}
-					t.lang = l
-					changed = true
-				}
+			} else if c&Legacy != 0 && t.lang == _no && c&CLDR != 0 {
+				t.lang = _nb
+				changed = true
 			}
-		} else if c&Legacy != 0 && t.lang == _no && c&CLDR != 0 {
-			t.lang = _nb
-			changed = true
+			break
 		}
 	}
 	if c&DeprecatedScript != 0 {
