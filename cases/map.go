@@ -136,11 +136,9 @@ func (t *undUpperCaser) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, 
 	c := context{dst: dst, src: src, atEOF: atEOF}
 	for c.next() {
 		upper(&c)
+		c.checkpoint()
 	}
-	// Standard upper case does not need any lookahead so we can safely not use
-	// the checkpointing mechanism. pDst and pSrc will always point to the
-	// furthest possible position.
-	return c.pDst, c.pSrc, c.err
+	return c.ret()
 }
 
 type simpleCaser struct {
