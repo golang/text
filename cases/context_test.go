@@ -63,6 +63,9 @@ func contextFromRune(r rune) *context {
 }
 
 func TestCaseProperties(t *testing.T) {
+	if unicode.Version != UnicodeVersion {
+		t.Skipf("UnicodeVersion=%s, but unicode.Version=%s", UnicodeVersion, unicode.Version)
+	}
 	assigned := rangetable.Assigned(UnicodeVersion)
 	for r := rune(0); r <= lastRuneForTesting; r++ {
 		if !unicode.In(r, assigned) || !unicode.In(unicode.SimpleFold(r), assigned) {
@@ -89,6 +92,9 @@ func TestCaseProperties(t *testing.T) {
 }
 
 func TestMapping(t *testing.T) {
+	if unicode.Version != UnicodeVersion {
+		t.Skipf("UnicodeVersion=%s, but unicode.Version=%s", UnicodeVersion, unicode.Version)
+	}
 	assigned := rangetable.Assigned(UnicodeVersion)
 	apply := func(r rune, f func(c *context) bool) string {
 		c := contextFromRune(r)
