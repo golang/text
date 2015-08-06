@@ -63,26 +63,29 @@ func contextFromRune(r rune) *context {
 }
 
 func TestCaseProperties(t *testing.T) {
-	if unicode.Version != UnicodeVersion {
-		t.Skipf("UnicodeVersion=%s, but unicode.Version=%s", UnicodeVersion, unicode.Version)
-	}
 	assigned := rangetable.Assigned(UnicodeVersion)
+	coreVersion := rangetable.Assigned(unicode.Version)
 	for r := rune(0); r <= lastRuneForTesting; r++ {
-		if !unicode.In(r, assigned) || !unicode.In(unicode.SimpleFold(r), assigned) {
+		if !unicode.In(r, assigned) || !unicode.In(r, coreVersion) {
 			continue
 		}
 		c := contextFromRune(r)
 		if got, want := c.info.isCaseIgnorable(), propIgnore(r); got != want {
 			t.Errorf("caseIgnorable(%U): got %v; want %v (%x)", r, got, want, c.info)
 		}
-		if got, want := c.info.isCased(), propCased(r); got != want {
-			t.Errorf("cased(%U): got %v; want %v (%x)", r, got, want, c.info)
-		}
-		if got, want := c.caseType() == cUpper, propUpper(r); got != want {
-			t.Errorf("upper(%U): got %v; want %v (%x)", r, got, want, c.info)
-		}
-		if got, want := c.caseType() == cLower, propLower(r); got != want {
-			t.Errorf("lower(%U): got %v; want %v (%x)", r, got, want, c.info)
+		// New letters may change case types, but existing case pairings should
+		// not change. See Case Pair Stability in
+		// http://unicode.org/policies/stability_policy.html.
+		if rf := unicode.SimpleFold(r); rf != r && unicode.In(rf, assigned) {
+			if got, want := c.info.isCased(), propCased(r); got != want {
+				t.Errorf("cased(%U): got %v; want %v (%x)", r, got, want, c.info)
+			}
+			if got, want := c.caseType() == cUpper, propUpper(r); got != want {
+				t.Errorf("upper(%U): got %v; want %v (%x)", r, got, want, c.info)
+			}
+			if got, want := c.caseType() == cLower, propLower(r); got != want {
+				t.Errorf("lower(%U): got %v; want %v (%x)", r, got, want, c.info)
+			}
 		}
 		if got, want := c.info.isBreak(), hasBreakProp(r); got != want {
 			t.Errorf("isBreak(%U): got %v; want %v (%x)", r, got, want, c.info)
@@ -92,10 +95,8 @@ func TestCaseProperties(t *testing.T) {
 }
 
 func TestMapping(t *testing.T) {
-	if unicode.Version != UnicodeVersion {
-		t.Skipf("UnicodeVersion=%s, but unicode.Version=%s", UnicodeVersion, unicode.Version)
-	}
 	assigned := rangetable.Assigned(UnicodeVersion)
+	coreVersion := rangetable.Assigned(unicode.Version)
 	apply := func(r rune, f func(c *context) bool) string {
 		c := contextFromRune(r)
 		f(c)
@@ -115,7 +116,10 @@ func TestMapping(t *testing.T) {
 	}
 
 	for r := rune(0); r <= lastRuneForTesting; r++ {
-		if !unicode.In(r, assigned) || !unicode.In(unicode.SimpleFold(r), assigned) {
+		if !unicode.In(r, assigned) || !unicode.In(r, coreVersion) {
+			continue
+		}
+		if rf := unicode.SimpleFold(r); rf == r || !unicode.In(rf, assigned) {
 			continue
 		}
 		if _, ok := special[r]; ok {
@@ -139,7 +143,12 @@ func TestMapping(t *testing.T) {
 }
 
 func TestCCC(t *testing.T) {
+	assigned := rangetable.Assigned(UnicodeVersion)
+	normVersion := rangetable.Assigned(norm.Version)
 	for r := rune(0); r <= lastRuneForTesting; r++ {
+		if !unicode.In(r, assigned) || !unicode.In(r, normVersion) {
+			continue
+		}
 		c := contextFromRune(r)
 
 		p := norm.NFC.PropertiesString(string(r))
