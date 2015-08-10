@@ -1164,11 +1164,15 @@ func (b *builder) writeVariant() {
 			continue
 		}
 		c := strings.Split(e.prefix[0], "-")
-		hasScript := false
+		hasScriptOrRegion := false
 		if len(c) > 1 {
-			_, hasScript = b.script.find(c[1])
+			_, hasScriptOrRegion = b.script.find(c[1])
+			if !hasScriptOrRegion {
+				_, hasScriptOrRegion = b.region.find(c[1])
+
+			}
 		}
-		if len(c) == 1 || len(c) == 2 && hasScript {
+		if len(c) == 1 || len(c) == 2 && hasScriptOrRegion {
 			// Variant is preceded by a language.
 			specialized.add(v)
 			continue
@@ -1176,12 +1180,12 @@ func (b *builder) writeVariant() {
 		// Variant is preceded by another variant.
 		specializedExtend.add(v)
 		prefix := c[0] + "-"
-		if hasScript {
+		if hasScriptOrRegion {
 			prefix += c[1]
 		}
 		for _, p := range e.prefix {
 			// Verify that the prefix minus the last element is a prefix of the
-			// predecesor element.
+			// predecessor element.
 			i := strings.LastIndex(p, "-")
 			pred := b.registry[p[i+1:]]
 			if find(pred.prefix, p[:i]) < 0 {
@@ -1193,7 +1197,7 @@ func (b *builder) writeVariant() {
 			count := strings.Count(p[:i], "-")
 			for _, q := range pred.prefix {
 				if c := strings.Count(q, "-"); c != count {
-					log.Fatalf("variant %q precedeeding %q has a prefix %q of size %d; want %d", p[i+1:], v, q, c, count)
+					log.Fatalf("variant %q preceding %q has a prefix %q of size %d; want %d", p[i+1:], v, q, c, count)
 				}
 			}
 			if !strings.HasPrefix(p, prefix) {
