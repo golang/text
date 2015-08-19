@@ -76,7 +76,9 @@ func main() {
 		log.Fatalf("DecodeZip: %v", err)
 	}
 
-	w := &bytes.Buffer{}
+	w := gen.NewCodeWriter()
+	defer w.WriteGoFile(*outputFile, "display")
+
 	gen.WriteCLDRVersion(w)
 
 	b := builder{
@@ -85,7 +87,6 @@ func main() {
 		group: make(map[string]*group),
 	}
 	b.generate()
-	gen.WriteGoFile(*outputFile, "display", w.Bytes())
 }
 
 const tagForm = language.All
@@ -138,7 +139,7 @@ func (f tagSet) contains(t language.Tag) bool {
 
 // builder is used to create all tables with display name information.
 type builder struct {
-	w io.Writer
+	w *gen.CodeWriter
 
 	data *cldr.CLDR
 
@@ -235,7 +236,12 @@ func (b *builder) generate() {
 	n += b.writeGroup("script")
 	n += b.writeGroup("region")
 
-	b.writeSupported()
+	b.w.WriteConst("numSupported", len(b.supported))
+	buf := bytes.Buffer{}
+	for _, tag := range b.supported {
+		fmt.Fprint(&buf, tag.String(), "|")
+	}
+	b.w.WriteConst("supported", buf.String())
 
 	n += b.writeDictionaries()
 
@@ -271,7 +277,7 @@ func (b *builder) generate() {
 
 	n += b.writeGroup("self")
 
-	fmt.Fprintf(b.w, "// TOTAL %d Bytes (%d KB)", n, n/1000)
+	b.w.Size = n // TODO: remove once all tables are written with CodeWriter.
 }
 
 func (b *builder) setData(name string, f func(*group, language.Tag, *cldr.LocaleDisplayNames)) {
@@ -418,21 +424,6 @@ func (l tagsBySize) Less(i, j int) bool {
 	return a < b
 }
 
-func (b *builder) writeSupported() {
-	fmt.Fprintf(b.w, "const numSupported = %d\n", len(b.supported))
-	fmt.Fprint(b.w, "const supported = \"\" +\n\t\"")
-	n := 0
-	for _, t := range b.supported {
-		s := t.String()
-		if n += len(s) + 1; n > 80 {
-			n = len(s) + 1
-			fmt.Fprint(b.w, "\" + \n\t\"")
-		}
-		fmt.Fprintf(b.w, "%s|", s)
-	}
-	fmt.Fprintln(b.w, "\"\n")
-}
-
 // parentIndices returns slice a of len(tags) where tags[a[i]] is the parent
 // of tags[i].
 func parentIndices(tags []language.Tag) []int {
@@ -472,7 +463,7 @@ func (b *builder) writeParents() int {
 
 // writeKeys writes keys to a special index used by the display package.
 // tags are assumed to be sorted by length.
-func writeKeys(w io.Writer, name string, keys []string) (n int) {
+func writeKeys(w *gen.CodeWriter, name string, keys []string) (n int) {
 	n = int(3 * reflect.TypeOf("").Size())
 	fmt.Fprintf(w, "// Number of keys: %d\n", len(keys))
 	fmt.Fprintf(w, "var (\n\t%sIndex = tagIndex{\n", name)
@@ -486,7 +477,8 @@ func writeKeys(w io.Writer, name string, keys []string) (n int) {
 		}
 		s := strings.Join(sub, "")
 		n += len(s)
-		fmt.Fprintf(w, "\t\t%+q,\n", s)
+		w.WriteString(s)
+		fmt.Fprintf(w, ",\n")
 		keys = keys[len(sub):]
 	}
 	fmt.Fprintln(w, "\t}")
@@ -498,19 +490,6 @@ func writeKeys(w io.Writer, name string, keys []string) (n int) {
 	}
 	fmt.Fprintln(w, ")\n")
 	return n
-}
-
-func writeString(w io.Writer, s string) {
-	k := 0
-	fmt.Fprint(w, "\t\t\"")
-	for _, r := range s {
-		fmt.Fprint(w, string(r))
-		if k++; k == 80 {
-			fmt.Fprint(w, "\" +\n\t\t\"")
-			k = 0
-		}
-	}
-	fmt.Fprint(w, `"`)
 }
 
 func writeUint16Body(w io.Writer, a []uint16) {
@@ -536,7 +515,7 @@ func identifier(t language.Tag) string {
 	return strings.Replace(t.String(), "-", "", -1)
 }
 
-func (h *header) writeEntry(w io.Writer, name string) int {
+func (h *header) writeEntry(w *gen.CodeWriter, name string) int {
 	n := int(reflect.TypeOf(h.data).Size())
 	n += int(reflect.TypeOf(h.index).Size())
 	n += len(h.data)
@@ -551,7 +530,7 @@ func (h *header) writeEntry(w io.Writer, name string) int {
 		fmt.Fprintln(w, "\t\t{}, //", h.tag)
 	} else {
 		fmt.Fprintf(w, "\t{ // %s\n", h.tag)
-		writeString(w, h.data)
+		w.WriteString(h.data)
 		fmt.Fprintln(w, ",")
 
 		fmt.Fprintf(w, "\t\t[]uint16{ // %d entries\n", len(h.index))
@@ -565,12 +544,10 @@ func (h *header) writeEntry(w io.Writer, name string) int {
 
 // write the data for the given header as single entries. The size for this data
 // was already accounted for in writeEntry.
-func (h *header) writeSingle(w io.Writer, name string) {
+func (h *header) writeSingle(w *gen.CodeWriter, name string) {
 	if len(dict) > 0 && dict.contains(h.tag) {
 		tag := identifier(h.tag)
-		fmt.Fprintf(w, "const %s%sStr = \"\" +\n", tag, name)
-		writeString(w, h.data)
-		fmt.Fprintln(w, "\n")
+		w.WriteConst(tag+name+"Str", h.data)
 
 		// Note that we create a slice instead of an array. If we use an array
 		// we need to refer to it as a[:] in other tables, which will cause the
@@ -582,7 +559,7 @@ func (h *header) writeSingle(w io.Writer, name string) {
 }
 
 // WriteTable writes an entry for a single Namer.
-func (g *group) writeTable(w io.Writer, name string) int {
+func (g *group) writeTable(w *gen.CodeWriter, name string) int {
 	n := writeKeys(w, name, g.toTags)
 	fmt.Fprintf(w, "var %sHeaders = [%d]header{\n", name, len(g.headers))
 

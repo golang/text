@@ -14,8 +14,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"hash"
-	"hash/fnv"
 	"io"
 	"io/ioutil"
 	"log"
@@ -142,7 +140,7 @@ regionInclusionNext marks, for each entry in regionInclusionBits, the set of
 all groups that are reachable from the groups set in the respective entry.`,
 }
 
-// TODO: consider changing some of these strutures to tries. This can reduce
+// TODO: consider changing some of these structures to tries. This can reduce
 // memory, but may increase the need for memory allocations. This could be
 // mitigated if we can piggyback on language tags for common cases.
 
@@ -313,12 +311,10 @@ type ianaEntry struct {
 }
 
 type builder struct {
-	w      io.Writer   // multi writer
-	out    io.Writer   // set to output file.
-	hash32 hash.Hash32 // for checking whether tables have changed.
-	size   int
-	data   *cldr.CLDR
-	supp   *cldr.SupplementalData
+	w    *gen.CodeWriter
+	hw   io.Writer // MultiWriter for w and w.Hash
+	data *cldr.CLDR
+	supp *cldr.SupplementalData
 
 	// indices
 	locale      stringSet // common locales
@@ -338,7 +334,7 @@ type builder struct {
 
 type index uint
 
-func newBuilder(w io.Writer) *builder {
+func newBuilder(w *gen.CodeWriter) *builder {
 	r := gen.OpenCLDRCoreZip()
 	defer r.Close()
 	d := &cldr.Decoder{}
@@ -346,12 +342,11 @@ func newBuilder(w io.Writer) *builder {
 	data, err := d.DecodeZip(r)
 	failOnError(err)
 	b := builder{
-		out:    w,
-		data:   data,
-		supp:   data.Supplemental(),
-		hash32: fnv.New32(),
+		w:    w,
+		hw:   io.MultiWriter(w, w.Hash),
+		data: data,
+		supp: data.Supplemental(),
 	}
-	b.w = io.MultiWriter(b.out, b.hash32)
 	b.parseRegistry()
 	return &b
 }
@@ -430,36 +425,40 @@ var commentIndex = make(map[string]string)
 func init() {
 	for _, s := range comment {
 		key := strings.TrimSpace(strings.SplitN(s, " ", 2)[0])
-		commentIndex[key] = strings.Replace(s, "\n", "\n// ", -1)
+		commentIndex[key] = s
 	}
 }
 
 func (b *builder) comment(name string) {
-	fmt.Fprintln(b.out, commentIndex[name])
+	if s := commentIndex[name]; len(s) > 0 {
+		b.w.WriteComment(s)
+	} else {
+		fmt.Fprintln(b.w)
+	}
 }
 
 func (b *builder) pf(f string, x ...interface{}) {
-	fmt.Fprintf(b.w, f, x...)
-	fmt.Fprint(b.w, "\n")
+	fmt.Fprintf(b.hw, f, x...)
+	fmt.Fprint(b.hw, "\n")
 }
 
 func (b *builder) p(x ...interface{}) {
-	fmt.Fprintln(b.w, x...)
+	fmt.Fprintln(b.hw, x...)
 }
 
 func (b *builder) addSize(s int) {
-	b.size += s
+	b.w.Size += s
 	b.pf("// Size: %d bytes", s)
 }
 
 func (b *builder) addArraySize(s, n int) {
-	b.size += s
+	b.w.Size += s
 	b.pf("// Size: %d bytes, %d elements", s, n)
 }
 
 func (b *builder) writeConst(name string, x interface{}) {
 	b.comment(name)
-	b.pf("const %s = %v", name, x)
+	b.w.WriteConst(name, x)
 }
 
 // writeConsts computes f(v) for all v in values and writes the results
@@ -493,17 +492,17 @@ func (b *builder) writeSliceAddSize(name string, extraSize int, ss interface{}) 
 	t := v.Type().Elem()
 	tn := strings.Replace(fmt.Sprintf("%s", t), "main.", "", 1)
 	b.addArraySize(v.Len()*int(t.Size())+extraSize, v.Len())
-	fmt.Fprintf(b.w, `var %s = [%d]%s{`, name, v.Len(), tn)
+	fmt.Fprintf(b.hw, `var %s = [%d]%s{`, name, v.Len(), tn)
 	for i := 0; i < v.Len(); i++ {
 		if t.Kind() == reflect.Struct {
 			line := fmt.Sprintf("%#v, ", v.Index(i).Interface())
 			line = line[strings.IndexByte(line, '{'):]
-			fmt.Fprintf(b.w, "\n\t%s", line)
+			fmt.Fprintf(b.hw, "\n\t%s", line)
 		} else {
 			if i%12 == 0 {
-				fmt.Fprintf(b.w, "\n\t")
+				fmt.Fprintf(b.hw, "\n\t")
 			}
-			fmt.Fprintf(b.w, "%d, ", v.Index(i).Interface())
+			fmt.Fprintf(b.hw, "%d, ", v.Index(i).Interface())
 		}
 	}
 	b.p("\n}")
@@ -544,34 +543,7 @@ func (b *builder) writeSortedMap(name string, ss *stringSet, index func(s string
 
 func (b *builder) writeString(name, s string) {
 	b.comment(name)
-	b.addSize(len(s) + int(reflect.TypeOf(s).Size()))
-	if len(s) < 40 {
-		b.pf(`var %s string = %q`, name, s)
-		return
-	}
-	const cpl = 60
-	b.pf(`var %s string = "" +`, name)
-	for {
-		n := cpl
-		if n > len(s) {
-			n = len(s)
-		}
-		var q string
-		for {
-			q = strconv.Quote(s[:n])
-			if len(q) <= cpl+2 {
-				break
-			}
-			n--
-		}
-		if n < len(s) {
-			b.pf(`	%s +`, q)
-			s = s[n:]
-		} else {
-			b.pf(`	%s`, q)
-			break
-		}
-	}
+	b.w.WriteVar(name, s)
 }
 
 const base = 'z' - 'a' + 1
@@ -1718,7 +1690,8 @@ func main() {
 
 	rewriteCommon()
 
-	w := &bytes.Buffer{}
+	w := gen.NewCodeWriter()
+	defer w.WriteGoFile("tables.go", "language")
 
 	b := newBuilder(w)
 	fmt.Fprintf(w, version, cldr.Version)
@@ -1736,7 +1709,4 @@ func main() {
 	b.writeMatchData()
 	b.writeRegionInclusionData()
 	b.writeParents()
-
-	fmt.Fprintf(w, "\n// Size: %.1fK (%d bytes); Check: %X\n", float32(b.size)/1024, b.size, b.hash32.Sum32())
-	gen.WriteGoFile("tables.go", "language", w.Bytes())
 }

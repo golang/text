@@ -114,9 +114,9 @@ const (
 	_hsn = 232
 )
 
-const langPrivateStart = 11510
+const langPrivateStart = 0x2cf6
 
-const langPrivateEnd = 12029
+const langPrivateEnd = 0x2efd
 
 // lang holds an alphabetically sorted list of ISO-639 language identifiers.
 // All entries are 4 bytes. The index of the identifier (divided by 4) is the language tag.
@@ -126,81 +126,68 @@ const langPrivateEnd = 12029
 //     - otherwise: a 0 and a by 2 bits right-shifted index into altLangISO3.
 // For 3-byte language identifiers the 4th byte is 0.
 // Size: 2796 bytes
-var lang string = "" +
-	"---\x00aaarabbkabr\x00ace\x00ach\x00ada\x00ady\x00aeveaeb" +
-	"\x00affragq\x00akkaakk\x00aln\x00alt\x00ammhamo\x00anrgaoz" +
-	"\x00arraarc\x00arn\x00aro\x00arq\x00ary\x00arz\x00assmasa" +
-	"\x00ast\x00atj\x00avvaawa\x00ayymazzeazb\x00baakbal\x00ban" +
-	"\x00bap\x00bar\x00bas\x00bax\x00bbc\x00bbj\x00bci\x00beelbem" +
-	"\x00bew\x00bez\x00bfd\x00bfq\x00bft\x00bfy\x00bgulbgc\x00bgx" +
-	"\x00bhihbhb\x00bhi\x00bhk\x00bho\x00biisbik\x00bin\x00bjj" +
-	"\x00bjn\x00bkm\x00bku\x00blt\x00bmambmq\x00bnenboodbpy\x00bq" +
-	"i\x00bqv\x00brrebra\x00brh\x00brx\x00bsosbsq\x00bss\x00bto" +
-	"\x00btv\x00bua\x00buc\x00bug\x00bum\x00bvb\x00byn\x00byv\x00" +
-	"bze\x00caatcch\x00ccp\x00ceheceb\x00cgg\x00chhachk\x00chm" +
-	"\x00cho\x00chp\x00chr\x00cja\x00cjm\x00ckb\x00cooscop\x00cps" +
-	"\x00crrecrj\x00crk\x00crl\x00crm\x00crs\x00csescsb\x00csw" +
-	"\x00ctd\x00cuhucvhvcyymdaandak\x00dar\x00dav\x00dcc\x00deeud" +
-	"en\x00dgr\x00dje\x00dnj\x00doi\x00dsb\x00dtm\x00dtp\x00dua" +
-	"\x00dvivdyo\x00dyu\x00dzzoebu\x00eeweefi\x00egl\x00egy\x00ek" +
-	"y\x00elllenngeopoes\x00\x05esu\x00etstett\x00euusewo\x00ext" +
-	"\x00faasfan\x00ffulffm\x00fiinfil\x00fit\x00fjijfoaofon\x00f" +
-	"rrafrc\x00frp\x00frr\x00frs\x00fud\x00fuq\x00fur\x00fuv\x00f" +
-	"yrygalegaa\x00gag\x00gan\x00gay\x00gbm\x00gbz\x00gcr\x00gdla" +
-	"gez\x00ggn\x00gil\x00gjk\x00gju\x00gllgglk\x00gnrngom\x00gon" +
-	"\x00gor\x00gos\x00got\x00grc\x00grt\x00gsw\x00guujgub\x00guc" +
-	"\x00gur\x00guz\x00gvlvgvr\x00gwi\x00haauhak\x00haw\x00haz" +
-	"\x00heebhiinhif\x00hil\x00hmd\x00hnd\x00hne\x00hnj\x00hnn" +
-	"\x00hno\x00homohoc\x00hoj\x00hrrvhsb\x00hsn\x00htathuunhyyeh" +
-	"zerianaiba\x00ibb\x00idndieleigboiiiiikpkikt\x00ilo\x00inndi" +
-	"nh\x00iodoisslittaiukuiw\x00\x03izh\x00japnjam\x00jgo\x00ji" +
-	"\x00\x06jmc\x00jml\x00jut\x00jvavjwavkaatkaa\x00kab\x00kac" +
-	"\x00kaj\x00kam\x00kao\x00kbd\x00kcg\x00kck\x00kde\x00kdt\x00" +
-	"kea\x00ken\x00kfo\x00kfr\x00kfy\x00kgonkge\x00kgp\x00kha\x00" +
-	"khb\x00khn\x00khq\x00kht\x00khw\x00kiikkiu\x00kjuakjg\x00kka" +
-	"zkkj\x00klalkln\x00kmhmkmb\x00knankoorkoi\x00kok\x00kos\x00k" +
-	"pe\x00kraukrc\x00kri\x00krj\x00krl\x00kru\x00ksasksb\x00ksf" +
-	"\x00ksh\x00kuurkum\x00kvomkvr\x00kvx\x00kw\x00\x01kxm\x00kxp" +
-	"\x00kyirlaatlab\x00lad\x00lag\x00lah\x00laj\x00lbtzlbe\x00lb" +
-	"w\x00lcp\x00lep\x00lez\x00lgugliimlif\x00lij\x00lis\x00ljp" +
-	"\x00lki\x00lkt\x00lmn\x00lmo\x00lninloaolol\x00loz\x00lrc" +
-	"\x00ltitltg\x00luublua\x00luo\x00luy\x00luz\x00lvavlwl\x00lz" +
-	"h\x00lzz\x00mad\x00maf\x00mag\x00mai\x00mak\x00man\x00mas" +
-	"\x00maz\x00mdf\x00mdh\x00mdr\x00men\x00mer\x00mfa\x00mfe\x00" +
-	"mglgmgh\x00mgo\x00mgp\x00mgy\x00mhahmirimin\x00mis\x00mkkdml" +
-	"almnonmni\x00mnw\x00moolmoe\x00moh\x00mos\x00mrarmrd\x00mrj" +
-	"\x00mru\x00mssamtltmtr\x00mua\x00mul\x00mus\x00mvy\x00mwk" +
-	"\x00mwr\x00mwv\x00mxc\x00myyamyv\x00myx\x00myz\x00mzn\x00naa" +
-	"unan\x00nap\x00naq\x00nbobnch\x00nddendc\x00nds\x00neepnew" +
-	"\x00ngdongl\x00nhe\x00nhw\x00nij\x00niu\x00njo\x00nlldnmg" +
-	"\x00nnnonnh\x00noornod\x00noe\x00non\x00nqo\x00nrblnsk\x00ns" +
-	"o\x00nus\x00nvavnxq\x00nyyanym\x00nyn\x00nzi\x00occiojjiomrm" +
-	"orriosssotk\x00paanpag\x00pal\x00pam\x00pap\x00pau\x00pcd" +
-	"\x00pcm\x00pdc\x00pdt\x00peo\x00pfl\x00phn\x00pilipka\x00pko" +
-	"\x00plolpms\x00pnt\x00pon\x00pra\x00prd\x00prg\x00psusptorpu" +
-	"u\x00quuequc\x00qug\x00raj\x00rcf\x00rej\x00rgn\x00ria\x00ri" +
-	"f\x00rjs\x00rkt\x00rmohrmf\x00rmo\x00rmt\x00rmu\x00rnunrng" +
-	"\x00roonrob\x00rof\x00rtm\x00ruusrue\x00rug\x00rw\x00\x04rwk" +
-	"\x00ryu\x00saansaf\x00sah\x00saq\x00sas\x00sat\x00saz\x00sbp" +
-	"\x00scrdsck\x00scn\x00sco\x00scs\x00sdndsdc\x00semesef\x00se" +
-	"h\x00sei\x00ses\x00sgagsga\x00sgs\x00sh\x00\x02shi\x00shn" +
-	"\x00siinsid\x00sklkskr\x00sllvsli\x00sly\x00smmosma\x00smj" +
-	"\x00smn\x00smp\x00sms\x00snnasnk\x00soomsou\x00sqqisrrpsrb" +
-	"\x00srn\x00srr\x00srx\x00ssswssy\x00stotstq\x00suunsuk\x00su" +
-	"s\x00svweswwaswb\x00swc\x00swv\x00sxn\x00syl\x00syr\x00szl" +
-	"\x00taamtaj\x00tbw\x00tcy\x00tdd\x00tdg\x00tdh\x00teeltem" +
-	"\x00teo\x00tet\x00tggkthhathl\x00thq\x00thr\x00tiirtig\x00ti" +
-	"v\x00tkuktkl\x00tkr\x00tkt\x00tlgltly\x00tmh\x00tnsntoontog" +
-	"\x00tpi\x00trurtru\x00trv\x00tssotsd\x00tsf\x00tsg\x00tsj" +
-	"\x00ttatttj\x00tts\x00ttt\x00tum\x00tvl\x00twwitwq\x00tyahty" +
-	"v\x00tzm\x00udm\x00ugiguga\x00ukkruli\x00umb\x00und\x00unr" +
-	"\x00unx\x00urrduzzbvai\x00veenvec\x00vep\x00viievic\x00vls" +
-	"\x00vmf\x00vmw\x00voolvot\x00vro\x00vun\x00walnwae\x00wal" +
-	"\x00war\x00wbp\x00wbq\x00wbr\x00wls\x00woolwtm\x00wuu\x00xav" +
-	"\x00xcr\x00xhhoxlc\x00xld\x00xmf\x00xmn\x00xmr\x00xna\x00xnr" +
-	"\x00xog\x00xpr\x00xsa\x00xsr\x00yao\x00yap\x00yav\x00ybb\x00" +
-	"yiidyooryrl\x00yua\x00zahazbl\x00zdj\x00zea\x00zgh\x00zhhozm" +
-	"i\x00zuulzxx\x00zza\x00\xff\xff\xff\xff"
+var lang = "" +
+	"---\x00aaarabbkabr\x00ace\x00ach\x00ada\x00ady\x00aeveaeb\x00affragq\x00" +
+	"akkaakk\x00aln\x00alt\x00ammhamo\x00anrgaoz\x00arraarc\x00arn\x00aro\x00" +
+	"arq\x00ary\x00arz\x00assmasa\x00ast\x00atj\x00avvaawa\x00ayymazzeazb\x00" +
+	"baakbal\x00ban\x00bap\x00bar\x00bas\x00bax\x00bbc\x00bbj\x00bci\x00beelb" +
+	"em\x00bew\x00bez\x00bfd\x00bfq\x00bft\x00bfy\x00bgulbgc\x00bgx\x00bhihbh" +
+	"b\x00bhi\x00bhk\x00bho\x00biisbik\x00bin\x00bjj\x00bjn\x00bkm\x00bku\x00" +
+	"blt\x00bmambmq\x00bnenboodbpy\x00bqi\x00bqv\x00brrebra\x00brh\x00brx\x00" +
+	"bsosbsq\x00bss\x00bto\x00btv\x00bua\x00buc\x00bug\x00bum\x00bvb\x00byn" +
+	"\x00byv\x00bze\x00caatcch\x00ccp\x00ceheceb\x00cgg\x00chhachk\x00chm\x00" +
+	"cho\x00chp\x00chr\x00cja\x00cjm\x00ckb\x00cooscop\x00cps\x00crrecrj\x00c" +
+	"rk\x00crl\x00crm\x00crs\x00csescsb\x00csw\x00ctd\x00cuhucvhvcyymdaandak" +
+	"\x00dar\x00dav\x00dcc\x00deeuden\x00dgr\x00dje\x00dnj\x00doi\x00dsb\x00d" +
+	"tm\x00dtp\x00dua\x00dvivdyo\x00dyu\x00dzzoebu\x00eeweefi\x00egl\x00egy" +
+	"\x00eky\x00elllenngeopoes\x00\x05esu\x00etstett\x00euusewo\x00ext\x00faa" +
+	"sfan\x00ffulffm\x00fiinfil\x00fit\x00fjijfoaofon\x00frrafrc\x00frp\x00fr" +
+	"r\x00frs\x00fud\x00fuq\x00fur\x00fuv\x00fyrygalegaa\x00gag\x00gan\x00gay" +
+	"\x00gbm\x00gbz\x00gcr\x00gdlagez\x00ggn\x00gil\x00gjk\x00gju\x00gllgglk" +
+	"\x00gnrngom\x00gon\x00gor\x00gos\x00got\x00grc\x00grt\x00gsw\x00guujgub" +
+	"\x00guc\x00gur\x00guz\x00gvlvgvr\x00gwi\x00haauhak\x00haw\x00haz\x00heeb" +
+	"hiinhif\x00hil\x00hmd\x00hnd\x00hne\x00hnj\x00hnn\x00hno\x00homohoc\x00h" +
+	"oj\x00hrrvhsb\x00hsn\x00htathuunhyyehzerianaiba\x00ibb\x00idndieleigboii" +
+	"iiikpkikt\x00ilo\x00inndinh\x00iodoisslittaiukuiw\x00\x03izh\x00japnjam" +
+	"\x00jgo\x00ji\x00\x06jmc\x00jml\x00jut\x00jvavjwavkaatkaa\x00kab\x00kac" +
+	"\x00kaj\x00kam\x00kao\x00kbd\x00kcg\x00kck\x00kde\x00kdt\x00kea\x00ken" +
+	"\x00kfo\x00kfr\x00kfy\x00kgonkge\x00kgp\x00kha\x00khb\x00khn\x00khq\x00k" +
+	"ht\x00khw\x00kiikkiu\x00kjuakjg\x00kkazkkj\x00klalkln\x00kmhmkmb\x00knan" +
+	"koorkoi\x00kok\x00kos\x00kpe\x00kraukrc\x00kri\x00krj\x00krl\x00kru\x00k" +
+	"sasksb\x00ksf\x00ksh\x00kuurkum\x00kvomkvr\x00kvx\x00kw\x00\x01kxm\x00kx" +
+	"p\x00kyirlaatlab\x00lad\x00lag\x00lah\x00laj\x00lbtzlbe\x00lbw\x00lcp" +
+	"\x00lep\x00lez\x00lgugliimlif\x00lij\x00lis\x00ljp\x00lki\x00lkt\x00lmn" +
+	"\x00lmo\x00lninloaolol\x00loz\x00lrc\x00ltitltg\x00luublua\x00luo\x00luy" +
+	"\x00luz\x00lvavlwl\x00lzh\x00lzz\x00mad\x00maf\x00mag\x00mai\x00mak\x00m" +
+	"an\x00mas\x00maz\x00mdf\x00mdh\x00mdr\x00men\x00mer\x00mfa\x00mfe\x00mgl" +
+	"gmgh\x00mgo\x00mgp\x00mgy\x00mhahmirimin\x00mis\x00mkkdmlalmnonmni\x00mn" +
+	"w\x00moolmoe\x00moh\x00mos\x00mrarmrd\x00mrj\x00mru\x00mssamtltmtr\x00mu" +
+	"a\x00mul\x00mus\x00mvy\x00mwk\x00mwr\x00mwv\x00mxc\x00myyamyv\x00myx\x00" +
+	"myz\x00mzn\x00naaunan\x00nap\x00naq\x00nbobnch\x00nddendc\x00nds\x00neep" +
+	"new\x00ngdongl\x00nhe\x00nhw\x00nij\x00niu\x00njo\x00nlldnmg\x00nnnonnh" +
+	"\x00noornod\x00noe\x00non\x00nqo\x00nrblnsk\x00nso\x00nus\x00nvavnxq\x00" +
+	"nyyanym\x00nyn\x00nzi\x00occiojjiomrmorriosssotk\x00paanpag\x00pal\x00pa" +
+	"m\x00pap\x00pau\x00pcd\x00pcm\x00pdc\x00pdt\x00peo\x00pfl\x00phn\x00pili" +
+	"pka\x00pko\x00plolpms\x00pnt\x00pon\x00pra\x00prd\x00prg\x00psusptorpuu" +
+	"\x00quuequc\x00qug\x00raj\x00rcf\x00rej\x00rgn\x00ria\x00rif\x00rjs\x00r" +
+	"kt\x00rmohrmf\x00rmo\x00rmt\x00rmu\x00rnunrng\x00roonrob\x00rof\x00rtm" +
+	"\x00ruusrue\x00rug\x00rw\x00\x04rwk\x00ryu\x00saansaf\x00sah\x00saq\x00s" +
+	"as\x00sat\x00saz\x00sbp\x00scrdsck\x00scn\x00sco\x00scs\x00sdndsdc\x00se" +
+	"mesef\x00seh\x00sei\x00ses\x00sgagsga\x00sgs\x00sh\x00\x02shi\x00shn\x00" +
+	"siinsid\x00sklkskr\x00sllvsli\x00sly\x00smmosma\x00smj\x00smn\x00smp\x00" +
+	"sms\x00snnasnk\x00soomsou\x00sqqisrrpsrb\x00srn\x00srr\x00srx\x00ssswssy" +
+	"\x00stotstq\x00suunsuk\x00sus\x00svweswwaswb\x00swc\x00swv\x00sxn\x00syl" +
+	"\x00syr\x00szl\x00taamtaj\x00tbw\x00tcy\x00tdd\x00tdg\x00tdh\x00teeltem" +
+	"\x00teo\x00tet\x00tggkthhathl\x00thq\x00thr\x00tiirtig\x00tiv\x00tkuktkl" +
+	"\x00tkr\x00tkt\x00tlgltly\x00tmh\x00tnsntoontog\x00tpi\x00trurtru\x00trv" +
+	"\x00tssotsd\x00tsf\x00tsg\x00tsj\x00ttatttj\x00tts\x00ttt\x00tum\x00tvl" +
+	"\x00twwitwq\x00tyahtyv\x00tzm\x00udm\x00ugiguga\x00ukkruli\x00umb\x00und" +
+	"\x00unr\x00unx\x00urrduzzbvai\x00veenvec\x00vep\x00viievic\x00vls\x00vmf" +
+	"\x00vmw\x00voolvot\x00vro\x00vun\x00walnwae\x00wal\x00war\x00wbp\x00wbq" +
+	"\x00wbr\x00wls\x00woolwtm\x00wuu\x00xav\x00xcr\x00xhhoxlc\x00xld\x00xmf" +
+	"\x00xmn\x00xmr\x00xna\x00xnr\x00xog\x00xpr\x00xsa\x00xsr\x00yao\x00yap" +
+	"\x00yav\x00ybb\x00yiidyooryrl\x00yua\x00zahazbl\x00zdj\x00zea\x00zgh\x00" +
+	"zhhozmi\x00zuulzxx\x00zza\x00\xff\xff\xff\xff"
 
 const langNoIndexOffset = 694
 
@@ -399,7 +386,7 @@ var langNoIndex = [2197]uint8{
 // to 2-letter language codes that cannot be derived using the method described above.
 // Each 3-letter code is followed by its 1-byte langID.
 // Size: 48 bytes
-var altLangISO3 string = "---\x00cor\x00hbs\x01heb\x02kin\x03spa\x04yid\x05\xff\xff\xff\xff"
+var altLangISO3 = "---\x00cor\x00hbs\x01heb\x02kin\x03spa\x04yid\x05\xff\xff\xff\xff"
 
 // altLangIndex is used to convert indexes in altLangISO3 to langIDs.
 // Size: 12 bytes, 6 elements
@@ -583,23 +570,20 @@ const (
 // script is an alphabetically sorted list of ISO 15924 codes. The index
 // of the script in the string, divided by 4, is the internal scriptID.
 // Size: 916 bytes
-var script string = "" +
-	"----AdlmAfakAghbAhomArabAranArmiArmnAvstBaliBamuBassBatkBeng" +
-	"BlisBopoBrahBraiBugiBuhdCakmCansCariChamCherCirtCoptCprtCyrl" +
-	"CyrsDevaDsrtDuplEgydEgyhEgypElbaEthiGeokGeorGlagGothGranGrek" +
-	"GujrGuruHangHaniHanoHansHantHatrHebrHiraHluwHmngHrktHungInds" +
-	"ItalJavaJpanJurcKaliKanaKharKhmrKhojKitlKitsKndaKoreKpelKthi" +
-	"LanaLaooLatfLatgLatnLepcLimbLinaLinbLisuLomaLyciLydiMahjMand" +
-	"ManiMarcMayaMendMercMeroMlymModiMongMoonMrooMteiMultMymrNarb" +
-	"NbatNkgbNkooNshuOgamOlckOrkhOryaOsgeOsmaPalmPaucPermPhagPhli" +
-	"PhlpPhlvPhnxPlrdPrtiQaaaQaabQaacQaadQaaeQaafQaagQaahQaaiQaaj" +
-	"QaakQaalQaamQaanQaaoQaapQaaqQaarQaasQaatQaauQaavQaawQaaxQaay" +
-	"QaazQabaQabbQabcQabdQabeQabfQabgQabhQabiQabjQabkQablQabmQabn" +
-	"QaboQabpQabqQabrQabsQabtQabuQabvQabwQabxRjngRoroRunrSamrSara" +
-	"SarbSaurSgnwShawShrdSiddSindSinhSoraSundSyloSyrcSyreSyrjSyrn" +
-	"TagbTakrTaleTaluTamlTangTavtTeluTengTfngTglgThaaThaiTibtTirh" +
-	"UgarVaiiVispWaraWoleXpeoXsuxYiiiZinhZmthZsymZxxxZyyyZzzz\xff" +
-	"\xff\xff\xff"
+var script = "" +
+	"----AdlmAfakAghbAhomArabAranArmiArmnAvstBaliBamuBassBatkBengBlisBopoBrah" +
+	"BraiBugiBuhdCakmCansCariChamCherCirtCoptCprtCyrlCyrsDevaDsrtDuplEgydEgyh" +
+	"EgypElbaEthiGeokGeorGlagGothGranGrekGujrGuruHangHaniHanoHansHantHatrHebr" +
+	"HiraHluwHmngHrktHungIndsItalJavaJpanJurcKaliKanaKharKhmrKhojKitlKitsKnda" +
+	"KoreKpelKthiLanaLaooLatfLatgLatnLepcLimbLinaLinbLisuLomaLyciLydiMahjMand" +
+	"ManiMarcMayaMendMercMeroMlymModiMongMoonMrooMteiMultMymrNarbNbatNkgbNkoo" +
+	"NshuOgamOlckOrkhOryaOsgeOsmaPalmPaucPermPhagPhliPhlpPhlvPhnxPlrdPrtiQaaa" +
+	"QaabQaacQaadQaaeQaafQaagQaahQaaiQaajQaakQaalQaamQaanQaaoQaapQaaqQaarQaas" +
+	"QaatQaauQaavQaawQaaxQaayQaazQabaQabbQabcQabdQabeQabfQabgQabhQabiQabjQabk" +
+	"QablQabmQabnQaboQabpQabqQabrQabsQabtQabuQabvQabwQabxRjngRoroRunrSamrSara" +
+	"SarbSaurSgnwShawShrdSiddSindSinhSoraSundSyloSyrcSyreSyrjSyrnTagbTakrTale" +
+	"TaluTamlTangTavtTeluTengTfngTglgThaaThaiTibtTirhUgarVaiiVispWaraWoleXpeo" +
+	"XsuxYiiiZinhZmthZsymZxxxZyyyZzzz\xff\xff\xff\xff"
 
 // suppressScript is an index from langID to the dominant script for that language,
 // if it exists.  If a script is given, it should be suppressed from the language tag.
@@ -728,36 +712,32 @@ var regionTypes = [355]uint8{
 //                 letters form the 3-letter ISO code.
 //     - 0, n:     index into altRegionISO3.
 // Size: 1316 bytes
-var regionISO string = "" +
-	"AAAAACSCADNDAEREAFFGAGTGAIIAALLBAMRMANNTAOGOAQTAARRGASSMATUT" +
-	"AUUSAWBWAXLAAZZEBAIHBBRBBDGDBEELBFFABGGRBHHRBIDIBJENBLLMBMMU" +
-	"BNRNBOOLBQESBRRABSHSBTTNBUURBVVTBWWABYLRBZLZCAANCCCKCDODCFAF" +
-	"CGOGCHHECIIVCKOKCLHLCMMRCNHNCOOLCPPTCRRICS\x00\x00CTTECUUBCV" +
-	"PVCWUWCXXRCYYPCZZEDDDRDEEUDGGADJJIDKNKDMMADOOMDYHYDZZAEA  EC" +
-	"CUEESTEGGYEHSHERRIESSPETTHEU\x00\x03FIINFJJIFKLKFMSMFOROFQ" +
-	"\x00\x18FRRAFXXXGAABGBBRGDRDGEEOGFUFGGGYGHHAGIIBGLRLGMMBGNIN" +
-	"GPLPGQNQGRRCGS\x00\x06GTTMGUUMGWNBGYUYHKKGHMMDHNNDHRRVHTTIHU" +
-	"UNHVVOIC  IDDNIERLILSRIMMNINNDIOOTIQRQIRRNISSLITTAJEEYJMAMJO" +
-	"ORJPPNJTTNKEENKGGZKHHMKIIRKM\x00\tKNNAKP\x00\fKRORKWWTKY\x00" +
-	"\x0fKZAZLAAOLBBNLCCALIIELKKALRBRLSSOLTTULUUXLVVALYBYMAARMCCO" +
-	"MDDAMENEMFAFMGDGMHHLMIIDMKKDMLLIMMMRMNNGMOACMPNPMQTQMRRTMSSR" +
-	"MTLTMUUSMVDVMWWIMXEXMYYSMZOZNAAMNCCLNEERNFFKNGGANHHBNIICNLLD" +
-	"NOORNPPLNQ\x00\x1eNRRUNTTZNUIUNZZLOMMNPAANPCCIPEERPFYFPGNGPH" +
-	"HLPKAKPLOLPM\x00\x12PNCNPRRIPSSEPTRTPUUSPWLWPYRYPZCZQAATQMMM" +
-	"QNNNQOOOQPPPQQQQQRRRQSSSQTTTQU\x00\x03QVVVQWWWQXXXQYYYQZZZRE" +
-	"EURHHOROOURS\x00\x15RUUSRWWASAAUSBLBSCYCSDDNSEWESGGPSHHNSIVN" +
-	"SJJMSKVKSLLESMMRSNENSOOMSRURSSSDSTTPSUUNSVLVSXXMSYYRSZWZTAAA" +
-	"TCCATDCDTF\x00\x18TGGOTHHATJJKTKKLTLLSTMKMTNUNTOONTPMPTRURTT" +
-	"TOTVUVTWWNTZZAUAKRUGGAUK  UMMIUSSAUYRYUZZBVAATVCCTVDDRVEENVG" +
-	"GBVIIRVNNMVUUTWFLFWKAKWSSMXAAAXBBBXCCCXDDDXEEEXFFFXGGGXHHHXI" +
-	"IIXJJJXKKKXLLLXMMMXNNNXOOOXPPPXQQQXRRRXSSSXTTTXUUUXVVVXWWWXX" +
-	"XXXYYYXZZZYDMDYEEMYT\x00\x1bYUUGZAAFZMMBZRARZWWEZZZZ\xff\xff" +
-	"\xff\xff"
+var regionISO = "" +
+	"AAAAACSCADNDAEREAFFGAGTGAIIAALLBAMRMANNTAOGOAQTAARRGASSMATUTAUUSAWBWAXLA" +
+	"AZZEBAIHBBRBBDGDBEELBFFABGGRBHHRBIDIBJENBLLMBMMUBNRNBOOLBQESBRRABSHSBTTN" +
+	"BUURBVVTBWWABYLRBZLZCAANCCCKCDODCFAFCGOGCHHECIIVCKOKCLHLCMMRCNHNCOOLCPPT" +
+	"CRRICS\x00\x00CTTECUUBCVPVCWUWCXXRCYYPCZZEDDDRDEEUDGGADJJIDKNKDMMADOOMDY" +
+	"HYDZZAEA  ECCUEESTEGGYEHSHERRIESSPETTHEU\x00\x03FIINFJJIFKLKFMSMFOROFQ" +
+	"\x00\x18FRRAFXXXGAABGBBRGDRDGEEOGFUFGGGYGHHAGIIBGLRLGMMBGNINGPLPGQNQGRRC" +
+	"GS\x00\x06GTTMGUUMGWNBGYUYHKKGHMMDHNNDHRRVHTTIHUUNHVVOIC  IDDNIERLILSRIM" +
+	"MNINNDIOOTIQRQIRRNISSLITTAJEEYJMAMJOORJPPNJTTNKEENKGGZKHHMKIIRKM\x00\x09" +
+	"KNNAKP\x00\x0cKRORKWWTKY\x00\x0fKZAZLAAOLBBNLCCALIIELKKALRBRLSSOLTTULUUX" +
+	"LVVALYBYMAARMCCOMDDAMENEMFAFMGDGMHHLMIIDMKKDMLLIMMMRMNNGMOACMPNPMQTQMRRT" +
+	"MSSRMTLTMUUSMVDVMWWIMXEXMYYSMZOZNAAMNCCLNEERNFFKNGGANHHBNIICNLLDNOORNPPL" +
+	"NQ\x00\x1eNRRUNTTZNUIUNZZLOMMNPAANPCCIPEERPFYFPGNGPHHLPKAKPLOLPM\x00\x12" +
+	"PNCNPRRIPSSEPTRTPUUSPWLWPYRYPZCZQAATQMMMQNNNQOOOQPPPQQQQQRRRQSSSQTTTQU" +
+	"\x00\x03QVVVQWWWQXXXQYYYQZZZREEURHHOROOURS\x00\x15RUUSRWWASAAUSBLBSCYCSD" +
+	"DNSEWESGGPSHHNSIVNSJJMSKVKSLLESMMRSNENSOOMSRURSSSDSTTPSUUNSVLVSXXMSYYRSZ" +
+	"WZTAAATCCATDCDTF\x00\x18TGGOTHHATJJKTKKLTLLSTMKMTNUNTOONTPMPTRURTTTOTVUV" +
+	"TWWNTZZAUAKRUGGAUK  UMMIUSSAUYRYUZZBVAATVCCTVDDRVEENVGGBVIIRVNNMVUUTWFLF" +
+	"WKAKWSSMXAAAXBBBXCCCXDDDXEEEXFFFXGGGXHHHXIIIXJJJXKKKXLLLXMMMXNNNXOOOXPPP" +
+	"XQQQXRRRXSSSXTTTXUUUXVVVXWWWXXXXXYYYXZZZYDMDYEEMYT\x00\x1bYUUGZAAFZMMBZR" +
+	"ARZWWEZZZZ\xff\xff\xff\xff"
 
 // altRegionISO3 holds a list of 3-letter region codes that cannot be
 // mapped to 2-letter codes using the default algorithm. This is a short list.
 // Size: 49 bytes
-var altRegionISO3 string = "SCGQUUSGSCOMPRKCYMSPMSRBATFMYTATN"
+var altRegionISO3 = "SCGQUUSGSCOMPRKCYMSPMSRBATFMYTATN"
 
 // altRegionIDs holds a list of regionIDs the positions of which match those
 // of the 3-letter ISO codes in altRegionISO3.
@@ -954,33 +934,37 @@ const (
 // indicated the rounding and the least 2 significant bits indicate the
 // number of decimal positions.
 // Size: 1208 bytes
-var currency string = "" +
-	"---\nADP\bAED\nAFA\nAFN\bALK\nALL\bAMD\bANG\nAOA\nAOK\nAON\n" +
-	"AOR\nARA\nARL\nARM\nARP\nARS\nATS\nAUD\nAWG\nAZM\nAZN\nBAD\n" +
-	"BAM\nBAN\nBBD\nBDT\nBEC\nBEF\nBEL\nBGL\nBGM\nBGN\nBGO\nBHD\v" +
-	"BIF\bBMD\nBND\nBOB\nBOL\nBOP\nBOV\nBRB\nBRC\nBRE\nBRL\nBRN\n" +
-	"BRR\nBRZ\nBSD\nBTN\nBUK\nBWP\nBYB\nBYR\bBZD\nCAD\nCDF\nCHE\n" +
-	"CHF\nCHW\nCLE\nCLF\fCLP\bCNX\nCNY\nCOP\bCOU\nCRC\bCSD\nCSK\n" +
-	"CUC\nCUP\nCVE\nCYP\nCZK\nDDM\nDEM\nDJF\bDKK\nDOP\nDZD\nECS\n" +
-	"ECV\nEEK\nEGP\nERN\nESA\nESB\nESP\bETB\nEUR\nFIM\nFJD\nFKP\n" +
-	"FRF\nGBP\nGEK\nGEL\nGHC\nGHS\nGIP\nGMD\nGNF\bGNS\nGQE\nGRD\n" +
-	"GTQ\nGWE\nGWP\nGYD\bHKD\nHNL\nHRD\nHRK\nHTG\nHUF\nIDR\bIEP\n" +
-	"ILP\nILR\nILS\nINR\nIQD\bIRR\bISJ\nISK\bITL\bJMD\nJOD\vJPY\b" +
-	"KES\nKGS\nKHR\nKMF\bKPW\bKRH\nKRO\nKRW\bKWD\vKYD\nKZT\nLAK\b" +
-	"LBP\bLKR\nLRD\nLSL\nLTL\nLTT\nLUC\nLUF\bLUL\nLVL\nLVR\nLYD\v" +
-	"MAD\nMAF\nMCF\nMDC\nMDL\nMGA\bMGF\bMKD\nMKN\nMLF\nMMK\bMNT\b" +
-	"MOP\nMRO\bMTL\nMTP\nMUR\bMVR\nMWK\nMXN\nMXP\nMXV\nMYR\nMZE\n" +
-	"MZM\nMZN\nNAD\nNGN\nNIC\nNIO\nNLG\nNOK\nNPR\nNZD\nOMR\vPAB\n" +
-	"PEI\nPEN\nPES\nPGK\nPHP\nPKR\bPLN\nPLZ\nPTE\nPYG\bQAR\nRHD\n" +
-	"ROL\nRON\nRSD\bRUB\nRUR\nRWF\bSAR\nSBD\nSCR\nSDD\nSDG\nSDP\n" +
-	"SEK\nSGD\nSHP\nSIT\nSKK\nSLL\bSOS\bSRD\nSRG\nSSP\nSTD\bSUR\n" +
-	"SVC\nSYP\bSZL\nTHB\nTJR\nTJS\nTMM\bTMT\nTND\vTOP\nTPE\nTRL\b" +
-	"TRY\nTTD\nTWD\nTZS\bUAH\nUAK\nUGS\nUGX\bUSD\nUSN\nUSS\nUYI\b" +
-	"UYP\nUYU\nUZS\bVEB\nVEF\nVND\bVNN\nVUV\bWST\nXAF\bXAG\nXAU\n" +
-	"XBA\nXBB\nXBC\nXBD\nXCD\nXDR\nXEU\nXFO\nXFU\nXOF\bXPD\nXPF\b" +
-	"XPT\nXRE\nXSU\nXTS\nXUA\nXXX\nYDD\nYER\bYUD\nYUM\nYUN\nYUR\n" +
-	"ZAL\nZAR\nZMK\bZMW\nZRN\nZRZ\nZWD\bZWL\nZWR\n\xff\xff\xff" +
-	"\xff"
+var currency = "" +
+	"---\x0aADP\x08AED\x0aAFA\x0aAFN\x08ALK\x0aALL\x08AMD\x08ANG\x0aAOA\x0aAO" +
+	"K\x0aAON\x0aAOR\x0aARA\x0aARL\x0aARM\x0aARP\x0aARS\x0aATS\x0aAUD\x0aAWG" +
+	"\x0aAZM\x0aAZN\x0aBAD\x0aBAM\x0aBAN\x0aBBD\x0aBDT\x0aBEC\x0aBEF\x0aBEL" +
+	"\x0aBGL\x0aBGM\x0aBGN\x0aBGO\x0aBHD\x0bBIF\x08BMD\x0aBND\x0aBOB\x0aBOL" +
+	"\x0aBOP\x0aBOV\x0aBRB\x0aBRC\x0aBRE\x0aBRL\x0aBRN\x0aBRR\x0aBRZ\x0aBSD" +
+	"\x0aBTN\x0aBUK\x0aBWP\x0aBYB\x0aBYR\x08BZD\x0aCAD\x0aCDF\x0aCHE\x0aCHF" +
+	"\x0aCHW\x0aCLE\x0aCLF\x0cCLP\x08CNX\x0aCNY\x0aCOP\x08COU\x0aCRC\x08CSD" +
+	"\x0aCSK\x0aCUC\x0aCUP\x0aCVE\x0aCYP\x0aCZK\x0aDDM\x0aDEM\x0aDJF\x08DKK" +
+	"\x0aDOP\x0aDZD\x0aECS\x0aECV\x0aEEK\x0aEGP\x0aERN\x0aESA\x0aESB\x0aESP" +
+	"\x08ETB\x0aEUR\x0aFIM\x0aFJD\x0aFKP\x0aFRF\x0aGBP\x0aGEK\x0aGEL\x0aGHC" +
+	"\x0aGHS\x0aGIP\x0aGMD\x0aGNF\x08GNS\x0aGQE\x0aGRD\x0aGTQ\x0aGWE\x0aGWP" +
+	"\x0aGYD\x08HKD\x0aHNL\x0aHRD\x0aHRK\x0aHTG\x0aHUF\x0aIDR\x08IEP\x0aILP" +
+	"\x0aILR\x0aILS\x0aINR\x0aIQD\x08IRR\x08ISJ\x0aISK\x08ITL\x08JMD\x0aJOD" +
+	"\x0bJPY\x08KES\x0aKGS\x0aKHR\x0aKMF\x08KPW\x08KRH\x0aKRO\x0aKRW\x08KWD" +
+	"\x0bKYD\x0aKZT\x0aLAK\x08LBP\x08LKR\x0aLRD\x0aLSL\x0aLTL\x0aLTT\x0aLUC" +
+	"\x0aLUF\x08LUL\x0aLVL\x0aLVR\x0aLYD\x0bMAD\x0aMAF\x0aMCF\x0aMDC\x0aMDL" +
+	"\x0aMGA\x08MGF\x08MKD\x0aMKN\x0aMLF\x0aMMK\x08MNT\x08MOP\x0aMRO\x08MTL" +
+	"\x0aMTP\x0aMUR\x08MVR\x0aMWK\x0aMXN\x0aMXP\x0aMXV\x0aMYR\x0aMZE\x0aMZM" +
+	"\x0aMZN\x0aNAD\x0aNGN\x0aNIC\x0aNIO\x0aNLG\x0aNOK\x0aNPR\x0aNZD\x0aOMR" +
+	"\x0bPAB\x0aPEI\x0aPEN\x0aPES\x0aPGK\x0aPHP\x0aPKR\x08PLN\x0aPLZ\x0aPTE" +
+	"\x0aPYG\x08QAR\x0aRHD\x0aROL\x0aRON\x0aRSD\x08RUB\x0aRUR\x0aRWF\x08SAR" +
+	"\x0aSBD\x0aSCR\x0aSDD\x0aSDG\x0aSDP\x0aSEK\x0aSGD\x0aSHP\x0aSIT\x0aSKK" +
+	"\x0aSLL\x08SOS\x08SRD\x0aSRG\x0aSSP\x0aSTD\x08SUR\x0aSVC\x0aSYP\x08SZL" +
+	"\x0aTHB\x0aTJR\x0aTJS\x0aTMM\x08TMT\x0aTND\x0bTOP\x0aTPE\x0aTRL\x08TRY" +
+	"\x0aTTD\x0aTWD\x0aTZS\x08UAH\x0aUAK\x0aUGS\x0aUGX\x08USD\x0aUSN\x0aUSS" +
+	"\x0aUYI\x08UYP\x0aUYU\x0aUZS\x08VEB\x0aVEF\x0aVND\x08VNN\x0aVUV\x08WST" +
+	"\x0aXAF\x08XAG\x0aXAU\x0aXBA\x0aXBB\x0aXBC\x0aXBD\x0aXCD\x0aXDR\x0aXEU" +
+	"\x0aXFO\x0aXFU\x0aXOF\x08XPD\x0aXPF\x08XPT\x0aXRE\x0aXSU\x0aXTS\x0aXUA" +
+	"\x0aXXX\x0aYDD\x0aYER\x08YUD\x0aYUM\x0aYUN\x0aYUR\x0aZAL\x0aZAR\x0aZMK" +
+	"\x08ZMW\x0aZRN\x0aZRZ\x0aZWD\x08ZWL\x0aZWR\x0a\xff\xff\xff\xff"
 
 // nRegionGroups is the number of region groups.
 const nRegionGroups = 32
@@ -2770,4 +2754,4 @@ var parents = [4]parentRel{
 	{lang: 0x2b1, script: 0x33, maxScript: 0x33, toRegion: 0x8b, fromRegion: []uint16{0xc4}},
 }
 
-// Size: 20.6K (21051 bytes); Check: AC4585D5
+// Total table size 21051 bytes (20KiB); checksum: E228E5B3
