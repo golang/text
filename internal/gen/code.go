@@ -6,6 +6,7 @@ package gen
 
 import (
 	"bytes"
+	"encoding/gob"
 	"fmt"
 	"hash"
 	"hash/fnv"
@@ -28,6 +29,7 @@ type CodeWriter struct {
 	buf  bytes.Buffer
 	Size int
 	Hash hash.Hash32 // content hash
+	gob  *gob.Encoder
 	// For comments we skip the usual one-line separator if they are followed by
 	// a code block.
 	skipSep bool
@@ -39,7 +41,8 @@ func (w *CodeWriter) Write(p []byte) (n int, err error) {
 
 // NewCodeWriter returns a new CodeWriter.
 func NewCodeWriter() *CodeWriter {
-	return &CodeWriter{Hash: fnv.New32()}
+	h := fnv.New32()
+	return &CodeWriter{Hash: h, gob: gob.NewEncoder(h)}
 }
 
 // WriteGoFile appends the buffer with the total size of all created structures
@@ -89,9 +92,12 @@ func (w *CodeWriter) WriteComment(comment string, args ...interface{}) {
 	w.printf("\n")
 }
 
+func (w *CodeWriter) writeSizeAndElementInfo(size, n int) {
+	w.printf("// Size: %d bytes, %d elements\n", size, n)
+}
+
 func (w *CodeWriter) writeSizeInfo(size int) {
 	w.printf("// Size: %d bytes\n", size)
-	w.Size += size
 }
 
 // WriteConst writes a constant of the given name and value.
@@ -110,19 +116,38 @@ func (w *CodeWriter) WriteConst(name string, x interface{}) {
 // WriteVar writes a variable of the given name and value.
 func (w *CodeWriter) WriteVar(name, x interface{}) {
 	w.insertSep()
-	if s, ok := x.(string); ok {
-		w.writeSizeInfo(len(s) + int(reflect.TypeOf(s).Size()))
+	v := reflect.ValueOf(x)
+	sz := int(v.Type().Size())
+
+	switch v.Type().Kind() {
+	case reflect.String:
+		w.writeSizeInfo(v.Len() + sz)
+		w.Size += sz
 		w.printf("var %s = ", name)
-		w.WriteString(s)
-		w.printf("\n")
-	} else {
-		w.printf("var %s = %#v\n", name, x)
+		w.WriteString(x.(string))
+	case reflect.Slice:
+		w.writeSizeAndElementInfo(sizeOfArray(x)+sz, v.Len())
+		w.Size += sz
+		w.printf("var %s = ", name)
+		w.writeSlice(x, false, true)
+	case reflect.Array:
+		w.writeSizeAndElementInfo(sz, v.Len())
+		w.printf("var %s = ", name)
+		w.writeSlice(x, true, true)
+	default:
+		w.printf("var %s %s = ", name, typeName(x))
+		w.Size += sz
+		// TODO: size info?
+		w.gob.Encode(x)
+		w.printf("%#v", x)
 	}
+	w.printf("\n")
 }
 
 // WriteString writes a string literal.
 func (w *CodeWriter) WriteString(s string) {
 	io.WriteString(w.Hash, s) // content hash
+	w.Size += len(s)
 
 	const maxInline = 40
 	if len(s) <= maxInline {
@@ -169,4 +194,116 @@ func (w *CodeWriter) WriteString(s string) {
 		p += sz
 	}
 	w.printf(`"`)
+}
+
+// WriteSlice writes a slice value.
+func (w *CodeWriter) WriteSlice(x interface{}) {
+	w.writeSlice(x, false, false)
+}
+
+// WriteArray writes an array value.
+func (w *CodeWriter) WriteArray(x interface{}) {
+	w.writeSlice(x, true, false)
+}
+
+func (w *CodeWriter) writeSlice(x interface{}, isArray, isVar bool) {
+	v := reflect.ValueOf(x)
+	w.gob.Encode(v.Len())
+	w.Size += v.Len() * int(v.Type().Elem().Size())
+
+	name := typeName(x)
+	if isArray {
+		name = fmt.Sprintf("[%d]%s", v.Len(), name[strings.Index(name, "]")+1:])
+	}
+	if isArray || isVar {
+		w.printf("%s{\n", name)
+	} else {
+		w.printf("%s{ // %d elements\n", name, v.Len())
+	}
+
+	switch kind := v.Type().Elem().Kind(); kind {
+	case reflect.String:
+		for _, s := range x.([]string) {
+			w.WriteString(s)
+			w.printf(",\n")
+		}
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		// nLine and nBlock are the number of elements per line and block.
+		nLine, nBlock, format := 8, 64, "%d,"
+		switch kind {
+		case reflect.Uint8:
+			format = "%#02x,"
+		case reflect.Uint16:
+			format = "%#04x,"
+		case reflect.Uint32:
+			nLine, nBlock, format = 4, 32, "%#08x,"
+		case reflect.Uint, reflect.Uint64:
+			nLine, nBlock, format = 4, 32, "%#016x,"
+		case reflect.Int8:
+			nLine = 16
+		}
+		n := nLine
+		for i := 0; i < v.Len(); i++ {
+			if i%nBlock == 0 && v.Len() > nBlock {
+				w.printf("// Entry %X - %X\n", i, i+nBlock-1)
+			}
+			x := v.Index(i).Interface()
+			w.gob.Encode(x)
+			w.printf(format, x)
+			if n--; n == 0 {
+				n = nLine
+				w.printf("\n")
+			}
+		}
+		w.printf("\n")
+	case reflect.Struct:
+		for i := 0; i < v.Len(); i++ {
+			x := v.Index(i).Interface()
+			w.gob.EncodeValue(v)
+			line := fmt.Sprintf("%#v,\n", x)
+			line = line[strings.IndexByte(line, '{'):]
+			w.printf(line)
+		}
+	default:
+		panic("gen: slice type not supported")
+	}
+	w.printf("}")
+}
+
+func sizeOfArray(x interface{}) int {
+	v := reflect.ValueOf(x)
+
+	size := v.Len() * int(v.Type().Elem().Size())
+	switch v.Type().Elem().Kind() {
+	case reflect.String:
+		for _, s := range x.([]string) {
+			size += len(s)
+		}
+	case reflect.Slice:
+		for i := 0; i < v.Len(); i++ {
+			size += sizeOfArray(v.Index(i).Interface())
+		}
+	case reflect.Array, reflect.Ptr, reflect.Map:
+		panic("gen: array element not supported.")
+	}
+	return size
+}
+
+// WriteType writes a definition of the type of the given value and returns the
+// type name.
+func (w *CodeWriter) WriteType(x interface{}) string {
+	t := reflect.TypeOf(x)
+	w.printf("type %s struct {\n", t.Name())
+	for i := 0; i < t.NumField(); i++ {
+		w.printf("\t%s %s\n", t.Field(i).Name, t.Field(i).Type)
+	}
+	w.printf("}\n")
+	return t.Name()
+}
+
+// typeName returns the name of the go type of x.
+func typeName(x interface{}) string {
+	t := reflect.ValueOf(x).Type()
+	return strings.Replace(fmt.Sprint(t), "main.", "", 1)
 }

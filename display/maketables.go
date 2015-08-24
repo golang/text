@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"reflect"
 	"sort"
@@ -191,7 +190,7 @@ type header struct {
 	index []uint16
 }
 
-var versionInfo = `// Version is the version of CLDR used to generate the data in this package.
+var versionInfo = `// Version is deprecated. Use CLDRVersion.
 const Version = %#v
 
 `
@@ -230,11 +229,11 @@ func (b *builder) generate() {
 
 	b.makeSupported()
 
-	n := b.writeParents()
+	b.writeParents()
 
-	n += b.writeGroup("lang")
-	n += b.writeGroup("script")
-	n += b.writeGroup("region")
+	b.writeGroup("lang")
+	b.writeGroup("script")
+	b.writeGroup("region")
 
 	b.w.WriteConst("numSupported", len(b.supported))
 	buf := bytes.Buffer{}
@@ -243,7 +242,7 @@ func (b *builder) generate() {
 	}
 	b.w.WriteConst("supported", buf.String())
 
-	n += b.writeDictionaries()
+	b.writeDictionaries()
 
 	b.supported = []language.Tag{self}
 
@@ -275,9 +274,7 @@ func (b *builder) generate() {
 		})
 	}
 
-	n += b.writeGroup("self")
-
-	b.w.Size = n // TODO: remove once all tables are written with CodeWriter.
+	b.writeGroup("self")
 }
 
 func (b *builder) setData(name string, f func(*group, language.Tag, *cldr.LocaleDisplayNames)) {
@@ -368,7 +365,7 @@ func (a tagsSorter) Len() int           { return len(a) }
 func (a tagsSorter) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a tagsSorter) Less(i, j int) bool { return a[i].String() < a[j].String() }
 
-func (b *builder) writeGroup(name string) int {
+func (b *builder) writeGroup(name string) {
 	g := b.group[name]
 
 	for _, kv := range g.lang {
@@ -408,7 +405,7 @@ func (b *builder) writeGroup(name string) int {
 		}
 		g.headers[i] = header{sup, string(data), index}
 	}
-	return g.writeTable(b.w, name)
+	g.writeTable(b.w, name)
 }
 
 type tagsBySize []string
@@ -426,14 +423,14 @@ func (l tagsBySize) Less(i, j int) bool {
 
 // parentIndices returns slice a of len(tags) where tags[a[i]] is the parent
 // of tags[i].
-func parentIndices(tags []language.Tag) []int {
-	index := make(map[language.Tag]int)
+func parentIndices(tags []language.Tag) []int16 {
+	index := make(map[language.Tag]int16)
 	for i, t := range tags {
-		index[t] = int(i)
+		index[t] = int16(i)
 	}
 
 	// Construct default parents.
-	parents := make([]int, len(tags))
+	parents := make([]int16, len(tags))
 	for i, t := range tags {
 		parents[i] = -1
 		for t = t.Parent(); t != language.Und; t = t.Parent() {
@@ -446,26 +443,17 @@ func parentIndices(tags []language.Tag) []int {
 	return parents
 }
 
-func (b *builder) writeParents() int {
+func (b *builder) writeParents() {
 	parents := parentIndices(b.supported)
-
-	fmt.Fprintf(b.w, "// parent relationship: %d entries\n", len(parents))
-	fmt.Fprintf(b.w, "var parents = [%d]int16{", len(parents))
-	for i, v := range parents {
-		if i%12 == 0 {
-			fmt.Fprint(b.w, "\n\t")
-		}
-		fmt.Fprintf(b.w, "%d, ", v)
-	}
-	fmt.Fprintln(b.w, "}\n")
-	return len(parents) * 2
+	fmt.Fprintf(b.w, "var parents = ")
+	b.w.WriteArray(parents)
 }
 
 // writeKeys writes keys to a special index used by the display package.
 // tags are assumed to be sorted by length.
-func writeKeys(w *gen.CodeWriter, name string, keys []string) (n int) {
-	n = int(3 * reflect.TypeOf("").Size())
-	fmt.Fprintf(w, "// Number of keys: %d\n", len(keys))
+func writeKeys(w *gen.CodeWriter, name string, keys []string) {
+	w.Size += int(3 * reflect.TypeOf("").Size())
+	w.WriteComment("Number of keys: %d", len(keys))
 	fmt.Fprintf(w, "var (\n\t%sIndex = tagIndex{\n", name)
 	for i := 2; i <= 4; i++ {
 		sub := []string{}
@@ -476,38 +464,17 @@ func writeKeys(w *gen.CodeWriter, name string, keys []string) (n int) {
 			sub = append(sub, t)
 		}
 		s := strings.Join(sub, "")
-		n += len(s)
 		w.WriteString(s)
 		fmt.Fprintf(w, ",\n")
 		keys = keys[len(sub):]
 	}
 	fmt.Fprintln(w, "\t}")
 	if len(keys) > 0 {
-		fmt.Fprintf(w, "\t%sTagsLong = %#v\n", name, keys)
-		n += len(keys) * int(reflect.TypeOf("").Size())
-		n += len(strings.Join(keys, ""))
-		n += int(reflect.TypeOf([]string{}).Size())
+		w.Size += int(reflect.TypeOf([]string{}).Size())
+		fmt.Fprintf(w, "\t%sTagsLong = ", name)
+		w.WriteSlice(keys)
 	}
 	fmt.Fprintln(w, ")\n")
-	return n
-}
-
-func writeUint16Body(w io.Writer, a []uint16) {
-	for v := a; len(v) > 0; {
-		vv := v
-		const nPerLine = 12
-		if len(vv) > nPerLine {
-			vv = v[:nPerLine]
-			v = v[nPerLine:]
-		} else {
-			v = nil
-		}
-		fmt.Fprintf(w, "\t\t\t")
-		for _, x := range vv {
-			fmt.Fprintf(w, "0x%x, ", x)
-		}
-		fmt.Fprintln(w)
-	}
 }
 
 // identifier creates an identifier from the given tag.
@@ -515,16 +482,10 @@ func identifier(t language.Tag) string {
 	return strings.Replace(t.String(), "-", "", -1)
 }
 
-func (h *header) writeEntry(w *gen.CodeWriter, name string) int {
-	n := int(reflect.TypeOf(h.data).Size())
-	n += int(reflect.TypeOf(h.index).Size())
-	n += len(h.data)
-	n += len(h.index) * 2
-
+func (h *header) writeEntry(w *gen.CodeWriter, name string) {
 	if len(dict) > 0 && dict.contains(h.tag) {
 		fmt.Fprintf(w, "\t{ // %s\n", h.tag)
 		fmt.Fprintf(w, "\t\t%[1]s%[2]sStr,\n\t\t%[1]s%[2]sIdx,\n", identifier(h.tag), name)
-		n += int(reflect.TypeOf(h.index).Size())
 		fmt.Fprintln(w, "\t},")
 	} else if len(h.data) == 0 {
 		fmt.Fprintln(w, "\t\t{}, //", h.tag)
@@ -532,14 +493,9 @@ func (h *header) writeEntry(w *gen.CodeWriter, name string) int {
 		fmt.Fprintf(w, "\t{ // %s\n", h.tag)
 		w.WriteString(h.data)
 		fmt.Fprintln(w, ",")
-
-		fmt.Fprintf(w, "\t\t[]uint16{ // %d entries\n", len(h.index))
-		writeUint16Body(w, h.index)
-		fmt.Fprintln(w, "\t\t},")
-		fmt.Fprintln(w, "\t},")
+		w.WriteSlice(h.index)
+		fmt.Fprintln(w, ",\n\t},")
 	}
-
-	return n
 }
 
 // write the data for the given header as single entries. The size for this data
@@ -552,32 +508,32 @@ func (h *header) writeSingle(w *gen.CodeWriter, name string) {
 		// Note that we create a slice instead of an array. If we use an array
 		// we need to refer to it as a[:] in other tables, which will cause the
 		// array to always be included by the linker. See Issue 7651.
-		fmt.Fprintf(w, "var %s%sIdx = []uint16{ // %d entries\n", tag, name, len(h.index))
-		writeUint16Body(w, h.index)
-		fmt.Fprintln(w, "}\n")
+		w.WriteVar(tag+name+"Idx", h.index)
 	}
 }
 
 // WriteTable writes an entry for a single Namer.
-func (g *group) writeTable(w *gen.CodeWriter, name string) int {
-	n := writeKeys(w, name, g.toTags)
+func (g *group) writeTable(w *gen.CodeWriter, name string) {
+	start := w.Size
+	writeKeys(w, name, g.toTags)
+	w.Size += len(g.headers) * int(reflect.ValueOf(g.headers[0]).Type().Size())
+
 	fmt.Fprintf(w, "var %sHeaders = [%d]header{\n", name, len(g.headers))
 
 	title := strings.Title(name)
 	for _, h := range g.headers {
-		n += h.writeEntry(w, title)
+		h.writeEntry(w, title)
 	}
 	fmt.Fprintln(w, "}\n")
 
 	for _, h := range g.headers {
 		h.writeSingle(w, title)
 	}
-
+	n := w.Size - start
 	fmt.Fprintf(w, "// Total size for %s: %d bytes (%d KB)\n\n", name, n, n/1000)
-	return n
 }
 
-func (b *builder) writeDictionaries() int {
+func (b *builder) writeDictionaries() {
 	fmt.Fprintln(b.w, "// Dictionary entries of frequent languages")
 	fmt.Fprintln(b.w, "var (")
 	parents := parentIndices(b.supported)
@@ -608,7 +564,7 @@ func (b *builder) writeDictionaries() int {
 	n := int(sz) * len(dict)
 	fmt.Fprintf(b.w, "// Total size for %d entries: %d bytes (%d KB)\n\n", len(dict), n, n/1000)
 
-	return n
+	b.w.Size += n
 }
 
 // unique sorts the given lists and removes duplicate entries by swapping them

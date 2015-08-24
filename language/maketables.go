@@ -451,11 +451,6 @@ func (b *builder) addSize(s int) {
 	b.pf("// Size: %d bytes", s)
 }
 
-func (b *builder) addArraySize(s, n int) {
-	b.w.Size += s
-	b.pf("// Size: %d bytes, %d elements", s, n)
-}
-
 func (b *builder) writeConst(name string, x interface{}) {
 	b.comment(name)
 	b.w.WriteConst(name, x)
@@ -473,13 +468,8 @@ func (b *builder) writeConsts(f func(string) int, values ...string) {
 
 // writeType writes the type of the given value, which must be a struct.
 func (b *builder) writeType(value interface{}) {
-	t := reflect.TypeOf(value)
-	b.comment(t.Name())
-	b.pf("type %s struct {", t.Name())
-	for i := 0; i < t.NumField(); i++ {
-		b.pf("\t%s %s", t.Field(i).Name, t.Field(i).Type)
-	}
-	b.pf("}")
+	b.comment(reflect.TypeOf(value).Name())
+	b.w.WriteType(value)
 }
 
 func (b *builder) writeSlice(name string, ss interface{}) {
@@ -488,42 +478,14 @@ func (b *builder) writeSlice(name string, ss interface{}) {
 
 func (b *builder) writeSliceAddSize(name string, extraSize int, ss interface{}) {
 	b.comment(name)
+	b.w.Size += extraSize
 	v := reflect.ValueOf(ss)
 	t := v.Type().Elem()
-	tn := strings.Replace(fmt.Sprintf("%s", t), "main.", "", 1)
-	b.addArraySize(v.Len()*int(t.Size())+extraSize, v.Len())
-	fmt.Fprintf(b.hw, `var %s = [%d]%s{`, name, v.Len(), tn)
-	for i := 0; i < v.Len(); i++ {
-		if t.Kind() == reflect.Struct {
-			line := fmt.Sprintf("%#v, ", v.Index(i).Interface())
-			line = line[strings.IndexByte(line, '{'):]
-			fmt.Fprintf(b.hw, "\n\t%s", line)
-		} else {
-			if i%12 == 0 {
-				fmt.Fprintf(b.hw, "\n\t")
-			}
-			fmt.Fprintf(b.hw, "%d, ", v.Index(i).Interface())
-		}
-	}
-	b.p("\n}")
-}
+	b.pf("// Size: %d bytes, %d elements", v.Len()*int(t.Size())+extraSize, v.Len())
 
-// writeStringSlice writes a slice of strings. This produces a lot
-// of overhead. It should typically only be used for debugging.
-// TODO: remove
-func (b *builder) writeStringSlice(name string, ss []string) {
-	b.comment(name)
-	t := reflect.TypeOf(ss).Elem()
-	sz := len(ss) * int(t.Size())
-	for _, s := range ss {
-		sz += len(s)
-	}
-	b.addArraySize(sz, len(ss))
-	b.pf(`var %s = [%d]%s{`, name, len(ss), t)
-	for i := 0; i < len(ss); i++ {
-		b.pf("\t%q,", ss[i])
-	}
-	b.p("}")
+	fmt.Fprintf(b.w, "var %s = ", name)
+	b.w.WriteArray(ss)
+	b.p()
 }
 
 type fromTo struct {
@@ -895,13 +857,13 @@ func (b *builder) writeScript() {
 	}
 }
 
-func parseM49(s string) uint16 {
+func parseM49(s string) int16 {
 	if len(s) == 0 {
 		return 0
 	}
 	v, err := strconv.ParseUint(s, 10, 10)
 	failOnError(err)
-	return uint16(v)
+	return int16(v)
 }
 
 var regionConsts = []string{
@@ -913,8 +875,8 @@ func (b *builder) writeRegion() {
 	b.writeConsts(b.region.index, regionConsts...)
 
 	isoOffset := b.region.index("AA")
-	m49map := make([]uint16, len(b.region.slice()))
-	fromM49map := make(map[uint16]int)
+	m49map := make([]int16, len(b.region.slice()))
+	fromM49map := make(map[int16]int)
 	altRegionISO3 := ""
 	altRegionIDs := []uint16{}
 
@@ -1064,7 +1026,7 @@ func (b *builder) writeRegion() {
 	if len(m49map) >= 1<<regionBits {
 		log.Fatalf("Maximum number of regions exceeded: %d > %d", len(m49map), 1<<regionBits)
 	}
-	m49Index := [9]uint16{}
+	m49Index := [9]int16{}
 	fromM49 := []uint16{}
 	m49 := []int{}
 	for k, _ := range fromM49map {
@@ -1073,8 +1035,8 @@ func (b *builder) writeRegion() {
 	sort.Ints(m49)
 	for _, k := range m49[1:] {
 		val := (k & (1<<searchBits - 1)) << regionBits
-		fromM49 = append(fromM49, uint16(val|fromM49map[uint16(k)]))
-		m49Index[1:][k>>searchBits] = uint16(len(fromM49))
+		fromM49 = append(fromM49, uint16(val|fromM49map[int16(k)]))
+		m49Index[1:][k>>searchBits] = int16(len(fromM49))
 	}
 	b.writeSlice("m49Index", m49Index)
 	b.writeSlice("fromM49", fromM49)
@@ -1215,10 +1177,6 @@ func (b *builder) writeVariant() {
 	}
 	b.writeMap("variantIndex", variantIndex)
 	b.writeConst("variantNumSpecialized", numSpecialized)
-}
-
-func (b *builder) writeLocale() {
-	b.writeStringSlice("locale", b.locale.slice())
 }
 
 func (b *builder) writeLanguageInfo() {
