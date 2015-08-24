@@ -845,7 +845,7 @@ func (v Variant) String() string {
 	return v.variant
 }
 
-// Currency is an ISO 4217 currency designator.
+// Currency is deprecated. Use package golang.org/x/text/currency.
 type Currency struct {
 	currencyID
 }

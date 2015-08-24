@@ -74,6 +74,7 @@ func main() {
 		norm     = generate("unicode/norm")
 		_        = generate("unicode/rangetable")
 		_        = generate("width")
+		_        = generate("currency", cldr, language)
 		_        = generate("display", cldr, language)
 		_        = generate("cases", norm)
 		_        = generate("collate", norm, cldr, language)
