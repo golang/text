@@ -103,18 +103,21 @@ func (w *CodeWriter) writeSizeInfo(size int) {
 // WriteConst writes a constant of the given name and value.
 func (w *CodeWriter) WriteConst(name string, x interface{}) {
 	w.insertSep()
-	if s, ok := x.(string); ok {
-		w.writeSizeInfo(len(s))
-		w.printf("const %s = ", name)
-		w.WriteString(s)
+	v := reflect.ValueOf(x)
+
+	switch v.Type().Kind() {
+	case reflect.String:
+		w.writeSizeInfo(v.Len())
+		w.printf("const %s %s = ", name, typeName(x))
+		w.WriteString(v.String())
 		w.printf("\n")
-	} else {
+	default:
 		w.printf("const %s = %#v\n", name, x)
 	}
 }
 
 // WriteVar writes a variable of the given name and value.
-func (w *CodeWriter) WriteVar(name, x interface{}) {
+func (w *CodeWriter) WriteVar(name string, x interface{}) {
 	w.insertSep()
 	v := reflect.ValueOf(x)
 	sz := int(v.Type().Size())
@@ -123,8 +126,8 @@ func (w *CodeWriter) WriteVar(name, x interface{}) {
 	case reflect.String:
 		w.writeSizeInfo(v.Len() + sz)
 		w.Size += sz
-		w.printf("var %s = ", name)
-		w.WriteString(x.(string))
+		w.printf("var %s %s = ", name, typeName(x))
+		w.WriteString(v.String())
 	case reflect.Slice:
 		w.writeSizeAndElementInfo(sizeOfArray(x)+sz, v.Len())
 		w.Size += sz

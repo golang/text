@@ -26,6 +26,7 @@ import (
 
 	"golang.org/x/text/cldr"
 	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/internal/tag"
 )
 
 var (
@@ -503,11 +504,6 @@ func (b *builder) writeSortedMap(name string, ss *stringSet, index func(s string
 	b.writeSlice(name, m)
 }
 
-func (b *builder) writeString(name, s string) {
-	b.comment(name)
-	b.w.WriteVar(name, s)
-}
-
 const base = 'z' - 'a' + 1
 
 func strToInt(s string) uint {
@@ -805,7 +801,7 @@ func (b *builder) writeLanguage() {
 		}
 		lang.s[i] += add
 	}
-	b.writeString("lang", lang.join())
+	b.writeConst("lang", tag.Index(lang.join()))
 
 	b.writeConst("langNoIndexOffset", len(b.lang.s))
 
@@ -820,7 +816,7 @@ func (b *builder) writeLanguage() {
 			altLangIndex = append(altLangIndex, uint16(idx))
 		}
 	}
-	b.writeString("altLangISO3", altLangISO3.join())
+	b.writeConst("altLangISO3", tag.Index(altLangISO3.join()))
 	b.writeSlice("altLangIndex", altLangIndex)
 
 	b.writeSortedMap("langAliasMap", &langAliasMap, b.langIndex)
@@ -838,7 +834,7 @@ var scriptConsts = []string{
 
 func (b *builder) writeScript() {
 	b.writeConsts(b.script.index, scriptConsts...)
-	b.writeString("script", b.script.join())
+	b.writeConst("script", tag.Index(b.script.join()))
 
 	supp := make([]uint8, len(b.lang.slice()))
 	for i, v := range b.lang.slice()[1:] {
@@ -988,8 +984,8 @@ func (b *builder) writeRegion() {
 			regionISO.s[i] = s + "  "
 		}
 	}
-	b.writeString("regionISO", regionISO.join())
-	b.writeString("altRegionISO3", altRegionISO3)
+	b.writeConst("regionISO", tag.Index(regionISO.join()))
+	b.writeConst("altRegionISO3", altRegionISO3)
 	b.writeSlice("altRegionIDs", altRegionIDs)
 
 	// Create list of deprecated regions.
@@ -1205,7 +1201,7 @@ func (b *builder) writeCurrencies() {
 		}
 		b.currency.s[i] += mkCurrencyInfo(int(r), int(d))
 	}
-	b.writeString("currency", b.currency.join())
+	b.writeConst("currency", tag.Index(b.currency.join()))
 	// Hack alert: gofmt indents a trailing comment after an indented string.
 	// Ensure that the next thing written is not a comment.
 	// writeLikelyData serves this purpose as it starts with an uncommented type.
@@ -1650,6 +1646,8 @@ func main() {
 
 	w := gen.NewCodeWriter()
 	defer w.WriteGoFile("tables.go", "language")
+
+	fmt.Fprintln(w, `import "golang.org/x/text/internal/tag"`)
 
 	b := newBuilder(w)
 	fmt.Fprintf(w, version, cldr.Version)

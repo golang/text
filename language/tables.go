@@ -2,6 +2,8 @@
 
 package language
 
+import "golang.org/x/text/internal/tag"
+
 // Version is the version of CLDR used to generate the data in this package.
 const Version = "27.0.1"
 
@@ -125,8 +127,8 @@ const langPrivateEnd = 0x2efd
 //       the second and third letter of the 3-letter ISO code.
 //     - otherwise: a 0 and a by 2 bits right-shifted index into altLangISO3.
 // For 3-byte language identifiers the 4th byte is 0.
-// Size: 2796 bytes
-var lang = "" +
+// Size: 2780 bytes
+const lang tag.Index = "" +
 	"---\x00aaarabbkabr\x00ace\x00ach\x00ada\x00ady\x00aeveaeb\x00affragq\x00" +
 	"akkaakk\x00aln\x00alt\x00ammhamo\x00anrgaoz\x00arraarc\x00arn\x00aro\x00" +
 	"arq\x00ary\x00arz\x00assmasa\x00ast\x00atj\x00avvaawa\x00ayymazzeazb\x00" +
@@ -511,8 +513,8 @@ var langNoIndex = [2197]uint8{
 // altLangISO3 holds an alphabetically sorted list of 3-letter language code alternatives
 // to 2-letter language codes that cannot be derived using the method described above.
 // Each 3-letter code is followed by its 1-byte langID.
-// Size: 48 bytes
-var altLangISO3 = "---\x00cor\x00hbs\x01heb\x02kin\x03spa\x04yid\x05\xff\xff\xff\xff"
+// Size: 32 bytes
+const altLangISO3 tag.Index = "---\x00cor\x00hbs\x01heb\x02kin\x03spa\x04yid\x05\xff\xff\xff\xff"
 
 // altLangIndex is used to convert indexes in altLangISO3 to langIDs.
 // Size: 12 bytes, 6 elements
@@ -695,8 +697,8 @@ const (
 
 // script is an alphabetically sorted list of ISO 15924 codes. The index
 // of the script in the string, divided by 4, is the internal scriptID.
-// Size: 916 bytes
-var script = "" +
+// Size: 900 bytes
+const script tag.Index = "" +
 	"----AdlmAfakAghbAhomArabAranArmiArmnAvstBaliBamuBassBatkBengBlisBopoBrah" +
 	"BraiBugiBuhdCakmCansCariChamCherCirtCoptCprtCyrlCyrsDevaDsrtDuplEgydEgyh" +
 	"EgypElbaEthiGeokGeorGlagGothGranGrekGujrGuruHangHaniHanoHansHantHatrHebr" +
@@ -898,8 +900,8 @@ var regionTypes = [355]uint8{
 //     - [A-Z}{2}: the first letter of the 2-letter code plus these two
 //                 letters form the 3-letter ISO code.
 //     - 0, n:     index into altRegionISO3.
-// Size: 1316 bytes
-var regionISO = "" +
+// Size: 1300 bytes
+const regionISO tag.Index = "" +
 	"AAAAACSCADNDAEREAFFGAGTGAIIAALLBAMRMANNTAOGOAQTAARRGASSMATUTAUUSAWBWAXLA" +
 	"AZZEBAIHBBRBBDGDBEELBFFABGGRBHHRBIDIBJENBLLMBMMUBNRNBOOLBQESBRRABSHSBTTN" +
 	"BUURBVVTBWWABYLRBZLZCAANCCCKCDODCFAFCGOGCHHECIIVCKOKCLHLCMMRCNHNCOOLCPPT" +
@@ -923,8 +925,8 @@ var regionISO = "" +
 
 // altRegionISO3 holds a list of 3-letter region codes that cannot be
 // mapped to 2-letter codes using the default algorithm. This is a short list.
-// Size: 49 bytes
-var altRegionISO3 = "SCGQUUSGSCOMPRKCYMSPMSRBATFMYTATN"
+// Size: 33 bytes
+const altRegionISO3 string = "SCGQUUSGSCOMPRKCYMSPMSRBATFMYTATN"
 
 // altRegionIDs holds a list of regionIDs the positions of which match those
 // of the 3-letter ISO codes in altRegionISO3.
@@ -1163,8 +1165,8 @@ const (
 // Each identifier is followed by a byte of which the 6 most significant bits
 // indicated the rounding and the least 2 significant bits indicate the
 // number of decimal positions.
-// Size: 1208 bytes
-var currency = "" +
+// Size: 1192 bytes
+const currency tag.Index = "" +
 	"---\x0aADP\x08AED\x0aAFA\x0aAFN\x08ALK\x0aALL\x08AMD\x08ANG\x0aAOA\x0aAO" +
 	"K\x0aAON\x0aAOR\x0aARA\x0aARL\x0aARM\x0aARP\x0aARS\x0aATS\x0aAUD\x0aAWG" +
 	"\x0aAZM\x0aAZN\x0aBAD\x0aBAM\x0aBAN\x0aBBD\x0aBDT\x0aBEC\x0aBEF\x0aBEL" +
@@ -3030,4 +3032,4 @@ var parents = [4]parentRel{
 	{lang: 0x2b1, script: 0x33, maxScript: 0x33, toRegion: 0x8b, fromRegion: []uint16{0xc4}},
 }
 
-// Total table size 21051 bytes (20KiB); checksum: 68810BB6
+// Total table size 20955 bytes (20KiB); checksum: 68810BB6

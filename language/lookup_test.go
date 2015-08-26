@@ -7,78 +7,12 @@ package language
 import (
 	"strings"
 	"testing"
+
+	"golang.org/x/text/internal/tag"
 )
-
-var strdata = []string{
-	"aa  ",
-	"aaa ",
-	"aaaa",
-	"aaab",
-	"aab ",
-	"ab  ",
-	"ba  ",
-	"xxxx",
-}
-
-func strtests() map[string]int {
-	return map[string]int{
-		"    ": 0,
-		"a":    0,
-		"aa":   0,
-		"aaa":  4,
-		"aa ":  0,
-		"aaaa": 8,
-		"aaab": 12,
-		"aaax": 16,
-		"b":    24,
-		"ba":   24,
-		"bbbb": 28,
-	}
-}
-
-func TestSearch(t *testing.T) {
-	for k, v := range strtests() {
-		if i := search(strings.Join(strdata, ""), []byte(k)); i != v {
-			t.Errorf("%s: found %d; want %d", k, i, v)
-		}
-	}
-}
-
-func TestIndex(t *testing.T) {
-	strtests := strtests()
-	strtests["    "] = -1
-	strtests["aaax"] = -1
-	strtests["bbbb"] = -1
-	for k, v := range strtests {
-		if i := index(strings.Join(strdata, ""), []byte(k)); i != v {
-			t.Errorf("%s: found %d; want %d", k, i, v)
-		}
-	}
-}
 
 func b(s string) []byte {
 	return []byte(s)
-}
-
-func TestFixCase(t *testing.T) {
-	tests := []string{
-		"aaaa", "AbCD", "abcd",
-		"Zzzz", "AbCD", "Abcd",
-		"Zzzz", "AbC", "Zzzz",
-		"XXX", "ab ", "XXX",
-		"XXX", "usd", "USD",
-		"cmn", "AB ", "cmn",
-		"gsw", "CMN", "cmn",
-	}
-	for i := 0; i+3 < len(tests); i += 3 {
-		tt := tests[i:]
-		buf := [4]byte{}
-		b := buf[:copy(buf[:], tt[1])]
-		res := fixCase(tt[0], b)
-		if res && cmp(tt[2], b) != 0 || !res && tt[0] != tt[2] {
-			t.Errorf("%s+%s: found %q; want %q", tt[0], tt[1], b, tt[2])
-		}
-	}
 }
 
 func TestLangID(t *testing.T) {
@@ -427,7 +361,7 @@ func TestRegionDeprecation(t *testing.T) {
 }
 
 func TestGetScriptID(t *testing.T) {
-	idx := "0000BbbbDdddEeeeZzzz\xff\xff\xff\xff"
+	idx := tag.Index("0000BbbbDdddEeeeZzzz\xff\xff\xff\xff")
 	tests := []struct {
 		in  string
 		out scriptID
@@ -454,14 +388,14 @@ func TestGetScriptID(t *testing.T) {
 }
 
 func TestCurrency(t *testing.T) {
-	idx := strings.Join([]string{
+	idx := tag.Index(strings.Join([]string{
 		"   \x00",
 		"BBB" + mkCurrencyInfo(5, 2),
 		"DDD\x00",
 		"XXX\x00",
 		"ZZZ\x00",
 		"\xff\xff\xff\xff",
-	}, "")
+	}, ""))
 	tests := []struct {
 		in         string
 		out        currencyID

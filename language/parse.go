@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+
+	"golang.org/x/text/internal/tag"
 )
 
 // isAlpha returns true if the byte is not a digit.
@@ -278,7 +280,7 @@ func parse(scan *scanner, s string) (t Tag, err error) {
 		if end < len(s) {
 			s = s[:end]
 		}
-		if len(s) > 0 && cmp(s, scan.b) == 0 {
+		if len(s) > 0 && tag.Compare(s, scan.b) == 0 {
 			t.str = s
 		} else {
 			t.str = string(scan.b)
