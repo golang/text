@@ -149,6 +149,8 @@ func openUnicode(path string) io.ReadCloser {
 
 func get(root, path string) io.ReadCloser {
 	url := root + "/" + path
+	fmt.Printf("Fetching %s...", url)
+	defer fmt.Println(" done.")
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalf("HTTP GET: %v", err)
@@ -175,7 +177,7 @@ func WriteCLDRVersion(w io.Writer) {
 	fmt.Fprintf(w, "const CLDRVersion = %q\n\n", CLDRVersion())
 }
 
-// WriteGoFiles prepends a standard file comment and package statement to the
+// WriteGoFile prepends a standard file comment and package statement to the
 // given bytes, applies gofmt, and writes them to a file with the given name.
 // It will call log.Fatal if there are any errors.
 func WriteGoFile(filename, pkg string, b []byte) {
@@ -184,16 +186,22 @@ func WriteGoFile(filename, pkg string, b []byte) {
 		log.Fatalf("Could not create file %s: %v", filename, err)
 	}
 	defer w.Close()
+	if _, err = WriteGo(w, pkg, b); err != nil {
+		log.Fatalf("Error writing file %s: %v", filename, err)
+	}
+}
+
+// WriteGo prepends a standard file comment and package statement to the given
+// bytes, applies gofmt, and writes them to w.
+func WriteGo(w io.Writer, pkg string, b []byte) (n int, err error) {
 	src := []byte(fmt.Sprintf(header, pkg))
 	src = append(src, b...)
 	formatted, err := format.Source(src)
 	if err != nil {
 		// Print the generated code even in case of an error so that the
 		// returned error can be meaningfully interpreted.
-		w.Write(src)
-		log.Fatalf("Error formatting file %s: %v", filename, err)
+		n, _ = w.Write(src)
+		return n, err
 	}
-	if _, err := w.Write(formatted); err != nil {
-		log.Fatalf("Error writing file %s: %v", filename, err)
-	}
+	return w.Write(formatted)
 }

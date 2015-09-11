@@ -11,6 +11,8 @@ import (
 	"hash"
 	"hash/fnv"
 	"io"
+	"log"
+	"os"
 	"reflect"
 	"strings"
 	"unicode"
@@ -48,11 +50,23 @@ func NewCodeWriter() *CodeWriter {
 // WriteGoFile appends the buffer with the total size of all created structures
 // and writes it as a Go file to the the given file with the given package name.
 func (w *CodeWriter) WriteGoFile(filename, pkg string) {
+	f, err := os.Create(filename)
+	if err != nil {
+		log.Fatalf("Could not create file %s: %v", filename, err)
+	}
+	defer f.Close()
+	if _, err = w.WriteGo(f, pkg); err != nil {
+		log.Fatalf("Error writing file %s: %v", filename, err)
+	}
+}
+
+// WriteGo appends the buffer with the total size of all created structures and
+// writes it as a Go file to the the given writer with the given package name.
+func (w *CodeWriter) WriteGo(out io.Writer, pkg string) (n int, err error) {
 	sz := w.Size
 	w.WriteComment("Total table size %d bytes (%dKiB); checksum: %X\n", sz, sz/1024, w.Hash.Sum32())
-	WriteGoFile(filename, pkg, w.buf.Bytes())
-	// ioutil.WriteFile(filename, w.buf.Bytes(), 0777)
-	w.buf.Reset()
+	defer w.buf.Reset()
+	return WriteGo(out, pkg, w.buf.Bytes())
 }
 
 func (w *CodeWriter) printf(f string, x ...interface{}) {
