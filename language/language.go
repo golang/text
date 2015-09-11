@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 //go:generate go run maketables.go gen_common.go -output tables.go
+//go:generate go run gen_index.go
 
 // Package language implements BCP 47 language tags and related functionality.
 //
@@ -686,6 +687,42 @@ func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
 			return p, p, true
 		}
 	}
+}
+
+// CompactIndex returns an index, where 0 <= index < NumCompactTags, for tags
+// for which data exists in the text repository. The index will change over time
+// and should not be stored in persistent storage. Extensions other than 'x' are
+// not considered for determining the index. It will return 0, false if no
+// compact tag exists, where 0 is the index for the root language (Und).
+func CompactIndex(t Tag) (index int, ok bool) {
+	// TODO: perhaps give more frequent tags a lower index.
+	// TODO: we could make the indexes stable. This will excluded some
+	//       possibilities for optimization, so don't do this quite yet.
+	if len(t.str) > 0 {
+		// We have variants or extensions.
+		if x, ok := t.Extension('x'); ok || uint16(t.pVariant) != t.pExt {
+			// Strip all but variants and the x extension.
+			if uint16(t.pVariant) != t.pExt {
+				b, s, r := t.Raw()
+				if ok {
+					t, _ = Raw.Compose(b, s, r, t.Variants(), x)
+				} else {
+					t, _ = Raw.Compose(b, s, r, t.Variants())
+				}
+			}
+			// We have variants or an x extension.
+			for i, s := range specialTags {
+				if s == t {
+					return i + 1, true
+				}
+			}
+			return 0, false
+		}
+		// We only have non-x extensions, which we ignore, and no variants.
+	}
+	b, s, r := t.Raw()
+	x, ok := coreTags[coreKey{base: b, script: s, region: r}]
+	return int(x), ok
 }
 
 // Base is an ISO 639 language code, used for encoding the base language

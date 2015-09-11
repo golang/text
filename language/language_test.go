@@ -75,6 +75,35 @@ func TestMakeString(t *testing.T) {
 	}
 }
 
+func TestCompactIndex(t *testing.T) {
+	tests := []struct {
+		tag   string
+		index int
+		ok    bool
+	}{
+		// TODO: these values will change with each CLDR update. This issue
+		// will be solved if we decide to fix the indexes.
+		{"und", 0, true},
+		{"ca-ES-valencia", 1, true},
+		{"ca-ES-valencia-x-posix", 0, false},
+		{"ca-ES-valencia-u-co-phonebk", 1, true},
+		{"ca-ES-valencia-u-co-phonebk-x-posix", 0, false},
+		{"x-klingon", 0, false},
+		{"en-US", 140, true},
+		{"en-US-x-posix", 2, true},
+		{"en", 65, true},
+		{"en-u-co-phonebk", 65, true},
+		{"en-001", 66, true},
+		{"sh", 0, false}, // We don't normalize.
+	}
+	for _, tt := range tests {
+		x, ok := CompactIndex(Raw.MustParse(tt.tag))
+		if x != tt.index || ok != tt.ok {
+			t.Errorf("%s: got %d, %v; want %d %v", tt.tag, x, ok, tt.index, tt.ok)
+		}
+	}
+}
+
 func TestBase(t *testing.T) {
 	tests := []struct {
 		loc, lang string
