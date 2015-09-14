@@ -242,9 +242,20 @@ func (c CanonType) Parse(s string) (t Tag, err error) {
 	if s == "" {
 		return und, errSyntax
 	}
-	t, ok := grandfathered(s)
-	if ok {
-		return t, nil
+	if len(s) <= maxAltTaglen {
+		b := [maxAltTaglen]byte{}
+		for i, c := range s {
+			// Generating invalid UTF-8 is okay as it won't match.
+			if 'A' <= c && c <= 'Z' {
+				c += 'a' - 'A'
+			} else if c == '_' {
+				c = '-'
+			}
+			b[i] = byte(c)
+		}
+		if t, ok := grandfathered(b); ok {
+			return t, nil
+		}
 	}
 	scan := makeScannerString(s)
 	t, err = parse(&scan, s)

@@ -360,50 +360,56 @@ func decimals(index tag.Index, c currencyID) int {
 	return currencyInfo(index[c<<2+3]).decimals()
 }
 
+const (
+	maxAltTaglen = len("en-US-POSIX")
+	maxLen       = maxAltTaglen
+)
+
 var (
 	// grandfatheredMap holds a mapping from legacy and grandfathered tags to
 	// their base language or index to more elaborate tag.
-	grandfatheredMap = map[string]int16{
-		"art-lojban": _jbo,
-		"i-ami":      _ami,
-		"i-bnn":      _bnn,
-		"i-hak":      _hak,
-		"i-klingon":  _tlh,
-		"i-lux":      _lb,
-		"i-navajo":   _nv,
-		"i-pwn":      _pwn,
-		"i-tao":      _tao,
-		"i-tay":      _tay,
-		"i-tsu":      _tsu,
-		"no-bok":     _nb,
-		"no-nyn":     _nn,
-		"sgn-BE-FR":  _sfb,
-		"sgn-BE-NL":  _vgt,
-		"sgn-CH-DE":  _sgg,
-		"zh-guoyu":   _cmn,
-		"zh-hakka":   _hak,
-		"zh-min-nan": _nan,
-		"zh-xiang":   _hsn,
+	grandfatheredMap = map[[maxLen]byte]int16{
+		[maxLen]byte{'a', 'r', 't', '-', 'l', 'o', 'j', 'b', 'a', 'n'}: _jbo, // art-lojban
+		[maxLen]byte{'i', '-', 'a', 'm', 'i'}:                          _ami, // i-ami
+		[maxLen]byte{'i', '-', 'b', 'n', 'n'}:                          _bnn, // i-bnn
+		[maxLen]byte{'i', '-', 'h', 'a', 'k'}:                          _hak, // i-hak
+		[maxLen]byte{'i', '-', 'k', 'l', 'i', 'n', 'g', 'o', 'n'}:      _tlh, // i-klingon
+		[maxLen]byte{'i', '-', 'l', 'u', 'x'}:                          _lb,  // i-lux
+		[maxLen]byte{'i', '-', 'n', 'a', 'v', 'a', 'j', 'o'}:           _nv,  // i-navajo
+		[maxLen]byte{'i', '-', 'p', 'w', 'n'}:                          _pwn, // i-pwn
+		[maxLen]byte{'i', '-', 't', 'a', 'o'}:                          _tao, // i-tao
+		[maxLen]byte{'i', '-', 't', 'a', 'y'}:                          _tay, // i-tay
+		[maxLen]byte{'i', '-', 't', 's', 'u'}:                          _tsu, // i-tsu
+		[maxLen]byte{'n', 'o', '-', 'b', 'o', 'k'}:                     _nb,  // no-bok
+		[maxLen]byte{'n', 'o', '-', 'n', 'y', 'n'}:                     _nn,  // no-nyn
+		[maxLen]byte{'s', 'g', 'n', '-', 'b', 'e', '-', 'f', 'r'}:      _sfb, // sgn-BE-FR
+		[maxLen]byte{'s', 'g', 'n', '-', 'b', 'e', '-', 'n', 'l'}:      _vgt, // sgn-BE-NL
+		[maxLen]byte{'s', 'g', 'n', '-', 'c', 'h', '-', 'd', 'e'}:      _sgg, // sgn-CH-DE
+		[maxLen]byte{'z', 'h', '-', 'g', 'u', 'o', 'y', 'u'}:           _cmn, // zh-guoyu
+		[maxLen]byte{'z', 'h', '-', 'h', 'a', 'k', 'k', 'a'}:           _hak, // zh-hakka
+		[maxLen]byte{'z', 'h', '-', 'm', 'i', 'n', '-', 'n', 'a', 'n'}: _nan, // zh-min-nan
+		[maxLen]byte{'z', 'h', '-', 'x', 'i', 'a', 'n', 'g'}:           _hsn, // zh-xiang
 
 		// Grandfathered tags with no modern replacement will be converted as
 		// follows:
-		"cel-gaulish": -1,
-		"en-GB-oed":   -2,
-		"i-default":   -3,
-		"i-enochian":  -4,
-		"i-mingo":     -5,
-		"zh-min":      -6,
+		[maxLen]byte{'c', 'e', 'l', '-', 'g', 'a', 'u', 'l', 'i', 's', 'h'}: -1, // cel-gaulish
+		[maxLen]byte{'e', 'n', '-', 'g', 'b', '-', 'o', 'e', 'd'}:           -2, // en-GB-oed
+		[maxLen]byte{'i', '-', 'd', 'e', 'f', 'a', 'u', 'l', 't'}:           -3, // i-default
+		[maxLen]byte{'i', '-', 'e', 'n', 'o', 'c', 'h', 'i', 'a', 'n'}:      -4, // i-enochian
+		[maxLen]byte{'i', '-', 'm', 'i', 'n', 'g', 'o'}:                     -5, // i-mingo
+		[maxLen]byte{'z', 'h', '-', 'm', 'i', 'n'}:                          -6, // zh-min
 
 		// CLDR-specific tag.
-		"root": 0,
+		[maxLen]byte{'r', 'o', 'o', 't'}:                                    0,  // root
+		[maxLen]byte{'e', 'n', '-', 'u', 's', '-', 'p', 'o', 's', 'i', 'x'}: -7, // en_US_POSIX"
 	}
 
-	altTagIndex = [...]uint8{0, 17, 28, 42, 58, 71, 83}
+	altTagIndex = [...]uint8{0, 17, 28, 42, 58, 71, 83, 96}
 
-	altTags = "xtg-x-cel-gaulishen-GB-x-oeden-x-i-defaultund-x-i-enochiansee-x-i-mingonan-x-zh-min"
+	altTags = "xtg-x-cel-gaulishen-GB-x-oeden-x-i-defaultund-x-i-enochiansee-x-i-mingonan-x-zh-minen-US-x-posix"
 )
 
-func grandfathered(s string) (t Tag, ok bool) {
+func grandfathered(s [maxAltTaglen]byte) (t Tag, ok bool) {
 	if v, ok := grandfatheredMap[s]; ok {
 		if v < 0 {
 			return Make(altTags[altTagIndex[-v-1]:altTagIndex[-v]]), true

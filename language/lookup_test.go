@@ -102,6 +102,7 @@ func TestGrandfathered(t *testing.T) {
 		{"sgn-BE-FR", "sfb"},
 		{"sgn-BE-NL", "vgt"},
 		{"sgn-CH-DE", "sgg"},
+		{"sgn-ch-de", "sgg"},
 		{"zh-guoyu", "cmn"},
 		{"zh-hakka", "hak"},
 		{"zh-min-nan", "nan"},
@@ -110,10 +111,16 @@ func TestGrandfathered(t *testing.T) {
 		// Grandfathered tags with no modern replacement will be converted as follows:
 		{"cel-gaulish", "xtg-x-cel-gaulish"},
 		{"en-GB-oed", "en-GB-x-oed"},
+		{"en-gb-oed", "en-GB-x-oed"},
 		{"i-default", "en-x-i-default"},
 		{"i-enochian", "und-x-i-enochian"},
 		{"i-mingo", "see-x-i-mingo"},
 		{"zh-min", "nan-x-zh-min"},
+
+		{"root", "und"},
+		{"en_US_POSIX", "en-US-x-posix"},
+		{"en_us_posix", "en-US-x-posix"},
+		{"en-us-posix", "en-US-x-posix"},
 	} {
 		got := Raw.Make(tt.in)
 		want := Raw.MustParse(tt.out)
