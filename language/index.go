@@ -402,30 +402,30 @@ var coreTags = map[coreKey]uint16{
 	coreKey{base: Base{langID: 0x272}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    382, // tzm
 	coreKey{base: Base{langID: 0x274}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    383, // ug
 	coreKey{base: Base{langID: 0x276}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    384, // uk
-	coreKey{base: Base{langID: 0x27c}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    386, // ur
-	coreKey{base: Base{langID: 0x27c}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x97}}:   387, // ur-IN
-	coreKey{base: Base{langID: 0x27d}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    388, // uz
-	coreKey{base: Base{langID: 0x27d}, script: Script{scriptID: 0x5}, region: Region{regionID: 0x0}}:    389, // uz-Arab
-	coreKey{base: Base{langID: 0x27d}, script: Script{scriptID: 0x1d}, region: Region{regionID: 0x0}}:   390, // uz-Cyrl
-	coreKey{base: Base{langID: 0x27e}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    391, // vai
-	coreKey{base: Base{langID: 0x27e}, script: Script{scriptID: 0x4f}, region: Region{regionID: 0x0}}:   392, // vai-Latn
-	coreKey{base: Base{langID: 0x282}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    393, // vi
-	coreKey{base: Base{langID: 0x28a}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    394, // vun
-	coreKey{base: Base{langID: 0x28c}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    395, // wae
-	coreKey{base: Base{langID: 0x2a0}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    396, // xog
-	coreKey{base: Base{langID: 0x2a6}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    397, // yav
-	coreKey{base: Base{langID: 0x2a8}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    398, // yi
-	coreKey{base: Base{langID: 0x2a9}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    399, // yo
-	coreKey{base: Base{langID: 0x2a9}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x3a}}:   400, // yo-BJ
-	coreKey{base: Base{langID: 0x2b0}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    401, // zgh
-	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    402, // zh
-	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x32}, region: Region{regionID: 0x8b}}:  403, // zh-Hans-HK
-	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x32}, region: Region{regionID: 0xc4}}:  404, // zh-Hans-MO
-	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x32}, region: Region{regionID: 0x10b}}: 405, // zh-Hans-SG
-	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x33}, region: Region{regionID: 0x0}}:   406, // zh-Hant
-	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x33}, region: Region{regionID: 0x8b}}:  407, // zh-Hant-HK
-	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x33}, region: Region{regionID: 0xc4}}:  408, // zh-Hant-MO
-	coreKey{base: Base{langID: 0x2b3}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    409, // zu
+	coreKey{base: Base{langID: 0x27c}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    385, // ur
+	coreKey{base: Base{langID: 0x27c}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x97}}:   386, // ur-IN
+	coreKey{base: Base{langID: 0x27d}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    387, // uz
+	coreKey{base: Base{langID: 0x27d}, script: Script{scriptID: 0x5}, region: Region{regionID: 0x0}}:    388, // uz-Arab
+	coreKey{base: Base{langID: 0x27d}, script: Script{scriptID: 0x1d}, region: Region{regionID: 0x0}}:   389, // uz-Cyrl
+	coreKey{base: Base{langID: 0x27e}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    390, // vai
+	coreKey{base: Base{langID: 0x27e}, script: Script{scriptID: 0x4f}, region: Region{regionID: 0x0}}:   391, // vai-Latn
+	coreKey{base: Base{langID: 0x282}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    392, // vi
+	coreKey{base: Base{langID: 0x28a}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    393, // vun
+	coreKey{base: Base{langID: 0x28c}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    394, // wae
+	coreKey{base: Base{langID: 0x2a0}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    395, // xog
+	coreKey{base: Base{langID: 0x2a6}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    396, // yav
+	coreKey{base: Base{langID: 0x2a8}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    397, // yi
+	coreKey{base: Base{langID: 0x2a9}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    398, // yo
+	coreKey{base: Base{langID: 0x2a9}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x3a}}:   399, // yo-BJ
+	coreKey{base: Base{langID: 0x2b0}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    400, // zgh
+	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    401, // zh
+	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x32}, region: Region{regionID: 0x8b}}:  402, // zh-Hans-HK
+	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x32}, region: Region{regionID: 0xc4}}:  403, // zh-Hans-MO
+	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x32}, region: Region{regionID: 0x10b}}: 404, // zh-Hans-SG
+	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x33}, region: Region{regionID: 0x0}}:   405, // zh-Hant
+	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x33}, region: Region{regionID: 0x8b}}:  406, // zh-Hant-HK
+	coreKey{base: Base{langID: 0x2b1}, script: Script{scriptID: 0x33}, region: Region{regionID: 0xc4}}:  407, // zh-Hant-MO
+	coreKey{base: Base{langID: 0x2b3}, script: Script{scriptID: 0x0}, region: Region{regionID: 0x0}}:    408, // zu
 }
 
-// Total table size 3336 bytes (3KiB); checksum: B68BD987
+// Total table size 3336 bytes (3KiB); checksum: DDBE7FDB

@@ -121,18 +121,20 @@ func main() {
 	// Size computations are just an estimate.
 	w.Size += int(reflect.TypeOf(map[coreKey]uint16{}).Size())
 	w.Size += len(core) * int(reflect.TypeOf(coreKey{}).Size()+2) // 2 is for uint16
-	fmt.Fprint(w.Hash, core)
 
 	fmt.Fprintln(w, "var coreTags = map[coreKey]uint16{")
 	fmt.Fprintln(w, "coreKey{}: 0, // und")
-	for i, t := range core {
+	i := len(special) + 1 // Und and special tags already written.
+	for _, t := range core {
 		if t == language.Und {
 			continue
 		}
+		fmt.Fprint(w.Hash, t, i)
 		b, s, r := t.Raw()
 		key := fmt.Sprintf("%#v", coreKey{b, s, r})
 		key = strings.Replace(key[len("main."):], "language.", "", -1)
-		fmt.Fprintf(w, "%s: %d, // %s\n", key, i+len(special)+1, t)
+		fmt.Fprintf(w, "%s: %d, // %s\n", key, i, t)
+		i++
 	}
 	fmt.Fprintln(w, "}")
 }
