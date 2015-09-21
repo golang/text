@@ -404,9 +404,9 @@ var (
 		[maxLen]byte{'e', 'n', '-', 'u', 's', '-', 'p', 'o', 's', 'i', 'x'}: -7, // en_US_POSIX"
 	}
 
-	altTagIndex = [...]uint8{0, 17, 28, 42, 58, 71, 83, 96}
+	altTagIndex = [...]uint8{0, 17, 28, 42, 58, 71, 83, 99}
 
-	altTags = "xtg-x-cel-gaulishen-GB-x-oeden-x-i-defaultund-x-i-enochiansee-x-i-mingonan-x-zh-minen-US-x-posix"
+	altTags = "xtg-x-cel-gaulishen-GB-x-oeden-x-i-defaultund-x-i-enochiansee-x-i-mingonan-x-zh-minen-US-u-va-posix"
 )
 
 func grandfathered(s [maxAltTaglen]byte) (t Tag, ok bool) {

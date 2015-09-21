@@ -80,18 +80,15 @@ func main() {
 			x.Metadata != nil {
 
 			// TODO: support POSIX natively, albeit non-standard.
-			tag := language.Make(strings.Replace(lang, "_POSIX", "-x-posix", 1))
+			tag := language.Make(strings.Replace(lang, "_POSIX", "-u-va-posix", 1))
 			m[tag] = true
 		}
 	}
 	var core, special []language.Tag
 
 	for t := range m {
-		// Check we have no extension except -x.
-		for _, e := range t.Extensions() {
-			if e.Type() != 'x' {
-				log.Fatalf("Unexpected extension %q in %v", e.Type(), t)
-			}
+		if x := t.Extensions(); len(x) != 0 && fmt.Sprint(x) != "[u-va-posix]" {
+			log.Fatalf("Unexpected extension %v in %v", x, t)
 		}
 		if len(t.Variants()) == 0 && len(t.Extensions()) == 0 {
 			core = append(core, t)

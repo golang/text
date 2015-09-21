@@ -118,9 +118,9 @@ func TestGrandfathered(t *testing.T) {
 		{"zh-min", "nan-x-zh-min"},
 
 		{"root", "und"},
-		{"en_US_POSIX", "en-US-x-posix"},
-		{"en_us_posix", "en-US-x-posix"},
-		{"en-us-posix", "en-US-x-posix"},
+		{"en_US_POSIX", "en-US-u-va-posix"},
+		{"en_us_posix", "en-US-u-va-posix"},
+		{"en-us-posix", "en-US-u-va-posix"},
 	} {
 		got := Raw.Make(tt.in)
 		want := Raw.MustParse(tt.out)

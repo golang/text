@@ -434,11 +434,8 @@ func parseCollation(b *build.Builder) {
 		for _, c := range cs {
 			id, err := language.Parse(loc)
 			if err != nil {
-				if loc == "en-US-posix" {
-					fmt.Fprintf(os.Stderr, "invalid locale: %q", err.Error())
-					continue
-				}
-				id = language.Make("en-US-u-va-posix")
+				fmt.Fprintf(os.Stderr, "invalid locale: %q", err)
+				continue
 			}
 			// Support both old- and new-style defaults.
 			d := c.Type
