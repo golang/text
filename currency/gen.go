@@ -22,6 +22,7 @@ import (
 	"golang.org/x/text/cldr"
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/internal/tag"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -141,16 +142,53 @@ func genCurrencies(w *gen.CodeWriter, data *cldr.SupplementalData) {
 		}
 	}
 
+	currencyIndex := tag.Index(strings.Join(currencies, ""))
 	w.WriteComment(`
 	currency holds an alphabetically sorted list of canonical 3-letter currency
 	identifiers. Each identifier is followed by a byte of type currencyInfo,
 	defined in gen_common.go.`)
-	w.WriteConst("currency", tag.Index(strings.Join(currencies, "")))
+	w.WriteConst("currency", currencyIndex)
 
 	// Hack alert: gofmt indents a trailing comment after an indented string.
 	// Ensure that the next thing written is not a comment.
-	w.WriteConst("numCurrencies", len(currencies)-2)
+	numCurrencies := (len(currencyIndex) / 4) - 2
+	w.WriteConst("numCurrencies", numCurrencies)
+
+	// Create a table that maps regions to currencies.
+	regionToCurrency := []toCurrency{}
+
+	for _, reg := range data.CurrencyData.Region {
+		if len(reg.Iso3166) != 2 {
+			log.Fatalf("Unexpected group %q in region data", reg.Iso3166)
+		}
+		if len(reg.Currency) == 0 {
+			continue
+		}
+		cur := reg.Currency[0]
+		if cur.To != "" || cur.Tender == "false" {
+			continue
+		}
+		regionToCurrency = append(regionToCurrency, toCurrency{
+			region: regionToCode(language.MustParseRegion(reg.Iso3166)),
+			code:   uint16(currencyIndex.Index([]byte(cur.Iso4217))),
+		})
+	}
+	sort.Sort(byRegion(regionToCurrency))
+
+	w.WriteType(toCurrency{})
+	w.WriteVar("regionToCurrency", regionToCurrency)
 }
+
+type toCurrency struct {
+	region uint16
+	code   uint16
+}
+
+type byRegion []toCurrency
+
+func (a byRegion) Len() int           { return len(a) }
+func (a byRegion) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byRegion) Less(i, j int) bool { return a[i].region < a[j].region }
 
 func mkCurrencyInfo(standard, cash int) string {
 	return string([]byte{byte(cash<<cashShift | standard)})

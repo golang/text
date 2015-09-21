@@ -2,6 +2,8 @@
 
 package currency
 
+import "golang.org/x/text/language"
+
 // This file contains code common to gen.go and the package code.
 
 const (
@@ -30,4 +32,13 @@ var roundings = [...]roundingType{
 	{3, 1},
 	{4, 1},
 	{2, 5}, // cash rounding alternative
+}
+
+// regionToCode returns a 16-bit region code. Only two-letter codes are
+// supported. (Three-letter codes are not needed.)
+func regionToCode(r language.Region) uint16 {
+	if s := r.String(); len(s) == 2 {
+		return uint16(s[0])<<8 | uint16(s[1])
+	}
+	return 0
 }
