@@ -5,8 +5,10 @@
 package currency
 
 import (
+	"fmt"
 	"testing"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
 )
 
@@ -128,6 +130,32 @@ func TestKindRounding(t *testing.T) {
 			t.Errorf("%d: got %d, %d; want %d, %d", i, scale, inc, tc.scale, tc.inc)
 		}
 	}
+}
+
+const body = `package main
+import (
+	"fmt"
+	"golang.org/x/text/currency"
+)
+func main() {
+	%s
+}
+`
+
+func TestLinking(t *testing.T) {
+	base := getSize(t, `fmt.Print(currency.CLDRVersion)`)
+	symbols := getSize(t, `fmt.Print(currency.Symbol(currency.USD))`)
+	if d := symbols - base; d < 2*1024 {
+		t.Errorf("size(symbols)-size(base) was %d; want > 2K", d)
+	}
+}
+
+func getSize(t *testing.T, main string) int {
+	size, err := testtext.CodeSize(fmt.Sprintf(body, main))
+	if err != nil {
+		t.Skipf("skipping link size test; binary size could not be determined: %v", err)
+	}
+	return size
 }
 
 func BenchmarkString(b *testing.B) {

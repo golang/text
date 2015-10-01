@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"golang.org/x/text/cldr"
+	"golang.org/x/text/internal"
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/internal/tag"
 	"golang.org/x/text/language"
@@ -45,7 +46,8 @@ func main() {
 	defer r.Close()
 
 	d := &cldr.Decoder{}
-	d.SetDirFilter("supplemental")
+	d.SetDirFilter("supplemental", "main")
+	d.SetSectionFilter("numbers")
 	data, err := d.DecodeZip(r)
 	if err != nil {
 		log.Fatalf("DecodeZip: %v", err)
@@ -57,7 +59,9 @@ func main() {
 	fmt.Fprintln(w, `import "golang.org/x/text/internal/tag"`)
 
 	gen.WriteCLDRVersion(w)
-	genCurrencies(w, data.Supplemental())
+	b := &builder{}
+	b.genCurrencies(w, data.Supplemental())
+	b.genSymbols(w, data)
 }
 
 func rewriteCommon() {
@@ -89,7 +93,12 @@ var constants = []string{
 	"THB", "TRY", "TWD", "ZAR",
 }
 
-func genCurrencies(w *gen.CodeWriter, data *cldr.SupplementalData) {
+type builder struct {
+	currencies    tag.Index
+	numCurrencies int
+}
+
+func (b *builder) genCurrencies(w *gen.CodeWriter, data *cldr.SupplementalData) {
 	// 3-letter ISO currency codes
 	// Start with dummy to let index start at 1.
 	currencies := []string{"\x00\x00\x00\x00"}
@@ -142,17 +151,17 @@ func genCurrencies(w *gen.CodeWriter, data *cldr.SupplementalData) {
 		}
 	}
 
-	currencyIndex := tag.Index(strings.Join(currencies, ""))
+	b.currencies = tag.Index(strings.Join(currencies, ""))
 	w.WriteComment(`
 	currency holds an alphabetically sorted list of canonical 3-letter currency
 	identifiers. Each identifier is followed by a byte of type currencyInfo,
 	defined in gen_common.go.`)
-	w.WriteConst("currency", currencyIndex)
+	w.WriteConst("currency", b.currencies)
 
 	// Hack alert: gofmt indents a trailing comment after an indented string.
 	// Ensure that the next thing written is not a comment.
-	numCurrencies := (len(currencyIndex) / 4) - 2
-	w.WriteConst("numCurrencies", numCurrencies)
+	b.numCurrencies = (len(b.currencies) / 4) - 2
+	w.WriteConst("numCurrencies", b.numCurrencies)
 
 	// Create a table that maps regions to currencies.
 	regionToCurrency := []toCurrency{}
@@ -170,7 +179,7 @@ func genCurrencies(w *gen.CodeWriter, data *cldr.SupplementalData) {
 		}
 		regionToCurrency = append(regionToCurrency, toCurrency{
 			region: regionToCode(language.MustParseRegion(reg.Iso3166)),
-			code:   uint16(currencyIndex.Index([]byte(cur.Iso4217))),
+			code:   uint16(b.currencies.Index([]byte(cur.Iso4217))),
 		})
 	}
 	sort.Sort(byRegion(regionToCurrency))
@@ -214,6 +223,143 @@ func getRoundingIndex(digits, rounding string) int {
 	panic("unreachable")
 }
 
+// genSymbols generates the symbols used for currencies. Most symbols are
+// defined in root and there is only very small variation per language.
+// The following rules apply:
+// - A symbol can be requested as normal or narrow.
+// - If a symbol is not defined for a currency, it defaults to its ISO code.
+func (b *builder) genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
+	d, err := cldr.ParseDraft(*draft)
+	if err != nil {
+		log.Fatalf("filter: %v", err)
+	}
+
+	const (
+		normal = iota
+		narrow
+		numTypes
+	)
+	// language -> currency -> type ->  symbol
+	var symbols [language.NumCompactTags][][numTypes]*string
+
+	// Collect symbol information per language.
+	for _, lang := range data.Locales() {
+		ldml := data.RawLDML(lang)
+		if ldml.Numbers == nil || ldml.Numbers.Currencies == nil {
+			continue
+		}
+
+		langIndex, ok := language.CompactIndex(language.MustParse(lang))
+		if !ok {
+			log.Fatalf("No compact index for language %s", lang)
+		}
+
+		symbols[langIndex] = make([][numTypes]*string, b.numCurrencies+1)
+
+		for _, c := range ldml.Numbers.Currencies.Currency {
+			syms := cldr.MakeSlice(&c.Symbol)
+			syms.SelectDraft(d)
+
+			for _, sym := range c.Symbol {
+				v := sym.Data()
+				if v == c.Type {
+					// We define "" to mean the ISO symbol.
+					v = ""
+				}
+				cur := b.currencies.Index([]byte(c.Type))
+				if cur == -1 {
+					fmt.Println("Unsupported:", c.Type) // TODO: mark MVP as supported.
+					continue
+				}
+
+				switch sym.Alt {
+				case "":
+					symbols[langIndex][cur][normal] = &v
+				case "narrow":
+					symbols[langIndex][cur][narrow] = &v
+				}
+			}
+		}
+	}
+
+	// Remove values identical to the parent.
+	for langIndex, data := range symbols {
+		for curIndex, curs := range data {
+			for typ, sym := range curs {
+				if sym == nil {
+					continue
+				}
+				for p := uint16(langIndex); p != 0; {
+					p = internal.Parent[p]
+					x := symbols[p]
+					if x == nil {
+						continue
+					}
+					if v := x[curIndex][typ]; v != nil || p == 0 {
+						// Value is equal to the default value root value is undefined.
+						parentSym := ""
+						if v != nil {
+							parentSym = *v
+						}
+						if parentSym == *sym {
+							// Value is the same as parent.
+							data[curIndex][typ] = nil
+						}
+						break
+					}
+				}
+			}
+		}
+	}
+
+	// Create symbol index.
+	symbolData := []byte{0}
+	symbolLookup := map[string]uint16{"": 0} // 0 means default, so block that value.
+	for _, data := range symbols {
+		for _, curs := range data {
+			for _, sym := range curs {
+				if sym == nil {
+					continue
+				}
+				if _, ok := symbolLookup[*sym]; !ok {
+					symbolLookup[*sym] = uint16(len(symbolData))
+					symbolData = append(symbolData, byte(len(*sym)))
+					symbolData = append(symbolData, *sym...)
+				}
+			}
+		}
+	}
+	w.WriteComment(`
+	symbols holds symbol data of the form <n> <str>, where n is the length of
+	the symbol string str.`)
+	w.WriteConst("symbols", string(symbolData))
+
+	// Create index from language to currency lookup to symbol.
+	type curToIndex struct{ cur, idx uint16 }
+	w.WriteType(curToIndex{})
+
+	prefix := []string{"normal", "narrow"}
+	// Create data for regular and narrow symbol data.
+	for typ := normal; typ <= narrow; typ++ {
+
+		indexes := []curToIndex{} // maps currency to symbol index
+		languages := []uint16{}
+
+		for _, data := range symbols {
+			languages = append(languages, uint16(len(indexes)))
+			for curIndex, curs := range data {
+
+				if sym := curs[typ]; sym != nil {
+					indexes = append(indexes, curToIndex{uint16(curIndex), symbolLookup[*sym]})
+				}
+			}
+		}
+		languages = append(languages, uint16(len(indexes)))
+
+		w.WriteVar(prefix[typ]+"LangIndex", languages)
+		w.WriteVar(prefix[typ]+"SymIndex", indexes)
+	}
+}
 func parseUint8(str string) uint8 {
 	x, err := strconv.ParseUint(str, 10, 8)
 	if err != nil {

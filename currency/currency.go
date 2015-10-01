@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package currency
-
 //go:generate go run gen.go gen_common.go -output tables.go
+
+// Package currency contains currency-related functionality.
+package currency
 
 import (
 	"errors"
@@ -16,9 +17,7 @@ import (
 
 // TODO:
 // - language-specific currency names.
-// - Value type
 // - currency formatting.
-// - get currency from tag/region.
 // - currency information per region
 // - register currency code (there are no private use area)
 
@@ -73,6 +72,12 @@ func (c Currency) String() string {
 		return "XXX"
 	}
 	return currency.Elem(int(c.index))[:3]
+}
+
+// Value creates a Value for the given currency and amount.
+func (c Currency) Value(amount interface{}) Value {
+	// TODO: verify amount is a supported number type
+	return Value{amount: amount, currency: c}
 }
 
 var (
