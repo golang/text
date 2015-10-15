@@ -124,6 +124,8 @@ func TestKindRounding(t *testing.T) {
 		{Cash, czk, 0, 1},
 		{Standard, zwr, 2, 1},
 		{Cash, zwr, 0, 1},
+		{Standard, KRW, 0, 1},
+		{Cash, KRW, 0, 1}, // Cash defaults to standard.
 	}
 	for i, tc := range testCases {
 		if scale, inc := tc.kind.Rounding(tc.cur); scale != tc.scale && inc != tc.inc {

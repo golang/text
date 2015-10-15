@@ -137,8 +137,8 @@ func (b *builder) genCurrencies(w *gen.CodeWriter, data *cldr.SupplementalData) 
 		if info.Iso4217 == "DEFAULT" {
 			continue
 		}
-		standard := getRoundingIndex(info.Digits, info.Rounding)
-		cash := getRoundingIndex(info.CashDigits, info.CashRounding)
+		standard := getRoundingIndex(info.Digits, info.Rounding, 0)
+		cash := getRoundingIndex(info.CashDigits, info.CashRounding, standard)
 
 		index := sort.SearchStrings(currencies, info.Iso4217)
 		currencies[index] += mkCurrencyInfo(standard, cash)
@@ -203,8 +203,8 @@ func mkCurrencyInfo(standard, cash int) string {
 	return string([]byte{byte(cash<<cashShift | standard)})
 }
 
-func getRoundingIndex(digits, rounding string) int {
-	round := roundings[0] // default
+func getRoundingIndex(digits, rounding string, defIndex int) int {
+	round := roundings[defIndex] // default
 
 	if digits != "" {
 		round.scale = parseUint8(digits)

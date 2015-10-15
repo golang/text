@@ -46,14 +46,15 @@ func TestFormatting(t *testing.T) {
 		13: {en, 13.123, Symbol.Default(czk).Kind(Cash), "CZK 13"},
 		14: {en, 14.12345, ISO.Default(MustParseISO("CLF")), "CLF 14.1235"},
 		15: {en, USD.Value(15.00), ISO.Default(TWD), "USD 15.00"},
+		16: {en, KRW.Value(16.00), ISO.Kind(Cash), "KRW 16"},
 
 		// TODO: support integers as well.
 
-		16: {en, USD, nil, "USD"},
-		17: {en, USD, ISO, "USD"},
-		18: {en, USD, Symbol, "$"},
-		19: {en_AU, USD, Symbol, "US$"},
-		20: {en_AU, USD, NarrowSymbol, "$"},
+		17: {en, USD, nil, "USD"},
+		18: {en, USD, ISO, "USD"},
+		19: {en, USD, Symbol, "$"},
+		20: {en_AU, USD, Symbol, "US$"},
+		21: {en_AU, USD, NarrowSymbol, "$"},
 	}
 	for i, tc := range testCases {
 		p := message.NewPrinter(tc.tag)
