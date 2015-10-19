@@ -19,7 +19,7 @@ func TestParents(t *testing.T) {
 		{"en-001", "en"},
 		{"en-AU", "en-001"},
 		{"en-US", "en"},
-		{"en-US-x-posix", "en-US"},
+		{"en-US-u-va-posix", "en-US"},
 		{"ca-ES-valencia", "ca"}, // ca-ES has no data.
 	}
 	for _, tc := range testCases {

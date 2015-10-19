@@ -691,26 +691,33 @@ func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
 
 // CompactIndex returns an index, where 0 <= index < NumCompactTags, for tags
 // for which data exists in the text repository. The index will change over time
-// and should not be stored in persistent storage. Extensions other than 'x' are
-// not considered for determining the index. It will return 0, false if no
+// and should not be stored in persistent storage. Extensions, except for the
+// 'va' type of the 'u' extension, are ignored. It will return 0, false if no
 // compact tag exists, where 0 is the index for the root language (Und).
 func CompactIndex(t Tag) (index int, ok bool) {
 	// TODO: perhaps give more frequent tags a lower index.
 	// TODO: we could make the indexes stable. This will excluded some
 	//       possibilities for optimization, so don't do this quite yet.
+	b, s, r := t.Raw()
 	if len(t.str) > 0 {
-		// We have variants or extensions.
-		if x, ok := t.Extension('x'); ok || uint16(t.pVariant) != t.pExt {
-			// Strip all but variants and the x extension.
-			if uint16(t.pVariant) != t.pExt {
-				b, s, r := t.Raw()
-				if ok {
-					t, _ = Raw.Compose(b, s, r, t.Variants(), x)
-				} else {
-					t, _ = Raw.Compose(b, s, r, t.Variants())
-				}
+		if strings.HasPrefix(t.str, "x-") {
+			// We have no entries for user-defined tags.
+			return 0, false
+		}
+		if uint16(t.pVariant) != t.pExt {
+			// There are no tags with variants and an u-va type.
+			if t.TypeForKey("va") != "" {
+				return 0, false
 			}
-			// We have variants or an x extension.
+			t, _ = Raw.Compose(b, s, r, t.Variants())
+		} else if _, ok := t.Extension('u'); ok {
+			// Strip all but the 'va' entry.
+			variant := t.TypeForKey("va")
+			t, _ = Raw.Compose(b, s, r)
+			t, _ = t.SetTypeForKey("va", variant)
+		}
+		if len(t.str) > 0 {
+			// We have some variants.
 			for i, s := range specialTags {
 				if s == t {
 					return i + 1, true
@@ -718,9 +725,8 @@ func CompactIndex(t Tag) (index int, ok bool) {
 			}
 			return 0, false
 		}
-		// We only have non-x extensions, which we ignore, and no variants.
 	}
-	b, s, r := t.Raw()
+	// No variants specified: just compare core components.
 	x, ok := coreTags[coreKey{base: b, script: s, region: r}]
 	return int(x), ok
 }
