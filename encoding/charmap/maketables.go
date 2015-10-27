@@ -36,16 +36,52 @@ var encodings = []struct {
 	mapping     string
 }{
 	{
-		"IBM Code Page 437",
+		"Windows Code Page 437",
 		"PC8CodePage437",
 		"",
 		"CodePage437",
-		encoding.ASCIISub,
-		ascii +
-			"ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒ" +
-			"áíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐" +
-			"└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀" +
-			"αßΓπΣσµτΦΘΩδ∞∅∈∩≡±≥≤⌠⌡÷≈°•·√ⁿ²∎\u00a0",
+		'?',
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/windows-437-2000.ucm",
+	},
+	{
+		"Windows Code Page 850",
+		"PC850Multilingual",
+		"",
+		"CodePage850",
+		'?',
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/windows-850-2000.ucm",
+	},
+	{
+		"Windows Code Page 852",
+		"PCp852",
+		"",
+		"CodePage852",
+		'?',
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/windows-852-2000.ucm",
+	},
+	{
+		"Windows Code Page 855",
+		"IBM855",
+		"",
+		"CodePage855",
+		'?',
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/windows-855-2000.ucm",
+	},
+	{
+		"Windows Code Page 858",
+		"IBM00858",
+		"",
+		"CodePage858",
+		'?',
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/windows-858-2000.ucm",
+	},
+	{
+		"Windows Code Page 862",
+		"PC862LatinHebrew",
+		"",
+		"CodePage862",
+		'?',
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/windows-862-2000.ucm",
 	},
 	{
 		"IBM Code Page 866",
@@ -324,6 +360,41 @@ func getWHATWG(url string) string {
 	return ascii + string(mapping)
 }
 
+func getUCM(url string) string {
+	res, err := http.Get(url)
+	if err != nil {
+		log.Fatalf("%q: Get: %v", url, err)
+	}
+	defer res.Body.Close()
+
+	mapping := make([]rune, 256)
+	for i := range mapping {
+		mapping[i] = '\ufffd'
+	}
+
+	charsFound := 0
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		s := strings.TrimSpace(scanner.Text())
+		if s == "" || s[0] == '#' {
+			continue
+		}
+		var c byte
+		var r rune
+		if _, err := fmt.Sscanf(s, `<U%x> \x%x |0`, &r, &c); err != nil {
+			continue
+		}
+		mapping[c] = r
+		charsFound++
+	}
+
+	if charsFound < 200 {
+		log.Fatalf("%q: only %d characters found (wrong page format?)", url, charsFound)
+	}
+
+	return string(mapping)
+}
+
 func main() {
 	mibs := map[string]bool{}
 	all := []string{}
@@ -339,8 +410,11 @@ func main() {
 		varNames := strings.Split(e.varName, ",")
 		all = append(all, varNames...)
 		varName := varNames[0]
-		if strings.HasPrefix(e.mapping, "http://encoding.spec.whatwg.org/") {
+		switch {
+		case strings.HasPrefix(e.mapping, "http://encoding.spec.whatwg.org/"):
 			e.mapping = getWHATWG(e.mapping)
+		case strings.HasPrefix(e.mapping, "http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/"):
+			e.mapping = getUCM(e.mapping)
 		}
 
 		asciiSuperset, low := strings.HasPrefix(e.mapping, ascii), 0x00

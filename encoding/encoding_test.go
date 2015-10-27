@@ -900,7 +900,7 @@ func TestBOMOverride(t *testing.T) {
 		7:  {"\xEF\xBB", true, "\u2229\u2557", 2, nil},
 		8:  {"\xEF", true, "\u2229", 1, nil},
 		9:  {"", true, "", 0, nil},
-		10: {"\xFE", true, "\u220e", 1, nil},
+		10: {"\xFE", true, "\u25a0", 1, nil},
 		11: {"\xFF", true, "\u00a0", 1, nil},
 		12: {"\xEF\xBB", false, "", 0, transform.ErrShortSrc},
 		13: {"\xEF", false, "", 0, transform.ErrShortSrc},
