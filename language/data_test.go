@@ -402,4 +402,15 @@ var matchTests = []matchTest{
 			// - {"zh-Hant-HK", "zh-Hant-MO"},
 		},
 	},
+	// Options and variants are inherited from user-defined settings.
+	{
+		"preserve Unicode extension",
+		"en, de, sl-nedis",
+		[]struct{ match, desired string }{
+			{"de-u-co-phonebk", "de-FR-u-co-phonebk"},
+			{"sl-nedis-u-cu-eur", "sl-nedis-u-cu-eur"},
+			{"sl-nedis-u-cu-eur", "sl-u-cu-eur"},
+			{"sl-nedis-u-cu-eur", "sl-HR-nedis-u-cu-eur"},
+		},
+	},
 }

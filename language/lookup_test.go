@@ -110,8 +110,8 @@ func TestGrandfathered(t *testing.T) {
 
 		// Grandfathered tags with no modern replacement will be converted as follows:
 		{"cel-gaulish", "xtg-x-cel-gaulish"},
-		{"en-GB-oed", "en-GB-x-oed"},
-		{"en-gb-oed", "en-GB-x-oed"},
+		{"en-GB-oed", "en-GB-oxendict"},
+		{"en-gb-oed", "en-GB-oxendict"},
 		{"i-default", "en-x-i-default"},
 		{"i-enochian", "und-x-i-enochian"},
 		{"i-mingo", "see-x-i-mingo"},

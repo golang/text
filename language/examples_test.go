@@ -12,6 +12,7 @@ import (
 
 func ExampleCanonType() {
 	p := func(id string) {
+		fmt.Printf("Default(%s) -> %s\n", id, language.Make(id))
 		fmt.Printf("BCP47(%s) -> %s\n", id, language.BCP47.Make(id))
 		fmt.Printf("Macro(%s) -> %s\n", id, language.Macro.Make(id))
 		fmt.Printf("All(%s) -> %s\n", id, language.All.Make(id))
@@ -22,18 +23,23 @@ func ExampleCanonType() {
 	p("bjd")
 	p("iw-Latn-fonipa-u-cu-usd")
 	// Output:
+	// Default(en-Latn) -> en-Latn
 	// BCP47(en-Latn) -> en
 	// Macro(en-Latn) -> en-Latn
 	// All(en-Latn) -> en
+	// Default(sh) -> sr-Latn
 	// BCP47(sh) -> sh
 	// Macro(sh) -> sh
 	// All(sh) -> sr-Latn
+	// Default(zh-cmn) -> cmn
 	// BCP47(zh-cmn) -> cmn
 	// Macro(zh-cmn) -> zh
 	// All(zh-cmn) -> zh
+	// Default(bjd) -> drl
 	// BCP47(bjd) -> drl
 	// Macro(bjd) -> bjd
 	// All(bjd) -> drl
+	// Default(iw-Latn-fonipa-u-cu-usd) -> he-Latn-fonipa-u-cu-usd
 	// BCP47(iw-Latn-fonipa-u-cu-usd) -> he-Latn-fonipa-u-cu-usd
 	// Macro(iw-Latn-fonipa-u-cu-usd) -> iw-Latn-fonipa-u-cu-usd
 	// All(iw-Latn-fonipa-u-cu-usd) -> he-Latn-fonipa-u-cu-usd
@@ -298,6 +304,18 @@ func ExampleMatcher() {
 	// equivalent and consider other factors first.
 	fmt.Println(m.Match(language.Raw.Make("he-IL")))
 
+	fmt.Println("----")
+
+	// User settings passed to the Unicode extension are ignored for matching
+	// and preserved in the returned tag.
+	fmt.Println(m.Match(language.Make("de-u-co-phonebk"), language.Make("fr-u-cu-frf")))
+
+	// Even if the matching language is different.
+	fmt.Println(m.Match(language.Make("de-u-co-phonebk"), language.Make("br-u-cu-frf")))
+
+	// If there is no matching language, the options of the first preferred tag are used.
+	fmt.Println(m.Match(language.Make("de-u-co-phonebk")))
+
 	// Output:
 	// fr 2 Exact
 	// en-GB 1 High
@@ -314,6 +332,10 @@ func ExampleMatcher() {
 	// ----
 	// iw 9 Exact
 	// iw-IL 8 Exact
+	// ----
+	// fr-u-cu-frf 2 Exact
+	// fr-u-cu-frf 2 High
+	// en-u-co-phonebk 0 No
 }
 
 func ExampleTag_ComprehensibleTo() {

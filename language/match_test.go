@@ -261,14 +261,9 @@ func TestBestMatch(t *testing.T) {
 			fmt.Printf("%s:\n%v\n", tt.comment, m)
 		}
 		for _, tm := range tt.test {
-			desired := parse(tm.desired)
-			id, conf := m.getBest(desired...)
-			tag := supported[0]
-			if id != nil {
-				tag = id.tag
-			}
+			tag, _, conf := m.Match(parse(tm.desired)...)
 			if tag.String() != tm.match {
-				t.Errorf("%d:%s: find %s in %q: have %s; want %s (%v)\n", i, tt.comment, desired, tt.supported, tag, tm.match, conf)
+				t.Errorf("%d:%s: find %s in %q: have %s; want %s (%v)\n", i, tt.comment, tm.desired, tt.supported, tag, tm.match, conf)
 			}
 		}
 	}
