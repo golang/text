@@ -11397,7 +11397,7 @@ var langHeaders = [210]header{
 }
 
 // Size: 1912 bytes
-const afLangStr = "" +
+var afLangStr string = "" +
 	"AbkasiesAfrikaansAkanAmhariesArabiesAssameesAymaraAzerbeidjansBaskirWit-" +
 	"RussiesBulgaarsBambaraBengaalsTibettaansBretonsBosniesKatalaansKorsikaan" +
 	"sTsjeggiesWalliesDeensDuitsDivehiDzongkhaEweGrieksEngelsEsperantoSpaansE" +
@@ -11517,7 +11517,7 @@ var afLangIdx = []uint16{
 }
 
 // Size: 3927 bytes
-const amLangStr = "" +
+var amLangStr string = "" +
 	"አፋርኛአብሐዚኛአፍሪካንኛአካንኛአማርኛዓረብኛአሳሜዛዊአያማርኛአዘርባጃንኛባስኪርኛቤላራሻኛቡልጋሪኛቢስላምኛባምባርኛቤንጋ" +
 	"ሊኛቲቤታንኛብሬቶንኛቦስኒያንኛካታላንኛኮርሲካኛቼክኛወልሽዴኒሽጀርመንዲቬህድዞንግኻኛኢዊግሪክኛእንግሊዝኛኤስፐራንቶስፓ" +
 	"ኒሽኢስቶኒያንኛባስክኛፐርሺያኛፊኒሽፊጂኛፋሮኛፈረንሳይኛየምዕራብ ፍሪስኛአይሪሽእስኮትስ ጌልክኛጋሊሺያጓራኒኛጉጃርቲኛ" +
@@ -11630,7 +11630,7 @@ var amLangIdx = []uint16{
 }
 
 // Size: 9558 bytes
-const arLangStr = "" +
+var arLangStr string = "" +
 	"الأفاريةالأبخازيةالأفستيةالأفريقانيةالأكانيةالأمهريةالأراغونيةالعربيةالأ" +
 	"ساميةالأواريةالأيماراالأذربيجانيةالباشكيريةالبيلاروسيةالبلغاريةالبيسلام" +
 	"يةالبامباراالبنغاليةالتبتيةالبريتونيةالبوسنيةالكتالانيةالشيشانيةالتشامو" +
@@ -11792,7 +11792,7 @@ var arLangIdx = []uint16{
 }
 
 // Size: 4672 bytes
-const azLangStr = "" +
+var azLangStr string = "" +
 	"afarcaabxazavestancaafrikaansakancaamhararagoncaərəbassamavarikcəaymarca" +
 	"azərbaycanbaşqırdbelarusbolqarbislama dilibambarabenqaltibetBretoncabosn" +
 	"iakkatalançeçen diliçamoro dilikorsikakri diliçexkilsə slav diliçuvaş di" +
@@ -11948,7 +11948,7 @@ var azLangIdx = []uint16{
 }
 
 // Size: 7876 bytes
-const bgLangStr = "" +
+var bgLangStr string = "" +
 	"афарабхазкиавестскиафрикансаканамхарскиарагонскиарабскиасамскиаварскиайм" +
 	"араазербайджанскибашкирскибеларускибългарскибисламабамбарабенгалскитибе" +
 	"тскибретонскибосненскикаталонскичеченскичаморокорсиканскикриичешкицърко" +
@@ -12097,7 +12097,7 @@ var bgLangIdx = []uint16{
 }
 
 // Size: 11736 bytes
-const bnLangStr = "" +
+var bnLangStr string = "" +
 	"আফারআবখাজিয়ানআবেস্তীয়আফ্রিকান্সআকানআমহারিকআর্গোনিজআরবীআসামিআভেরিকআয়মা" +
 	"রাআজারবাইজানীবাশকিরবেলারুশিয়বুলগেরিয়বিসলামাবামবারাবাংলাতিব্বতিব্রেটন" +
 	"বসনীয়ানকাতালানচেচেনচামোরোকর্সিকানক্রিচেকচার্চ স্লাভিকচুবাসওয়েলশডেনিশ" +
@@ -12248,7 +12248,7 @@ var bnLangIdx = []uint16{
 }
 
 // Size: 4000 bytes
-const caLangStr = "" +
+var caLangStr string = "" +
 	"àfarabkhazavèsticafrikaansàkanamhàricaragonèsàrabassamèsàvaraimaraazerba" +
 	"idjanèsbaixkirbielorúsbúlgarbislamabambarabengalítibetàbretóbosniàcatalà" +
 	"txetxèchamorrocorscreetxeceslau eclesiàstictxuvaixgal·lèsdanèsalemanydiv" +
@@ -12394,7 +12394,7 @@ var caLangIdx = []uint16{
 }
 
 // Size: 7260 bytes
-const csLangStr = "" +
+var csLangStr string = "" +
 	"afarštinaabcházštinaavestánštinaafrikánštinaakanštinaamharštinaaragonšti" +
 	"naarabštinaásámštinaavarštinaajmarštinaázerbájdžánštinabaškirštinaběloru" +
 	"štinabulharštinabislamštinabambarštinabengálštinatibetštinabretonštinab" +
@@ -12578,7 +12578,7 @@ var csLangIdx = []uint16{
 }
 
 // Size: 3966 bytes
-const daLangStr = "" +
+var daLangStr string = "" +
 	"afarabkhasiskavestanafrikaansakanamhariskaragonesiskarabiskassamesiskava" +
 	"riskaymaraaserbajdsjanskbashkirhviderussiskbulgarskbislamabambarabengali" +
 	"tibetanskbretonskbosniskcatalansktjetjenskchamorrokorsikanskcreetjekkisk" +
@@ -12726,7 +12726,7 @@ var daLangIdx = []uint16{
 }
 
 // Size: 6193 bytes
-const deLangStr = "" +
+var deLangStr string = "" +
 	"AfarAbchasischAvestischAfrikaansAkanAmharischAragonesischArabischAssames" +
 	"ischAwarischAymaraAserbaidschanischBaschkirischWeißrussischBulgarischBis" +
 	"lamaBambara-SpracheBengalischTibetischBretonischBosnischKatalanischTsche" +
@@ -12905,7 +12905,7 @@ var deLangIdx = []uint16{
 }
 
 // Size: 8765 bytes
-const elLangStr = "" +
+var elLangStr string = "" +
 	"ΑφάρΑμπχαζικάΑβεστάνΑφρικάανςΑκάνΑμαρικάΑραγκονικάΑραβικάΑσαμεζικάΆβαρικ" +
 	"ΑϊμάραΑζερμπαϊτζανικάΜπασκίρΛευκορωσικάΒουλγαρικάΜπισλάμαΜπαμπάραΜπενγκ" +
 	"άλιΘιβετιανάΒρετονικάΒοσνιακάΚαταλανικάΤσέτσνιανΚαμόρροΚορσικανικάΚριΤσ" +
@@ -13061,7 +13061,7 @@ var elLangIdx = []uint16{
 }
 
 // Size: 4849 bytes
-const enLangStr = "" +
+var enLangStr string = "" +
 	"AfarAbkhazianAvestanAfrikaansAkanAmharicAragoneseArabicAssameseAvaricAym" +
 	"araAzerbaijaniBashkirBelarusianBulgarianBislamaBambaraBengaliTibetanBret" +
 	"onBosnianCatalanChechenChamorroCorsicanCreeCzechChurch SlavicChuvashWels" +
@@ -13222,7 +13222,7 @@ var enLangIdx = []uint16{
 }
 
 // Size: 4180 bytes
-const esLangStr = "" +
+var esLangStr string = "" +
 	"afarabjasioavésticoafrikáansakanamáricoaragonésárabeasamésavaraimaraazer" +
 	"baiyanobaskirbielorrusobúlgarobislamabambarabengalítibetanobretónbosnioc" +
 	"atalánchechenochamorrocorsocreechecoeslavo eclesiásticochuvashgalésdanés" +
@@ -13372,7 +13372,7 @@ var esLangIdx = []uint16{
 }
 
 // Size: 3704 bytes
-const etLangStr = "" +
+var etLangStr string = "" +
 	"afariabhaasiavestaafrikaaniakaniamhariaragoniaraabiaassamiavaariaimaraas" +
 	"erbaidžaanibaškiirivalgevenebulgaariabislamabambarabengalitiibetibretoon" +
 	"ibosniakatalaanitšetšeenitšamorrokorsikakriitšehhikirikuslaavitšuvašikõm" +
@@ -13516,7 +13516,7 @@ var etLangIdx = []uint16{
 }
 
 // Size: 7513 bytes
-const faLangStr = "" +
+var faLangStr string = "" +
 	"آفاریآبخازیاوستاییآفریکانسآکانامهریآراگونیعربیآسامیآواریآیماراییترکی آذر" +
 	"بایجانیباشغیریبلوروسیبلغاریبیسلامابامباراییبنگالیتبتیبرتانیاییبوسنیاییک" +
 	"اتالانچچنیچاموروییکورسیکریاییچکیاسلاوی کلیساییچوواشیویلزیدانمارکیآلمانی" +
@@ -13665,7 +13665,7 @@ var faLangIdx = []uint16{
 }
 
 // Size: 4652 bytes
-const fiLangStr = "" +
+var fiLangStr string = "" +
 	"afarabhaasiavestaafrikaansakanamharaaragoniaarabiaassamiavaariaimaraazer" +
 	"ibaškiirivalkovenäjäbulgariabislamabambarabengalitiibetbretonibosniakata" +
 	"laanitšetšeenitšamorrokorsikacreetšekkikirkkoslaavitšuvassikymritanskasa" +
@@ -13822,7 +13822,7 @@ var fiLangIdx = []uint16{
 }
 
 // Size: 2002 bytes
-const filLangStr = "" +
+var filLangStr string = "" +
 	"AbkhazianAfrikaansAkanAmharicArabeAssameseAymaraAzerbaijaniBashkirBelaru" +
 	"sianBulgarianBambaraBengaliTibetanBretonBosnianCatalanCorsicanCzechWelsh" +
 	"DanishGermanDivehiDzongkhaEweGreekInglesEsperantoSpanishEstonianBasquePe" +
@@ -13943,7 +13943,7 @@ var filLangIdx = []uint16{
 }
 
 // Size: 4124 bytes
-const frLangStr = "" +
+var frLangStr string = "" +
 	"afarabkhazeavestiqueafrikaansakanamhariquearagonaisarabeassamaisavarayma" +
 	"raazéribachkirbiélorussebulgarebichelamarbambarabengalitibétainbretonbos" +
 	"niaquecatalantchétchènechamorrocorsecreetchèqueslavon d’églisetchouvache" +
@@ -14092,7 +14092,7 @@ var frLangIdx = []uint16{
 }
 
 // Size: 3 bytes
-const frCALangStr = "luo"
+const frCALangStr string = "luo"
 
 // Size: 812 bytes, 394 elements
 var frCALangIdx = []uint16{
@@ -14156,7 +14156,7 @@ var frCALangIdx = []uint16{
 }
 
 // Size: 11217 bytes
-const guLangStr = "" +
+var guLangStr string = "" +
 	"અફારઅબખાજિયનઅવેસ્તનઆફ્રિકન્સઅકાનએમ્હારિકઅર્ગોનીઝઅરબીઆસામીઅવેરિકઆયમારાઅઝર" +
 	"બૈજાનીબશ્કીરબેલારુશિયનબલ્ગેરિયનબિસ્લામાબામ્બારાબંગાળીતિબેટીયનબ્રેટોનબો" +
 	"સ્નિયનકતલાનચેચનકેમોરોકોર્સિકનક્રીચેકચર્ચ સ્લાવિકચૂવાશવેલ્શડેનિશજર્મનદિ" +
@@ -14304,7 +14304,7 @@ var guLangIdx = []uint16{
 }
 
 // Size: 7063 bytes
-const heLangStr = "" +
+var heLangStr string = "" +
 	"אפאריתאבחזיתאבסטןאפריקאנסאקאןאמהריתאראגוניתערביתאסאמיתאבאריתאיימאריתאזרי" +
 	"תבשקיריתבלארוסיתבולגריתביסלמהבמבארהבנגליתטיבטיתברטוניתבוסניתקטלאניתצ׳צ׳" +
 	"ניתצ׳מורוקורסיקניתקריצ׳כיתסלאבית כנסייתית עתיקהצ׳ובאשולשיתדניתגרמניתדיב" +
@@ -14448,7 +14448,7 @@ var heLangIdx = []uint16{
 }
 
 // Size: 10978 bytes
-const hiLangStr = "" +
+var hiLangStr string = "" +
 	"अफ़ारअब्ख़ाज़ियनअवस्ताईअफ़्रीकीअकनअम्हेरीअर्गोनीअरबीअसमियाअवेरिकआयमाराअज" +
 	"़रबैजानीबशख़िरबेलारूसीबुल्गारियाईबिस्लामाबाम्बाराबंगालीतिब्बतीब्रेटनबो" +
 	"स्नियाईकातालानचेचनकमोरोकोर्सीकनक्रीचेकचर्च साल्विकचूवाशवेल्शडेनिशजर्मन" +
@@ -14595,7 +14595,7 @@ var hiLangIdx = []uint16{
 }
 
 // Size: 4364 bytes
-const hrLangStr = "" +
+var hrLangStr string = "" +
 	"afarskiabhaskiavestanafrikaansakanskiamharskiaragonskiarapskiasamskiavar" +
 	"skiaymaraazerbajdžanskibaškirskibjeloruskibugarskibislamabambarabengalsk" +
 	"itibetanskibretonskibosanskikatalonskičečenskichamorrokorzičkicreečeškic" +
@@ -14748,7 +14748,7 @@ var hrLangIdx = []uint16{
 }
 
 // Size: 3870 bytes
-const huLangStr = "" +
+var huLangStr string = "" +
 	"afarabházavesztánafrikaansakanamharaaragonézarabasszámiavarajmaraazerbaj" +
 	"dzsánibaskírbeloruszbolgárbislamabambarabengálitibetibretonbosnyákkatalá" +
 	"ncsecsencsamorókorzikaikrícsehegyházi szlávcsuvaswalesidánnémetdivehibut" +
@@ -14892,7 +14892,7 @@ var huLangIdx = []uint16{
 }
 
 // Size: 4247 bytes
-const hyLangStr = "" +
+var hyLangStr string = "" +
 	"աբխազերենաֆրիկաանսաքաներենամհարերենարաբերենասամերենադրբեջաներենբաշկիրերե" +
 	"նբելառուսերենբուլղարերենբամբարաբենգալերենտիբեթերենբրետոներենբոսնիերենկա" +
 	"տալաներենկորսիկերենչեխերենուելսերենդանիերենգերմաներենջոնգքհաէվեհունարեն" +
@@ -15016,7 +15016,7 @@ var hyLangIdx = []uint16{
 }
 
 // Size: 4032 bytes
-const idLangStr = "" +
+var idLangStr string = "" +
 	"AfarAbkhazAvestaAfrikaansAkanAmharikAragonArabAssamAvarAymaraAzerbaijanB" +
 	"ashkirBelarusiaBulgarBislamaBambaraBengaliTibetBretonBosniaKatalanCheche" +
 	"nChamorroKorsikaKreeCheskaBahasa Gereja SlavoniaChuvashWelshDanskJermanD" +
@@ -15165,7 +15165,7 @@ var idLangIdx = []uint16{
 }
 
 // Size: 4224 bytes
-const isLangStr = "" +
+var isLangStr string = "" +
 	"abkasískaavestískaafríkanskaakanamharískaaragonskaarabískaassamskaavarís" +
 	"kaaímaraaserskabaskírhvítrússneskabúlgarskabíslamabambarabengalskatíbesk" +
 	"abretónskabosnískakatalónskatsjetsjenskakamorrókorsískakrítékkneskakirkj" +
@@ -15310,7 +15310,7 @@ var isLangIdx = []uint16{
 }
 
 // Size: 4915 bytes
-const itLangStr = "" +
+var itLangStr string = "" +
 	"afarabcasoavestanafrikaansakanamaricoaragonesearaboassameseavaroaymaraaz" +
 	"erbaigianobaschirobielorussobulgarobislamabambarabengalesetibetanobreton" +
 	"ebosniacocatalanocecenochamorrocorsocreececoslavo della Chiesachuvashgal" +
@@ -15472,7 +15472,7 @@ var itLangIdx = []uint16{
 }
 
 // Size: 9904 bytes
-const jaLangStr = "" +
+var jaLangStr string = "" +
 	"アファル語アブハズ語アヴェスタ語アフリカーンス語アカン語アムハラ語アラゴン語アラビア語アッサム語アヴァル語アイマラ語アゼルバイジャン語バシキール" +
 	"語ベラルーシ語ブルガリア語ビスラマ語バンバラ語ベンガル語チベット語ブルトン語ボスニア語カタロニア語チェチェン語チャモロ語コルシカ語クリー語チ" +
 	"ェコ語教会スラブ語チュヴァシ語ウェールズ語デンマーク語ドイツ語ディベヒ語ゾンカ語エウェ語ギリシャ語英語エスペラント語スペイン語エストニア語バ" +
@@ -15613,7 +15613,7 @@ var jaLangIdx = []uint16{
 }
 
 // Size: 9856 bytes
-const kaLangStr = "" +
+var kaLangStr string = "" +
 	"აფარიაფხაზურიავესტურიაფრიკაანსიაკანიამჰარულიარაგონულიარაბულიასამურიაიმარ" +
 	"ააზერბაიჯანულიბაშკირულიბელორუსულიბულგარულიბამბარაბენგალურიტიბეტურიბრეტ" +
 	"ონულიბოსნიურიკატალანურიჩეჩნურიკორსიკულიკრიჩეხურისაეკლესიო სლავურიჩუვაშ" +
@@ -15754,7 +15754,7 @@ var kaLangIdx = []uint16{
 }
 
 // Size: 3974 bytes
-const kkLangStr = "" +
+var kkLangStr string = "" +
 	"абхаз тіліафрикаансаканамхарараб тіліассам тіліәзірбайжан тілібашқұрт ті" +
 	"лібеларус тіліболгар тілібамбарабенгал тілітибет тілібретон тілібосния " +
 	"тілікаталанкорсикан тілічех тіліваллийдатнеміс тілідзонг-кээвегрек тілі" +
@@ -15876,7 +15876,7 @@ var kkLangIdx = []uint16{
 }
 
 // Size: 4548 bytes
-const kmLangStr = "" +
+var kmLangStr string = "" +
 	"ភាសាអាហ្វារអាប់ខាហ៊្សានភាសាអាវែស្តង់អាហ្វ្រីកាអានAkanអាមហារីចភាសាអារ៉ាហ្" +
 	"គោនអារ៉ាប់អាសាមីសភាសាអីម៉ារ៉ាអាហ៊្សែរបែហ្សង់បែស្កឺបេឡារុស្សប៊ុលហ្ការីប" +
 	"ាម្បារាបង់ក្លាដែសទីបេប្រីស្តុនបូស្នីកាតាឡានCorsicanឆេកវេលដាណឺម៉ាកអាល្ល" +
@@ -15998,7 +15998,7 @@ var kmLangIdx = []uint16{
 }
 
 // Size: 11546 bytes
-const knLangStr = "" +
+var knLangStr string = "" +
 	"ಅಫಾರ್ಅಬ್ಖಾಜಿಯನ್ಅವೆಸ್ಟನ್ಆಫ್ರಿಕಾನ್ಸ್ಅಕಾನ್ಅಂಹರಿಕ್ಅರಗೊನೀಸ್ಅರೇಬಿಕ್ಅಸ್ಸಾಮೀಸ್ಅವ" +
 	"ರಿಕ್ಅಯ್ಮಾರಾಅಜೆರ್ಬೈಜಾನಿಬಶ್ಕಿರ್ಬೆಲರೂಸಿಯನ್ಬಲ್ಗೇರಿಯನ್ಬಿಸ್ಲಾಮಾಬಂಬಾರಾಬೆಂಗಾಲಿ" +
 	"ಟಿಬೇಟಿಯನ್ಬ್ರೆಟನ್ಬೋಸ್ನಿಯನ್ಕೆಟಲಾನ್ಚೆಚನ್ಕಮೊರೊಕೋರ್ಸಿಕನ್ಕ್ರೀಜೆಕ್ಚರ್ಚ್ ಸ್ಲಾವ" +
@@ -16149,7 +16149,7 @@ var knLangIdx = []uint16{
 }
 
 // Size: 7179 bytes
-const koLangStr = "" +
+var koLangStr string = "" +
 	"아파르어압카즈어아베스타어아프리칸스어아칸어암하라어아라곤어아랍어아샘어아바릭어아이마라어아제르바이잔어바슈키르어벨라루스어불가리아어비슬라마어" +
 	"밤바라어벵골어티베트어브르타뉴어보스니아어카탈로니아어체첸어차모로어코르시카어크리어체코어교회 슬라브어추바시어웨일스어덴마크어독일어디베히" +
 	"어종카어에웨어그리스어영어에스페란토어스페인어에스토니아어바스크어페르시아어풀라어핀란드어피지어페로어프랑스어프리지아어아일랜드어스코틀랜드" +
@@ -16278,7 +16278,7 @@ var koLangIdx = []uint16{
 }
 
 // Size: 3747 bytes
-const kyLangStr = "" +
+var kyLangStr string = "" +
 	"абхазчаафрикаанчааканчаамхарчаарабчаассамчаазербайжанчабашкырчабеларусча" +
 	"болгарчабамбарадабангладешчетибетчебретончобоснийчекаталанчакорсиканчач" +
 	"ехчеуелшчедатчанемисчежонгучаэбечегрекчеанглисчеэсперантоиспанчаэстончо" +
@@ -16398,7 +16398,7 @@ var kyLangIdx = []uint16{
 }
 
 // Size: 10635 bytes
-const loLangStr = "" +
+var loLangStr string = "" +
 	"ອະຟາແອບຄາຊຽນອາເວັສແຕນອາຟຣິການອາການອຳຮາຣິກອາຣາໂກເນັດອາຣັບອັສຊາມີສອາວາຣິກອ" +
 	"າຍມາລາອາເຊີໄບຈານິບາຣກີເບລາຣັສຊຽນບັງກາຣຽນບິສລະມາບາມບາຣາເບັງກາລີທິເບທັນເ" +
 	"ບຣຕັນບອສນຽນຄາຕາລານຊີເຄນຊາມໍໂຣຄໍຊິກາຄີເຊກໂບດສລາວິກຊູວາຊເວວແດນິຊເຢຍລະມັນ" +
@@ -16543,7 +16543,7 @@ var loLangIdx = []uint16{
 }
 
 // Size: 5762 bytes
-const ltLangStr = "" +
+var ltLangStr string = "" +
 	"afarųabchazųavestųafrikanųakanųamharųaragonesųarabųasamųavarikųaimarųaze" +
 	"rbaidžaniečiųbaškirųbaltarusiųbulgarųbislamabambarųbengalųtibetiečiųbret" +
 	"onųbosniųkatalonųčečėnųčamorųkorsikiečiųkryčekųbažnytinė slavųčiuvašųval" +
@@ -16708,7 +16708,7 @@ var ltLangIdx = []uint16{
 }
 
 // Size: 4240 bytes
-const lvLangStr = "" +
+var lvLangStr string = "" +
 	"afāruabhāzuavestaafrikanduakanuamharuaragoniešuarābuasamiešuavāruaimarua" +
 	"zerbaidžāņubaškīrubaltkrievubulgārubišlamābambarubengāļutibetiešubretoņu" +
 	"bosniešukatalāņučečenučamorrukorsikāņukrīčehubaznīcslāvučuvašuvelsiešudā" +
@@ -16855,7 +16855,7 @@ var lvLangIdx = []uint16{
 }
 
 // Size: 10065 bytes
-const mkLangStr = "" +
+var mkLangStr string = "" +
 	"афарскиапхаскиавестанскиафрикансаканскиамхарскиарагонскиарапскиасамскиав" +
 	"арскиајмарскиазербејџанскибашкирскибелорускибугарскибисламабамбарабенга" +
 	"лскитибетскибретонскибосанскикаталонскичеченскичаморскикорзиканскикриче" +
@@ -17020,7 +17020,7 @@ var mkLangIdx = []uint16{
 }
 
 // Size: 11808 bytes
-const mlLangStr = "" +
+var mlLangStr string = "" +
 	"അഫാർഅബ്\u200cഖാസിയൻഅവസ്റ്റാൻആഫ്രിക്കാൻസ്അകാൻ\u200cഅംഹാരിക്അരഗോണീസ്അറബിക്" +
 	"ആസ്സാമീസ്അവാരിക്അയ്മാറഅസർബൈജാനിബഷ്ഖിർബെലാറുഷ്യൻബൾഗേറിയൻബിസ്\u200cലാമബം" +
 	"ബാറബംഗാളിടിബറ്റൻബ്രെട്ടൺബോസ്നിയൻകറ്റാലാൻചെചൻകമോറോകോർസിക്കൻക്രീചെക്ക്ചർ" +
@@ -17172,7 +17172,7 @@ var mlLangIdx = []uint16{
 }
 
 // Size: 3152 bytes
-const mnLangStr = "" +
+var mnLangStr string = "" +
 	"абхазафрикаканамхарарабассамазербайжанбашкирбеларусьболгарбамбарабенгалт" +
 	"өвдбретонбосникаталанкорсикчехуэлсданигерманжонхаэвэгреканглиэсперантои" +
 	"спаниэстонибаскперсфинляндфижифарерфранцбаруун фризынирландшотланд келт" +
@@ -17288,7 +17288,7 @@ var mnLangIdx = []uint16{
 }
 
 // Size: 10811 bytes
-const mrLangStr = "" +
+var mrLangStr string = "" +
 	"अफारअबखेजियनअवेस्तनअफ्रिकान्सअकानअम्हारिकअर्गोनीजअरबीआसामीअ\u200dॅव्हेरि" +
 	"कऐमराअझरबैजानीबष्किरबेलारुशियनबल्गेरियनबिस्लामाबाम्बाराबंगालीतिबेटीब्र" +
 	"ेतॉनबोस्नियनकातालानचेचनकॅमोरोकॉर्सिकनक्रीझेकचर्च स्लाव्हिकचूवाशवेल्शडॅ" +
@@ -17434,7 +17434,7 @@ var mrLangIdx = []uint16{
 }
 
 // Size: 2362 bytes
-const msLangStr = "" +
+var msLangStr string = "" +
 	"AbkhaziaAvestanAfrikaansAkanAmharicArabAssamAvaricAymaraAzerbaijanBashki" +
 	"rBelarusBulgariaBambaraBenggalaTibetBretonBosniaCataloniaChechenCorsicaC" +
 	"zechSlavik GerejaChuvashWalesDenmarkJermanDivehiDzongkhaEweGreekInggeris" +
@@ -17560,7 +17560,7 @@ var msLangIdx = []uint16{
 }
 
 // Size: 6813 bytes
-const myLangStr = "" +
+var myLangStr string = "" +
 	"အက်ခါဇူအနျအာဖရိကန်းစ်အာကိန်အန်ဟာရစျချအာရေဗီအက္စမီစ်အော်ဇောဘိုင်ဂျောနီဘက်" +
 	"ရှ်ကီအာဘီလာရုဘူဂေးရီးယားဘန်ဘာရာဘင်္ဂါလီတိဘက်ဘရီတွန်ဘော့စ်နီးယားကာတာလန်" +
 	"ချေချင်းခိုစီကန်ခရီးချက်ဝေလဒိန်းမတ်ဂျာမန်ဒွန်ကာဝီဂရိအင်္ဂလိပ်အက္စပရန္တ" +
@@ -17686,7 +17686,7 @@ var myLangIdx = []uint16{
 }
 
 // Size: 4883 bytes
-const neLangStr = "" +
+var neLangStr string = "" +
 	"अब्खाजियालीअफ्रिकान्सआकानअम्हारिकअरबीआसामीअजरबैजानीबाश्किरवेलारूसीबुल्गे" +
 	"रियालीबाम्बाराबंगालीतिब्बतीब्रेटनबोस्नियालीक्याटालनकोर्सिकनचेकवेल्शडेन" +
 	"िशजर्मनजोङ्खाइविग्रीकअंग्रेजीएस्पेरान्तोस्पेनिसइस्टोनियालीबास्कफारसीफि" +
@@ -17803,7 +17803,7 @@ var neLangIdx = []uint16{
 }
 
 // Size: 4954 bytes
-const nlLangStr = "" +
+var nlLangStr string = "" +
 	"AfarAbchazischAvestischAfrikaansAkanAmhaarsAragoneesArabischAssameesAvar" +
 	"ischAymaraAzerbeidzjaansBasjkiersWit-RussischBulgaarsBislamaBambaraBenga" +
 	"alsTibetaansBretonsBosnischCatalaansTsjetsjeensChamorroCorsicaansCreeTsj" +
@@ -17965,7 +17965,7 @@ var nlLangIdx = []uint16{
 }
 
 // Size: 4048 bytes
-const noLangStr = "" +
+var noLangStr string = "" +
 	"afarabkhasiskavestiskafrikaansakanamhariskaragonskarabiskassamiskavarisk" +
 	"aymaraaserbajdsjanskbasjkirskhviterussiskbulgarskbislamabambarabengaliti" +
 	"betanskbretonskbosniskkatalansktsjetsjenskchamorrokorsikanskcreetsjekkis" +
@@ -18114,7 +18114,7 @@ var noLangIdx = []uint16{
 }
 
 // Size: 5147 bytes
-const paLangStr = "" +
+var paLangStr string = "" +
 	"ਅਬਖਾਜ਼ੀਅਨਅਫ਼ਰੀਕੀਅਕਾਨਅਮਹਾਰਿਕਅਰਬੀਅਸਾਮੀਅਜ਼ਰਬਾਈਜਾਨੀਬਸ਼ਕੀਰਬੇਲਾਰੂਸੀਬੁਲਗਾਰੀਆਈਬੰ" +
 	"ਬਾਰਾਬੰਗਾਲੀਤਿੱਬਤੀਬਰੇਟਨਬੋਸਨੀਆਈਕੈਟਾਲਾਨਚੇਚਨਕੋਰਸੀਕਨਚੈਕਵੈਲਜ਼ਡੈਨਿਸ਼ਜਰਮਨਜ਼ੋਂਗਖ" +
 	"ਾਈਵਈਯੂਨਾਨੀਅੰਗਰੇਜ਼ੀਇਸਪੇਰਾਂਟੋਸਪੇਨੀਇਸਟੋਨੀਆਈਬਾਸਕਫ਼ਾਰਸੀਫਿਨਿਸ਼ਫ਼ਿਜ਼ੀਫ਼ੇਰੋਸੇਫ" +
@@ -18232,7 +18232,7 @@ var paLangIdx = []uint16{
 }
 
 // Size: 5490 bytes
-const plLangStr = "" +
+var plLangStr string = "" +
 	"afarabchaskiawestyjskiafrikaansakanamharskiaragońskiarabskiasamskiawarsk" +
 	"iajmaraazerskibaszkirskibiałoruskibułgarskibislamabambarabengalskitybeta" +
 	"ńskibretońskibośniackikatalońskiczeczeńskichamorrokorsykańskikriczeskis" +
@@ -18400,7 +18400,7 @@ var plLangIdx = []uint16{
 }
 
 // Size: 4158 bytes
-const ptLangStr = "" +
+var ptLangStr string = "" +
 	"afarabcázioavésticoafricânerakanamáricoaragonêsárabeassamêsavaricaimaraa" +
 	"zerbaijanobashkirbielorrussobúlgarobislamábambarabengalitibetanobretãobó" +
 	"sniocatalãochechenochamorrocórsicocreetchecoeslavo eclesiásticochuvashga" +
@@ -18549,7 +18549,7 @@ var ptLangIdx = []uint16{
 }
 
 // Size: 470 bytes
-const ptPTLangStr = "" +
+var ptPTLangStr string = "" +
 	"africânderchecoeweestóniofrísico ocidentalhaúçahindiarménioigboconguêsca" +
 	"narimgandamacedónionorueguês nynorsknorueguês bokmålprovençalosséticopol" +
 	"acopastóturcomanotongamapuchebamunghomalajargão chinooksorani curdobaixo" +
@@ -18648,7 +18648,7 @@ var ptPTLangIdx = []uint16{
 }
 
 // Size: 4315 bytes
-const roLangStr = "" +
+var roLangStr string = "" +
 	"afarabhazăavestanăafrikaansakanamharicăaragonezăarabăasamezăavarăaymaraa" +
 	"zerăbașkirăbielorusăbulgarăbislamabambarabengalezătibetanăbretonăbosniac" +
 	"ăcatalanăcecenăchamorrocorsicanăcreecehăslavonăciuvașăgalezădanezăgerma" +
@@ -18798,7 +18798,7 @@ var roLangIdx = []uint16{
 }
 
 // Size: 9159 bytes
-const ruLangStr = "" +
+var ruLangStr string = "" +
 	"афарабхазскийавестийскийафрикаансаканамхарскийарагонскийарабскийассамски" +
 	"йаварскийаймараазербайджанскийбашкирскийбелорусскийболгарскийбисламабам" +
 	"барийскийбенгальскийтибетскийбретонскийбоснийскийкаталанскийчеченскийча" +
@@ -18957,7 +18957,7 @@ var ruLangIdx = []uint16{
 }
 
 // Size: 5550 bytes
-const siLangStr = "" +
+var siLangStr string = "" +
 	"ඇබ්කාසියානුඅප්\u200dරිකානුඅකාන්ඇම්හාරික්අරාබිඇසමියානුඅසර්බයිජාන්බාෂ්කිර්" +
 	"බෙලරුසියානුබල්ගේරියානුබම්බරාබෙංගාලිටිබෙට්බ්\u200dරේටොන්බොස්නියානුකැටලන" +
 	"්ක්\u200dරොඑශියානුචෙත්වේල්ස්ඩැනිශ්ජර්මන්දිවෙහිඩිසොන්කාඉව්ග්\u200dරීකඉං" +
@@ -19079,7 +19079,7 @@ var siLangIdx = []uint16{
 }
 
 // Size: 5451 bytes
-const skLangStr = "" +
+var skLangStr string = "" +
 	"afarčinaabcházčinaavestčinaafrikánčinaakančinaamharčinaaragónčinaarabčin" +
 	"aásamčinaavarčinaaymarčinaazerbajdžančinabaškirčinabieloruštinabulharčin" +
 	"abislamabambarčinabengálčinatibetčinabretónčinabosniačtinakatalánčinačeč" +
@@ -19240,7 +19240,7 @@ var skLangIdx = []uint16{
 }
 
 // Size: 6084 bytes
-const slLangStr = "" +
+var slLangStr string = "" +
 	"afarščinaabhaščinaavestijščinaafrikanščinaakanščinaamharščinaaragonščina" +
 	"arabščinaasamščinaavarščinaajmarščinaazerbajdžanščinabaškirščinabelorušč" +
 	"inabolgarščinabislamščinabambarščinabengalščinatibetanščinabretonščinabo" +
@@ -19407,7 +19407,7 @@ var slLangIdx = []uint16{
 }
 
 // Size: 2384 bytes
-const sqLangStr = "" +
+var sqLangStr string = "" +
 	"abkazishtafrikanishtakanishtamarikearabishtasamezishtazerebashkirishtbje" +
 	"llorusishtbullgarishtbambarabengalishttibetishtbretoneboshnjakishtkatalo" +
 	"nishtkorsikanishtçekishtuellsishtdanishtgjermanishtxongkajuishtgreqishta" +
@@ -19533,7 +19533,7 @@ var sqLangIdx = []uint16{
 }
 
 // Size: 7436 bytes
-const srLangStr = "" +
+var srLangStr string = "" +
 	"АфарскиабхаскиАвестанскиафрикансаканамхарскиАрагонежанскиарапскиасамскиА" +
 	"варскиАјмараазербејџанскибашкирскибелорускибугарскиБисламабамбарабенгал" +
 	"скитибетанскибретонскибосанскикаталонскиЧеченскиЧаморокорзиканскиКричеш" +
@@ -19679,7 +19679,7 @@ var srLangIdx = []uint16{
 }
 
 // Size: 3897 bytes
-const srLatnLangStr = "" +
+var srLatnLangStr string = "" +
 	"AfarskiabhaskiAvestanskiafrikansakanamharskiAragonežanskiarapskiasamskiA" +
 	"varskiAjmaraazerbejdžanskibaškirskibeloruskibugarskiBislamabambarabengal" +
 	"skitibetanskibretonskibosanskikatalonskiČečenskiČamorokorzikanskiKričešk" +
@@ -19825,7 +19825,7 @@ var srLatnLangIdx = []uint16{
 }
 
 // Size: 5136 bytes
-const svLangStr = "" +
+var svLangStr string = "" +
 	"afarabchaziskaavestiskaafrikaansakanamhariskaaragonesiskaarabiskaassames" +
 	"iskaavariskaaymaraazerbajdzjanskabasjkiriskavitryskabulgariskabislamabam" +
 	"barabengalitibetanskabretonskabosniskakatalanskatjetjenskachamorrokorsik" +
@@ -19989,7 +19989,7 @@ var svLangIdx = []uint16{
 }
 
 // Size: 2288 bytes
-const swLangStr = "" +
+var swLangStr string = "" +
 	"KiabkhaziKiafrikanaKiakaniKiamhariKiarabuKiassamKiaimaraKiazabajaniKibas" +
 	"hkirKibelarusiKibulgariaKibambaraKibengaliKitibetiKibretoniKibosniaKikat" +
 	"alaniKikosikaniKichekiKiwelisiKidenmakiKijerumaniKidivehiKizongkhaKieweK" +
@@ -20114,7 +20114,7 @@ var swLangIdx = []uint16{
 }
 
 // Size: 12231 bytes
-const taLangStr = "" +
+var taLangStr string = "" +
 	"அஃபார்அப்காஜியான்அவெஸ்தான்ஆஃப்ரிகான்ஸ்அகான்அம்ஹாரிக்ஆர்கோனீஸ்அரபிக்அஸ்ஸா" +
 	"மிஅவேரிக்அய்மராஅஸர்பைஜானிபாஷ்கிர்பெலாருஷியன்பல்கேரியன்பிஸ்லாமாபம்பாராவ" +
 	"ங்காளம்திபெத்தியன்பிரெட்டன்போஸ்னியன்கேட்டலான்செசென்சாமோரோகோர்சிகன்க்ரீ" +
@@ -20266,7 +20266,7 @@ var taLangIdx = []uint16{
 }
 
 // Size: 11507 bytes
-const teLangStr = "" +
+var teLangStr string = "" +
 	"అఫార్అబ్ఖాజియన్అవేస్టాన్ఆఫ్రికాన్స్అకాన్అమ్హారిక్అరగోనిస్అరబిక్అస్సామీఅవ" +
 	"ారిక్ఐమారాఅజర్బైజానిబష్కిర్బెలరుశియన్బల్గేరియన్బిస్లామాబంబారాబెంగాలీటి" +
 	"బెటన్బ్రెటన్బోస్నియన్కెటలాన్చెచెన్చమర్రోకోర్సికన్క్రిచెక్చర్చ స్లావిక్" +
@@ -20415,7 +20415,7 @@ var teLangIdx = []uint16{
 }
 
 // Size: 13483 bytes
-const thLangStr = "" +
+var thLangStr string = "" +
 	"อะฟาร์อับคาซอเวสตะแอฟริกานส์อาคันอัมฮาราอารากอนอาหรับอัสสัมอาวาร์ไอย์มาร" +
 	"าอาเซอร์ไบจานบัชคีร์เบลารุสบัลแกเรียบิสลามาบัมบาราเบงกาลีทิเบตเบรตันบอ" +
 	"สเนียกาตาลังเชเชนชามอร์โรคอร์ซิกาครีเช็กเชอร์ชสลาวิกชูวัชเวลส์เดนมาร์ก" +
@@ -20573,7 +20573,7 @@ var thLangIdx = []uint16{
 }
 
 // Size: 5494 bytes
-const trLangStr = "" +
+var trLangStr string = "" +
 	"AfarAbhazcaAvestçeAfrikaancaAkanAmharcaAragoncaArapçaAssamcaAvar DiliAym" +
 	"araAzericeBaşkırtçaBeyaz RusçaBulgarcaBislamaBambaraBengalceTibetçeBreto" +
 	"ncaBoşnakçaKatalancaÇeçenceChamorroKorsikacaCreeÇekçeKilise SlavcasıÇuva" +
@@ -20739,7 +20739,7 @@ var trLangIdx = []uint16{
 }
 
 // Size: 8536 bytes
-const ukLangStr = "" +
+var ukLangStr string = "" +
 	"афарськаабхазькаавестійськаафрикаансаканамхарськаарагонськаарабськаассам" +
 	"ськааварськааймараазербайджанськабашкирськабілоруськаболгарськабісламаб" +
 	"амбарабенгальськатибетськабретонськабоснійськакаталонськачеченськачамор" +
@@ -20893,7 +20893,7 @@ var ukLangIdx = []uint16{
 }
 
 // Size: 3431 bytes
-const urLangStr = "" +
+var urLangStr string = "" +
 	"ابقازیانایفریکانزاکانامہاریعربیآسامیایماراآزربائیجانیباشکیربیلاروسیبلغار" +
 	"یبمبارابنگالیتبتیبریٹنبوسنیکیٹالانکوراسیکنچیکویلشڈینشجرمنڈیویہیژونگکھاا" +
 	"یویونانیانگریزیایسپرانٹوہسپانویاسٹونینباسکیفارسیفینیشفجیفیروئیزفرانسیسی" +
@@ -21011,7 +21011,7 @@ var urLangIdx = []uint16{
 }
 
 // Size: 2306 bytes
-const uzLangStr = "" +
+var uzLangStr string = "" +
 	"abxazchaafrikanchaakanchaamxarchaarabchaassamchaozarbayjonchaboshqirchab" +
 	"elaruschabolgarchabambarchabengalchatibetchabretonchabosniychakatalancha" +
 	"korsianchachexchauelschadatchanemischayovonchaivichayunonchainglizchaesp" +
@@ -21136,7 +21136,7 @@ var uzLangIdx = []uint16{
 }
 
 // Size: 7788 bytes
-const viLangStr = "" +
+var viLangStr string = "" +
 	"Tiếng AfarTiếng AbkhaziaTiếng AvestanTiếng Nam PhiTiếng AkanTiếng Amhari" +
 	"cTiếng AragonTiếng Ả RậpTiếng AssamTiếng AvaricTiếng AymaraTiếng Azerbai" +
 	"janTiếng BashkirTiếng BelarusTiếng BulgariaTiếng BislamaTiếng BambaraTiế" +
@@ -21320,7 +21320,7 @@ var viLangIdx = []uint16{
 }
 
 // Size: 6303 bytes
-const zhLangStr = "" +
+var zhLangStr string = "" +
 	"阿法文阿布哈西亚文阿维斯塔文南非荷兰文阿肯文阿姆哈拉文阿拉贡文阿拉伯文阿萨姆文阿瓦尔文艾马拉文阿塞拜疆文巴什客尔文白俄罗斯文保加利亚文比斯拉马文" +
 	"班巴拉文孟加拉文藏文布里多尼文波斯尼亚文加泰罗尼亚文车臣文查莫罗文科西嘉文克里族文捷克文宗教斯拉夫文楚瓦什文威尔士文丹麦文德文迪维希文不丹文" +
 	"埃维文希腊文英文世界文西班牙文爱沙尼亚文巴斯克文波斯文夫拉文芬兰文斐济文法罗文法文西弗里西亚文爱尔兰文苏格兰盖尔文加利西亚文瓜拉尼文古吉拉特" +
@@ -21444,7 +21444,7 @@ var zhLangIdx = []uint16{
 }
 
 // Size: 7531 bytes
-const zhHantLangStr = "" +
+var zhHantLangStr string = "" +
 	"阿法文阿布哈茲文阿緯斯陀文南非荷蘭文阿坎文阿姆哈拉文阿拉貢文阿拉伯文阿薩姆文阿瓦爾文艾馬拉文亞塞拜然文巴什客爾文白俄羅斯文保加利亞文比斯拉馬文班" +
 	"巴拉文孟加拉文藏文布列塔尼文波士尼亞文加泰羅尼亞文車臣文查莫洛文科西嘉文克裡文捷克文宗教斯拉夫文楚瓦什文威爾斯文丹麥文德文迪維西文宗卡文埃維" +
 	"文希臘文英文世界文西班牙文愛沙尼亞文巴斯克文波斯文富拉文芬蘭文斐濟文法羅文法文西弗里西亞文愛爾蘭文蘇格蘭蓋爾文加利西亞文瓜拉尼文古吉拉特文曼" +
@@ -21573,7 +21573,7 @@ var zhHantLangIdx = []uint16{
 }
 
 // Size: 2946 bytes
-const zuLangStr = "" +
+var zuLangStr string = "" +
 	"isi-Abkhazianisi-Afrikaansisi-Akanisi-Amharicisi-Arabicisi-Assameseisi-A" +
 	"ymaraisi-Azerbaijaniisi-Bashkirisi-Belarusianisi-Bulgariisi-Bambaraisi-B" +
 	"engaliisi-TibetanIsi-Bretonisi-Bosnianisi-Catalanisi-Corsicanisi-Czechis" +
@@ -23820,7 +23820,7 @@ var scriptHeaders = [210]header{
 }
 
 // Size: 313 bytes
-const afScriptStr = "" +
+var afScriptStr string = "" +
 	"ArabiesArmeensBengaalsBopomofoBrailleSirilliesDevanagariEtiopiesGeorgies" +
 	"GrieksGudjaratiGurmukhiHangulHanVereenvoudigde HanTradisionele HanHebree" +
 	"usHiraganaJapanneesKatakanaKhmerKannadaKoreaansLaoLatynMalabaarsMongools" +
@@ -23856,7 +23856,7 @@ var afScriptIdx = []uint16{
 }
 
 // Size: 505 bytes
-const amScriptStr = "" +
+var amScriptStr string = "" +
 	"ዓረብኛአርሜንያዊቤንጋሊቦፖሞፎብሬይልሲይሪልክደቫንጋሪኢትዮፒክጆርጂያዊግሪክጉጃራቲጉርሙኪሐንጉልሃንቀለል ያለ ሃንባህላዊ" +
 	" ሃንእብራይስጥሂራጋናጃፓንኛካታካናክህመርካንአዳኮሪያኛላኦላቲንማላያልምሞንጎሊያኛምያንማርኦሪያሲንሃላታሚልተሉጉታናታይቲ" +
 	"ቤታንምልክቶችያልተጻፈየጋራያልታወቀ ስክሪፕት"
@@ -23890,7 +23890,7 @@ var amScriptIdx = []uint16{
 }
 
 // Size: 2430 bytes
-const arScriptStr = "" +
+var arScriptStr string = "" +
 	"العربيةالأرمينيةالباليةالباتاكالبنغاليةرموز بليسالبوبوموفوالهندوسيةالبرا" +
 	"يلالبجينيزالبهيديةمقاطع كندية أصلية موحدةالكاريةالتشاميةالشيروكيالسيرثا" +
 	"لقبطيةالقبرصيةالسيريليةالسيريلية السلافية الكنسية القديمةالديفاناجاريال" +
@@ -23939,7 +23939,7 @@ var arScriptIdx = []uint16{
 }
 
 // Size: 1044 bytes
-const azScriptStr = "" +
+var azScriptStr string = "" +
 	"ərəbarmierməniavestanbalibatakbenqalblissymbolsbopomofobrahmibraylbuqinb" +
 	"uhidkakmbirləşmiş kanada yerli yazısıkariyançamçirokisirtkoptikkiprkiril" +
 	"qədimi kilsa kirilidevanaqarideseretmisir demotikmisir hiyeratikmisir hi" +
@@ -23984,7 +23984,7 @@ var azScriptIdx = []uint16{
 }
 
 // Size: 2324 bytes
-const bgScriptStr = "" +
+var bgScriptStr string = "" +
 	"арабскаАрамейскаарменскаАвестанскаБалийскиБатакскабенгалскаБлис символиб" +
 	"опомофоБрахмиБрайловаБугинскаБухидЧакмаУнифицирани символи на канадски " +
 	"аборигениКарийскаХамитскаЧерокиКиртКоптскаКипърскакирилицадеванагариДез" +
@@ -24032,7 +24032,7 @@ var bgScriptIdx = []uint16{
 }
 
 // Size: 3576 bytes
-const bnScriptStr = "" +
+var bnScriptStr string = "" +
 	"আরবিআরমিআর্মেনীয়আভেসতানবালীয়বাটাকবাংলাব্লিসপ্রতীকবোপোমোফোব্রাহ্মীব্রেই" +
 	"লবুগিবুহিডচাকমাসংযুক্ত কানাডিয়ান অ্যাব্রোজিনিয়ান সিলেবিক্সক্যারিয়ান" +
 	"চ্যামচেরোকিকির্টকোপ্টিকসাইপ্রোয়েটসিরিলিকপ্রাচীন চার্চ স্লাভোনিক সিরিল" +
@@ -24081,7 +24081,7 @@ var bnScriptIdx = []uint16{
 }
 
 // Size: 1535 bytes
-const caScriptStr = "" +
+var caScriptStr string = "" +
 	"afakaàrabarameu imperialarmeniavèsticbalinèsbamumbassa vahbatakbengalísí" +
 	"mbols Blissbopomofobrahmibraillebuginèsbuhidchakmasíl·labes dels aboríge" +
 	"ns canadencs unificatscariàchamcherokeecirthcoptexipriotaciríl·licciríl·" +
@@ -24133,7 +24133,7 @@ var caScriptIdx = []uint16{
 }
 
 // Size: 1891 bytes
-const csScriptStr = "" +
+var csScriptStr string = "" +
 	"afakakavkazskoalbánskéarabskéaramejské (imperiální)arménskéavestánskébal" +
 	"ijskébamumskébassa vahbatackébengálskéBlissovo písmobopomofobráhmíBraill" +
 	"ovo písmobuginskébuhidskéčakmaslabičné písmo kanadských domorodcůkarijsk" +
@@ -24188,7 +24188,7 @@ var csScriptIdx = []uint16{
 }
 
 // Size: 1443 bytes
-const daScriptStr = "" +
+var daScriptStr string = "" +
 	"afakaarabiskarmiarmenskavestanskbalinesiskbamumbassabatakbengaliblissymb" +
 	"olerbopomofobramiskbrailleskriftbuginesiskbuhidcakmoprindelige canadiske" +
 	" symbolerkarianskchamcherokeecirtkoptiskcypriotiskkyrilliskkyrillisk - o" +
@@ -24239,7 +24239,7 @@ var daScriptIdx = []uint16{
 }
 
 // Size: 1682 bytes
-const deScriptStr = "" +
+var deScriptStr string = "" +
 	"AfakaKaukasisch-AlbanischArabischArmiArmenischAvestischBalinesischBamunB" +
 	"assaBattakischBengalischBliss-SymboleBopomofoBrahmiBlindenschriftBugines" +
 	"ischBuhidChakmaUCASKarischChamCherokeeCirthKoptischZypriotischKyrillisch" +
@@ -24294,7 +24294,7 @@ var deScriptIdx = []uint16{
 }
 
 // Size: 2637 bytes
-const elScriptStr = "" +
+var elScriptStr string = "" +
 	"ΑραβικόΑυτοκρατορικό ΑραμαϊκόΑρμενικόΑβεστάνΜπαλινίζΜπατάκΜπενγκάλιΣύμβο" +
 	"λα BlissΜποπομόφοΜπραχμίΜπράιγΜπούγκιςΜπουχίντΤσάκμαΕνοποιημένοι Καναδε" +
 	"ζικοί Συλλαβισμοί ΙθαγενώνΚαριάνΤσαμΤσερόκιΣερθΚοπτικόΚυπριακόΚυριλλικό" +
@@ -24344,7 +24344,7 @@ var elScriptIdx = []uint16{
 }
 
 // Size: 1514 bytes
-const enScriptStr = "" +
+var enScriptStr string = "" +
 	"AfakaCaucasian AlbanianArabicImperial AramaicArmenianAvestanBalineseBamu" +
 	"mBassa VahBatakBengaliBlissymbolsBopomofoBrahmiBrailleBugineseBuhidChakm" +
 	"aUnified Canadian Aboriginal SyllabicsCarianChamCherokeeCirthCopticCypri" +
@@ -24396,7 +24396,7 @@ var enScriptIdx = []uint16{
 }
 
 // Size: 1165 bytes
-const esScriptStr = "" +
+var esScriptStr string = "" +
 	"árabearmenioavésticobalinésbatakbengalísímbolos blisbopomofobrahmibraill" +
 	"ebuginésbuhidsímbolos aborígenes canadienses unificadoscariochamcherokee" +
 	"cirthcoptochipriotacirílicocirílico del antiguo eslavo eclesiásticodevan" +
@@ -24443,7 +24443,7 @@ var esScriptIdx = []uint16{
 }
 
 // Size: 1025 bytes
-const etScriptStr = "" +
+var etScriptStr string = "" +
 	"araabiaarmeeniabalibatakibengaliBlissi sümbolidbopomofobrahmipunktkiribu" +
 	"gibuhidiKanada põlisrahvaste ühtlustatud silpkiritšamitšerokiicirthkopti" +
 	"muinasküprosekirillitsakirikuslaavi kirillitsadevanaagarideseretegiptuse" +
@@ -24488,7 +24488,7 @@ var etScriptIdx = []uint16{
 }
 
 // Size: 1856 bytes
-const faScriptStr = "" +
+var faScriptStr string = "" +
 	"آلبانیایی قفقازیعربیآرامی هخامنشیارمنیاوستاییبالیاییباتاکیبنگالینمادهای " +
 	"بلیسبوپوموفوبراهمیبریلبوگیاییبوهیدچاکماییکاریچمیچروکیاییکرتقبطیقبرسیسیر" +
 	"یلیدوناگریدیسرتیکاهنی مصریهیروگلیف مصریاتیوپیاییگرجی خوتسوریگرجیگلاگولی" +
@@ -24533,7 +24533,7 @@ var faScriptIdx = []uint16{
 }
 
 // Size: 2297 bytes
-const fiScriptStr = "" +
+var fiScriptStr string = "" +
 	"afakakaukasianalbanialainenarabialainenvaltakunnanaramealainenarmenialai" +
 	"nenavestalainenbalilainenbamumbassabatakilainenbengalilainenbliss-symbol" +
 	"itbopomofobrahmibraille-pistekirjoitusbugilainenbuhidilainenchakmalainen" +
@@ -24596,7 +24596,7 @@ var fiScriptIdx = []uint16{
 }
 
 // Size: 306 bytes
-const filScriptStr = "" +
+var filScriptStr string = "" +
 	"ArabicArmenianBengaliBopomofoBrailleCyrillicDevanagariEthiopicGeorgianGr" +
 	"eekGujaratiGurmukhiHangulHanSimplified HanTraditional HanHebrewHiraganaJ" +
 	"apaneseKatakanaKhmerKannadaKoreanLaoLatinMalayalamMongolianMyanmarOriyaS" +
@@ -24632,7 +24632,7 @@ var filScriptIdx = []uint16{
 }
 
 // Size: 1445 bytes
-const frScriptStr = "" +
+var frScriptStr string = "" +
 	"arabearaméen impérialarménienavestiquebalinaisbatakbengalisymboles Bliss" +
 	"bopomofobrâhmîbraillebouguisbouhidechakmasyllabaire autochtone canadien " +
 	"unifiécarienchamcherokeecirthcoptesyllabaire chypriotecyrilliquecyrilliq" +
@@ -24683,7 +24683,7 @@ var frScriptIdx = []uint16{
 }
 
 // Size: 18 bytes
-const frCAScriptStr = "devanagarigujarati"
+var frCAScriptStr string = "devanagarigujarati"
 
 // Size: 110 bytes, 43 elements
 var frCAScriptIdx = []uint16{
@@ -24696,7 +24696,7 @@ var frCAScriptIdx = []uint16{
 }
 
 // Size: 3329 bytes
-const guScriptStr = "" +
+var guScriptStr string = "" +
 	"અરબીઇમ્પિરિયલ આર્મનિકઅર્મેનિયનઅવેસ્તનબાલીનીઝબટાકબંગાળીબ્લિસિમ્બોલ્સબોપોમ" +
 	"ોફોબ્રહ્મીબ્રેલબગિનીસબુહિદચકમાયુનાઇટેડ કેનેડિયન એબોરિજનલ સિલેબિક્સકરૈન" +
 	"ચેરોકીસિર્થકોપ્ટિકસિપ્રાયટસિરિલિકઓલ્ડ ચર્ચ સ્લાવોનિક સિરિલિકદેવનાગરીડે" +
@@ -24744,7 +24744,7 @@ var guScriptIdx = []uint16{
 }
 
 // Size: 849 bytes
-const heScriptStr = "" +
+var heScriptStr string = "" +
 	"ערביארמניבאלינזיבנגליבופומופובריילצ׳אםצ׳ירוקיקופטיקפריסאיקיריליקירילי סל" +
 	"אבוני כנסייתי עתיקדוואנגריכתב חרטומיםאתיופיגאורגיגותייווניגוג׳רטיגורמוק" +
 	"יהאנגולהאןכתב האן פשוטכתב האן מסורתיעבריהירגאנההונגרי עתיקאינדוסאיטלקי " +
@@ -24782,7 +24782,7 @@ var heScriptIdx = []uint16{
 }
 
 // Size: 3328 bytes
-const hiScriptStr = "" +
+var hiScriptStr string = "" +
 	"अरबीइम्पिरियल आर्मेनिकआर्मेनियाईअवेस्तनबालीबटकीबंगालीब्लिसिम्बॉल्सबोपोमो" +
 	"फ़ोब्रह्मीब्रेलबगिनीसबुहिदचकमायुनिफाइड कैनेडियन एबोरिजनल सिलेबिक्सकरैन" +
 	"चामचेरोकीकिर्थकॉप्टिककाइप्रायटसिरिलिकओल्ड चर्च स्लावोनिक सिरिलिकदेवनाग" +
@@ -24830,7 +24830,7 @@ var hiScriptIdx = []uint16{
 }
 
 // Size: 2370 bytes
-const hrScriptStr = "" +
+var hrScriptStr string = "" +
 	"afaka pismoarapsko pismoaramejsko pismoarmensko pismoavestansko pismobal" +
 	"ijsko pismobamum pismobassa vah pismobatak pismobengalsko pismoblissymbo" +
 	"lsbopomofo pismobrahmi pismobrajicabuginsko pismobuhid pismochakma pismo" +
@@ -24894,7 +24894,7 @@ var hrScriptIdx = []uint16{
 }
 
 // Size: 1270 bytes
-const huScriptStr = "" +
+var huScriptStr string = "" +
 	"ArabBirodalmi arámiÖrményAvesztánBalinézBatakBengáliBliss jelképrendszer" +
 	"BopomofoBrámiVakírásBuginézBuhidCsakmaEgyesített kanadai őslakos jelekKa" +
 	"riCsámCserokiKoptCiprusiCirillÓegyházi szláv cirillDevanagáriDeseretEgyi" +
@@ -24942,7 +24942,7 @@ var huScriptIdx = []uint16{
 }
 
 // Size: 679 bytes
-const hyScriptStr = "" +
+var hyScriptStr string = "" +
 	"արաբականհայկականբենգալականբոպոմոֆոբրայլիկյուրեղագիրդեվանագարիեթովպականվր" +
 	"ացականհունականգուջարաթիգուրմուխիհանգուլչինականպարզեցված չինականավանդակա" +
 	"ն չինականեբրայականհիրագանաճապոնականկատականաքմերականկաննադակորեականլաոսա" +
@@ -24978,7 +24978,7 @@ var hyScriptIdx = []uint16{
 }
 
 // Size: 1396 bytes
-const idScriptStr = "" +
+var idScriptStr string = "" +
 	"AfakaAlbania KaukasiaArabAram ImperialArmeniaAvestaBaliBamumBassa VahBat" +
 	"akBengaliBlissymbolBopomofoBrahmiBrailleBugisBuhidChakmaSimbol Aborigin " +
 	"Kanada KesatuanKariaChamCherokeeCirthKoptikSiprusSirilikGereja Slavonia " +
@@ -25029,7 +25029,7 @@ var idScriptIdx = []uint16{
 }
 
 // Size: 363 bytes
-const isScriptStr = "" +
+var isScriptStr string = "" +
 	"arabísktarmensktbengalsktbopomofoblindraleturkyrillísktdevanagarieþíópís" +
 	"ktgeorgísktgrísktgújaratígurmukhihangulkínverskteinfaldað hanhefðbundið " +
 	"hanhebreskthiraganakatakana eða hiraganajapansktkatakanakmerkannadakóres" +
@@ -25065,7 +25065,7 @@ var isScriptIdx = []uint16{
 }
 
 // Size: 1560 bytes
-const itScriptStr = "" +
+var itScriptStr string = "" +
 	"afakaaraboaramaico imperialearmenoavesticobalinesebamumBassa Vahbatakben" +
 	"galesesimboli blissbopomofobrahmibraillebuginesebuhidchakmasimboli abori" +
 	"geni canadesi unificaticarianchamcherokeecirthcoptocipriotacirillicociri" +
@@ -25118,7 +25118,7 @@ var itScriptIdx = []uint16{
 }
 
 // Size: 3247 bytes
-const jaScriptStr = "" +
+var jaScriptStr string = "" +
 	"アファカ文字カフカス・アルバニア文字アラビア文字帝国アラム文字アルメニア文字アヴェスター文字バリ文字バムン文字バサ文字バタク文字ベンガル文字ブリ" +
 	"スシンボル注音字母ブラーフミー文字ブライユ点字ブギス文字ブヒッド文字チャクマ文字統合カナダ先住民音節文字カリア文字チャム文字チェロキー文字キ" +
 	"アス文字コプト文字キプロス文字キリル文字古代教会スラブ語キリル文字デーバナーガリー文字デセレット文字デュプロワエ式速記エジプト民衆文字エジプ" +
@@ -25165,7 +25165,7 @@ var jaScriptIdx = []uint16{
 }
 
 // Size: 4008 bytes
-const kaScriptStr = "" +
+var kaScriptStr string = "" +
 	"აფაკაარაბულიიმპერიული არამეულისომხურიავესტურიბალიურიბამუმიბასა ვაჰიბატაკ" +
 	"იბენგალურიბლისსიმბოლოებიბოპომოფობრაჰმიბრაილიბუჰიდიჩაკმაკარიულიჩამიჩერო" +
 	"კიკირთიკოპტურიკვიპროსულიკირილიცაძველი სლავური კირილიცადევანაგარიდეზერე" +
@@ -25216,7 +25216,7 @@ var kaScriptIdx = []uint16{
 }
 
 // Size: 922 bytes
-const kkScriptStr = "" +
+var kkScriptStr string = "" +
 	"араб жазуыармян жазуыбенгал жазуыбопомофо жазуБрайль жазуыкирилл жазуыде" +
 	"ванагари жазуыэфиоп жазугрузин жазуыгрек жазуыгуджарати жазуыгурмукхи ж" +
 	"азуыхангул жазуықытай жазуыжеңілдетілген қытай иероглифыдәстүрлі қытай " +
@@ -25254,7 +25254,7 @@ var kkScriptIdx = []uint16{
 }
 
 // Size: 966 bytes
-const kmScriptStr = "" +
+var kmScriptStr string = "" +
 	"អារ៉ាប់អារមេនីបង់ក្លាដែសបូផូម៉ូហ្វូអក្សរ\u200bសម្រាប់មនុស្ស\u200bពិការ" +
 	"\u200bភ្នែកស៊ីរីដាវ៉ាន់ណាការិអេត្យូពីហ្សកហ្ស៊ីក្រិចកុដ្យារ៉ាទីកុមុយឃីហាំ" +
 	"ងកុលហានអក្សរ\u200bហាន\u200bកាត់អក្សរ\u200bហាន\u200bពេញអ៊ីស្រាអែលហ៊ីរ៉ា" +
@@ -25291,7 +25291,7 @@ var kmScriptIdx = []uint16{
 }
 
 // Size: 3788 bytes
-const knScriptStr = "" +
+var knScriptStr string = "" +
 	"ಅರೇಬಿಕ್ಇಂಪೀರಿಯಲ್ ಅರೆಮಾಯಿಕ್ಅರ್ಮೇನಿಯನ್ಅವೆಸ್ತಾನ್ಬಾಲಿನೀಸ್ಬಾಟಕ್ಬೆಂಗಾಲಿಬ್ಲಿಸ್" +
 	"\u200cಸಿಂಬಲ್ಸ್ಬೋಪೊಮೋಫೋಬ್ರಾಹ್ಮಿಬ್ರೈಲ್ಬಗಿನೀಸ್ಬುಹಿದ್ಕಾಕಂಯುನಿಟೆಡ್ ಕೆನೆಡಿಯನ್ " +
 	"ಅಬೊರಿಜಿನಲ್ ಸಿಲ್ಯಾಬಿಕ್ಸ್ಕರೇನ್ಚಾಮ್ಚೆರೋಕೀಸಿರ್ಥ್ಕಾಪ್ಟಿಕ್ಸಿಪ್ರಿಯಾಟ್ಸಿರಿಲಿಕ್" +
@@ -25341,7 +25341,7 @@ var knScriptIdx = []uint16{
 }
 
 // Size: 2788 bytes
-const koScriptStr = "" +
+var koScriptStr string = "" +
 	"아파카 문자코카시안 알바니아 문자아랍 문자아랍제국 문자아르메니아 문자아베스타 문자발리 문자바뭄 문자바사바흐 문자바타크 문자벵골 문" +
 	"자블리스기호 문자주음부호브라미브라유 점자부기 문자부히드 문자차크마 문자통합 캐나다 토착어카리 문자칸 고어체로키 문자키르쓰콥트 " +
 	"문자키프로스 문자키릴 문자고대교회슬라브어 키릴문자데바나가리 문자디저렛 문자듀플로이안 문자고대 이집트 민중문자고대 이집트 신관문" +
@@ -25387,7 +25387,7 @@ var koScriptIdx = []uint16{
 }
 
 // Size: 493 bytes
-const kyScriptStr = "" +
+var kyScriptStr string = "" +
 	"АрабАрмянБенгалБопомофоБрейлКириликДеванагариЭфиопГрузинГрекГужаратиГурм" +
 	"ухиХангулХаниЖөн. КытайСалт. КытайИвритХираганаЖапанКатаканаКмерКаннада" +
 	"КорейЛаоЛатынМалайаламМоңголМйанмарОрийаСингалаТамилТелуТаанаТайТибетБе" +
@@ -25422,7 +25422,7 @@ var kyScriptIdx = []uint16{
 }
 
 // Size: 3901 bytes
-const loScriptStr = "" +
+var loScriptStr string = "" +
 	"ອັບຟາກາອາຣາບິກອິມພີຮຽນ ອາເມອິກອາເມນຽນອະເວສຕະບາລີບາມູມບັດຊາບາຕັກເບັງກາລິບ" +
 	"ລິກຊິມໂບລສຈູ້ອິນພຮາຫມີເບຣວບູກິສບູຮິດຊາກມາສັນຍາລັກຊົນເຜົ່າພື້ນເມືອງແຄນນ" +
 	"າດາຄາເຮຍຈາມເຊໂຮກີເຊີຮຄອບຕິກໄຊເປຍຊີຣິວລິກເຊຮັດສລາ ໂວນິກຊີຮິກລິກໂບຮານດີວ" +
@@ -25472,7 +25472,7 @@ var loScriptIdx = []uint16{
 }
 
 // Size: 1634 bytes
-const ltScriptStr = "" +
+var ltScriptStr string = "" +
 	"AfakaKaukazo Albanijosarabųimperinė aramaikųarmėnųavestanoBaliečiųBamumB" +
 	"assa Vahbatakbengalų„Bliss“ simboliaibopomofobrahmibrailiobuginezųbuhidč" +
 	"akmasuvienodinti Kanados aborigenų silabiniaikariųčamčerokiųkirtkoptųkip" +
@@ -25525,7 +25525,7 @@ var ltScriptIdx = []uint16{
 }
 
 // Size: 761 bytes
-const lvScriptStr = "" +
+var lvScriptStr string = "" +
 	"arābuaramiešuarmēņubaliešubengāļubopomofobrahmiBraila rakstsirokēzukoptu" +
 	"kirilicasenslāvudevānagāridemotiskais rakstshierātiskais rakstsēģiptiešu" +
 	" hieroglifietiopiešugruzīnugotugrieķugudžaratupandžabuhangilaķīniešuhanu" +
@@ -25566,7 +25566,7 @@ var lvScriptIdx = []uint16{
 }
 
 // Size: 3505 bytes
-const mkScriptStr = "" +
+var mkScriptStr string = "" +
 	"афакакавкаскоалбанскиарапско писмоцарскоарамејскиерменско писмоавестанск" +
 	"обалискобамумскобасабатачкобенгалско писмоблиссимболибопомофобрамибрајо" +
 	"во писмобугискобухидскочакманскоканадско слоговнокарискочамскочерокиско" +
@@ -25623,7 +25623,7 @@ var mkScriptIdx = []uint16{
 }
 
 // Size: 3465 bytes
-const mlScriptStr = "" +
+var mlScriptStr string = "" +
 	"അറബിക്അർമിഅർമേനിയൻഅവെസ്ഥൻബാലിനീസ്ബട്ടക്ബംഗാളിബ്ലിസ് ചിത്ര ലിപിബോപ്പോമോഫോ" +
 	"ബ്രാഹ്മിബ്രെയ്\u200cലിബുഗിനീസ്ബുഹിഡ്ചകംഏകീകൃത കനേഡിയൻ ഗോത്രലിപിചരിയൻഛം" +
 	"ചെറോക്കിചിർത്ത്കോപ്റ്റിക്സൈപ്രിയോട്ട്സിറിലിക്പുരാതന ചർച്ച് സ്ലവോണിക് സ" +
@@ -25672,7 +25672,7 @@ var mlScriptIdx = []uint16{
 }
 
 // Size: 532 bytes
-const mnScriptStr = "" +
+var mnScriptStr string = "" +
 	"арабарменбенгалвопомофобрайлкирилдеванагариэтиопгүржгрекгүжаратигурмукхи" +
 	"хангулханхялбаршуулсан ханзуламжлалт ханзеврейхираганаяпонкатаканакхмер" +
 	"каннадасолонгослаослатинмалаяламмонгол бичигмьянмарориясинхалатамилтэлү" +
@@ -25707,7 +25707,7 @@ var mnScriptIdx = []uint16{
 }
 
 // Size: 3386 bytes
-const mrScriptStr = "" +
+var mrScriptStr string = "" +
 	"अरबीइम्पिरियल आर्मेनिकअर्मेनियनअवेस्तानबालीबटाकबंगालीब्लिसिम्बॉल्सबोपोमो" +
 	"फोब्रह्मीब्रेलबूगीबुहिदचकमायूनिफाइड कॅनेडियन अ\u200dॅबोरिदनल सिलॅबिक्स" +
 	"कॅरियनचामचेरोकीकिर्थकॉप्टिकसायप्रिऑटसीरिलिकपुरातन चर्च स्लाव्होनिक सिर" +
@@ -25755,7 +25755,7 @@ var mrScriptIdx = []uint16{
 }
 
 // Size: 289 bytes
-const msScriptStr = "" +
+var msScriptStr string = "" +
 	"ArabArmeniaBaliBamuBengaliBopomofoBrailleCansCyrilDevanagariEthiopiaGeor" +
 	"giaGreekGujaratGurmukhiHangulHanHan RingkasHan TradisionalIbraniHiragana" +
 	"JepunKatakanaKhmerKannadaKoreaLaoLatinMalayalamMongoliaMyammarOriyaSinha" +
@@ -25791,7 +25791,7 @@ var msScriptIdx = []uint16{
 }
 
 // Size: 1223 bytes
-const myScriptStr = "" +
+var myScriptStr string = "" +
 	"အာရေဗျအာမေးနီးယားဘင်္ဂါလီဘိုပိုဗြဟ္မမီဘရေစစ်ရိလစ်ဒီဗနာဂရီအီသီယိုးပီးယားဂ" +
 	"ျော်ဂျီယန်ဂရိဂုဂျာရသီဂူရူဟန်ဂူးလ်ဟန်ရိုးရှင်းသော ဟန်ရှေးရိုးစဉ်လာဟန်ဟီ" +
 	"ဗရူးဟိရဂဏခတခဏ သို့မဟုတ် ဟိရဂဏဂျာဗားနီးစ်ဂျပန်ကယားလီခတခဏခမာခန္နာဒါကိုးရ" +
@@ -25828,7 +25828,7 @@ var myScriptIdx = []uint16{
 }
 
 // Size: 3028 bytes
-const neScriptStr = "" +
+var neScriptStr string = "" +
 	"अरबीआर्मीआर्मेनियालीआभेस्टानबालीबाटकबङ्गालीब्लिजसिम्बोल्सबोपोमोफोब्राह्म" +
 	"ीब्रेलबुगिनिजबुहिदकाक्म्कारियनचामचेरोकीकिर्थकप्टिककप्रियटसिरिलिकदेवाना" +
 	"गरीडेसेरेटइजिप्टियन डेमोटिकइजिप्टियन हाइरटिकइजिप्टियन हाइरोग्लिफ्सइथिय" +
@@ -25874,7 +25874,7 @@ var neScriptIdx = []uint16{
 }
 
 // Size: 1616 bytes
-const nlScriptStr = "" +
+var nlScriptStr string = "" +
 	"DefakaKaukasisch AlbaneesArabischKeizerlijk ArameesArmeensAvestaansBalin" +
 	"eesBamounBassa VahBatakBengaalsBlissymbolenBopomofoBrahmiBrailleBuginees" +
 	"BuhidChakmaVerenigde Canadese Aboriginal-symbolenCarischChamCherokeeCirt" +
@@ -25928,7 +25928,7 @@ var nlScriptIdx = []uint16{
 }
 
 // Size: 1507 bytes
-const noScriptStr = "" +
+var noScriptStr string = "" +
 	"afakaarabiskarameiskarmenskavestiskbalinesiskbamumbassa vahbatakbengalsk" +
 	"blissymbolbopomofobrahmibraillebuginesiskbuhidchakmafelles kanadiske urs" +
 	"pråksstavelserkariskchamcherokeecirthkoptiskkypriotiskkyrilliskkirkeslav" +
@@ -25980,7 +25980,7 @@ var noScriptIdx = []uint16{
 }
 
 // Size: 740 bytes
-const paScriptStr = "" +
+var paScriptStr string = "" +
 	"ਅਰਬੀਅਰਮੀਨੀਆਈਬੰਗਾਲੀਬੋਪੋਮੋਫੋਬਰੇਲਸਿਰੀਲਿਕਦੇਵਨਾਗਰੀਇਥੀਓਪਿਕਜਾਰਜੀਆਈਗ੍ਰੀਕਗੁਜਰਾਤੀਗ" +
 	"ੁਰਮੁਖੀਹੰਗੁਲਹਾਨਸਰਲ ਹਾਨਰਵਾਇਤੀ ਹਾਨਹਿਬਰੂਹਿਰਾਗਾਨਾਜਪਾਨੀਕਾਟਾਕਾਨਾਖਮੇਰਕੰਨੜਕੋਰੀਆ" +
 	"ਈਲਾਓਲਾਤੀਨੀਮਲਿਆਲਮਮੰਗੋਲੀਅਨਮਿਆਂਮਾਰਉੜੀਆਸਿੰਹਾਲਾਤਮਿਲਤੇਲਗੂਥਾਨਾਥਾਈਤਿੱਬਤੀਗਣਿਤ ਚ" +
@@ -26015,7 +26015,7 @@ var paScriptIdx = []uint16{
 }
 
 // Size: 1483 bytes
-const plScriptStr = "" +
+var plScriptStr string = "" +
 	"arabskiearmiormiańskieawestyjskiebalijskiebamunbatakbengalskiesymbole Bl" +
 	"issabopomofobrahmiBraille’abugińskiebuhidchakmazunifikowane symbole kana" +
 	"dyjskich autochtonówkaryjskieczamskieczirokeskicirthkoptyjskiecypryjskie" +
@@ -26067,7 +26067,7 @@ var plScriptIdx = []uint16{
 }
 
 // Size: 1251 bytes
-const ptScriptStr = "" +
+var ptScriptStr string = "" +
 	"árabearmiarmênioavésticobalinêsbamumbataquebengalisímbolos blissbopomofo" +
 	"brahmibraillebuginêsbuhidcakmescrita silábica unificada dos aborígenes c" +
 	"anadensescarianochamcherokeecirthcópticocipriotacirílicocirílico eslavo " +
@@ -26115,7 +26115,7 @@ var ptScriptIdx = []uint16{
 }
 
 // Size: 103 bytes
-const ptPTScriptStr = "" +
+var ptPTScriptStr string = "" +
 	"arménioegípcio demóticoegípcio hieráticoguzerateindussiloti nagritai let" +
 	"elugusímbolosnão escrito"
 
@@ -26148,7 +26148,7 @@ var ptPTScriptIdx = []uint16{
 }
 
 // Size: 825 bytes
-const roScriptStr = "" +
+var roScriptStr string = "" +
 	"arabăarmeanăbalinezăbengalezăbopomofobraillesilabică aborigenă canadiană" +
 	" unificatăcoptăcipriotăchirilicăchirilică slavonă bisericească vechedeva" +
 	"nagarimormonădemotică egipteanăhieratică egipteanăhieroglife egipteneeti" +
@@ -26190,7 +26190,7 @@ var roScriptIdx = []uint16{
 }
 
 // Size: 3384 bytes
-const ruScriptStr = "" +
+var ruScriptStr string = "" +
 	"афакаарабицаарамейскаяармянскаяавестийскаябалийскаябамумбасса (вах)батак" +
 	"скаябенгальскаяблиссимволикабопомофобрахмибрайлябугинизийскаябухидчакми" +
 	"йскаяканадское слоговое письмокарийскаячамскаячерокикирткоптскаякипрска" +
@@ -26246,7 +26246,7 @@ var ruScriptIdx = []uint16{
 }
 
 // Size: 809 bytes
-const siScriptStr = "" +
+var siScriptStr string = "" +
 	"අරාබිආර්මේනියානුබෙංගාලිබොපොමොෆෝබ්\u200dරේල්සිරිලික්දේවනාගරීඉතියෝපියානුජෝ" +
 	"ර්ජියානුග්\u200dරීකගුජරාටිගුර්මුඛිහැන්ගුල්හන්සුළුකළ හෑන්සම්ප්\u200dරදා" +
 	"යික හෑන්හීබෲහිරඟනාජපන්කතකනාකමර්කණ්ණඩකොරියානුලාඕලතින්මලයාලම්මොන්ගෝලියාන" +
@@ -26282,7 +26282,7 @@ var siScriptIdx = []uint16{
 }
 
 // Size: 487 bytes
-const skScriptStr = "" +
+var skScriptStr string = "" +
 	"arabskéarménskebalijskýbengálskebopomofobraillovo písmocyrilikadévanágar" +
 	"íegyptské hieroglyfyetiópskegruzínskehlaholikagotickýgréckegudžarátígur" +
 	"mukhihangulhanhan – zjednodušenéhan – tradičnéhebrejskéhiraganajaponskék" +
@@ -26320,7 +26320,7 @@ var skScriptIdx = []uint16{
 }
 
 // Size: 1487 bytes
-const slScriptStr = "" +
+var slScriptStr string = "" +
 	"arabskiimperialno-aramejskiarmenskiavestanskibalijskibataškibengalskizna" +
 	"kovna pisava Blissbopomofobramanskibraillova pisavabuginskibuhidskipoeno" +
 	"tena zlogovna pisava kanadskih staroselcevChamčerokeškikirtkoptskiciprsk" +
@@ -26372,7 +26372,7 @@ var slScriptIdx = []uint16{
 }
 
 // Size: 290 bytes
-const sqScriptStr = "" +
+var sqScriptStr string = "" +
 	"arabikarmenbengalbopomofbrailishtcirilikdevanagaretiopikgjeorgjiangrekgu" +
 	"xharatgurmukhangulhanhan i thjeshtuarhan tradicionalhebraikhiraganjapone" +
 	"zkatakankmerkanadkoreanlaosishtlatinmalajalammongolbirmanorijasinhaltami" +
@@ -26408,7 +26408,7 @@ var sqScriptIdx = []uint16{
 }
 
 // Size: 3696 bytes
-const srScriptStr = "" +
+var srScriptStr string = "" +
 	"арапско писмоимперијско арамејско писмојерменско писмоавестанско писмоба" +
 	"лијско писмобатак писмобенгалско писмоблисимболично писмобопомофо писмо" +
 	"браманско писмоБрајево писмобугинско писмобухидско писмочакманско писмо" +
@@ -26467,7 +26467,7 @@ var srScriptIdx = []uint16{
 }
 
 // Size: 1952 bytes
-const srLatnScriptStr = "" +
+var srLatnScriptStr string = "" +
 	"arapsko pismoimperijsko aramejsko pismojermensko pismoavestansko pismoba" +
 	"lijsko pismobatak pismobengalsko pismoblisimbolično pismobopomofo pismob" +
 	"ramansko pismoBrajevo pismobuginsko pismobuhidsko pismočakmansko pismouj" +
@@ -26525,7 +26525,7 @@ var srLatnScriptIdx = []uint16{
 }
 
 // Size: 1641 bytes
-const svScriptStr = "" +
+var svScriptStr string = "" +
 	"afakiskakaukasiska albanskaarabiskaimperisk arameiskaarmeniskaavestiskab" +
 	"alinesiskabamunskabassaiska vahbatakbengaliskablissymbolerbopomofobramip" +
 	"unktskriftbuginesiskabuhidchakmakanadensiska stavelseteckenkariskachamch" +
@@ -26579,7 +26579,7 @@ var svScriptIdx = []uint16{
 }
 
 // Size: 344 bytes
-const swScriptStr = "" +
+var swScriptStr string = "" +
 	"KiarabuKiarmeniaKibengaliKibopomofoBrailleKisirilikiKidevanagariKiethiop" +
 	"iaKijojiaKigirikiKigujaratiKigurmukhiKihangulKihanKihan RahisiKihan cha " +
 	"JadiKiebraniaKihiraganaKijapaniKikatakanaKikambodiaKikannadaKikoreaKilao" +
@@ -26615,7 +26615,7 @@ var swScriptIdx = []uint16{
 }
 
 // Size: 3913 bytes
-const taScriptStr = "" +
+var taScriptStr string = "" +
 	"அரபிக்இம்பேரியல் அரமெய்க்அர்மேனியன்அவெஸ்தான்பாலினீஸ்பாடாக்வங்காளம்ப்லிஸ்" +
 	"ஸிமிபால்ஸ்போபோமோஃபோபிரம்மிபிரைல்புகினீஸ்புகித்சக்மாயுனிஃபைடு கனடியன் அ" +
 	"பொரிஜினல் சிலபிக்ஸ்கரியன்சாம்செரோக்கிகிர்த்காப்டிக்சைப்ரியாட்சிரிலிக்ப" +
@@ -26666,7 +26666,7 @@ var taScriptIdx = []uint16{
 }
 
 // Size: 3721 bytes
-const teScriptStr = "" +
+var teScriptStr string = "" +
 	"అరబిక్ఇంపీరియల్ అరామాక్అర్మేనియన్అవేస్టాన్బాలినీస్బాటక్బెంగాలిబ్లిస్సింబ" +
 	"ల్స్బోపోమోఫోబ్రాహ్మిబ్రెయిల్బ్యుగినీస్బుహిడ్చక్మాయునిఫైడ్ కెనెడియన్ అబ" +
 	"ొరిజినల్ సిలబిక్స్కారియన్చామ్చిరోకిసిర్థ్కోప్టిక్సైప్రోట్సిరిలిక్ప్రాచ" +
@@ -26716,7 +26716,7 @@ var teScriptIdx = []uint16{
 }
 
 // Size: 4317 bytes
-const thScriptStr = "" +
+var thScriptStr string = "" +
 	"อะฟาคาแอลเบเนีย คอเคเซียอาหรับอิมพีเรียล อราเมอิกอาร์เมเนียอเวสตะบาหลีบา" +
 	"มุมบัสซาบาตักเบงกาลีบลิสซิมโบลส์ปอพอมอฟอพราหมีเบรลล์บูกิสบูฮิดชากมาสัญ" +
 	"ลักษณ์ชนเผ่าพื้นเมืองแคนาดาคาเรียจามเชอโรกีเซิร์ทคอปติกไซเปรียทซีริลลิ" +
@@ -26768,7 +26768,7 @@ var thScriptIdx = []uint16{
 }
 
 // Size: 1491 bytes
-const trScriptStr = "" +
+var trScriptStr string = "" +
 	"AfakaKafkas AlbanyasıArapİmparatorluk AramicesiErmeniAvestaBali DiliBamu" +
 	"mBassa VahBatakBengalBlis SembolleriBopomofoBrahmiBrailleBugisBuhidChakm" +
 	"aUCASKaryaChamÇerokiCirthKıptiKıbrısKirilEski Kilise Slavcası KirilDevan" +
@@ -26819,7 +26819,7 @@ var trScriptIdx = []uint16{
 }
 
 // Size: 2918 bytes
-const ukScriptStr = "" +
+var ukScriptStr string = "" +
 	"кавказька албанськаарабськаАрмівірменськаАвестійськийБалійськийБамумбасс" +
 	"аБатакбенгальськаСимволи БліссабопомофоБрахмішрифт БрайляБугійськийБухі" +
 	"дЧакмаУніфіковані символи канадських тубільцівКаріанськийХамітськийЧеро" +
@@ -26871,7 +26871,7 @@ var ukScriptIdx = []uint16{
 }
 
 // Size: 492 bytes
-const urScriptStr = "" +
+var urScriptStr string = "" +
 	"عربیآرمینیائیبنگالیبوپوموفوبریلسیریلکدیوناگریایتھوپیائیجارجیائییونانیگجر" +
 	"اتیگرمکھیہنگولہانآسان ہانروایتی ہانعبرانیہیراگیناجاپانیکٹاکاناخمیرکنڑکو" +
 	"ریائیلاؤلاطینیملیالممنگولیائیمیانماراڑیہسنہالاتملتیلگوتھاناتھائیتبتیعلا" +
@@ -26906,7 +26906,7 @@ var urScriptIdx = []uint16{
 }
 
 // Size: 268 bytes
-const uzScriptStr = "" +
+var uzScriptStr string = "" +
 	"ArabArmanBengaliBopomofoBrailleKirilDevangariHabashGruzinYunonGujaratiGu" +
 	"rmuxiXangulXanSoddalashtirilganAnʼanaviyIbroniyXiraganaYaponKatakanaXmer" +
 	"KannadaKoreyaLaoLotinMalayalamMoʻgʻulchaMyanmaOriyaSinxalaTamilTeluguTaa" +
@@ -26941,7 +26941,7 @@ var uzScriptIdx = []uint16{
 }
 
 // Size: 2484 bytes
-const viScriptStr = "" +
+var viScriptStr string = "" +
 	"Chữ AfakaChữ Ả RậpChữ Imperial AramaicChữ ArmeniaChữ AvestanChữ BaliChữ " +
 	"BamumChữ Bassa VahChữ BatakChữ BengaliChữ BlissymbolsChữ BopomofoChữ Bra" +
 	"hmiChữ nổi BrailleChữ BuginChữ BuhidChữ ChakmaÂm tiết Thổ dân Canada Hợp" +
@@ -27000,7 +27000,7 @@ var viScriptIdx = []uint16{
 }
 
 // Size: 2184 bytes
-const zhScriptStr = "" +
+var zhScriptStr string = "" +
 	"阿法卡文阿拉伯文皇室亚拉姆文亚美尼亚文阿维斯陀文巴厘文巴姆穆文巴萨文巴塔克文孟加拉文布列斯符号汉语拼音婆罗米文字布莱叶盲文布吉文布希德文查克马文" +
 	"加拿大土著统一音节卡里亚文占文切罗基文色斯文克普特文塞浦路斯文西里尔文西里尔文字（古教会斯拉夫文的变体）天城文德塞莱特文杜普洛伊速记后期埃及" +
 	"文古埃及僧侣书写体古埃及象形文埃塞俄比亚文格鲁吉亚文（教堂体）格鲁吉亚文格拉哥里文哥特文格兰塔文希腊文古吉拉特文果鲁穆奇文韩文字汉字汉奴罗文" +
@@ -27042,7 +27042,7 @@ var zhScriptIdx = []uint16{
 }
 
 // Size: 2409 bytes
-const zhHantScriptStr = "" +
+var zhHantScriptStr string = "" +
 	"阿法卡文字高加索阿爾巴尼亞文阿拉伯文皇室亞美尼亞文亞美尼亞文阿維斯陀文峇里文巴姆穆文巴薩文巴塔克文孟加拉文布列斯文注音符號婆羅米文盲人用點字布吉" +
 	"斯文布希德文查克馬文加拿大原住民通用字符卡里亞文占文柴羅基文色斯文科普特文塞浦路斯文斯拉夫文西里爾文（古教會斯拉夫文變體）天城文德瑟雷特文杜" +
 	"普洛伊速記古埃及世俗體古埃及僧侶體古埃及象形文字愛爾巴桑文衣索比亞文喬治亞語系（阿索他路里和努斯克胡里文）喬治亞文格拉哥里文歌德文格蘭他文字" +
@@ -27085,7 +27085,7 @@ var zhHantScriptIdx = []uint16{
 }
 
 // Size: 371 bytes
-const zuScriptStr = "" +
+var zuScriptStr string = "" +
 	"i-Arabi-Armeniani-Bengalii-Bopomofoi-Braillei-Cyrillici-Devanagarii-Ethi" +
 	"opici-Georgiani-Greeki-Gujaratii-Gurmukhii-Hanguli-Hani-Simplified Hani-" +
 	"Traditional Hani-Hebrewi-Hiraganai-Japanesei-Katakanai-Khmeri-Kannadai-K" +
@@ -36641,7 +36641,7 @@ var regionHeaders = [210]header{
 }
 
 // Size: 3026 bytes
-const afRegionStr = "" +
+var afRegionStr string = "" +
 	"AscensioneilandAndorraVerenigde Arabiese EmirateAfganistanAntigua en Bar" +
 	"budaAnguillaAlbaniëArmeniëNederlands-AntilleAngolaAntarktikaArgentiniëAm" +
 	"erikaans-SamoaOostenrykAustraliëArubaÅlandeilandeAzerbeidjanBosnië en He" +
@@ -36732,7 +36732,7 @@ var afRegionIdx = []uint16{
 }
 
 // Size: 5333 bytes
-const amRegionStr = "" +
+var amRegionStr string = "" +
 	"አሴንሽን ደሴትአንዶራየተባበሩት አረብ ኤምሬትስአፍጋኒስታንአንቲጓ እና ባሩዳአንጉኢላአልባኒያአርሜኒያኔዘርላንድስ አን" +
 	"ቲልስአንጐላአንታርክቲካአርጀንቲናየአሜሪካ ሳሞአኦስትሪያአውስትራልያአሩባየአላንድ ደሴቶችአዘርባጃንቦስኒያ እና ሄር" +
 	"ዞጎቪኒያባርቤዶስባንግላዲሽቤልጄምቡርኪና ፋሶቡልጌሪያባህሬንብሩንዲቤኒንቅዱስ በርቴሎሜቤርሙዳብሩኒቦሊቪያየካሪቢያን " +
@@ -36808,7 +36808,7 @@ var amRegionIdx = []uint16{
 }
 
 // Size: 5380 bytes
-const arRegionStr = "" +
+var arRegionStr string = "" +
 	"جزيرة أسينشيونأندوراالإمارات العربية المتحدةأفغانستانأنتيغوا وبربوداأنغو" +
 	"يلاألبانياأرمينياجزر الأنتيل الهولنديةأنغولاأنتاركتيكاالأرجنتينساموا ال" +
 	"أمريكيةالنمساأسترالياآروباجزر آلاندأذربيجانالبوسنة والهرسكبربادوسبنجلاد" +
@@ -36896,7 +36896,7 @@ var arRegionIdx = []uint16{
 }
 
 // Size: 3197 bytes
-const azRegionStr = "" +
+var azRegionStr string = "" +
 	"Yüksəliş AdasıAndorraBirləşmiş Ərəb ƏmirlikləriƏfqanıstanAntiqua və Barb" +
 	"udaAngilaAlbaniyaErmənistanHollandiya antilleriAnqolaAntarktikaArgentina" +
 	"Amerika SamoasıAvstriyaAvstraliyaArubaAland AdalarıAzərbaycanBosniya və " +
@@ -36987,7 +36987,7 @@ var azRegionIdx = []uint16{
 }
 
 // Size: 5879 bytes
-const bgRegionStr = "" +
+var bgRegionStr string = "" +
 	"остров ВъзнесениеАндораОбединени арабски емирстваАфганистанАнтигуа и Бар" +
 	"будаАнгуилаАлбанияАрменияХоландски АнтилиАнголаАнтарктикаАржентинаАмери" +
 	"канска СамоаАвстрияАвстралияАрубаОландски островиАзербайджанБосна и Хер" +
@@ -37079,7 +37079,7 @@ var bgRegionIdx = []uint16{
 }
 
 // Size: 9598 bytes
-const bnRegionStr = "" +
+var bnRegionStr string = "" +
 	"অ্যাসসেনশন আইল্যান্ডএ্যান্ডোরাসংযুক্ত আরব আমিরাতআফগানিস্তানএন্টিগুয়া ও " +
 	"বারবুডাএ্যাঙ্গুইলাআলব্যানিয়াআর্মেনিয়ানেদারল্যান্ডস এ্যান্টিলিসঅ্যাঙ্" +
 	"গোলাঅ্যান্টার্কটিকাআর্জেন্টিনাআমেরিকান সামোয়াঅস্ট্রিয়াঅস্ট্রেলিয়াআর" +
@@ -37176,7 +37176,7 @@ var bnRegionIdx = []uint16{
 }
 
 // Size: 3175 bytes
-const caRegionStr = "" +
+var caRegionStr string = "" +
 	"illa de l’AscensióAndorraEmirats Àrabs UnitsAfganistanAntigua i BarbudaA" +
 	"nguillaAlbàniaArmèniaAntilles NeerlandesesAngolaAntàrtidaArgentinaSamoa " +
 	"Nord-americanaÀustriaAustràliaArubailles ÅlandAzerbaidjanBòsnia i Herceg" +
@@ -37268,7 +37268,7 @@ var caRegionIdx = []uint16{
 }
 
 // Size: 3229 bytes
-const csRegionStr = "" +
+var csRegionStr string = "" +
 	"AscensionAndorraSpojené arabské emirátyAfghánistánAntigua a BarbudaAngui" +
 	"llaAlbánieArménieNizozemské AntilyAngolaAntarktidaArgentinaAmerická Samo" +
 	"aRakouskoAustrálieArubaÅlandyÁzerbájdžánBosna a HercegovinaBarbadosBangl" +
@@ -37359,7 +37359,7 @@ var csRegionIdx = []uint16{
 }
 
 // Size: 2938 bytes
-const daRegionStr = "" +
+var daRegionStr string = "" +
 	"AscensionøenAndorraForenede Arabiske EmiraterAfghanistanAntigua og Barbu" +
 	"daAnguillaAlbanienArmenienHollandske AntillerAngolaAntarktisArgentinaAme" +
 	"rikansk SamoaØstrigAustralienArubaÅlandAserbajdsjanBosnien-HercegovinaBa" +
@@ -37449,7 +37449,7 @@ var daRegionIdx = []uint16{
 }
 
 // Size: 3102 bytes
-const deRegionStr = "" +
+var deRegionStr string = "" +
 	"AscensionAndorraVereinigte Arabische EmirateAfghanistanAntigua und Barbu" +
 	"daAnguillaAlbanienArmenienNiederländische AntillenAngolaAntarktisArgenti" +
 	"nienAmerikanisch-SamoaÖsterreichAustralienArubaÅlandinselnAserbaidschanB" +
@@ -37541,7 +37541,7 @@ var deRegionIdx = []uint16{
 }
 
 // Size: 6143 bytes
-const elRegionStr = "" +
+var elRegionStr string = "" +
 	"Νήσος ΑσενσιόνΑνδόραΗνωμένα Αραβικά ΕμιράταΑφγανιστάνΑντίγκουα και Μπαρμ" +
 	"πούνταΑνγκουίλαΑλβανίαΑρμενίαΟλλανδικές ΑντίλλεςΑνγκόλαΑνταρκτικήΑργεντ" +
 	"ινήΑμερικανική ΣαμόαΑυστρίαΑυστραλίαΑρούμπαΝήσοι ΌλαντΑζερμπαϊτζάνΒοσνί" +
@@ -37635,7 +37635,7 @@ var elRegionIdx = []uint16{
 }
 
 // Size: 2940 bytes
-const enRegionStr = "" +
+var enRegionStr string = "" +
 	"Ascension IslandAndorraUnited Arab EmiratesAfghanistanAntigua & BarbudaA" +
 	"nguillaAlbaniaArmeniaNetherlands AntillesAngolaAntarcticaArgentinaAmeric" +
 	"an SamoaAustriaAustraliaArubaÅland IslandsAzerbaijanBosnia & Herzegovina" +
@@ -37725,7 +37725,7 @@ var enRegionIdx = []uint16{
 }
 
 // Size: 3145 bytes
-const esRegionStr = "" +
+var esRegionStr string = "" +
 	"Isla de la AscensiónAndorraEmiratos Árabes UnidosAfganistánAntigua y Bar" +
 	"budaAnguilaAlbaniaArmeniaAntillas NeerlandesasAngolaAntártidaArgentinaSa" +
 	"moa AmericanaAustriaAustraliaArubaIslas ÅlandAzerbaiyánBosnia-Herzegovin" +
@@ -37817,7 +37817,7 @@ var esRegionIdx = []uint16{
 }
 
 // Size: 3019 bytes
-const etRegionStr = "" +
+var etRegionStr string = "" +
 	"Ascensioni saarAndorraAraabia ÜhendemiraadidAfganistanAntigua ja Barbuda" +
 	"AnguillaAlbaaniaArmeeniaHollandi AntillidAngolaAntarktisArgentinaAmeerik" +
 	"a SamoaAustriaAustraaliaArubaAhvenamaaAserbaidžaanBosnia ja Hertsegoviin" +
@@ -37908,7 +37908,7 @@ var etRegionIdx = []uint16{
 }
 
 // Size: 4991 bytes
-const faRegionStr = "" +
+var faRegionStr string = "" +
 	"جزایر آسنسیونآندوراامارات متحدهٔ عربیافغانستانآنتیگوا و باربوداآنگویلاآل" +
 	"بانیارمنستانآنتیل هلندآنگولاجنوبگانآرژانتینساموآی امریکااتریشاسترالیاآر" +
 	"وباجزایر آلاندجمهوری آذربایجانبوسنی و هرزگوینباربادوسبنگلادشبلژیکبورکین" +
@@ -37995,7 +37995,7 @@ var faRegionIdx = []uint16{
 }
 
 // Size: 3017 bytes
-const fiRegionStr = "" +
+var fiRegionStr string = "" +
 	"Ascension-saariAndorraArabiemiirikunnatAfganistanAntigua ja BarbudaAngui" +
 	"llaAlbaniaArmeniaAlankomaiden AntillitAngolaAntarktisArgentiinaAmerikan " +
 	"SamoaItävaltaAustraliaArubaAhvenanmaaAzerbaidžanBosnia ja HertsegovinaBa" +
@@ -38086,7 +38086,7 @@ var fiRegionIdx = []uint16{
 }
 
 // Size: 3046 bytes
-const filRegionStr = "" +
+var filRegionStr string = "" +
 	"Acsencion islandAndorraUnited Arab EmiratesAfghanistanAntigua and Barbud" +
 	"aAnguillaAlbaniaArmeniaNetherlands AntillesAngolaAntarcticaArgentinaAmer" +
 	"ican SamoaAustriaAustraliaArubaÅland IslandsAzerbaijanBosnia and Herzego" +
@@ -38178,7 +38178,7 @@ var filRegionIdx = []uint16{
 }
 
 // Size: 3316 bytes
-const frRegionStr = "" +
+var frRegionStr string = "" +
 	"Île de l’AscensionAndorreÉmirats arabes unisAfghanistanAntigua-et-Barbud" +
 	"aAnguillaAlbanieArménieAntilles néerlandaisesAngolaAntarctiqueArgentineS" +
 	"amoa américainesAutricheAustralieArubaÎles ÅlandAzerbaïdjanBosnie-Herzég" +
@@ -38272,7 +38272,7 @@ var frRegionIdx = []uint16{
 }
 
 // Size: 71 bytes
-const frCARegionStr = "" +
+var frCARegionStr string = "" +
 	"BélarusÎles Cocos (Keeling)MicronésieSaint-Vincent-et-les Grenadines"
 
 // Size: 518 bytes, 247 elements
@@ -38315,7 +38315,7 @@ var frCARegionIdx = []uint16{
 }
 
 // Size: 8813 bytes
-const guRegionStr = "" +
+var guRegionStr string = "" +
 	"એસેન્શન આઇલેન્ડઍંડોરાયુનાઇટેડ આરબ અમીરાતઅફઘાનિસ્તાનએન્ટીગુઆ અને બરબુડાઍં" +
 	"ગ્વિલાઅલ્બેનિયાઆર્મેનિયાનેધરલેંડ્સ એંટિલેસઅંગોલાએન્ટાર્કટિકાઆર્જેન્ટીન" +
 	"ાઅમેરીકન સમોઆઑસ્ટ્રિયાઑસ્ટ્રેલિયાઅરુબાએલેંડ આઇલેન્ડ્સઅઝરબૈજાનબોસ્નિયા " +
@@ -38408,7 +38408,7 @@ var guRegionIdx = []uint16{
 }
 
 // Size: 5025 bytes
-const heRegionStr = "" +
+var heRegionStr string = "" +
 	"האי אסנשןאנדורהאיחוד האמירויות הערביותאפגניסטןאנטיגואה וברבודהאנגילהאלבנ" +
 	"יהארמניהאנטילים הולנדייםאנגולהאנטארקטיקהארגנטינהסמואה האמריקניתאוסטריהא" +
 	"וסטרליהארובהאיי אולנדאזרבייג׳ןבוסניה והרצגובינהברבדוסבנגלדשבלגיהבורקינה" +
@@ -38494,7 +38494,7 @@ var heRegionIdx = []uint16{
 }
 
 // Size: 8760 bytes
-const hiRegionStr = "" +
+var hiRegionStr string = "" +
 	"असेंशन द्वीपएंडोरासंयुक्त अरब अमीरातअफ़गानिस्तानएंटिगुआ और बरबुडाएंग्विल" +
 	"ाअल्बानियाआर्मेनियानीदरलैंडी ऐंटीलअंगोलाअंटार्कटिकाअर्जेंटीनाअमेरिकी स" +
 	"मोआऑस्ट्रियाऑस्ट्रेलियाअरूबाएलैंड द्वीपसमूहअज़रबैजानबोस्निया और हर्ज़े" +
@@ -38587,7 +38587,7 @@ var hiRegionIdx = []uint16{
 }
 
 // Size: 3113 bytes
-const hrRegionStr = "" +
+var hrRegionStr string = "" +
 	"Otok AscensionAndoraUjedinjeni Arapski EmiratiAfganistanAntigua i Barbud" +
 	"aAngvilaAlbanijaArmenijaNizozemski AntiliAngolaAntarktikaArgentinaAmerič" +
 	"ka SamoaAustrijaAustralijaArubaOtoci AlandAzerbajdžanBosna i Hercegovina" +
@@ -38679,7 +38679,7 @@ var hrRegionIdx = []uint16{
 }
 
 // Size: 3361 bytes
-const huRegionStr = "" +
+var huRegionStr string = "" +
 	"Ascension-szigetAndorraEgyesült Arab EmirátusAfganisztánAntigua és Barbu" +
 	"daAnguillaAlbániaÖrményországHolland AntillákAngolaAntarktiszArgentínaAm" +
 	"erikai SzamoaAusztriaAusztráliaArubaÅland-szigetekAzerbajdzsánBosznia-He" +
@@ -38772,7 +38772,7 @@ var huRegionIdx = []uint16{
 }
 
 // Size: 6314 bytes
-const hyRegionStr = "" +
+var hyRegionStr string = "" +
 	"Համբարձման կղզիԱնդորաՄիացյալ Արաբական ԷմիրություններԱֆղանստանԱնտիգուա և " +
 	"ԲարբուդաԱնգիլիաԱլբանիաՀայաստանԱնգոլաԱնտարկտիդաԱրգենտինաԱմերիկյան ՍամոաԱ" +
 	"վստրիաԱվստրալիաԱրուբաԱլանդյան կղզիներԱդրբեջանԲոսնիա և ՀերցեգովինաԲարբադ" +
@@ -38867,7 +38867,7 @@ var hyRegionIdx = []uint16{
 }
 
 // Size: 2965 bytes
-const idRegionStr = "" +
+var idRegionStr string = "" +
 	"Pulau AscensionAndorraUni Emirat ArabAfganistanAntigua dan BarbudaAnguil" +
 	"laAlbaniaArmeniaAntilla BelandaAngolaAntarktikaArgentinaSamoa AmerikaAus" +
 	"triaAustraliaArubaKepulauan AlandAzerbaijanBosnia dan HerzegovinaBarbado" +
@@ -38958,7 +38958,7 @@ var idRegionIdx = []uint16{
 }
 
 // Size: 3314 bytes
-const isRegionStr = "" +
+var isRegionStr string = "" +
 	"Ascension-eyjaAndorraSameinuðu arabísku furstadæminAfganistanAntígva og " +
 	"BarbúdaAngvillaAlbaníaArmeníaHollensku AntillurAngólaSuðurskautslandiðAr" +
 	"gentínaBandaríska SamóaAusturríkiÁstralíaArúbaÁlandseyjarAserbaídsjanBos" +
@@ -39049,7 +39049,7 @@ var isRegionIdx = []uint16{
 }
 
 // Size: 3068 bytes
-const itRegionStr = "" +
+var itRegionStr string = "" +
 	"Isola di AscensioneAndorraEmirati Arabi UnitiAfghanistanAntigua e Barbud" +
 	"aAnguillaAlbaniaArmeniaAntille OlandesiAngolaAntartideArgentinaSamoa Ame" +
 	"ricaneAustriaAustraliaArubaIsole AlandAzerbaigianBosnia-ErzegovinaBarbad" +
@@ -39141,7 +39141,7 @@ var itRegionIdx = []uint16{
 }
 
 // Size: 4836 bytes
-const jaRegionStr = "" +
+var jaRegionStr string = "" +
 	"アセンション島アンドラアラブ首長国連邦アフガニスタンアンティグア・バーブーダアンギラアルバニアアルメニアオランダ領アンティルアンゴラ南極アルゼン" +
 	"チン米領サモアオーストリアオーストラリアアルバオーランド諸島アゼルバイジャンボスニア・ヘルツェゴビナバルバドスバングラデシュベルギーブルキナ" +
 	"ファソブルガリアバーレーンブルンジベナンサン・バルテルミー島バミューダブルネイボリビアオランダ領カリブブラジルバハマブータンブーベ島ボツワナ" +
@@ -39214,7 +39214,7 @@ var jaRegionIdx = []uint16{
 }
 
 // Size: 9560 bytes
-const kaRegionStr = "" +
+var kaRegionStr string = "" +
 	"ამაღლების კუნძულიანდორაარაბთა გაერთიანებული საამიროებიავღანეთიანტიგუა და" +
 	" ბარბუდაანგილიაალბანეთისომხეთინიდერლანდების ანტილებიანგოლაანტარქტიკაარგე" +
 	"ნტინაამერიკის სამოაავსტრიაავსტრალიაარუბაალანდის კუნძულებიაზერბაიჯანიბო" +
@@ -39310,7 +39310,7 @@ var kaRegionIdx = []uint16{
 }
 
 // Size: 5988 bytes
-const kkRegionStr = "" +
+var kkRegionStr string = "" +
 	"Ғибадат аралыАндорраБіріккен Араб ЭмираттарыАуғанстанАнтигуа мен Барбуда" +
 	"АнгильяАлбанияАрменияАнголаАнтарктикаАргентинаАмерикан СамоасыАвстрияАв" +
 	"стралияАрубаАланд аралдарыӘзербайжанБосния және ГерцеговинаБарбадосБанг" +
@@ -39403,7 +39403,7 @@ var kkRegionIdx = []uint16{
 }
 
 // Size: 9032 bytes
-const kmRegionStr = "" +
+var kmRegionStr string = "" +
 	"កោះ\u200bអាសេនសិនអង់ដូរ៉ាអេមីរ៉ែទអារ៉ាប់រួមអាហ្វហ្គានីស្ថានអង់ទីគ័រ និង" +
 	"\u200bបាបុយដាអង់កូឡាអាល់បានីអារមេនីអង់ហ្គោឡាអង់តាទីកាអាហ្សង់ទីនសៅម៉ៅ អាម" +
 	"េរិកអូទ្រីសអូស្ត្រាលីអារូបាកោះ\u200bអាឡាំងអាហ៊្សែរបែហ្សង់បូស្ន៉ីបារបាដ" +
@@ -39504,7 +39504,7 @@ var kmRegionIdx = []uint16{
 }
 
 // Size: 9430 bytes
-const knRegionStr = "" +
+var knRegionStr string = "" +
 	"ಅಸೆನ್ಶನ್ ದ್ವೀಪಅಂಡೋರಾಸಂಯುಕ್ತ ಅರಬ್ ಎಮಿರೇಟಸ್ಅಫಘಾನಿಸ್ಥಾನ್ಆಂಟಿಗುವಾ ಮತ್ತು ಬರ್ಬ" +
 	"ುಡಾಆಂಗುಯಿಲ್ಲಾಅಲ್ಬೇನಿಯಾಅರ್ಮೇನಿಯಾನೆದರ್\u200cಲ್ಯಾಂಡ್ಅಂಗೋಲಾಅಂಟಾರ್ಟಿಕಾಅರ್ಜೆ" +
 	"ಂಟಿನಾಅಮೇರಿಕನ್ ಸಮೋವಾಆಸ್ಟ್ರಿಯಾಆಸ್ಟ್ರೇಲಿಯಅರುಬಾಆಲ್ಯಾಂಡ್ ದ್ವೀಪಗಳುಅಜರ್ಬೈಜಾನ್" +
@@ -39601,7 +39601,7 @@ var knRegionIdx = []uint16{
 }
 
 // Size: 3916 bytes
-const koRegionStr = "" +
+var koRegionStr string = "" +
 	"어센션 섬안도라아랍에미리트 연합아프가니스탄앤티가 바부다앵귈라알바니아아르메니아네덜란드령 안틸레스앙골라남극 대륙아르헨티나아메리칸 사모" +
 	"아오스트리아오스트레일리아아루바올란드 제도아제르바이잔보스니아 헤르체고비나바베이도스방글라데시벨기에부르키나파소불가리아바레인부룬디베냉" +
 	"생바르텔레미버뮤다브루나이볼리비아네덜란드령 카리브브라질바하마부탄부베섬보츠와나벨라루스벨리즈캐나다코코스제도콩고-킨샤사중앙 아프리카 " +
@@ -39670,7 +39670,7 @@ var koRegionIdx = []uint16{
 }
 
 // Size: 5805 bytes
-const kyRegionStr = "" +
+var kyRegionStr string = "" +
 	"Ассеншин аралыАндорраБириккен Араб ЭмираттарыАфганистанАнтигуа жана Барб" +
 	"удаАнгуилаАлбанияАрменияАнголаАнтарктикаАргентинаАмерика СамоасыАвстрия" +
 	"АвстралияАрубаАланд аралдарыАзербайжанБосния жана ГерцеговинаБарбадосБа" +
@@ -39761,7 +39761,7 @@ var kyRegionIdx = []uint16{
 }
 
 // Size: 8079 bytes
-const loRegionStr = "" +
+var loRegionStr string = "" +
 	"ເກາະອາເຊນຊັນອັນດໍຣາສະຫະລັດອາຣັບເອມິເຣດອາຟການິສຖານອາທິກົວ ບາບູດາແອນກຸຍລາແ" +
 	"ອວເບເນຍອາເມເນຍອັນໂກລາແອນຕາດຕິກາອາເຈນທິນາອາເມຣິກາ ຊາມົວອອສເທຣຍອອສເຕຣເລຍ" +
 	"ອໍຣູບາຫມູ່ເກາະໂອລັນອາເຊີໄບຈານບອດສະເນຍ ແລະ ແຮສໂກວີນາບາບາໂດສບັງກະລາເທດເບ" +
@@ -39850,7 +39850,7 @@ var loRegionIdx = []uint16{
 }
 
 // Size: 3396 bytes
-const ltRegionStr = "" +
+var ltRegionStr string = "" +
 	"Dangun Žengimo salaAndoraJungtiniai Arabų EmyrataiAfganistanasAntigva ir" +
 	" BarbudaAngilijaAlbanijaArmėnijaOlandijos AntilaiAngolaAntarktidaArgenti" +
 	"naAmerikos SamoaAustrijaAustralijaArubaAlandų SalosAzerbaidžanasBosnija " +
@@ -39945,7 +39945,7 @@ var ltRegionIdx = []uint16{
 }
 
 // Size: 3293 bytes
-const lvRegionStr = "" +
+var lvRegionStr string = "" +
 	"Debesbraukšanas salaAndoraApvienotie Arābu EmirātiAfganistānaAntigva un " +
 	"BarbudaAngiljaAlbānijaArmēnijaNīderlandes AntiļasAngolaAntarktikaArgentī" +
 	"naAmerikāņu SamoaAustrijaAustrālijaArubaOlandes salasAzerbaidžānaBosnija" +
@@ -40037,7 +40037,7 @@ var lvRegionIdx = []uint16{
 }
 
 // Size: 6058 bytes
-const mkRegionStr = "" +
+var mkRegionStr string = "" +
 	"Остров АсенсионАндораОбединети Арапски ЕмиратиАвганистанАнтигва и Барбуд" +
 	"аАнгвилаАлбанијаЕрменијаХоландски АнтилиАнголаАнтарктикАргентинаАмерика" +
 	"нска СамоаАвстријаАвстралијаАрубаОландски островиАзербејџанБосна и Херц" +
@@ -40130,7 +40130,7 @@ var mkRegionIdx = []uint16{
 }
 
 // Size: 9235 bytes
-const mlRegionStr = "" +
+var mlRegionStr string = "" +
 	"അസൻഷൻ ദ്വീപ്അന്റോറയുണൈറ്റഡ് അറബ് എമിറൈറ്റ്\u200cസ്അഫ്\u200cഗാനിസ്ഥാൻആൻറി" +
 	"ഗ്വയും ബർബുഡയുംആൻഗ്വില്ലഅൽബേനിയഅർമേനിയനെതർലൻഡ്സ് ആൻറിലിസ്അംഗോളഅൻറാർട്ട" +
 	"ിക്കഅർജൻറീനഅമേരിക്കൻ സമോവഓസ്ട്രിയഓസ്\u200cട്രേലിയഅറൂബഅലൻഡ് ദ്വീപുകൾഅസർ" +
@@ -40227,7 +40227,7 @@ var mlRegionIdx = []uint16{
 }
 
 // Size: 5483 bytes
-const mnRegionStr = "" +
+var mnRegionStr string = "" +
 	"Аскенсион АралАндорраАрабын Нэгдсэн ЭмиратАфганистанАнтигуа ба БарбудаАн" +
 	"гилаАлбаниАрменАнголАнтарктикАргентинАмерикийн СамоаАвстриАвстралиАруба" +
 	"Аландын АрлуудАзербайжанБосни ХерцеговинБарбадосБангладешБелгиБуркина ф" +
@@ -40316,7 +40316,7 @@ var mnRegionIdx = []uint16{
 }
 
 // Size: 8475 bytes
-const mrRegionStr = "" +
+var mrRegionStr string = "" +
 	"अ\u200dॅसेन्शियन बेटअँडोरासंयुक्त अरब अमीरातअफगाणिस्तानअँटिग्वा आणि बर्ब" +
 	"ुडाअँग्विलाअल्बानियाअर्मेनियानेदरलँड्\u200dस अँ\u200dटिल्सअंगोलाअंटार्" +
 	"क्टिकाअर्जेंटिनाअमेरिकन सामोआऑस्ट्रियाऑस्ट्रेलियाअरुबाअ\u200dॅलँड बेटे" +
@@ -40408,7 +40408,7 @@ var mrRegionIdx = []uint16{
 }
 
 // Size: 2966 bytes
-const msRegionStr = "" +
+var msRegionStr string = "" +
 	"Pulau AscensionAndorraEmiriah Arab BersatuAfghanistanAntigua dan Barbuda" +
 	"AnguillaAlbaniaArmeniaNetherlands AntillesAngolaAntartikaArgentinaSamoa " +
 	"AmerikaAustriaAustraliaArubaKepulauan AlandAzerbaijanBosnia dan Herzegov" +
@@ -40499,7 +40499,7 @@ var msRegionIdx = []uint16{
 }
 
 // Size: 10052 bytes
-const myRegionStr = "" +
+var myRegionStr string = "" +
 	"အက်စ်စင်ရှီအွန်ကျွန်းအန်ဒိုရာယူအေအီးအာဖဂန်နစ္စတန်အန်တီဂုအာနှင့်ဘာဘုဒါအန်" +
 	"ဂွီလာအဲလ်ဘာနီအာအာမေနီးယားအင်ဂိုလာအန္တာတိကအာဂျင်တီးနားအမေရိကန် စမိုအဩစတ" +
 	"ြီးယားဩစတြေးလျအာရုဘာအာလန်ကျွန်းအဇာဘိုင်ဂျန်ဘော့စနီးယား နှင့် ဟာဇီဂိုဘီ" +
@@ -40597,7 +40597,7 @@ var myRegionIdx = []uint16{
 }
 
 // Size: 9084 bytes
-const neRegionStr = "" +
+var neRegionStr string = "" +
 	"एस्केन्सन टापुअन्डोर्रासंयुक्त अरब इमिराट्सअफगानिस्तानएन्टिगुआ र बारबुडा" +
 	"आङ्गुइलाअल्बानियाआर्मेनियानेदरल्याण्ड्स एण्टिलिसअङ्गोलाअन्टारतिकाअर्जे" +
 	"न्टिनाअमेरिकी समोआअष्ट्रियाअष्ट्रेलियाआरूबाअलान्ड टापुहरुअजरबैजानबोस्न" +
@@ -40691,7 +40691,7 @@ var neRegionIdx = []uint16{
 }
 
 // Size: 3063 bytes
-const nlRegionStr = "" +
+var nlRegionStr string = "" +
 	"AscensionAndorraVerenigde Arabische EmiratenAfghanistanAntigua en Barbud" +
 	"aAnguillaAlbaniëArmeniëNederlandse AntillenAngolaAntarcticaArgentiniëAme" +
 	"rikaans-SamoaOostenrijkAustraliëArubaÅlandAzerbeidzjanBosnië en Herzegov" +
@@ -40782,7 +40782,7 @@ var nlRegionIdx = []uint16{
 }
 
 // Size: 2836 bytes
-const noRegionStr = "" +
+var noRegionStr string = "" +
 	"AscensionAndorraDe forente arabiske emiraterAfghanistanAntigua og Barbud" +
 	"aAnguillaAlbaniaArmeniaDe nederlandske antillerAngolaAntarktisArgentinaA" +
 	"merikansk SamoaØsterrikeAustraliaArubaÅlandAserbajdsjanBosnia-Hercegovin" +
@@ -40870,7 +40870,7 @@ var noRegionIdx = []uint16{
 }
 
 // Size: 7688 bytes
-const paRegionStr = "" +
+var paRegionStr string = "" +
 	"ਅਸੈਂਸ਼ਨ ਟਾਪੂਅੰਡੋਰਾਸੰਯੁਕਤ ਅਰਬ ਅਮੀਰਾਤਅਫ਼ਗਾਨਿਸਤਾਨਐਂਟੀਗੁਆ ਅਤੇ ਬਾਰਬੁਡਾਅੰਗੁਇਲਾ" +
 	"ਅਲਬਾਨੀਆਅਰਮੀਨੀਆਅੰਗੋਲਾਅੰਟਾਰਕਟਿਕਾਅਰਜਨਟੀਨਾਅਮੈਰੀਕਨ ਸਮੋਆਆਸਟਰੀਆਆਸਟ੍ਰੇਲੀਆਅਰੂਬਾ" +
 	"ਅਲੈਂਡ ਟਾਪੂਅਜ਼ਰਬਾਈਜਾਨਬੋਸਨੀਆ ਅਤੇ ਹਰਜ਼ੇਗੋਵੀਨਾਬਾਰਬਾਡੋਸਬੰਗਲਾਦੇਸ਼ਬੈਲਜੀਅਮਬੁਰਕ" +
@@ -40957,7 +40957,7 @@ var paRegionIdx = []uint16{
 }
 
 // Size: 3161 bytes
-const plRegionStr = "" +
+var plRegionStr string = "" +
 	"Wyspa WniebowstąpieniaAndoraZjednoczone Emiraty ArabskieAfganistanAntigu" +
 	"a i BarbudaAnguillaAlbaniaArmeniaAntyle HolenderskieAngolaAntarktykaArge" +
 	"ntynaSamoa AmerykańskieAustriaAustraliaArubaWyspy AlandzkieAzerbejdżanBo" +
@@ -41049,7 +41049,7 @@ var plRegionIdx = []uint16{
 }
 
 // Size: 3176 bytes
-const ptRegionStr = "" +
+var ptRegionStr string = "" +
 	"Ilha de AscensãoAndorraEmirados Árabes UnidosAfeganistãoAntígua e Barbud" +
 	"aAnguillaAlbâniaArmêniaAntilhas HolandesasAngolaAntártidaArgentinaSamoa " +
 	"AmericanaÁustriaAustráliaArubaIlhas ÅlandAzerbaijãoBósnia e HerzegovinaB" +
@@ -41141,7 +41141,7 @@ var ptRegionIdx = []uint16{
 }
 
 // Size: 467 bytes
-const ptPTRegionStr = "" +
+var ptPTRegionStr string = "" +
 	"AnguilaArméniaBarémBenimCongo-KinshasaCongo-BrazzavilleCamarõesCuraçauRe" +
 	"pública ChecaDomínicaEstóniaIlhas FalklandIlhas FaroéGronelândiaGuameIrã" +
 	"oQuéniaIlhas CaimãoLetóniaMónacoMadagáscarMacedóniaMonserrateMauríciaNov" +
@@ -41197,7 +41197,7 @@ var ptPTRegionIdx = []uint16{
 }
 
 // Size: 3237 bytes
-const roRegionStr = "" +
+var roRegionStr string = "" +
 	"Insula AscensionAndorraEmiratele Arabe UniteAfganistanAntigua și Barbuda" +
 	"AnguillaAlbaniaArmeniaAntilele OlandezeAngolaAntarcticaArgentinaSamoa Am" +
 	"ericanăAustriaAustraliaArubaInsulele ÅlandAzerbaidjanBosnia și Herțegovi" +
@@ -41291,7 +41291,7 @@ var roRegionIdx = []uint16{
 }
 
 // Size: 5771 bytes
-const ruRegionStr = "" +
+var ruRegionStr string = "" +
 	"о-в ВознесенияАндорраОАЭАфганистанАнтигуа и БарбудаАнгильяАлбанияАрмения" +
 	"Нидерландские Антильские о-ваАнголаАнтарктидаАргентинаАмериканское Само" +
 	"аАвстрияАвстралияАрубаАландские о-ваАзербайджанБосния и ГерцеговинаБарб" +
@@ -41382,7 +41382,7 @@ var ruRegionIdx = []uint16{
 }
 
 // Size: 9356 bytes
-const siRegionStr = "" +
+var siRegionStr string = "" +
 	"ඇසෙන්ෂන් දිවයිනඇන්ඩෝරාවඑක්සත් අරාබි එමිර් රාජ්\u200dයයඇෆ්ගනිස්ථානයඇන්ටිග" +
 	"ුවා සහ බාබියුඩාවඇන්ගුයිලාවඇල්බේනියාවආර්මේනියාවනෙදර්ලන්ත ඇන්ටිලීසියඇන්ග" +
 	"ෝලාවඇන්ටාක්ටිකාවආර්ජෙන්ටිනාවඇමරිකානු සැමෝවාවඔස්ට්\u200dරියාවඕස්ට්" +
@@ -41481,7 +41481,7 @@ var siRegionIdx = []uint16{
 }
 
 // Size: 3211 bytes
-const skRegionStr = "" +
+var skRegionStr string = "" +
 	"AscensiónAndorraSpojené arabské emirátyAfganistanAntigua a BarbudaAnguil" +
 	"laAlbánskoArménskoHolandské AntilyAngolaAntarktídaArgentínaAmerická Samo" +
 	"aRakúskoAustráliaArubaÅlandyAzerbajdžanBosna a HercegovinaBarbadosBangla" +
@@ -41572,7 +41572,7 @@ var skRegionIdx = []uint16{
 }
 
 // Size: 3205 bytes
-const slRegionStr = "" +
+var slRegionStr string = "" +
 	"Otok AscensionAndoraZdruženi arabski emiratiAfganistanAntigva in Barbuda" +
 	"AngvilaAlbanijaArmenijaNizozemski AntiliAngolaAntarktikaArgentinaAmerišk" +
 	"a SamoaAvstrijaAvstralijaArubaÅlandski otokiAzerbajdžanBosna in Hercegov" +
@@ -41665,7 +41665,7 @@ var slRegionIdx = []uint16{
 }
 
 // Size: 3118 bytes
-const sqRegionStr = "" +
+var sqRegionStr string = "" +
 	"Ishulli AsenshionAndorrëEmiratet e Bashkuara ArabeAfganistanAntigua e Ba" +
 	"rbudaAnguilëShqipëriArmeniAngolëAntarktikëArgjentinëSamoa AmerikaneAustr" +
 	"iAustraliArubëIshujt AlandëAzerbajxhanBosnjë-HercegovinëBarbadosBanglade" +
@@ -41756,7 +41756,7 @@ var sqRegionIdx = []uint16{
 }
 
 // Size: 5917 bytes
-const srRegionStr = "" +
+var srRegionStr string = "" +
 	"Острво АсенсионАндораУједињени Арапски ЕмиратиАвганистанАнтигва и Барбуд" +
 	"аАнгвилаАлбанијаЈерменијаХоландски АнтилиАнголаАнтарктикАргентинаАмерич" +
 	"ка СамоаАустријаАустралијаАрубаОландска острваАзербејџанБосна и Херцего" +
@@ -41848,7 +41848,7 @@ var srRegionIdx = []uint16{
 }
 
 // Size: 3111 bytes
-const srLatnRegionStr = "" +
+var srLatnRegionStr string = "" +
 	"Ostrvo AsensionAndoraUjedinjeni Arapski EmiratiAvganistanAntigva i Barbu" +
 	"daAngvilaAlbanijaJermenijaHolandski AntiliAngolaAntarktikArgentinaAmerič" +
 	"ka SamoaAustrijaAustralijaArubaOlandska ostrvaAzerbejdžanBosna i Hercego" +
@@ -41940,7 +41940,7 @@ var srLatnRegionIdx = []uint16{
 }
 
 // Size: 2926 bytes
-const svRegionStr = "" +
+var svRegionStr string = "" +
 	"AscensionAndorraFörenade ArabemiratenAfghanistanAntigua och BarbudaAngui" +
 	"llaAlbanienArmenienNederländska AntillernaAngolaAntarktisArgentinaAmerik" +
 	"anska SamoaÖsterrikeAustralienArubaÅlandAzerbajdzjanBosnien och Hercegov" +
@@ -42029,7 +42029,7 @@ var svRegionIdx = []uint16{
 }
 
 // Size: 3103 bytes
-const swRegionStr = "" +
+var swRegionStr string = "" +
 	"Kisiwa cha AscensionAndoraFalme za KiarabuAfghanistanAntigua na BarbudaA" +
 	"nguillaAlbaniaArmeniaAntili za UholanziAngolaAntaktikaAjentinaSamoa ya M" +
 	"arekaniAustriaAustraliaArubaVisiwa vya AlandiAzabajaniBosnia na Hezegovi" +
@@ -42122,7 +42122,7 @@ var swRegionIdx = []uint16{
 }
 
 // Size: 9763 bytes
-const taRegionStr = "" +
+var taRegionStr string = "" +
 	"அஷன்ஷியன் தீவுஅன்டோராஐக்கிய அரபு எமிரேட்ஸ்ஆப்கானிஸ்தான்ஆண்டிகுவா மற்றும்" +
 	" பார்புடாஅங்குய்லாஅல்பேனியாஆர்மேனியாநெதர்லாந்து ஆண்டில்லெஸ்அங்கோலாஅண்டார" +
 	"்டிகாஅர்ஜென்டினாஅமெரிக்க சமோவாஆஸ்திரியாஆஸ்திரேலியாஅரூபாஆலந்து தீவுகள்அ" +
@@ -42219,7 +42219,7 @@ var taRegionIdx = []uint16{
 }
 
 // Size: 9380 bytes
-const teRegionStr = "" +
+var teRegionStr string = "" +
 	"ఎసెషన్ దీవిఅండొర్రాయునైటెడ్ అరబ్ ఎమిరేట్స్ఆఫ్ఘనిస్తాన్ఆంటిగ్వా మరియు బార" +
 	"్బుడాఆంగవిల్లాఅల్బేనియాఆర్మేనియానేదేర్లేండ్స్ అంటిల్లిస్అంగోలాఅంటార్కట" +
 	"ికాఅర్జెంటీనాఅమెరికన్ సమోవాఆస్ట్రియాఆస్ట్రేలియాఅరుబాఆలేండ్ దీవులుఅజర్బ" +
@@ -42315,7 +42315,7 @@ var teRegionIdx = []uint16{
 }
 
 // Size: 9078 bytes
-const thRegionStr = "" +
+var thRegionStr string = "" +
 	"เกาะแอสเซนชันอันดอร์ราสหรัฐอาหรับเอมิเรตส์อัฟกานิสถานแอนติกาและบาร์บูดาแ" +
 	"องกวิลลาแอลเบเนียอาร์เมเนียเนเธอร์แลนด์แอนทิลลิสแองโกลาแอนตาร์กติกาอาร" +
 	"์เจนตินาอเมริกันซามัวออสเตรียออสเตรเลียอารูบาหมู่เกาะโอลันด์อาเซอร์ไบจ" +
@@ -42408,7 +42408,7 @@ var thRegionIdx = []uint16{
 }
 
 // Size: 3053 bytes
-const trRegionStr = "" +
+var trRegionStr string = "" +
 	"Ascension AdasıAndorraBirleşik Arap EmirlikleriAfganistanAntigua ve Barb" +
 	"udaAnguillaArnavutlukErmenistanHollanda AntilleriAngolaAntarktikaArjanti" +
 	"nAmerikan SamoasıAvusturyaAvustralyaArubaÅland AdalarıAzerbaycanBosna He" +
@@ -42498,7 +42498,7 @@ var trRegionIdx = []uint16{
 }
 
 // Size: 6096 bytes
-const ukRegionStr = "" +
+var ukRegionStr string = "" +
 	"Острів ВознесінняАндорраОбʼєднані Арабські ЕміратиАфганістанАнтигуа і Ба" +
 	"рбудаАнгільяАлбаніяВірменіяНідерландські Антильські ОстровиАнголаАнтарк" +
 	"тикаАргентинаАмериканське СамоаАвстріяАвстраліяАрубаАландські островиАз" +
@@ -42592,7 +42592,7 @@ var ukRegionIdx = []uint16{
 }
 
 // Size: 5163 bytes
-const urRegionStr = "" +
+var urRegionStr string = "" +
 	"اسینشن آئلینڈانڈورامتحدہ عرب اماراتافغانستانانٹیگوا اور باربوداانگوئیلاا" +
 	"لبانیہآرمینیانیدرلینڈز انٹیلیزانگولاانٹارکٹیکاارجنٹیناامریکی ساموآآسٹری" +
 	"اآسٹریلیااروباآلینڈ آئلینڈزآذربائجانبوسنیا اور ہرزیگووینابارباڈوسبنگلہ " +
@@ -42679,7 +42679,7 @@ var urRegionIdx = []uint16{
 }
 
 // Size: 3170 bytes
-const uzRegionStr = "" +
+var uzRegionStr string = "" +
 	"Vozneseniye oroliAndorraBirlashgan Arab AmirliklariAfgʻonistonAntigua va" +
 	" BarbadosAngilaAlbaniyaArmanistonAngolaAntarktikaArgentinaAmerika Samoas" +
 	"iAvstriyaAvstraliyaArubaAland orollariOzarbayjonBosniya va GertsegovinaB" +
@@ -42772,7 +42772,7 @@ var uzRegionIdx = []uint16{
 }
 
 // Size: 3299 bytes
-const viRegionStr = "" +
+var viRegionStr string = "" +
 	"Đảo AscensionAndorraCác Tiểu V.quốc Ả Rập T.nhấtAfghanistanAntigua và Ba" +
 	"rbudaAnguillaAlbaniArmeniaTây Ấn Hà LanAngolaNam CựcArgentinaĐảo Somoa t" +
 	"huộc MỹÁoÚcArubaQuần đảo ÅlandAzerbaijanBosnia và HerzegovinaBarbadosBan" +
@@ -42862,7 +42862,7 @@ var viRegionIdx = []uint16{
 }
 
 // Size: 3331 bytes
-const zhRegionStr = "" +
+var zhRegionStr string = "" +
 	"阿森松岛安道尔阿拉伯联合酋长国阿富汗安提瓜和巴布达安圭拉阿尔巴尼亚亚美尼亚荷属安的列斯群岛安哥拉南极洲阿根廷美属萨摩亚奥地利澳大利亚阿鲁巴奥兰群" +
 	"岛阿塞拜疆波斯尼亚和黑塞哥维那巴巴多斯孟加拉国比利时布基纳法索保加利亚巴林布隆迪贝宁圣巴泰勒米百慕大文莱玻利维亚荷兰加勒比区巴西巴哈马不丹布" +
 	"维岛博茨瓦纳白俄罗斯伯利兹加拿大科科斯（基林）群岛刚果（金）中非共和国刚果（布）瑞士科特迪瓦库克群岛智利喀麦隆中国哥伦比亚克利珀顿岛哥斯达黎" +
@@ -42927,7 +42927,7 @@ var zhRegionIdx = []uint16{
 }
 
 // Size: 3330 bytes
-const zhHantRegionStr = "" +
+var zhHantRegionStr string = "" +
 	"阿森松島安道爾阿拉伯聯合大公國阿富汗安地卡及巴布達安圭拉阿爾巴尼亞亞美尼亞荷屬安地列斯安哥拉南極洲阿根廷美屬薩摩亞奧地利澳洲荷屬阿魯巴奧蘭群島亞" +
 	"塞拜然波士尼亞與赫塞哥維納巴貝多孟加拉比利時布吉納法索保加利亞巴林蒲隆地貝南聖巴瑟米百慕達汶萊玻利維亞荷蘭加勒比區巴西巴哈馬不丹布威島波札那" +
 	"白俄羅斯貝里斯加拿大科科斯（基林）群島剛果（金夏沙）中非共和國剛果（布拉薩）瑞士象牙海岸庫克群島智利喀麥隆中華人民共和國哥倫比亞克里派頓島哥" +
@@ -42992,7 +42992,7 @@ var zhHantRegionIdx = []uint16{
 }
 
 // Size: 3581 bytes
-const zuRegionStr = "" +
+var zuRegionStr string = "" +
 	"i-Ascension Islandi-Andorrai-United Arab Emiratesi-Afghanistani-Antigua " +
 	"and Barbudai-Anguillai-Albaniai-Armeniai-Netherlands Antillesi-Angolai-A" +
 	"ntarcticai-Argentinai-American Samoai-Austriai-Australiai-Arubai-Åland I" +
@@ -43095,7 +43095,7 @@ var zuRegionIdx = []uint16{
 const numSupported = 210
 
 // Size: 795 bytes
-const supported = "" +
+var supported string = "" +
 	"af|agq|ak|am|ar|ar-EG|as|asa|ast|az|az-Cyrl|bas|be|bem|bez|bg|bm|bn|bo|b" +
 	"o-IN|br|brx|bs|bs-Cyrl|ca|cgg|chr|cs|cy|da|dav|de|de-CH|dje|dsb|dua|dyo|" +
 	"dz|ebu|ee|el|en|en-AU|eo|es|es-CL|es-MX|et|eu|ewo|fa|fa-AF|ff|fi|fil|fo|" +

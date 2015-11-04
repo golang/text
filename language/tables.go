@@ -133,7 +133,7 @@ const langPrivateEnd = 0x2efe
 //     - otherwise: a 0 and a by 2 bits right-shifted index into altLangISO3.
 // For 3-byte language identifiers the 4th byte is 0.
 // Size: 2784 bytes
-const lang tag.Index = "" +
+var lang tag.Index = "" +
 	"---\x00aaarabbkabr\x00ace\x00ach\x00ada\x00ady\x00aeveaeb\x00affragq\x00" +
 	"akkaakk\x00aln\x00alt\x00ammhamo\x00anrgaoz\x00arraarc\x00arn\x00aro\x00" +
 	"arq\x00ary\x00arz\x00assmasa\x00ast\x00atj\x00avvaawa\x00ayymazzeazb\x00" +
@@ -519,7 +519,7 @@ var langNoIndex = [2197]uint8{
 // to 2-letter language codes that cannot be derived using the method described above.
 // Each 3-letter code is followed by its 1-byte langID.
 // Size: 32 bytes
-const altLangISO3 tag.Index = "---\x00cor\x00hbs\x01heb\x02kin\x03spa\x04yid\x05\xff\xff\xff\xff"
+var altLangISO3 tag.Index = "---\x00cor\x00hbs\x01heb\x02kin\x03spa\x04yid\x05\xff\xff\xff\xff"
 
 // altLangIndex is used to convert indexes in altLangISO3 to langIDs.
 // Size: 12 bytes, 6 elements
@@ -703,7 +703,7 @@ const (
 // script is an alphabetically sorted list of ISO 15924 codes. The index
 // of the script in the string, divided by 4, is the internal scriptID.
 // Size: 900 bytes
-const script tag.Index = "" +
+var script tag.Index = "" +
 	"----AdlmAfakAghbAhomArabAranArmiArmnAvstBaliBamuBassBatkBengBlisBopoBrah" +
 	"BraiBugiBuhdCakmCansCariChamCherCirtCoptCprtCyrlCyrsDevaDsrtDuplEgydEgyh" +
 	"EgypElbaEthiGeokGeorGlagGothGranGrekGujrGuruHangHaniHanoHansHantHatrHebr" +
@@ -906,7 +906,7 @@ var regionTypes = [355]uint8{
 //                 letters form the 3-letter ISO code.
 //     - 0, n:     index into altRegionISO3.
 // Size: 1300 bytes
-const regionISO tag.Index = "" +
+var regionISO tag.Index = "" +
 	"AAAAACSCADNDAEREAFFGAGTGAIIAALLBAMRMANNTAOGOAQTAARRGASSMATUTAUUSAWBWAXLA" +
 	"AZZEBAIHBBRBBDGDBEELBFFABGGRBHHRBIDIBJENBLLMBMMUBNRNBOOLBQESBRRABSHSBTTN" +
 	"BUURBVVTBWWABYLRBZLZCAANCCCKCDODCFAFCGOGCHHECIIVCKOKCLHLCMMRCNHNCOOLCPPT" +
@@ -931,7 +931,7 @@ const regionISO tag.Index = "" +
 // altRegionISO3 holds a list of 3-letter region codes that cannot be
 // mapped to 2-letter codes using the default algorithm. This is a short list.
 // Size: 33 bytes
-const altRegionISO3 string = "SCGQUUSGSCOMPRKCYMSPMSRBATFMYTATN"
+var altRegionISO3 string = "SCGQUUSGSCOMPRKCYMSPMSRBATFMYTATN"
 
 // altRegionIDs holds a list of regionIDs the positions of which match those
 // of the 3-letter ISO codes in altRegionISO3.
@@ -1171,7 +1171,7 @@ const (
 // indicated the rounding and the least 2 significant bits indicate the
 // number of decimal positions.
 // Size: 1192 bytes
-const currency tag.Index = "" +
+var currency tag.Index = "" +
 	"---\x0aADP\x08AED\x0aAFA\x0aAFN\x08ALK\x0aALL\x08AMD\x08ANG\x0aAOA\x0aAO" +
 	"K\x0aAON\x0aAOR\x0aARA\x0aARL\x0aARM\x0aARP\x0aARS\x0aATS\x0aAUD\x0aAWG" +
 	"\x0aAZM\x0aAZN\x0aBAD\x0aBAM\x0aBAN\x0aBBD\x0aBDT\x0aBEC\x0aBEF\x0aBEL" +
