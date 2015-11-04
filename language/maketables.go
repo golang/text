@@ -339,7 +339,6 @@ func newBuilder(w *gen.CodeWriter) *builder {
 	r := gen.OpenCLDRCoreZip()
 	defer r.Close()
 	d := &cldr.Decoder{}
-	d.SetDirFilter("supplemental")
 	data, err := d.DecodeZip(r)
 	failOnError(err)
 	b := builder{
@@ -616,6 +615,29 @@ func (b *builder) parseIndices() {
 			continue
 		}
 		ss.add(k)
+	}
+	// Include any language for which there is data.
+	for _, lang := range b.data.Locales() {
+		if x := b.data.RawLDML(lang); false ||
+			x.LocaleDisplayNames != nil ||
+			x.Characters != nil ||
+			x.Delimiters != nil ||
+			x.Measurement != nil ||
+			x.Dates != nil ||
+			x.Numbers != nil ||
+			x.Units != nil ||
+			x.ListPatterns != nil ||
+			x.Collations != nil ||
+			x.Segmentations != nil ||
+			x.Rbnf != nil ||
+			x.Annotations != nil ||
+			x.Metadata != nil {
+
+			from := strings.Split(lang, "_")
+			if lang := from[0]; lang != "root" {
+				b.lang.add(lang)
+			}
+		}
 	}
 	// Include languages in likely subtags.
 	for _, m := range b.supp.LikelySubtags.LikelySubtag {
@@ -1622,6 +1644,8 @@ func (b *builder) writeParents() {
 
 const version = `
 // Version is the version of CLDR used to generate the data in this package.
+//
+// Deprecated: use CLDRVersion
 const Version = %q
 `
 
@@ -1650,6 +1674,7 @@ func main() {
 	fmt.Fprintln(w, `import "golang.org/x/text/internal/tag"`)
 
 	b := newBuilder(w)
+	gen.WriteCLDRVersion(w)
 	fmt.Fprintf(w, version, cldr.Version)
 
 	b.parseIndices()
