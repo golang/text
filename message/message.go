@@ -7,7 +7,7 @@
 //
 // Under construction. See https://golang.org/design/text/12750-localization
 // and its corresponding proposal issue https://golang.org/issues/12750.
-package message
+package message // import "golang.org/x/text/message"
 
 import (
 	"fmt"

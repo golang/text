@@ -7,7 +7,7 @@
 //
 // This package is internal now, but will eventually be exposed after the API
 // settles.
-package format
+package format // import "golang.org/x/text/internal/format"
 
 import (
 	"fmt"

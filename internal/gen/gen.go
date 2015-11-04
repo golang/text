@@ -16,7 +16,7 @@
 // IANA data can also optionally be mirrored by putting it in the iana directory
 // rooted at the top of the local mirror. Beware, though, that IANA data is not
 // versioned. So it is up to the developer to use the right version.
-package gen
+package gen // import "golang.org/x/text/internal/gen"
 
 import (
 	"flag"

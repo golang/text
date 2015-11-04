@@ -5,7 +5,7 @@
 //go:generate go run gen.go gen_common.go -output tables.go
 
 // Package currency contains currency-related functionality.
-package currency
+package currency // import "golang.org/x/text/currency"
 
 import (
 	"errors"
