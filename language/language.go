@@ -812,7 +812,12 @@ func CompactIndex(t Tag) (index int, ok bool) {
 		}
 	}
 	// No variants specified: just compare core components.
-	x, ok := coreTags[coreKey{base: b, script: s, region: r}]
+	// The key has the form lllssrrr, where l, s, and r are nibbles for
+	// respectively the langID, scriptID, and regionID.
+	key := uint32(b.langID) << (8 + 12)
+	key |= uint32(s.scriptID) << 12
+	key |= uint32(r.regionID)
+	x, ok := coreTags[key]
 	return int(x), ok
 }
 

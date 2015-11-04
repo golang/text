@@ -105,22 +105,16 @@ func main() {
 	sort.Sort(byAlpha(special))
 	w.WriteVar("specialTags", special)
 
-	type coreKey struct {
-		base   language.Base
-		script language.Script
-		region language.Region
-	}
-	w.WriteType(coreKey{})
-
 	// TODO: order by frequency?
 	sort.Sort(byAlpha(core))
 
 	// Size computations are just an estimate.
-	w.Size += int(reflect.TypeOf(map[coreKey]uint16{}).Size())
-	w.Size += len(core) * int(reflect.TypeOf(coreKey{}).Size()+2) // 2 is for uint16
+	w.Size += int(reflect.TypeOf(map[uint32]uint16{}).Size())
+	w.Size += len(core) * 6 // size of uint32 and uint16
 
-	fmt.Fprintln(w, "var coreTags = map[coreKey]uint16{")
-	fmt.Fprintln(w, "coreKey{}: 0, // und")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "var coreTags = map[uint32]uint16{")
+	fmt.Fprintln(w, "0x0: 0, // und")
 	i := len(special) + 1 // Und and special tags already written.
 	for _, t := range core {
 		if t == language.Und {
@@ -128,12 +122,22 @@ func main() {
 		}
 		fmt.Fprint(w.Hash, t, i)
 		b, s, r := t.Raw()
-		key := fmt.Sprintf("%#v", coreKey{b, s, r})
-		key = strings.Replace(key[len("main."):], "language.", "", -1)
-		fmt.Fprintf(w, "%s: %d, // %s\n", key, i, t)
+		fmt.Fprintf(w, "0x%s%s%s: %d, // %s\n",
+			getIndex(b, 3), // 3 is enough as it is guaranteed to be a compact number
+			getIndex(s, 2),
+			getIndex(r, 3),
+			i, t)
 		i++
 	}
 	fmt.Fprintln(w, "}")
+}
+
+// getIndex prints the subtag type and extracts its index of size nibble.
+// If the index is less than n nibbles, the result is prefixed with 0s.
+func getIndex(x interface{}, n int) string {
+	s := fmt.Sprintf("%#v", x) // s is of form Type{typeID: 0x00}
+	s = s[strings.Index(s, "0x")+2 : len(s)-1]
+	return strings.Repeat("0", n-len(s)) + s
 }
 
 type byAlpha []language.Tag
