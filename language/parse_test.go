@@ -430,8 +430,10 @@ func TestParseAcceptLanguage(t *testing.T) {
 		{en, ",en", true},
 		{en, ",,,en,,,", true},
 		{en, ",en;q=1", true},
+
 		// We allow an empty input, contrary to spec.
 		{nil, "", true},
+		{[]res{{mk("aa"), 1}}, "aa;", true}, // allow unspecified weight
 
 		// errors
 		{nil, ";", false},
@@ -440,7 +442,6 @@ func TestParseAcceptLanguage(t *testing.T) {
 		{nil, "x;", false},
 		{nil, "x", false},
 		{nil, "ac", false}, // non-existing language
-		{nil, "aa;", false},
 		{nil, "aa;q", false},
 		{nil, "aa;q=", false},
 		{nil, "aa;q=.", false},
