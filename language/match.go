@@ -15,8 +15,17 @@ type Matcher interface {
 	Match(t ...Tag) (tag Tag, index int, c Confidence)
 }
 
+// Comprehends reports the confidence score for a speaker of a given language
+// to being able to comprehend the written form of an alternative language.
+func Comprehends(speaker, alternative Tag) Confidence {
+	_, _, c := NewMatcher([]Tag{alternative}).Match(speaker)
+	return c
+}
+
 // ComprehensibleTo returns the confidence score for speaker being able to
 // comprehend the (written) language t. It uses a Matcher under the hood.
+//
+// Deprecated: use Comprehends.
 func (t Tag) ComprehensibleTo(speaker Tag) Confidence {
 	// TODO: this could be more efficient.
 	_, _, c := NewMatcher([]Tag{t}).Match(speaker)

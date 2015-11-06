@@ -338,30 +338,30 @@ func ExampleMatcher() {
 	// en-u-co-phonebk 0 No
 }
 
-func ExampleTag_ComprehensibleTo() {
+func ExampleComprehends() {
 	// Various levels of comprehensibility.
-	fmt.Println(language.English.ComprehensibleTo(language.English))
-	fmt.Println(language.BritishEnglish.ComprehensibleTo(language.AmericanEnglish))
+	fmt.Println(language.Comprehends(language.English, language.English))
+	fmt.Println(language.Comprehends(language.AmericanEnglish, language.BritishEnglish))
 
 	// An explicit Und results in no match.
-	fmt.Println(language.Und.ComprehensibleTo(language.English))
+	fmt.Println(language.Comprehends(language.English, language.Und))
 
 	fmt.Println("----")
 
 	// There is usually no mutual comprehensibility between different scripts.
-	fmt.Println(language.English.ComprehensibleTo(language.Make("en-Dsrt")))
+	fmt.Println(language.Comprehends(language.Make("en-Dsrt"), language.English))
 
 	// One exception is for Traditional versus Simplified Chinese, albeit with
 	// a low confidence.
-	fmt.Println(language.SimplifiedChinese.ComprehensibleTo(language.TraditionalChinese))
+	fmt.Println(language.Comprehends(language.TraditionalChinese, language.SimplifiedChinese))
 
 	fmt.Println("----")
 
 	// A Swiss German speaker will often understand High German.
-	fmt.Println(language.Make("de").ComprehensibleTo(language.Make("gsw")))
+	fmt.Println(language.Comprehends(language.Make("gsw"), language.Make("de")))
 
 	// The converse is not generally the case.
-	fmt.Println(language.Make("gsw").ComprehensibleTo(language.Make("de")))
+	fmt.Println(language.Comprehends(language.Make("de"), language.Make("gsw")))
 
 	// Output:
 	// Exact
