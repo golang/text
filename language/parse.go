@@ -779,9 +779,20 @@ func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
 			continue
 		}
 
+		entry, weight := split(entry, ';')
+
+		// Scan the language.
+		t, err := Parse(entry)
+		if err != nil {
+			id, ok := acceptFallback[entry]
+			if !ok {
+				return nil, nil, err
+			}
+			t = Tag{lang: id}
+		}
+
 		// Scan the optional weight.
 		w := 1.0
-		entry, weight := split(entry, ';')
 		if weight != "" {
 			weight = consume(weight, 'q')
 			weight = consume(weight, '=')
@@ -796,15 +807,6 @@ func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
 			}
 		}
 
-		// Scan the language.
-		t, err := Parse(entry)
-		if err != nil {
-			id, ok := acceptFallback[entry]
-			if !ok {
-				return nil, nil, err
-			}
-			t = Tag{lang: id}
-		}
 		tag = append(tag, t)
 		q = append(q, float32(w))
 	}
