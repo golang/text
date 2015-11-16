@@ -843,7 +843,7 @@ func TestUTF16(t *testing.T) {
 		err:     transform.ErrShortDst,
 	}, {
 		desc:    "utf-16 enc: short src",
-		src:     "\U00012345=Ra\xC1",
+		src:     "\U00012345=Ra\xC2",
 		notEOF:  true,
 		sizeDst: 100,
 		want:    "\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
