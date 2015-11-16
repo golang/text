@@ -5,7 +5,6 @@
 package language
 
 import (
-	"strings"
 	"testing"
 
 	"golang.org/x/text/internal/tag"
@@ -390,49 +389,6 @@ func TestGetScriptID(t *testing.T) {
 			t.Errorf("%d:%s: found %d; want %d", i, tt.in, id, tt.out)
 		} else if id == 0 && err == nil {
 			t.Errorf("%d:%s: no error; expected one", i, tt.in)
-		}
-	}
-}
-
-func TestCurrency(t *testing.T) {
-	idx := tag.Index(strings.Join([]string{
-		"   \x00",
-		"BBB" + mkCurrencyInfo(5, 2),
-		"DDD\x00",
-		"XXX\x00",
-		"ZZZ\x00",
-		"\xff\xff\xff\xff",
-	}, ""))
-	tests := []struct {
-		in         string
-		out        currencyID
-		round, dec int
-	}{
-		{"   ", 0, 0, 0},
-		{"     ", 0, 0, 0},
-		{" ", 0, 0, 0},
-		{"", 0, 0, 0},
-		{"BBB", 1, 5, 2},
-		{"DDD", 2, 0, 0},
-		{"dDd", 2, 0, 0},
-		{"ddd", 2, 0, 0},
-		{"XXX", 3, 0, 0},
-		{"Zzz", 4, 0, 0},
-	}
-	for i, tt := range tests {
-		id, err := getCurrencyID(idx, b(tt.in))
-		if id != tt.out {
-			t.Errorf("%d:%s: found %d; want %d", i, tt.in, id, tt.out)
-		} else if tt.out == 0 && err == nil {
-			t.Errorf("%d:%s: no error; expected one", i, tt.in)
-		}
-		if id > 0 {
-			if d := decimals(idx, id); d != tt.dec {
-				t.Errorf("%d:dec(%s): found %d; want %d", i, tt.in, d, tt.dec)
-			}
-			if d := round(idx, id); d != tt.round {
-				t.Errorf("%d:round(%s): found %d; want %d", i, tt.in, d, tt.round)
-			}
 		}
 	}
 }

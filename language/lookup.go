@@ -335,31 +335,6 @@ func (s scriptID) IsPrivateUse() bool {
 	return _Qaaa <= s && s <= _Qabx
 }
 
-type currencyID uint16
-
-func getCurrencyID(idx tag.Index, s []byte) (currencyID, error) {
-	i, err := findIndex(idx, s, "XXX")
-	return currencyID(i), err
-}
-
-// String returns the upper case representation of the currency.
-func (c currencyID) String() string {
-	if c == 0 {
-		return "XXX"
-	}
-	return currency.Elem(int(c))[:3]
-}
-
-// TODO: cash rounding and decimals.
-
-func round(index tag.Index, c currencyID) int {
-	return currencyInfo(index[c<<2+3]).round()
-}
-
-func decimals(index tag.Index, c currencyID) int {
-	return currencyInfo(index[c<<2+3]).decimals()
-}
-
 const (
 	maxAltTaglen = len("en-US-POSIX")
 	maxLen       = maxAltTaglen

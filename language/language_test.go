@@ -488,27 +488,6 @@ func TestRegionTLD(t *testing.T) {
 	}
 }
 
-func TestParseCurrency(t *testing.T) {
-	tests := []struct {
-		in  string
-		out string
-		ok  bool
-	}{
-		{"USD", "USD", true},
-		{"xxx", "XXX", true},
-		{"xts", "XTS", true},
-		{"XX", "XXX", false},
-		{"XXXX", "XXX", false},
-		{"", "XXX", false},
-		{"UUU", "XXX", false}, // unknown
-	}
-	for i, tt := range tests {
-		if x, err := ParseCurrency(tt.in); x.String() != tt.out || err == nil != tt.ok {
-			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
-		}
-	}
-}
-
 func TestCanonicalize(t *testing.T) {
 	// TODO: do a full test using CLDR data in a separate regression test.
 	tests := []struct {

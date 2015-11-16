@@ -13,8 +13,6 @@ const numScripts = 223
 
 const numRegions = 354
 
-const numCurrencies = 296
-
 type fromTo struct {
 	from uint16
 	to   uint16
@@ -1156,47 +1154,6 @@ var variantIndex = map[string]uint8{
 
 // variantNumSpecialized is the number of specialized variants in variants.
 const variantNumSpecialized = 65
-const (
-	_XTS = 279
-	_XXX = 281
-)
-
-// currency holds an alphabetically sorted list of canonical 3-letter currency identifiers.
-// Each identifier is followed by a byte of which the 6 most significant bits
-// indicated the rounding and the least 2 significant bits indicate the
-// number of decimal positions.
-// Size: 1192 bytes
-var currency tag.Index = "" +
-	"---\x0aADP\x08AED\x0aAFA\x0aAFN\x08ALK\x0aALL\x08AMD\x08ANG\x0aAOA\x0aAO" +
-	"K\x0aAON\x0aAOR\x0aARA\x0aARL\x0aARM\x0aARP\x0aARS\x0aATS\x0aAUD\x0aAWG" +
-	"\x0aAZM\x0aAZN\x0aBAD\x0aBAM\x0aBAN\x0aBBD\x0aBDT\x0aBEC\x0aBEF\x0aBEL" +
-	"\x0aBGL\x0aBGM\x0aBGN\x0aBGO\x0aBHD\x0bBIF\x08BMD\x0aBND\x0aBOB\x0aBOL" +
-	"\x0aBOP\x0aBOV\x0aBRB\x0aBRC\x0aBRE\x0aBRL\x0aBRN\x0aBRR\x0aBRZ\x0aBSD" +
-	"\x0aBTN\x0aBUK\x0aBWP\x0aBYB\x0aBYR\x08BZD\x0aCAD\x0aCDF\x0aCHE\x0aCHF" +
-	"\x0aCHW\x0aCLE\x0aCLF\x0cCLP\x08CNX\x0aCNY\x0aCOP\x08COU\x0aCRC\x08CSD" +
-	"\x0aCSK\x0aCUC\x0aCUP\x0aCVE\x0aCYP\x0aCZK\x0aDDM\x0aDEM\x0aDJF\x08DKK" +
-	"\x0aDOP\x0aDZD\x0aECS\x0aECV\x0aEEK\x0aEGP\x0aERN\x0aESA\x0aESB\x0aESP" +
-	"\x08ETB\x0aEUR\x0aFIM\x0aFJD\x0aFKP\x0aFRF\x0aGBP\x0aGEK\x0aGEL\x0aGHC" +
-	"\x0aGHS\x0aGIP\x0aGMD\x0aGNF\x08GNS\x0aGQE\x0aGRD\x0aGTQ\x0aGWE\x0aGWP" +
-	"\x0aGYD\x08HKD\x0aHNL\x0aHRD\x0aHRK\x0aHTG\x0aHUF\x0aIDR\x08IEP\x0aILP" +
-	"\x0aILR\x0aILS\x0aINR\x0aIQD\x08IRR\x08ISJ\x0aISK\x08ITL\x08JMD\x0aJOD" +
-	"\x0bJPY\x08KES\x0aKGS\x0aKHR\x0aKMF\x08KPW\x08KRH\x0aKRO\x0aKRW\x08KWD" +
-	"\x0bKYD\x0aKZT\x0aLAK\x08LBP\x08LKR\x0aLRD\x0aLSL\x0aLTL\x0aLTT\x0aLUC" +
-	"\x0aLUF\x08LUL\x0aLVL\x0aLVR\x0aLYD\x0bMAD\x0aMAF\x0aMCF\x0aMDC\x0aMDL" +
-	"\x0aMGA\x08MGF\x08MKD\x0aMKN\x0aMLF\x0aMMK\x08MNT\x08MOP\x0aMRO\x08MTL" +
-	"\x0aMTP\x0aMUR\x08MVR\x0aMWK\x0aMXN\x0aMXP\x0aMXV\x0aMYR\x0aMZE\x0aMZM" +
-	"\x0aMZN\x0aNAD\x0aNGN\x0aNIC\x0aNIO\x0aNLG\x0aNOK\x0aNPR\x0aNZD\x0aOMR" +
-	"\x0bPAB\x0aPEI\x0aPEN\x0aPES\x0aPGK\x0aPHP\x0aPKR\x08PLN\x0aPLZ\x0aPTE" +
-	"\x0aPYG\x08QAR\x0aRHD\x0aROL\x0aRON\x0aRSD\x08RUB\x0aRUR\x0aRWF\x08SAR" +
-	"\x0aSBD\x0aSCR\x0aSDD\x0aSDG\x0aSDP\x0aSEK\x0aSGD\x0aSHP\x0aSIT\x0aSKK" +
-	"\x0aSLL\x08SOS\x08SRD\x0aSRG\x0aSSP\x0aSTD\x08SUR\x0aSVC\x0aSYP\x08SZL" +
-	"\x0aTHB\x0aTJR\x0aTJS\x0aTMM\x08TMT\x0aTND\x0bTOP\x0aTPE\x0aTRL\x08TRY" +
-	"\x0aTTD\x0aTWD\x0aTZS\x08UAH\x0aUAK\x0aUGS\x0aUGX\x08USD\x0aUSN\x0aUSS" +
-	"\x0aUYI\x08UYP\x0aUYU\x0aUZS\x08VEB\x0aVEF\x0aVND\x08VNN\x0aVUV\x08WST" +
-	"\x0aXAF\x08XAG\x0aXAU\x0aXBA\x0aXBB\x0aXBC\x0aXBD\x0aXCD\x0aXDR\x0aXEU" +
-	"\x0aXFO\x0aXFU\x0aXOF\x08XPD\x0aXPF\x08XPT\x0aXRE\x0aXSU\x0aXTS\x0aXUA" +
-	"\x0aXXX\x0aYDD\x0aYER\x08YUD\x0aYUM\x0aYUN\x0aYUR\x0aZAL\x0aZAR\x0aZMK" +
-	"\x08ZMW\x0aZRN\x0aZRZ\x0aZWD\x08ZWL\x0aZWR\x0a\xff\xff\xff\xff"
 
 // nRegionGroups is the number of region groups.
 const nRegionGroups = 32
@@ -3033,4 +2990,4 @@ var parents = [4]parentRel{
 	{lang: 0x2b2, script: 0x33, maxScript: 0x33, toRegion: 0x8b, fromRegion: []uint16{0xc4}},
 }
 
-// Total table size 20964 bytes (20KiB); checksum: 9504E399
+// Total table size 19772 bytes (19KiB); checksum: 2976BD01

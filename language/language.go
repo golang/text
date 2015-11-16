@@ -106,7 +106,6 @@
 package language // import "golang.org/x/text/language"
 
 // TODO: Remove above NOTE after:
-// - removing Currency type from this package.
 // - verifying that tables are dropped correctly (most notably matcher tables).
 
 import (
@@ -976,24 +975,4 @@ func ParseVariant(s string) (Variant, error) {
 // String returns the string representation of the variant.
 func (v Variant) String() string {
 	return v.variant
-}
-
-// Currency is the currency type.
-//
-// Deprecated: use currency.Currency instead.
-type Currency struct {
-	currencyID
-}
-
-// It returns a ValueError if s is a well-formed but unknown currency identifier
-// or another error if another error occurred.
-//
-// Deprecated: Parse in golang.org/x/text/currency instead.
-func ParseCurrency(s string) (Currency, error) {
-	if len(s) != 3 {
-		return Currency{}, errSyntax
-	}
-	var buf [3]byte
-	c, err := getCurrencyID(currency, buf[:copy(buf[:], s)])
-	return Currency{c}, err
 }

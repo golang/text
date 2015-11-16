@@ -18,7 +18,6 @@ func TestSupported(t *testing.T) {
 		"BaseLanguages": numLanguages,
 		"Scripts":       numScripts,
 		"Regions":       numRegions,
-		"Currencies":    numCurrencies,
 		"Tags":          0,
 	}
 	sup := reflect.ValueOf(Supported)
