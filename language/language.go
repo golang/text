@@ -100,9 +100,6 @@
 //
 // BCP 47 - Tags for Identifying Languages
 // http://tools.ietf.org/html/bcp47
-//
-// NOTE: This package is still under development. Parts of it are not yet
-// implemented, and the API is subject to change.
 package language // import "golang.org/x/text/language"
 
 // TODO: Remove above NOTE after:
