@@ -7,11 +7,6 @@ import "golang.org/x/text/internal/tag"
 // CLDRVersion is the CLDR version from which the tables in this package are derived.
 const CLDRVersion = "27.0.1"
 
-// Version is the version of CLDR used to generate the data in this package.
-//
-// Deprecated: use CLDRVersion
-const Version = "27.0.1"
-
 const numLanguages = 8632
 
 const numScripts = 223

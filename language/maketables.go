@@ -1642,13 +1642,6 @@ func (b *builder) writeParents() {
 	b.writeSliceAddSize("parents", n*2, parents)
 }
 
-const version = `
-// Version is the version of CLDR used to generate the data in this package.
-//
-// Deprecated: use CLDRVersion
-const Version = %q
-`
-
 func rewriteCommon() {
 	// Generate common.go
 	src, err := ioutil.ReadFile("gen_common.go")
@@ -1675,7 +1668,6 @@ func main() {
 
 	b := newBuilder(w)
 	gen.WriteCLDRVersion(w)
-	fmt.Fprintf(w, version, cldr.Version)
 
 	b.parseIndices()
 	b.writeType(fromTo{})

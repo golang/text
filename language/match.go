@@ -22,16 +22,6 @@ func Comprehends(speaker, alternative Tag) Confidence {
 	return c
 }
 
-// ComprehensibleTo returns the confidence score for speaker being able to
-// comprehend the (written) language t. It uses a Matcher under the hood.
-//
-// Deprecated: use Comprehends.
-func (t Tag) ComprehensibleTo(speaker Tag) Confidence {
-	// TODO: this could be more efficient.
-	_, _, c := NewMatcher([]Tag{t}).Match(speaker)
-	return c
-}
-
 // NewMatcher returns a Matcher that matches an ordered list of preferred tags
 // against a list of supported tags based on written intelligibility, closeness
 // of dialect, equivalence of subtags and various other rules. It is initialized
