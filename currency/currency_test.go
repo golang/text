@@ -12,31 +12,38 @@ import (
 	"golang.org/x/text/language"
 )
 
+var (
+	cup = MustParseISO("CUP")
+	czk = MustParseISO("CZK")
+	xcd = MustParseISO("XCD")
+	zwr = MustParseISO("ZWR")
+)
+
 func TestParseISO(t *testing.T) {
 	testCases := []struct {
 		in  string
-		out string
+		out Currency
 		ok  bool
 	}{
-		{"USD", "USD", true},
-		{"xxx", "XXX", true},
-		{"xts", "XTS", true},
-		{"XX", "XXX", false},
-		{"XXXX", "XXX", false},
-		{"", "XXX", false},       // not well-formed
-		{"UUU", "XXX", false},    // unknown
-		{"\u22A9", "XXX", false}, // non-ASCII, printable
+		{"USD", USD, true},
+		{"xxx", XXX, true},
+		{"xts", XTS, true},
+		{"XX", XXX, false},
+		{"XXXX", XXX, false},
+		{"", XXX, false},       // not well-formed
+		{"UUU", XXX, false},    // unknown
+		{"\u22A9", XXX, false}, // non-ASCII, printable
 
-		{"aaa", "XXX", false},
-		{"zzz", "XXX", false},
-		{"000", "XXX", false},
-		{"999", "XXX", false},
-		{"---", "XXX", false},
-		{"\x00\x00\x00", "XXX", false},
-		{"\xff\xff\xff", "XXX", false},
+		{"aaa", XXX, false},
+		{"zzz", XXX, false},
+		{"000", XXX, false},
+		{"999", XXX, false},
+		{"---", XXX, false},
+		{"\x00\x00\x00", XXX, false},
+		{"\xff\xff\xff", XXX, false},
 	}
 	for i, tc := range testCases {
-		if x, err := ParseISO(tc.in); x.String() != tc.out || err == nil != tc.ok {
+		if x, err := ParseISO(tc.in); x != tc.out || err == nil != tc.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tc.in, x, err == nil, tc.out, tc.ok)
 		}
 	}
@@ -44,23 +51,24 @@ func TestParseISO(t *testing.T) {
 
 func TestFromRegion(t *testing.T) {
 	testCases := []struct {
-		region, currency string
-		ok               bool
+		region   string
+		currency Currency
+		ok       bool
 	}{
-		{"NL", "EUR", true},
-		{"BE", "EUR", true},
-		{"AG", "XCD", true},
-		{"CH", "CHF", true},
-		{"CU", "CUP", true},   // first of multiple
-		{"DG", "USD", true},   // does not have M49 code
-		{"150", "XXX", false}, // implicit false
-		{"CP", "XXX", false},  // explicit false in CLDR
-		{"CS", "XXX", false},  // all expired
-		{"ZZ", "XXX", false},  // none match
+		{"NL", EUR, true},
+		{"BE", EUR, true},
+		{"AG", xcd, true},
+		{"CH", CHF, true},
+		{"CU", cup, true},   // first of multiple
+		{"DG", USD, true},   // does not have M49 code
+		{"150", XXX, false}, // implicit false
+		{"CP", XXX, false},  // explicit false in CLDR
+		{"CS", XXX, false},  // all expired
+		{"ZZ", XXX, false},  // none match
 	}
 	for _, tc := range testCases {
 		cur, ok := FromRegion(language.MustParseRegion(tc.region))
-		if cur.String() != tc.currency || ok != tc.ok {
+		if cur != tc.currency || ok != tc.ok {
 			t.Errorf("%s: got %v, %v; want %v, %v", tc.region, cur, ok, tc.currency, tc.ok)
 		}
 	}
@@ -68,30 +76,26 @@ func TestFromRegion(t *testing.T) {
 
 func TestFromTag(t *testing.T) {
 	testCases := []struct {
-		tag, currency string
-		conf          language.Confidence
+		tag      string
+		currency Currency
+		conf     language.Confidence
 	}{
-		{"nl", "EUR", language.Low},      // nl also spoken outside Euro land.
-		{"nl-BE", "EUR", language.Exact}, // region is known
-		{"pt", "BRL", language.Low},
-		{"en", "USD", language.Low},
-		{"en-u-cu-eur", "EUR", language.Exact},
-		{"tlh", "XXX", language.No}, // Klingon has no country.
-		{"es-419", "XXX", language.No},
-		{"und", "USD", language.Low},
+		{"nl", EUR, language.Low},      // nl also spoken outside Euro land.
+		{"nl-BE", EUR, language.Exact}, // region is known
+		{"pt", BRL, language.Low},
+		{"en", USD, language.Low},
+		{"en-u-cu-eur", EUR, language.Exact},
+		{"tlh", XXX, language.No}, // Klingon has no country.
+		{"es-419", XXX, language.No},
+		{"und", USD, language.Low},
 	}
 	for _, tc := range testCases {
 		cur, conf := FromTag(language.MustParse(tc.tag))
-		if cur.String() != tc.currency || conf != tc.conf {
+		if cur != tc.currency || conf != tc.conf {
 			t.Errorf("%s: got %v, %v; want %v, %v", tc.tag, cur, conf, tc.currency, tc.conf)
 		}
 	}
 }
-
-var (
-	czk = MustParseISO("CZK")
-	zwr = MustParseISO("ZWR")
-)
 
 func TestTable(t *testing.T) {
 	for i := 4; i < len(currency); i += 4 {

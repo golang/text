@@ -94,6 +94,9 @@ func ParseISO(s string) (Currency, error) {
 		return Currency{}, errSyntax
 	}
 	if i := currency.Index(key); i >= 0 {
+		if i == xxx {
+			return Currency{}, nil
+		}
 		return Currency{uint16(i)}, nil
 	}
 	return Currency{}, errValue
@@ -120,19 +123,15 @@ func FromRegion(r language.Region) (tender Currency, ok bool) {
 	if i < len(regionToCurrency) && regionToCurrency[i].region == x {
 		return Currency{regionToCurrency[i].code}, true
 	}
-	return Currency{0}, false
+	return Currency{}, false
 }
 
 // FromTag reports the most likely currency for the given tag. It considers the
 // currency defined in the -u extension and infers the region if necessary.
 func FromTag(t language.Tag) (Currency, language.Confidence) {
 	if cur := t.TypeForKey("cu"); len(cur) == 3 {
-		var buf [3]byte
-		copy(buf[:], cur)
-		tag.FixCase("XXX", buf[:])
-		if x := currency.Index(buf[:]); x > 0 {
-			return Currency{uint16(x)}, language.Exact
-		}
+		c, _ := ParseISO(cur)
+		return c, language.Exact
 	}
 	r, conf := t.Region()
 	if cur, ok := FromRegion(r); ok {
@@ -143,7 +142,7 @@ func FromTag(t language.Tag) (Currency, language.Confidence) {
 
 var (
 	// Undefined and testing.
-	XXX Currency = Currency{xxx}
+	XXX Currency = Currency{}
 	XTS Currency = Currency{xts}
 
 	// G10 currencies https://en.wikipedia.org/wiki/G10_currencies.
@@ -162,13 +161,13 @@ var (
 	BRL Currency = Currency{brl}
 	CNY Currency = Currency{cny}
 	DKK Currency = Currency{dkk}
-	INR Currency = Currency{inr}
-	RUB Currency = Currency{rub}
 	HKD Currency = Currency{hkd}
 	IDR Currency = Currency{idr}
+	INR Currency = Currency{inr}
 	KRW Currency = Currency{krw}
 	MXN Currency = Currency{mxn}
 	PLN Currency = Currency{pln}
+	RUB Currency = Currency{rub}
 	SAR Currency = Currency{sar}
 	THB Currency = Currency{thb}
 	TRY Currency = Currency{try}
