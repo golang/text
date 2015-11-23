@@ -26,18 +26,18 @@ func TestFormatting(t *testing.T) {
 		format Formatter
 		want   string
 	}{
-		0: {en, USD.Value(0.1), nil, "USD 0.10"},
-		1: {en, XPT.Value(1.0), Symbol, "XPT 1.00"},
+		0: {en, USD.Amount(0.1), nil, "USD 0.10"},
+		1: {en, XPT.Amount(1.0), Symbol, "XPT 1.00"},
 
-		2: {en, USD.Value(2.0), ISO, "USD 2.00"},
-		3: {und, USD.Value(3.0), Symbol, "US$ 3.00"},
-		4: {en, USD.Value(4.0), Symbol, "$ 4.00"},
+		2: {en, USD.Amount(2.0), ISO, "USD 2.00"},
+		3: {und, USD.Amount(3.0), Symbol, "US$ 3.00"},
+		4: {en, USD.Amount(4.0), Symbol, "$ 4.00"},
 
-		5: {en, USD.Value(5.20), NarrowSymbol, "$ 5.20"},
-		6: {en, AUD.Value(6.20), Symbol, "A$ 6.20"},
+		5: {en, USD.Amount(5.20), NarrowSymbol, "$ 5.20"},
+		6: {en, AUD.Amount(6.20), Symbol, "A$ 6.20"},
 
-		7: {en_AU, AUD.Value(7.20), Symbol, "$ 7.20"},
-		8: {en_AU, USD.Value(8.20), Symbol, "US$ 8.20"},
+		7: {en_AU, AUD.Amount(7.20), Symbol, "$ 7.20"},
+		8: {en_AU, USD.Amount(8.20), Symbol, "US$ 8.20"},
 
 		9:  {en, 9.0, Symbol.Default(EUR), "€ 9.00"},
 		10: {en, 10.123, Symbol.Default(KRW), "₩ 10"},
@@ -45,8 +45,8 @@ func TestFormatting(t *testing.T) {
 		12: {en, 12.123, Symbol.Default(czk), "CZK 12.12"},
 		13: {en, 13.123, Symbol.Default(czk).Kind(Cash), "CZK 13"},
 		14: {en, 14.12345, ISO.Default(MustParseISO("CLF")), "CLF 14.1235"},
-		15: {en, USD.Value(15.00), ISO.Default(TWD), "USD 15.00"},
-		16: {en, KRW.Value(16.00), ISO.Kind(Cash), "KRW 16"},
+		15: {en, USD.Amount(15.00), ISO.Default(TWD), "USD 15.00"},
+		16: {en, KRW.Amount(16.00), ISO.Kind(Cash), "KRW 16"},
 
 		// TODO: support integers as well.
 

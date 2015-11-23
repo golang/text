@@ -22,7 +22,7 @@ var (
 func TestParseISO(t *testing.T) {
 	testCases := []struct {
 		in  string
-		out Currency
+		out Unit
 		ok  bool
 	}{
 		{"USD", USD, true},
@@ -52,7 +52,7 @@ func TestParseISO(t *testing.T) {
 func TestFromRegion(t *testing.T) {
 	testCases := []struct {
 		region   string
-		currency Currency
+		currency Unit
 		ok       bool
 	}{
 		{"NL", EUR, true},
@@ -77,7 +77,7 @@ func TestFromRegion(t *testing.T) {
 func TestFromTag(t *testing.T) {
 	testCases := []struct {
 		tag      string
-		currency Currency
+		currency Unit
 		conf     language.Confidence
 	}{
 		{"nl", EUR, language.Low},      // nl also spoken outside Euro land.
@@ -115,7 +115,7 @@ func TestTable(t *testing.T) {
 func TestKindRounding(t *testing.T) {
 	testCases := []struct {
 		kind  Kind
-		cur   Currency
+		cur   Unit
 		scale int
 		inc   int
 	}{
