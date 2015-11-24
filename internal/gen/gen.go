@@ -19,10 +19,12 @@
 package gen // import "golang.org/x/text/internal/gen"
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"go/format"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -204,4 +206,21 @@ func WriteGo(w io.Writer, pkg string, b []byte) (n int, err error) {
 		return n, err
 	}
 	return w.Write(formatted)
+}
+
+// Repackage rewrites a Go file from belonging to package main to belonging to
+// the given package.
+func Repackage(inFile, outFile, pkg string) {
+	src, err := ioutil.ReadFile(inFile)
+	if err != nil {
+		log.Fatalf("reading %s: %v", inFile, err)
+	}
+	const toDelete = "package main\n\n"
+	i := bytes.Index(src, []byte(toDelete))
+	if i < 0 {
+		log.Fatalf("Could not find %q in %s.", toDelete, inFile)
+	}
+	w := &bytes.Buffer{}
+	w.Write(src[i+len(toDelete):])
+	WriteGoFile(outFile, pkg, w.Bytes())
 }

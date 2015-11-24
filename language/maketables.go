@@ -11,7 +11,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -1599,24 +1598,10 @@ func (b *builder) writeParents() {
 	b.writeSliceAddSize("parents", n*2, parents)
 }
 
-func rewriteCommon() {
-	// Generate common.go
-	src, err := ioutil.ReadFile("gen_common.go")
-	failOnError(err)
-	const toDelete = "// +build ignore\n\npackage main\n\n"
-	i := bytes.Index(src, []byte(toDelete))
-	if i < 0 {
-		log.Fatalf("could not find %q in gen_common.go", toDelete)
-	}
-	w := &bytes.Buffer{}
-	w.Write(src[i+len(toDelete):])
-	gen.WriteGoFile("common.go", "language", w.Bytes())
-}
-
 func main() {
 	gen.Init()
 
-	rewriteCommon()
+	gen.Repackage("gen_common.go", "common.go", "language")
 
 	w := gen.NewCodeWriter()
 	defer w.WriteGoFile("tables.go", "language")

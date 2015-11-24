@@ -32,7 +32,7 @@ func main() {
 	gen.Init()
 	genTables()
 	genTablesTest()
-	genTrieval()
+	gen.Repackage("gen_trieval.go", "trieval.go", "cases")
 }
 
 // runeInfo contains all information for a rune that we care about for casing
@@ -790,21 +790,6 @@ func printProperties(w io.Writer, file, property string, f func(r rune) bool) in
 		}
 	}
 	return n
-}
-
-func genTrieval() {
-	src, err := ioutil.ReadFile("gen_trieval.go")
-	if err != nil {
-		log.Fatalf("reading gen_trieval.go: %v", err)
-	}
-	const toDelete = "// +build ignore\n\npackage main\n\n"
-	i := bytes.Index(src, []byte(toDelete))
-	if i < 0 {
-		log.Fatalf("could not find %q in gen_trieval.go", toDelete)
-	}
-	w := &bytes.Buffer{}
-	w.Write(src[i+len(toDelete):])
-	gen.WriteGoFile("trieval.go", "cases", w.Bytes())
 }
 
 // The newCaseTrie, sparseValues and sparseOffsets definitions below are
