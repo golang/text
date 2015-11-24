@@ -29,3 +29,15 @@ type State interface {
 	// - user preferences, like measurement systems
 	// - options
 }
+
+// A Statement is a Var or an Expression.
+type Statement interface {
+	statement()
+}
+
+// A String a literal string format.
+type String string
+
+func (String) statement() {}
+
+// TODO: Select, Var, Case, StatementSequence
