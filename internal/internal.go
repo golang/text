@@ -36,10 +36,10 @@ func (s sorter) Less(i, j int) bool {
 // UniqueTags sorts and filters duplicate tags in place and returns a slice with
 // only unique tags.
 func UniqueTags(tags []language.Tag) []language.Tag {
-	SortTags(tags)
-	if len(tags) == 0 {
+	if len(tags) <= 1 {
 		return tags
 	}
+	SortTags(tags)
 	k := 0
 	for i := 1; i < len(tags); i++ {
 		if tags[k].String() < tags[i].String() {
