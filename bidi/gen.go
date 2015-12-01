@@ -28,20 +28,20 @@ func main() {
 // bidiClass names and codes taken from class "bc" in
 // http://www.unicode.org/Public/8.0.0/ucd/PropertyValueAliases.txt
 var bidiClass = map[string]class{
-	"AL":  classArabicLetter,
-	"AN":  classArabicNumber,
-	"B":   classParagraphSeparator,
-	"BN":  classBoundaryNeutral,
-	"CS":  classCommonSeparator,
-	"EN":  classEuropeanNumber,
-	"ES":  classEuropeanSeparator,
-	"ET":  classEuropeanTerminator,
-	"L":   classLeftToRight,
-	"NSM": classNonspacingMark,
-	"ON":  classOtherNeutral,
-	"R":   classRightToLeft,
-	"S":   classSegmentSeparator,
-	"WS":  classWhiteSpace,
+	"AL":  _AL,  // ArabicLetter
+	"AN":  _AN,  // ArabicNumber
+	"B":   _B,   // ParagraphSeparator
+	"BN":  _BN,  // BoundaryNeutral
+	"CS":  _CS,  // CommonSeparator
+	"EN":  _EN,  // EuropeanNumber
+	"ES":  _ES,  // EuropeanSeparator
+	"ET":  _ET,  // EuropeanTerminator
+	"L":   _L,   // LeftToRight
+	"NSM": _NSM, // NonspacingMark
+	"ON":  _ON,  // OtherNeutral
+	"R":   _R,   // RightToLeft
+	"S":   _S,   // SegmentSeparator
+	"WS":  _WS,  // WhiteSpace
 
 	"FSI": classControl,
 	"PDF": classControl,

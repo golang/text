@@ -19,7 +19,7 @@ import (
 // http://www.unicode.org/Public/8.0.0/ucd/extracted/DerivedBidiClass.txt
 func visitDefaults(fn func(r rune, c class)) {
 	// first write default values for ranges listed above.
-	visitRunes(fn, classArabicLetter, []rune{
+	visitRunes(fn, _AL, []rune{
 		0x0600, 0x07BF, // Arabic
 		0x08A0, 0x08FF, // Arabic Extended-A
 		0xFB50, 0xFDCF, // Arabic Presentation Forms
@@ -27,7 +27,7 @@ func visitDefaults(fn func(r rune, c class)) {
 		0xFE70, 0xFEFF,
 		0x0001EE00, 0x0001EEFF, // Arabic Mathematical Alpha Symbols
 	})
-	visitRunes(fn, classRightToLeft, []rune{
+	visitRunes(fn, _R, []rune{
 		0x0590, 0x05FF, // Hebrew
 		0x07C0, 0x089F, // Nko et al.
 		0xFB1D, 0xFB4F,
@@ -35,15 +35,15 @@ func visitDefaults(fn func(r rune, c class)) {
 		0x0001E800, 0x0001EDFF,
 		0x0001EF00, 0x0001EFFF,
 	})
-	visitRunes(fn, classEuropeanTerminator, []rune{
+	visitRunes(fn, _ET, []rune{ // European Terminator
 		0x20A0, 0x20Cf, // Currency symbols
 	})
 	rangetable.Visit(unicode.Noncharacter_Code_Point, func(r rune) {
-		fn(r, classBoundaryNeutral)
+		fn(r, _BN) // Boundary Neutral
 	})
 	parse("DerivedCoreProperties.txt", func(p *ucd.Parser) {
 		if p.String(1) == "Default_Ignorable_Code_Point" {
-			fn(p.Rune(0), classBoundaryNeutral)
+			fn(p.Rune(0), _BN) // Boundary Neutral
 		}
 	})
 }

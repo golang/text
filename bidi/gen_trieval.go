@@ -9,45 +9,45 @@ package main
 type class int
 
 const (
-	classLeftToRight        class = iota // Class L
-	classRightToLeft                     // Class R
-	classEuropeanNumber                  // Class EN
-	classEuropeanSeparator               // Class ES
-	classEuropeanTerminator              // Class ET
-	classArabicNumber                    // Class AN
-	classCommonSeparator                 // Class CS
-	classParagraphSeparator              // Class B
-	classSegmentSeparator                // Class S
-	classWhiteSpace                      // Class WS
-	classOtherNeutral                    // Class ON
-	classBoundaryNeutral                 // Class BN
-	classNonspacingMark                  // Class NSM
-	classArabicLetter                    // Class AL
-	classControl                         // Control LRO - PDI
+	_L           class = iota // LeftToRight
+	_R                        // RightToLeft
+	_EN                       // EuropeanNumber
+	_ES                       // EuropeanSeparator
+	_ET                       // EuropeanTerminator
+	_AN                       // ArabicNumber
+	_CS                       // CommonSeparator
+	_B                        // ParagraphSeparator
+	_S                        // SegmentSeparator
+	_WS                       // WhiteSpace
+	_ON                       // OtherNeutral
+	_BN                       // BoundaryNeutral
+	_NSM                      // NonspacingMark
+	_AL                       // ArabicLetter
+	classControl              // Control LRO - PDI
 
 	numClass
 
-	classLeftToRightOverride   // Class LRO
-	classRightToLeftOverride   // Class RLO
-	classLeftToRightEmbedding  // Class LRE
-	classRightToLeftEmbedding  // Class RLE
-	classPopDirectionalFormat  // Class PDF
-	classLeftToRightIsolate    // Class LRI
-	classRightToLeftIsolate    // Class RLI
-	classFirstStrongIsolate    // Class FSI
-	classPopDirectionalIsolate // Class PDI
+	_LRO // LeftToRightOverride
+	_RLO // RightToLeftOverride
+	_LRE // LeftToRightEmbedding
+	_RLE // RightToLeftEmbedding
+	_PDF // PopDirectionalFormat
+	_LRI // LeftToRightIsolate
+	_RLI // RightToLeftIsolate
+	_FSI // FirstStrongIsolate
+	_PDI // PopDirectionalIsolate
 )
 
 var controlToClass = map[rune]class{
-	0x202D: classLeftToRightOverride,
-	0x202E: classRightToLeftOverride,
-	0x202A: classLeftToRightEmbedding,
-	0x202B: classRightToLeftEmbedding,
-	0x202C: classPopDirectionalFormat,
-	0x2066: classLeftToRightIsolate,
-	0x2067: classRightToLeftIsolate,
-	0x2068: classFirstStrongIsolate,
-	0x2069: classPopDirectionalIsolate,
+	0x202D: _LRO, // LeftToRightOverride,
+	0x202E: _RLO, // RightToLeftOverride,
+	0x202A: _LRE, // LeftToRightEmbedding,
+	0x202B: _RLE, // RightToLeftEmbedding,
+	0x202C: _PDF, // PopDirectionalFormat,
+	0x2066: _LRI, // LeftToRightIsolate,
+	0x2067: _RLI, // RightToLeftIsolate,
+	0x2068: _FSI, // FirstStrongIsolate,
+	0x2069: _PDI, // PopDirectionalIsolate,
 }
 
 // A trie entry has the following bits:
