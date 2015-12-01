@@ -156,13 +156,18 @@ func (p *Parser) Next() bool {
 	return false
 }
 
-func (p *Parser) parseRune(b []byte) rune {
+func parseRune(b []byte) (rune, error) {
 	if len(b) > 2 && b[0] == 'U' && b[1] == '+' {
 		b = b[2:]
 	}
 	x, err := strconv.ParseUint(string(b), 16, 32)
+	return rune(x), err
+}
+
+func (p *Parser) parseRune(b []byte) rune {
+	x, err := parseRune(b)
 	p.setError(err)
-	return rune(x)
+	return x
 }
 
 // Rune parses and returns field i as a rune.
@@ -214,7 +219,15 @@ func (p *Parser) getRange(i int) (first, last rune) {
 	if k := bytes.Index(b, []byte("..")); k != -1 {
 		return p.parseRune(b[:k]), p.parseRune(b[k+2:])
 	}
-	x := p.parseRune(b)
+	// The first field may not be a rune, in which case we may ignore any error
+	// and set the range as 0..0.
+	x, err := parseRune(b)
+	if err != nil {
+		// Disable range parsing henceforth. This ensures that an error will be
+		// returned if the user subsequently will try to parse this field as
+		// a Rune.
+		p.keepRanges = true
+	}
 	// Special case for UnicodeData that was retained for backwards compatibility.
 	if i == 0 && len(p.field) > 1 && bytes.HasSuffix(p.field[1], []byte("First>")) {
 		if p.parsedRange {
