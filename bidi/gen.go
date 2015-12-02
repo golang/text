@@ -72,7 +72,7 @@ func genTables() {
 	xorMap := map[rune]int{}
 	xorMasks := []rune{0} // First value is no-op.
 
-	parse("BidiBrackets.txt", func(p *ucd.Parser) {
+	ucd.Parse(gen.OpenUCDFile("BidiBrackets.txt"), func(p *ucd.Parser) {
 		r1 := p.Rune(0)
 		r2 := p.Rune(1)
 		xor := r1 ^ r2
@@ -106,7 +106,7 @@ func genTables() {
 	}
 
 	// Insert the derived BiDi properties.
-	parse("extracted/DerivedBidiClass.txt", func(p *ucd.Parser) {
+	ucd.Parse(gen.OpenUCDFile("extracted/DerivedBidiClass.txt"), func(p *ucd.Parser) {
 		r := p.Rune(0)
 		class, ok := bidiClass[p.String(1)]
 		if !ok {

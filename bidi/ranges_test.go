@@ -3,7 +3,6 @@
 package bidi
 
 import (
-	"log"
 	"unicode"
 
 	"golang.org/x/text/internal/gen"
@@ -37,7 +36,7 @@ func visitDefaults(fn func(r rune, c class)) {
 	rangetable.Visit(unicode.Noncharacter_Code_Point, func(r rune) {
 		fn(r, _BN) // Boundary Neutral
 	})
-	parse("DerivedCoreProperties.txt", func(p *ucd.Parser) {
+	ucd.Parse(gen.OpenUCDFile("DerivedCoreProperties.txt"), func(p *ucd.Parser) {
 		if p.String(1) == "Default_Ignorable_Code_Point" {
 			fn(p.Rune(0), _BN) // Boundary Neutral
 		}
@@ -50,19 +49,5 @@ func visitRunes(fn func(r rune, c class), c class, runes []rune) {
 		for j := lo; j <= hi; j++ {
 			fn(j, c)
 		}
-	}
-}
-
-// parse calls f for each entry in the given UCD file.
-func parse(filename string, f func(p *ucd.Parser)) {
-	r := gen.OpenUCDFile(filename)
-	defer r.Close()
-
-	p := ucd.New(r)
-	for p.Next() {
-		f(p)
-	}
-	if err := p.Err(); err != nil {
-		log.Fatal(err)
 	}
 }

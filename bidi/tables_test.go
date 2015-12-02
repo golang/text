@@ -51,7 +51,7 @@ func TestTables(t *testing.T) {
 
 	trie := newBidiTrie(0)
 
-	parse("BidiBrackets.txt", func(p *ucd.Parser) {
+	ucd.Parse(gen.OpenUCDFile("BidiBrackets.txt"), func(p *ucd.Parser) {
 		r1 := p.Rune(0)
 		want := p.Rune(1)
 
@@ -71,7 +71,7 @@ func TestTables(t *testing.T) {
 	}
 
 	// Insert the derived BiDi properties.
-	parse("extracted/DerivedBidiClass.txt", func(p *ucd.Parser) {
+	ucd.Parse(gen.OpenUCDFile("extracted/DerivedBidiClass.txt"), func(p *ucd.Parser) {
 		r := p.Rune(0)
 		test("derived", r, p.String(1))
 	})

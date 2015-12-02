@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -38,6 +39,23 @@ const (
 	SimpleLowercaseMapping
 	SimpleTitlecaseMapping
 )
+
+// Parse calls f for each entry in the given reader of a UCD file. It will close
+// the reader upon return. It will call log.Fatal if any error occurred.
+//
+// This implements the most common usage pattern of using Parser.
+func Parse(r io.ReadCloser, f func(p *Parser)) {
+	defer r.Close()
+
+	p := New(r)
+	for p.Next() {
+		f(p)
+	}
+	if err := p.Err(); err != nil {
+		r.Close() // os.Exit will cause defers not to be called.
+		log.Fatal(err)
+	}
+}
 
 // An Option is used to configure a Parser.
 type Option func(p *Parser)
