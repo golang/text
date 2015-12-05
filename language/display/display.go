@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// NOTICE: Package display has moved to golang.org/x/text/language/display.
-// Use golang.org/x/text/language/display instead.
-package display // import "golang.org/x/text/display"
+//go:generate go run maketables.go -output tables.go
 
-// TODO: change package path reference to the following so that people get
-// a warning of where the package has been moved to.
-// package display // import "golang.org/x/text/language/display"
+// Package display provides display names for languages, scripts and regions in
+// a requested language.
+//
+// The data is based on CLDR's localeDisplayNames. It includes the names of the
+// draft level "contributed" or "approved". The resulting tables are quite
+// large. The display package is designed so that users can reduce the linked-in
+// table sizes by cherry picking the languages one wishes to support. There is a
+// Dictionary defined for a selected set of common languages for this purpose.
+package display // import "golang.org/x/text/language/display"
 
 import (
 	"strings"
