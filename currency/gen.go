@@ -17,11 +17,11 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/text/cldr"
 	"golang.org/x/text/internal"
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/internal/tag"
 	"golang.org/x/text/language"
+	"golang.org/x/text/unicode/cldr"
 )
 
 var (

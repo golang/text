@@ -32,7 +32,7 @@ import (
 	"path/filepath"
 	"unicode"
 
-	"golang.org/x/text/cldr"
+	"golang.org/x/text/unicode/cldr"
 )
 
 var (

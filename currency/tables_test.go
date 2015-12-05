@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"golang.org/x/text/cldr"
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+	"golang.org/x/text/unicode/cldr"
 )
 
 var (

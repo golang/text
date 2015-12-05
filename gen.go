@@ -69,7 +69,7 @@ func main() {
 		}
 	}
 	var (
-		cldr     = generate("cldr")
+		cldr     = generate("unicode/cldr")
 		language = generate("language", cldr)
 		internal = generate("internal", language)
 		norm     = generate("unicode/norm")
