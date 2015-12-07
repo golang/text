@@ -289,7 +289,7 @@ func TestParseNumberPattern(t *testing.T) {
 }
 
 func TestPatternSize(t *testing.T) {
-	if sz := unsafe.Sizeof(NumberFormat{}); sz != 48 {
+	if sz := unsafe.Sizeof(NumberFormat{}); sz > 48 {
 		t.Errorf("got %d; want 48", sz)
 	}
 
