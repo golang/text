@@ -11,7 +11,7 @@ func (t *randTrie) lookup(s []byte) (v uint8, sz int) {
 	switch {
 	case c0 < 0x80: // is ASCII
 		return randValues[c0], 1
-	case c0 < 0xC0:
+	case c0 < 0xC2:
 		return 0, 1 // Illegal UTF-8: not a starter, not ASCII.
 	case c0 < 0xE0: // 2-byte UTF-8
 		if len(s) < 2 {
@@ -96,7 +96,7 @@ func (t *randTrie) lookupString(s string) (v uint8, sz int) {
 	switch {
 	case c0 < 0x80: // is ASCII
 		return randValues[c0], 1
-	case c0 < 0xC0:
+	case c0 < 0xC2:
 		return 0, 1 // Illegal UTF-8: not a starter, not ASCII.
 	case c0 < 0xE0: // 2-byte UTF-8
 		if len(s) < 2 {
@@ -189,7 +189,7 @@ func (t *randTrie) lookupValue(n uint32, b byte) uint8 {
 }
 
 // randValues: 56 blocks, 3584 entries, 3584 bytes
-// Block 3 is the zero block.
+// The third block is the zero block.
 var randValues = [3584]uint8{
 	// Block 0x0, offset 0x0
 	// Block 0x1, offset 0x40
@@ -533,7 +533,7 @@ func (t *multiTrie) lookup(s []byte) (v uint64, sz int) {
 	switch {
 	case c0 < 0x80: // is ASCII
 		return t.ascii[c0], 1
-	case c0 < 0xC0:
+	case c0 < 0xC2:
 		return 0, 1 // Illegal UTF-8: not a starter, not ASCII.
 	case c0 < 0xE0: // 2-byte UTF-8
 		if len(s) < 2 {
@@ -618,7 +618,7 @@ func (t *multiTrie) lookupString(s string) (v uint64, sz int) {
 	switch {
 	case c0 < 0x80: // is ASCII
 		return t.ascii[c0], 1
-	case c0 < 0xC0:
+	case c0 < 0xC2:
 		return 0, 1 // Illegal UTF-8: not a starter, not ASCII.
 	case c0 < 0xE0: // 2-byte UTF-8
 		if len(s) < 2 {
@@ -728,7 +728,7 @@ func (t *multiTrie) lookupValue(n uint32, b byte) uint64 {
 }
 
 // multiValues: 32 blocks, 2048 entries, 16384 bytes
-// Block 3 is the zero block.
+// The third block is the zero block.
 var multiValues = [2048]uint64{
 	// Block 0x0, offset 0x0
 	0x03: 0x6e361699800b9fb8, 0x04: 0x52d3935a34f6f0b, 0x05: 0x2948319393e7ef10,

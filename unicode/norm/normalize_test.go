@@ -100,7 +100,8 @@ var cgj = GraphemeJoiner
 
 var decomposeSegmentTests = []PositionTest{
 	// illegal runes
-	{"\xC0", 0, ""},
+	{"\xC2", 0, ""},
+	{"\xC0", 1, "\xC0"},
 	{"\u00E0\x80", 2, "\u0061\u0300"},
 	// starter
 	{"a", 1, "a"},
@@ -263,7 +264,7 @@ var lastBoundaryTests = []PositionTest{
 	// illegal runes
 	{"\xff", 1, ""},
 	{"aa\xff", 3, ""},
-	{"a\xff\u0300", 1, ""},
+	{"a\xff\u0300", 1, ""}, // TODO: should probably be 2.
 	{"\xc0\x80\x80", 3, ""},
 	{"\xc0\x80\x80\u0300", 3, ""},
 	// ends with incomplete UTF-8 encoding
@@ -277,8 +278,8 @@ var lastBoundaryTests = []PositionTest{
 	{"a\u0300\u0301", 0, ""},
 	{"aaaa\u0300\u0301", 3, ""},
 	{"\u0300a\u0300\u0301", 2, ""},
-	{"\u00C0", 0, ""},
-	{"a\u00C0", 1, ""},
+	{"\u00C2", 0, ""},
+	{"a\u00C2", 1, ""},
 	// decomposition may recombine
 	{"\u0226", 0, ""},
 	// no boundary

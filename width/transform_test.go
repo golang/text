@@ -69,7 +69,7 @@ func TestFold(t *testing.T) {
 		err:   nil,
 	}, {
 		desc:  "short source 1",
-		src:   "a\xc0",
+		src:   "a\xc2",
 		dst:   "a",
 		nDst:  10,
 		nSrc:  1,
@@ -85,8 +85,8 @@ func TestFold(t *testing.T) {
 		err:   transform.ErrShortSrc,
 	}, {
 		desc:  "incomplete but terminated source 1",
-		src:   "a\xc0",
-		dst:   "a\xc0",
+		src:   "a\xc2",
+		dst:   "a\xc2",
 		nDst:  10,
 		nSrc:  2,
 		atEOF: true,
@@ -187,7 +187,7 @@ func TestWiden(t *testing.T) {
 		err:   nil,
 	}, {
 		desc:  "short source 1",
-		src:   "a\xc0",
+		src:   "a\xc2",
 		dst:   "ａ",
 		nDst:  10,
 		nSrc:  1,
@@ -203,8 +203,8 @@ func TestWiden(t *testing.T) {
 		err:   transform.ErrShortSrc,
 	}, {
 		desc:  "incomplete but terminated source 1",
-		src:   "a\xc0",
-		dst:   "ａ\xc0",
+		src:   "a\xc2",
+		dst:   "ａ\xc2",
 		nDst:  10,
 		nSrc:  2,
 		atEOF: true,
@@ -305,7 +305,7 @@ func TestNarrow(t *testing.T) {
 		err:   nil,
 	}, {
 		desc:  "short source 1",
-		src:   "a\xc0",
+		src:   "a\xc2",
 		dst:   "a",
 		nDst:  10,
 		nSrc:  1,
@@ -321,8 +321,8 @@ func TestNarrow(t *testing.T) {
 		err:   transform.ErrShortSrc,
 	}, {
 		desc:  "incomplete but terminated source 1",
-		src:   "ａ\xc0",
-		dst:   "a\xc0",
+		src:   "ａ\xc2",
+		dst:   "a\xc2",
 		nDst:  10,
 		nSrc:  4,
 		atEOF: true,
