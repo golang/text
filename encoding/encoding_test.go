@@ -938,6 +938,7 @@ var testdataFiles = []struct {
 	{simplifiedchinese.HZGB2312, "sunzi-bingfa-gb-levels-1-and-2", "hz-gb2312"},
 	{traditionalchinese.Big5, "sunzi-bingfa-traditional", "big5"},
 	{utf16LEIB, "candide", "utf-16le"},
+	{unicode.UTF8, "candide", "utf-8"},
 
 	// GB18030 is a superset of GBK and is nominally a Simplified Chinese
 	// encoding, but it can also represent the entire Basic Multilingual
@@ -1032,5 +1033,7 @@ func BenchmarkISO2022JPDecoder(b *testing.B) { benchmark(b, "Decode", japanese.I
 func BenchmarkISO2022JPEncoder(b *testing.B) { benchmark(b, "Encode", japanese.ISO2022JP) }
 func BenchmarkShiftJISDecoder(b *testing.B)  { benchmark(b, "Decode", japanese.ShiftJIS) }
 func BenchmarkShiftJISEncoder(b *testing.B)  { benchmark(b, "Encode", japanese.ShiftJIS) }
+func BenchmarkUTF8Decoder(b *testing.B)      { benchmark(b, "Decode", unicode.UTF8) }
+func BenchmarkUTF8Encoder(b *testing.B)      { benchmark(b, "Encode", unicode.UTF8) }
 func BenchmarkUTF16Decoder(b *testing.B)     { benchmark(b, "Decode", utf16LEIB) }
 func BenchmarkUTF16Encoder(b *testing.B)     { benchmark(b, "Encode", utf16LEIB) }
