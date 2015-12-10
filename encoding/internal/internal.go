@@ -58,3 +58,18 @@ func (e FuncEncoding) NewDecoder() *encoding.Decoder {
 func (e FuncEncoding) NewEncoder() *encoding.Encoder {
 	return &encoding.Encoder{Transformer: e.Encoder()}
 }
+
+// A RepertoireError indicates a rune is not in the repertoire of a destination
+// encoding. It is associated with an encoding-specific suggested replacement
+// byte.
+type RepertoireError byte
+
+// Error implements the error interrface.
+func (r RepertoireError) Error() string {
+	return "encoding: rune not supported by encoding."
+}
+
+// Replacement returns the replacement string associated with this error.
+func (r RepertoireError) Replacement() byte { return byte(r) }
+
+var ErrASCIIReplacement = RepertoireError(encoding.ASCIISub)
