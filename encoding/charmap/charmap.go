@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run maketables.go
+
 // Package charmap provides simple character encodings such as IBM Code Page 437
 // and Windows 1252.
 package charmap // import "golang.org/x/text/encoding/charmap"
