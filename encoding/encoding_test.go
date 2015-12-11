@@ -351,18 +351,18 @@ var basicTestCases = []struct {
 func TestBasics(t *testing.T) {
 	for _, tc := range basicTestCases {
 		for _, direction := range []string{"Decode", "Encode"} {
-			newTransformer, want, src := (func() transform.Transformer)(nil), "", ""
-			wPrefix, sPrefix, wSuffix, sSuffix := "", "", "", ""
+			var coder Transcoder
+			var want, src, wPrefix, sPrefix, wSuffix, sSuffix string
 			if direction == "Decode" {
-				newTransformer, want, src = tc.e.NewDecoder, tc.utf8, tc.encoded
+				coder, want, src = tc.e.NewDecoder(), tc.utf8, tc.encoded
 				wPrefix, sPrefix, wSuffix, sSuffix = "", tc.encPrefix, "", tc.encSuffix
 			} else {
-				newTransformer, want, src = tc.e.NewEncoder, tc.encoded, tc.utf8
+				coder, want, src = tc.e.NewEncoder(), tc.encoded, tc.utf8
 				wPrefix, sPrefix, wSuffix, sSuffix = tc.encPrefix, "", tc.encSuffix, ""
 			}
 
 			dst := make([]byte, len(wPrefix)+len(want)+len(wSuffix))
-			nDst, nSrc, err := newTransformer().Transform(dst, []byte(sPrefix+src+sSuffix), true)
+			nDst, nSrc, err := coder.Transform(dst, []byte(sPrefix+src+sSuffix), true)
 			if err != nil {
 				t.Errorf("%v: %s: %v", tc.e, direction, err)
 				continue
@@ -385,10 +385,9 @@ func TestBasics(t *testing.T) {
 
 			for _, n := range []int{0, 1, 2, 10, 123, 4567} {
 				input := sPrefix + strings.Repeat(src, n) + sSuffix
-				sr := strings.NewReader(input)
-				g, err := ioutil.ReadAll(transform.NewReader(sr, newTransformer()))
+				g, err := coder.String(input)
 				if err != nil {
-					t.Errorf("%v: %s: ReadAll: n=%d: %v", tc.e, direction, n, err)
+					t.Errorf("%v: %s: Bytes: n=%d: %v", tc.e, direction, n, err)
 					continue
 				}
 				if len(g) == 0 && len(input) == 0 {
@@ -483,7 +482,7 @@ func TestEncodeInvalidUTF8(t *testing.T) {
 	// Each invalid source byte becomes '\x1a'.
 	want := strings.Replace("hello.wo?ld.ABC??????????D??E??????FGH\x80I??", "?", "\x1a", -1)
 
-	transformer := charmap.Windows1252.NewEncoder()
+	transformer := encoding.ReplaceUnsupported(charmap.Windows1252.NewEncoder())
 	gotBuf := make([]byte, 0, 1024)
 	src := make([]byte, 0, 1024)
 	for i, input := range inputs {
@@ -880,6 +879,92 @@ func TestUTF16(t *testing.T) {
 	}
 }
 
+func TestErrorHandler(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		handler   func(*encoding.Encoder) *encoding.Encoder
+		sizeDst   int
+		src, want string
+		nSrc      int
+		err       error
+	}{
+		{
+			desc:    "one rune replacement",
+			handler: encoding.ReplaceUnsupported,
+			sizeDst: 100,
+			src:     "\uAC00",
+			want:    "\x1a",
+			nSrc:    3,
+		},
+		{
+			desc:    "mid-stream rune replacement",
+			handler: encoding.ReplaceUnsupported,
+			sizeDst: 100,
+			src:     "a\uAC00bcd\u00e9",
+			want:    "a\x1abcd\xe9",
+			nSrc:    9,
+		},
+		{
+			desc:    "at end rune replacement",
+			handler: encoding.ReplaceUnsupported,
+			sizeDst: 10,
+			src:     "\u00e9\uAC00",
+			want:    "\xe9\x1a",
+			nSrc:    5,
+		},
+		{
+			desc:    "short buffer replacement",
+			handler: encoding.ReplaceUnsupported,
+			sizeDst: 1,
+			src:     "\u00e9\uAC00",
+			want:    "\xe9",
+			nSrc:    2,
+			err:     transform.ErrShortDst,
+		},
+		// TODO: uncomment once encoders return an error for out-of-repertoire
+		// runes.
+		// {
+		// 	desc:    "one rune html escape",
+		// 	handler: encoding.HTMLEscapeUnsupported,
+		// 	sizeDst: 100,
+		// 	src:     "\uAC00",
+		// 	want:    "&#44032;",
+		// 	nSrc:    3,
+		// },
+		// {
+		// 	desc:    "mid-stream html escape",
+		// 	handler: encoding.HTMLEscapeUnsupported,
+		// 	sizeDst: 100,
+		// 	src:     "\u00e9\uAC00dcba",
+		// 	want:    "\xe9&#44032;dcba",
+		// 	nSrc:    9,
+		// },
+		// {
+		// 	desc:    "short buffer html escape",
+		// 	handler: encoding.HTMLEscapeUnsupported,
+		// 	sizeDst: 9,
+		// 	src:     "ab\uAC01",
+		// 	want:    "ab",
+		// 	nSrc:    2,
+		// 	err:     transform.ErrShortDst,
+		// },
+	}
+	for i, tc := range testCases {
+		tr := tc.handler(charmap.Windows1250.NewEncoder())
+		b := make([]byte, tc.sizeDst)
+		nDst, nSrc, err := tr.Transform(b, []byte(tc.src), true)
+		if err != tc.err {
+			t.Errorf("%d:%s: error was %v; want %v", i, tc.desc, err, tc.err)
+		}
+		if got := string(b[:nDst]); got != tc.want {
+			t.Errorf("%d:%s: result was %q: want %q", i, tc.desc, got, tc.want)
+		}
+		if nSrc != tc.nSrc {
+			t.Errorf("%d:%s: nSrc was %d; want %d", i, tc.desc, nSrc, tc.nSrc)
+		}
+
+	}
+}
 func TestBOMOverride(t *testing.T) {
 	dec := unicode.BOMOverride(charmap.CodePage437.NewDecoder())
 	dst := make([]byte, 100)
@@ -948,7 +1033,14 @@ var testdataFiles = []struct {
 	{simplifiedchinese.GB18030, "candide", "gb18030"},
 }
 
-func load(direction string, enc encoding.Encoding) ([]byte, []byte, func() transform.Transformer, error) {
+// Encoder or Decoder
+type Transcoder interface {
+	transform.Transformer
+	Bytes([]byte) ([]byte, error)
+	String(string) (string, error)
+}
+
+func load(direction string, enc encoding.Encoding) ([]byte, []byte, Transcoder, error) {
 	basename, ext, count := "", "", 0
 	for _, tf := range testdataFiles {
 		if tf.enc == enc {
@@ -964,10 +1056,10 @@ func load(direction string, enc encoding.Encoding) ([]byte, []byte, func() trans
 	}
 	dstFile := fmt.Sprintf("testdata/%s-%s.txt", basename, ext)
 	srcFile := fmt.Sprintf("testdata/%s-utf-8.txt", basename)
-	newTransformer := enc.NewEncoder
+	var coder Transcoder = encoding.ReplaceUnsupported(enc.NewEncoder())
 	if direction == "Decode" {
 		dstFile, srcFile = srcFile, dstFile
-		newTransformer = enc.NewDecoder
+		coder = enc.NewDecoder()
 	}
 	dst, err := ioutil.ReadFile(dstFile)
 	if err != nil {
@@ -977,24 +1069,23 @@ func load(direction string, enc encoding.Encoding) ([]byte, []byte, func() trans
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	return dst, src, newTransformer, nil
+	return dst, src, coder, nil
 }
 
 func TestFiles(t *testing.T) {
 	for _, dir := range []string{"Decode", "Encode"} {
 		for _, tf := range testdataFiles {
-			dst, src, newTransformer, err := load(dir, tf.enc)
+			dst, src, transformer, err := load(dir, tf.enc)
 			if err != nil {
 				t.Errorf("%s, %s: load: %v", dir, tf.enc, err)
 				continue
 			}
-			buf := bytes.NewBuffer(nil)
-			r := transform.NewReader(bytes.NewReader(src), newTransformer())
-			if _, err := io.Copy(buf, r); err != nil {
-				t.Errorf("%s, %s: copy: %v", dir, tf.enc, err)
+			buf, err := transformer.Bytes(src)
+			if err != nil {
+				t.Errorf("%s, %s: transform: %v", dir, tf.enc, err)
 				continue
 			}
-			if !bytes.Equal(buf.Bytes(), dst) {
+			if !bytes.Equal(buf, dst) {
 				t.Errorf("%s, %s: transformed bytes did not match golden file", dir, tf.enc)
 				continue
 			}
@@ -1003,14 +1094,14 @@ func TestFiles(t *testing.T) {
 }
 
 func benchmark(b *testing.B, direction string, enc encoding.Encoding) {
-	_, src, newTransformer, err := load(direction, enc)
+	_, src, transformer, err := load(direction, enc)
 	if err != nil {
 		b.Fatal(err)
 	}
 	b.SetBytes(int64(len(src)))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		r := transform.NewReader(bytes.NewReader(src), newTransformer())
+		r := transform.NewReader(bytes.NewReader(src), transformer)
 		io.Copy(ioutil.Discard, r)
 	}
 }

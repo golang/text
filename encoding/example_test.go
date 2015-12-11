@@ -17,14 +17,15 @@ import (
 
 func ExampleDecodeWindows1252() {
 	sr := strings.NewReader("Gar\xe7on !")
-	tr := transform.NewReader(sr, charmap.Windows1252.NewDecoder())
+	tr := charmap.Windows1252.NewDecoder().Reader(sr)
 	io.Copy(os.Stdout, tr)
 	// Output: Garçon !
 }
 
 func ExampleUTF8Validator() {
 	for i := 0; i < 2; i++ {
-		transformer := charmap.Windows1252.NewEncoder()
+		var transformer transform.Transformer
+		transformer = charmap.Windows1252.NewEncoder()
 		if i == 1 {
 			transformer = transform.Chain(encoding.UTF8Validator, transformer)
 		}

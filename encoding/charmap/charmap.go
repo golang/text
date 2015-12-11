@@ -91,12 +91,12 @@ type charmap struct {
 	encode [256]uint32
 }
 
-func (m *charmap) NewDecoder() transform.Transformer {
-	return charmapDecoder{charmap: m}
+func (m *charmap) NewDecoder() *encoding.Decoder {
+	return &encoding.Decoder{Transformer: charmapDecoder{charmap: m}}
 }
 
-func (m *charmap) NewEncoder() transform.Transformer {
-	return charmapEncoder{charmap: m}
+func (m *charmap) NewEncoder() *encoding.Encoder {
+	return &encoding.Encoder{Transformer: charmapEncoder{charmap: m}}
 }
 
 func (m *charmap) String() string {

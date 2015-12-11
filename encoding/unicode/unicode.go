@@ -246,19 +246,19 @@ type config struct {
 	bomPolicy  BOMPolicy
 }
 
-func (u utf16Encoding) NewDecoder() transform.Transformer {
-	return &utf16Decoder{
+func (u utf16Encoding) NewDecoder() *encoding.Decoder {
+	return &encoding.Decoder{Transformer: &utf16Decoder{
 		initial: u.config,
 		current: u.config,
-	}
+	}}
 }
 
-func (u utf16Encoding) NewEncoder() transform.Transformer {
-	return &utf16Encoder{
+func (u utf16Encoding) NewEncoder() *encoding.Encoder {
+	return &encoding.Encoder{Transformer: &utf16Encoder{
 		endianness:       u.endianness,
 		initialBOMPolicy: u.bomPolicy,
 		currentBOMPolicy: u.bomPolicy,
-	}
+	}}
 }
 
 func (u utf16Encoding) ID() (mib identifier.MIB, other string) {
