@@ -98,7 +98,7 @@ func TestBidiCharacters(t *testing.T) {
 	if !*long {
 		return
 	}
-	parse("BidiCharacterTest.txt", func(p *ucd.Parser) {
+	ucd.Parse(gen.OpenUCDFile("BidiCharacterTest.txt"), func(p *ucd.Parser) {
 		var (
 			types      []class
 			pairTypes  []bracketType
