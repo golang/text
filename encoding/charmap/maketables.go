@@ -443,7 +443,7 @@ func main() {
 		printf("decode: [256]utf8Enc{\n")
 		i, backMapping := 0, map[rune]byte{}
 		for _, c := range e.mapping {
-			if _, ok := backMapping[c]; !ok {
+			if _, ok := backMapping[c]; !ok && c != utf8.RuneError {
 				backMapping[c] = byte(i)
 			}
 			var buf [8]byte
