@@ -57,6 +57,7 @@ var mibMap = map[identifier.MIB]htmlEncoding{
 	identifier.ISO2022JP:         iso2022jp,
 	identifier.ShiftJIS:          shiftJIS,
 	identifier.EUCKR:             euckr,
+	identifier.Replacement:       replacement,
 }
 
 // encodings maps the internal htmlEncoding to an Encoding.

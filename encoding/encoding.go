@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"unicode/utf8"
 
+	"golang.org/x/text/encoding/internal/identifier"
 	"golang.org/x/text/transform"
 )
 
@@ -155,6 +156,10 @@ func (replacement) NewDecoder() *Decoder {
 
 func (replacement) NewEncoder() *Encoder {
 	return &Encoder{Transformer: replacementEncoder{}}
+}
+
+func (replacement) ID() (mib identifier.MIB, other string) {
+	return identifier.Replacement, ""
 }
 
 type replacementDecoder struct{ transform.NopResetter }
