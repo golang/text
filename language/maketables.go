@@ -1445,12 +1445,11 @@ func (b *builder) writeMatchData() {
 				oneway: m.Oneway == "true",
 			})
 		} else {
-			// TODO: Handle the es_MX -> es_419 mapping. This does not seem to
-			// make much sense for our purposes, though.
+			// TODO: Handle other mappings.
 			a := []string{"*;*", "*_*;*_*", "es_MX;es_419"}
 			s := strings.Join([]string{desired, supported}, ";")
 			if i := sort.SearchStrings(a, s); i == len(a) || a[i] != s {
-				log.Fatalf("%q not handled", s)
+				log.Printf("%q not handled", s)
 			}
 		}
 	}
