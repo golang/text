@@ -74,6 +74,8 @@ func main() {
 		internal = generate("internal", language)
 		norm     = generate("unicode/norm")
 		_        = generate("unicode/rangetable")
+		_        = generate("unicode/bidi", norm)
+		_        = generate("encoding/htmlindex")
 		_        = generate("width")
 		_        = generate("currency", cldr, language, internal)
 		_        = generate("language/display", cldr, language)
