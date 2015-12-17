@@ -14,6 +14,7 @@ import (
 	"golang.org/x/text/encoding/internal"
 	"golang.org/x/text/encoding/internal/identifier"
 	"golang.org/x/text/internal/utf8internal"
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 )
 
@@ -31,9 +32,7 @@ import (
 var UTF8 encoding.Encoding = utf8enc
 
 var utf8enc = &internal.Encoding{
-	// TODO: transform.Nop needs to be replaced with encoding.UTF8Validator
-	// once we don't allow encoding errors to be silently ignored.
-	&internal.SimpleEncoding{utf8Decoder{}, transform.Nop},
+	&internal.SimpleEncoding{utf8Decoder{}, runes.ReplaceIllFormed()},
 	"UTF-8",
 	identifier.UTF8,
 }

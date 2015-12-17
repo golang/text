@@ -7,7 +7,6 @@ package htmlindex
 import (
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/encoding/internal"
 	"golang.org/x/text/encoding/internal/identifier"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/encoding/korean"
@@ -63,8 +62,7 @@ var mibMap = map[identifier.MIB]htmlEncoding{
 // encodings maps the internal htmlEncoding to an Encoding.
 // TODO: consider using a reusable index in encoding/internal.
 var encodings = [numEncodings]encoding.Encoding{
-	// TODO: replace with proper UTF-8 encoding.
-	utf8:              &internal.Encoding{encoding.Nop, "UTF-8", identifier.UTF8},
+	utf8:              unicode.UTF8,
 	ibm866:            charmap.CodePage866,
 	iso8859_2:         charmap.ISO8859_2,
 	iso8859_3:         charmap.ISO8859_3,
