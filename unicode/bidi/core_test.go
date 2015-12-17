@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/internal/ucd"
 	"golang.org/x/text/unicode/norm"
 )
@@ -22,9 +23,8 @@ var testLevels = flag.Bool("levels", false, "enable testing of levels")
 // TestBidiCore performs the tests in BidiTest.txt.
 // See http://www.unicode.org/Public/UCD/latest/ucd/BidiTest.txt.
 func TestBidiCore(t *testing.T) {
-	if !*long {
-		return
-	}
+	testtext.SkipIfNotLong(t)
+
 	r := gen.OpenUCDFile("BidiTest.txt")
 	defer r.Close()
 
@@ -95,9 +95,8 @@ var removeClasses = map[class]bool{
 // TestBidiCharacters performs the tests in BidiCharacterTest.txt.
 // See http://www.unicode.org/Public/UCD/latest/ucd/BidiCharacterTest.txt
 func TestBidiCharacters(t *testing.T) {
-	if !*long {
-		return
-	}
+	testtext.SkipIfNotLong(t)
+
 	ucd.Parse(gen.OpenUCDFile("BidiCharacterTest.txt"), func(p *ucd.Parser) {
 		var (
 			types      []class

@@ -56,6 +56,11 @@ func main() {
 		vprintf = func(string, ...interface{}) (int, error) { return 0, nil }
 	}
 
+	// TODO: create temporary cache directory to load files and create and set
+	// a "cache" option if the user did not specify the UNICODE_DIR environment
+	// variable. This will prevent duplicate downloads and also will enable long
+	// tests, which really need to be run after each generated package.
+
 	if gen.UnicodeVersion() != unicode.Version {
 		fmt.Printf("Requested Unicode version %s; core unicode version is %s.\n",
 			gen.UnicodeVersion,
@@ -75,11 +80,11 @@ func main() {
 		norm     = generate("unicode/norm")
 		_        = generate("unicode/rangetable")
 		_        = generate("unicode/bidi", norm)
-		_        = generate("encoding/htmlindex")
+		_        = generate("encoding/htmlindex", language)
 		_        = generate("width")
 		_        = generate("currency", cldr, language, internal)
 		_        = generate("language/display", cldr, language)
-		_        = generate("cases", norm)
+		_        = generate("cases", norm, language)
 		_        = generate("collate", norm, cldr, language)
 		_        = generate("search", norm, cldr, language)
 	)
@@ -137,7 +142,21 @@ func generate(pkg string, deps ...*dependency) *dependency {
 			wg.hasErrors = true
 			return
 		}
+
+		vprintf("=== TEST %s\n", pkg)
+		args[0] = "test"
+		cmd = exec.Command(filepath.Join(runtime.GOROOT(), "bin", "go"), args...)
+		wt := &bytes.Buffer{}
+		cmd.Stderr = wt
+		cmd.Stdout = wt
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("--- FAIL: %s:\n\t%v\n\tError: %v\n", pkg, indent(wt), err)
+			hasErrors = true
+			wg.hasErrors = true
+			return
+		}
 		vprintf("--- SUCCESS: %s\n\t%v\n", pkg, indent(w))
+		fmt.Print(wt.String())
 	}()
 	return &wg
 }

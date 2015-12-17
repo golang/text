@@ -5,15 +5,12 @@
 package bidi
 
 import (
-	"flag"
 	"testing"
 
 	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/internal/ucd"
 )
-
-var long = flag.Bool("long", false,
-	"run time-consuming tests, such as tests that fetch data online")
 
 var labels = []string{
 	_AL:  "AL",
@@ -43,11 +40,7 @@ var labels = []string{
 }
 
 func TestTables(t *testing.T) {
-	if !*long {
-		return
-	}
-
-	gen.Init()
+	testtext.SkipIfNotLong(t)
 
 	trie := newBidiTrie(0)
 

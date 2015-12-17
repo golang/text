@@ -7,7 +7,6 @@ package norm
 import (
 	"bufio"
 	"bytes"
-	"flag"
 	"fmt"
 	"regexp"
 	"runtime"
@@ -19,17 +18,14 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/internal/testtext"
 )
-
-var long = flag.Bool("long", false,
-	"run time-consuming tests, such as tests that fetch data online")
 
 var once sync.Once
 
 func skipShort(t *testing.T) {
-	if !gen.IsLocal() && !*long {
-		t.Skip("skipping test to prevent downloading; to run use -long or use -local to specify a local source")
-	}
+	testtext.SkipIfNotLong(t)
+
 	once.Do(func() { loadTestData(t) })
 }
 
