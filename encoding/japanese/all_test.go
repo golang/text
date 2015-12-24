@@ -53,3 +53,28 @@ func TestNonRepertoire(t *testing.T) {
 		}
 	}
 }
+
+func TestCorrect(t *testing.T) {
+	testCases := []struct {
+		init      func(e encoding.Encoding) (string, transform.Transformer, error)
+		e         encoding.Encoding
+		src, want string
+	}{
+		{dec, ShiftJIS, "\x9f\xfc", "滌"},
+		{dec, ShiftJIS, "\xfb\xfc", "髙"},
+		{dec, ShiftJIS, "\xfa\xb1", "﨑"},
+		{enc, ShiftJIS, "滌", "\x9f\xfc"},
+		{enc, ShiftJIS, "﨑", "\xed\x95"},
+	}
+	for _, tc := range testCases {
+		dir, tr, _ := tc.init(tc.e)
+
+		dst, _, err := transform.String(tr, tc.src)
+		if err != nil {
+			t.Errorf("%s %v(%q): got %v; want %v", dir, tc.e, tc.src, err, nil)
+		}
+		if got := string(dst); got != tc.want {
+			t.Errorf("%s %v(%q):\ngot  %q\nwant %q", dir, tc.e, tc.src, got, tc.want)
+		}
+	}
+}
