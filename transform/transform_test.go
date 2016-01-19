@@ -979,6 +979,25 @@ func TestBytes(t *testing.T) {
 	})
 }
 
+func TestAppend(t *testing.T) {
+	// Create a bunch of subtests for different buffer sizes.
+	testCases := [][]byte{
+		nil,
+		make([]byte, 0, 0),
+		make([]byte, 0, 1),
+		make([]byte, 1, 1),
+		make([]byte, 1, 5),
+		make([]byte, 100, 100),
+		make([]byte, 100, 200),
+	}
+	for _, tc := range testCases {
+		testString(t, func(z Transformer, s string) (string, int, error) {
+			b, n, err := Append(z, tc, []byte(s))
+			return string(b[len(tc):]), n, err
+		})
+	}
+}
+
 func TestString(t *testing.T) {
 	testString(t, String)
 
