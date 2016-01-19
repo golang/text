@@ -200,28 +200,23 @@ func genTables() {
 		t.Insert(rune(i), uint64(c.entry))
 	}
 
-	w := &bytes.Buffer{}
+	w := gen.NewCodeWriter()
+	defer w.WriteGoFile("tables.go", "cases")
+
+	gen.WriteUnicodeVersion(w)
+
+	// TODO: write CLDR version after adding a mechanism to detect that the
+	// tables on which the manually created locale-sensitive casing code is
+	// based hasn't changed.
+
+	w.WriteVar("xorData", string(xorData))
+	w.WriteVar("exceptions", string(exceptionData))
 
 	sz, err := t.Gen(w, triegen.Compact(&sparseCompacter{}))
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	gen.WriteUnicodeVersion(w)
-	// TODO: write CLDR version after adding a mechanism to detect that the
-	// tables on which the manually created locale-sensitive casing code is
-	// based hasn't changed.
-
-	fmt.Fprintf(w, "// xorData: %d bytes\n", len(xorData))
-	fmt.Fprintf(w, "var xorData = %+q\n\n", string(xorData))
-
-	fmt.Fprintf(w, "// exceptions: %d bytes\n", len(exceptionData))
-	fmt.Fprintf(w, "var exceptions = %q\n\n", string(exceptionData))
-
-	sz += len(exceptionData)
-	fmt.Fprintf(w, "// Total table size %d bytes (%dKiB)\n", sz, sz/1024)
-
-	gen.WriteGoFile("tables.go", "cases", w.Bytes())
+	w.Size += sz
 }
 
 func makeEntry(ri *runeInfo) {
