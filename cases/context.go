@@ -256,3 +256,26 @@ func title(c *context) bool {
 	// Already in correct case.
 	return c.copy()
 }
+
+// foldFull writes the foldFull version of the current rune to dst.
+func foldFull(c *context) bool {
+	if c.info&hasMappingMask == 0 {
+		return c.copy()
+	}
+	ct := c.caseType()
+	if c.info&exceptionBit == 0 {
+		if ct != cLower || c.info&inverseFoldBit != 0 {
+			return c.copyXOR()
+		}
+		return c.copy()
+	}
+	e := exceptions[c.info>>exceptionShift:]
+	n := e[0] & lengthMask
+	if n == 0 {
+		if ct == cLower {
+			return c.copy()
+		}
+		n = (e[1] >> lengthBits) & lengthMask
+	}
+	return c.writeString(e[2 : 2+n])
+}

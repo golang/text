@@ -6,8 +6,7 @@ package cases
 
 func (c info) cccVal() info {
 	if c&exceptionBit != 0 {
-		// TODO: return info(exceptions[c>>exceptionShift]) & cccMask
-		return cccZero
+		return info(exceptions[c>>exceptionShift]) & cccMask
 	}
 	return c & cccMask
 }

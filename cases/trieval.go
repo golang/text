@@ -18,11 +18,14 @@ package cases
 //     15..5  unsigned exception index
 //         4  unused
 //   } else {
-//     15..7  XOR pattern or index to XOR pattern for case mapping
+//     15..8  XOR pattern or index to XOR pattern for case mapping
+//            Only 13..8 are used for XOR patterns.
+//         7  inverseFold (fold to upper, not to lower)
 //         6  index: interpret the XOR pattern as an index
 //      5..4  CCC: zero (normal or break), above or other
 //   }
 //      3  exception: interpret this value as an exception index
+//         (TODO: is this bit necessary? Probably implied from case mode.)
 //   2..0  case mode
 //
 // For the non-exceptional cases, a rune must be either uncased, lowercase or
@@ -40,12 +43,14 @@ const (
 	ignorableMask  = 0x0006
 	ignorableValue = 0x0004
 
+	inverseFoldBit = 1 << 7
+
 	exceptionBit     = 1 << 3
 	exceptionShift   = 5
 	numExceptionBits = 11
 
 	xorIndexBit = 1 << 6
-	xorShift    = 7
+	xorShift    = 8
 
 	// There is no mapping if all xor bits and the exception bit are zero.
 	hasMappingMask = 0xffc0 | exceptionBit
@@ -122,12 +127,12 @@ const (
 // The entry is pointed to by the exception index in an entry. It has the
 // following format:
 //
-// Header:
-// byte 0: // TODO: case folding not implemented yet.
-//      7  conditional case folding
-//      6  conditional special casing
-//   6..3  length of case folding
-//   2..0  length of closure mapping (up to 7).
+// Header
+// byte 0:
+//  7..6  unused
+//  5..4  CCC type (same bits as entry)
+//     3  unused
+//  2..0  length of fold
 //
 // byte 1:
 //   7..6  unused
@@ -143,11 +148,11 @@ const (
 // A length of 0 indicates a mapping to zero-length string.
 //
 // Body bytes:
+//   case folding bytes
 //   lowercase mapping bytes
 //   uppercase mapping bytes
 //   titlecase mapping bytes
-//   case folding bytes
-//   closure mapping bytes
+//   closure mapping bytes (for NFKC_Casefold). (TODO)
 //
 // Fallbacks:
 //   missing fold  -> lower
