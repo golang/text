@@ -20,6 +20,20 @@ func (c info) cccType() info {
 	return ccc
 }
 
+// TODO: Implement full Unicode breaking algorithm:
+// 1) Implement breaking in separate package.
+// 2) Use the breaker here.
+// 3) Compare table size and performance of using the more generic breaker.
+//
+// Note that we can extend the current algorithm to be much more accurate. This
+// only makes sense, though, if the performance and/or space penalty of using
+// the generic breaker is big. Extra data will only be needed for non-cased
+// runes, which means there are sufficient bits left in the caseType.
+// Also note that the standard breaking algorithm doesn't always make sense
+// for title casing. For example, a4a -> A4a, but a"4a -> A"4A (where " stands
+// for modifier \u0308).
+// ICU prohibits breaking in such cases as well.
+
 // For the purpose of title casing we use an approximation of the Unicode Word
 // Breaking algorithm defined in Annex #29:
 // http://www.unicode.org/reports/tr29/#Default_Grapheme_Cluster_Table.

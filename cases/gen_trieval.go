@@ -122,20 +122,6 @@ const (
 	iotaSubscript = 240
 )
 
-// TODO: Implement full Unicode breaking algorithm:
-// 1) Implement breaking in separate package.
-// 2) Use the breaker here.
-// 3) Compare table size and performance of using the more generic breaker.
-//
-// Note that we can extend the current algorithm to be much more accurate. This
-// only makes sense, though, if the performance and/or space penalty of using
-// the generic breaker is big. Extra data will only be needed for non-cased
-// runes, which means there are sufficient bits left in the caseType.
-// Also note that the standard breaking algorithm doesn't always make sense
-// for title casing. For example, a4a -> A4a, but a"4a -> A"4A (where " stands
-// for modifier \u0308).
-// ICU prohibits breaking in such cases as well.
-
 // The exceptions slice holds data that does not fit in a normal info entry.
 // The entry is pointed to by the exception index in an entry. It has the
 // following format:
