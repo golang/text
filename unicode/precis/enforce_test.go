@@ -14,6 +14,23 @@ func TestEnforce(t *testing.T) {
 		input, output string
 		isErr         bool
 	}{
+		// Nickname profile
+		{Nickname, "  Swan  of   Avon   ", "Swan of Avon", false},
+		{Nickname, "", "", true},
+		{Nickname, " ", "", true},
+		{Nickname, "  ", "", true},
+		{Nickname, "a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", false},
+		{Nickname, "Foo", "Foo", false},
+		{Nickname, "foo", "foo", false},
+		{Nickname, "Foo Bar", "Foo Bar", false},
+		{Nickname, "foo bar", "foo bar", false},
+		{Nickname, "\u03C3", "\u03C3", false},
+		// TODO: Figure out why this is failing.
+		// {Nickname, "\u03C2", "\u03C3", false},
+		{Nickname, "\u265A", "♚", false},
+		{Nickname, "Richard \u2163", "Richard IV", false},
+		{Nickname, "\u212B", "Å", false},
+
 		// UsernameCaseMapped profile
 		{UsernameCaseMapped, "juliet@example.com", "juliet@example.com", false},
 		{UsernameCaseMapped, "fussball", "fussball", false},
