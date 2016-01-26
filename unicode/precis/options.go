@@ -41,21 +41,21 @@ func getOpts(o ...Option) (res options) {
 var (
 	// The FoldCase option defines a Profile's case mapping rule to use Unicode
 	// case folding.
-	FoldCase = foldCase
+	FoldCase Option = foldCase
 
 	// The IgnoreCase option causes the profile to perform a case insensitive
 	// comparison during the PRECIS comparison step.
-	IgnoreCase = ignoreCase
+	IgnoreCase Option = ignoreCase
 
 	// The AllowWide option causes the profile to allow full-width and half-width
 	// characters by mapping them to their decomposition mappings. This is useful
 	// for profiles that are based on the identifier class which would otherwise
 	// disallow wide characters.
-	AllowWide = allowWide
+	AllowWide Option = allowWide
 
 	// The DisallowEmpty option causes the enforcement step to return an error if
 	// the resulting string would be empty.
-	DisallowEmpty = disallowEmpty
+	DisallowEmpty Option = disallowEmpty
 )
 
 var (
