@@ -30,6 +30,42 @@ func TestEnforce(t *testing.T) {
 		{Nickname, "\u265A", "♚", false},
 		{Nickname, "Richard \u2163", "Richard IV", false},
 		{Nickname, "\u212B", "Å", false},
+		// Opaque string profile
+		{OpaqueString, "  Swan  of   Avon   ", "  Swan  of   Avon   ", false},
+		{OpaqueString, "", "", true},
+		{OpaqueString, " ", " ", false},
+		{OpaqueString, "  ", "  ", false},
+		{OpaqueString, "a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", false},
+		{OpaqueString, "Foo", "Foo", false},
+		{OpaqueString, "foo", "foo", false},
+		{OpaqueString, "Foo Bar", "Foo Bar", false},
+		{OpaqueString, "foo bar", "foo bar", false},
+		{OpaqueString, "\u03C3", "\u03C3", false},
+		{OpaqueString, "Richard \u2163", "Richard \u2163", false},
+		{OpaqueString, "\u212B", "Å", false},
+		{OpaqueString, "Jack of \u2666s", "Jack of \u2666s", false},
+		{OpaqueString, "my cat is a \u0009by", "", true},
+		{OpaqueString, "·", "", true}, // Middle dot
+		{OpaqueString, "͵", "", true}, // Keraia
+		{OpaqueString, "׳", "", true},
+		{OpaqueString, "׳ה", "", true},
+		{OpaqueString, "a׳b", "", true},
+		// TOOD: This should be allowed right? Lack of Bidi rule?
+		// {OpaqueString, "ש׳", "", false},
+
+		// Katakana Middle Dot
+		{OpaqueString, "abc・def", "", true},
+		// TODO: These should not be disallowed, methinks?
+		// {OpaqueString, "aヅc・def", "", false},
+		// {OpaqueString, "abc・dぶf", "", false},
+		// {OpaqueString, "⺐bc・def", "", false},
+
+		// Arabic Indic Digit
+		// TODO: I think these two should be allowed?
+		// {OpaqueString, "١٢٣٤٥", "١٢٣٤٥", false},
+		// {OpaqueString, "۱۲۳۴۵", "۱۲۳۴۵", false},
+		{OpaqueString, "١٢٣٤٥۶", "", true},
+		{OpaqueString, "۱۲۳۴۵٦", "", true},
 
 		// UsernameCaseMapped profile
 		{UsernameCaseMapped, "juliet@example.com", "juliet@example.com", false},
