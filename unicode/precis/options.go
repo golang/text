@@ -5,6 +5,7 @@
 package precis
 
 import (
+	"golang.org/x/text/cases"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -19,8 +20,7 @@ type options struct {
 	allowwidechars bool
 
 	// Enforcement options
-	// TODO: Make this a caser again when we have real case folding
-	cases         bool
+	cases         transform.Transformer
 	disallow      runes.Set
 	norm          norm.Form
 	additional    []func() transform.Transformer
@@ -39,10 +39,6 @@ func getOpts(o ...Option) (res options) {
 }
 
 var (
-	// The FoldCase option defines a Profile's case mapping rule to use Unicode
-	// case folding.
-	FoldCase Option = foldCase
-
 	// The IgnoreCase option causes the profile to perform a case insensitive
 	// comparison during the PRECIS comparison step.
 	IgnoreCase Option = ignoreCase
@@ -59,10 +55,6 @@ var (
 )
 
 var (
-	foldCase = func(o *options) {
-		// TODO: Use cases.Fold.
-		o.cases = true
-	}
 	ignoreCase = func(o *options) {
 		o.ignorecase = true
 	}
@@ -93,6 +85,14 @@ func Norm(f norm.Form) Option {
 func Width(w width.Transformer) Option {
 	return func(o *options) {
 		o.width = &w
+	}
+}
+
+// The FoldCase option defines a Profile's case mapping rule. Options can be
+// provided to determine the type of case folding used.
+func FoldCase(opts ...cases.Option) Option {
+	return func(o *options) {
+		o.cases = cases.Fold(opts...)
 	}
 }
 

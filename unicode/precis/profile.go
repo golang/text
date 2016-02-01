@@ -8,8 +8,6 @@ import (
 	"errors"
 	"unicode/utf8"
 
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/width"
@@ -70,10 +68,8 @@ func (p Profile) NewTransformer() *Transformer {
 		ts = append(ts, f())
 	}
 
-	if p.options.cases {
-		ts = append(ts, transform.Chain(
-			cases.Upper(language.Und), cases.Lower(language.Und),
-		))
+	if p.options.cases != nil {
+		ts = append(ts, p.options.cases)
 	}
 
 	ts = append(ts, p.options.norm)

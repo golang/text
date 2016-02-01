@@ -33,7 +33,7 @@ var (
 	)
 	usernamecasemap Profile = NewIdentifier(
 		AllowWide,
-		FoldCase,
+		FoldCase(),
 		Norm(norm.NFC),
 		// TODO: BIDI rule
 	)
