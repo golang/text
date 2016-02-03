@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:generate go run gen.go gen_common.go
+
 // Package format contains types for defining language-specific formatting of
 // values.
 //

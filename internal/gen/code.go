@@ -309,6 +309,10 @@ func (w *CodeWriter) writeSlice(x interface{}, isArray bool) {
 				w.printf(line)
 			}
 		}
+	case reflect.Array:
+		for i := 0; i < v.Len(); i++ {
+			w.printf("%d: %#v,\n", i, v.Index(i).Interface())
+		}
 	default:
 		panic("gen: slice elem type not supported")
 	}
