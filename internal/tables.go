@@ -4,8 +4,7 @@ package internal
 
 // Parent maps a compact index of a tag to the compact index of the parent of
 // this tag.
-// Size: 1444 bytes, 710 elements
-var Parent = []uint16{
+var Parent = []uint16{ // 710 elements
 	// Entry 0 - 3F
 	0x0000, 0x0051, 0x00e1, 0x0000, 0x0003, 0x0003, 0x0000, 0x0006,
 	0x0000, 0x0008, 0x0000, 0x000a, 0x0000, 0x000c, 0x000c, 0x000c,
@@ -107,6 +106,6 @@ var Parent = []uint16{
 	0x0000, 0x02b8, 0x0000, 0x02ba, 0x02ba, 0x02ba, 0x02ba, 0x02ba,
 	// Entry 2C0 - 2FF
 	0x0000, 0x02c0, 0x02c1, 0x02c0, 0x0000, 0x02c4,
-}
+} // Size: 1444 bytes
 
 // Total table size 1444 bytes (1KiB); checksum: ADEF4110

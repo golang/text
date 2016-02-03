@@ -12214,8 +12214,7 @@ var langHeaders = [218]header{
 	},
 }
 
-// Size: 2000 bytes
-var afLangStr string = "" +
+var afLangStr string = "" + // Size: 2000 bytes
 	"AbkasiesAfrikaansAkanAmhariesArabiesAssameesAymaraAzerbeidjansBaskirBelo" +
 	"-RussiesBulgaarsBambaraBengaalsTibettaansBretonsBosniesKatalaansTsjetsje" +
 	"nKorsikaansTsjeggiesChuvashWalliesDeensDuitsDivehiDzongkhaEweGrieksEngel" +
@@ -12245,8 +12244,7 @@ var afLangStr string = "" +
 	"rokkaanse TamazightGeen linguistiese inhoudModerne Standaard ArabiesSwit" +
 	"serse hoog-DuitsNedersaksiesVlaamsMoldawies"
 
-// Size: 1238 bytes, 607 elements
-var afLangIdx = []uint16{
+var afLangIdx = []uint16{ // 607 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0008, 0x0008, 0x0011, 0x0015, 0x001d, 0x001d,
 	0x0024, 0x002c, 0x002c, 0x0032, 0x003e, 0x0044, 0x0050, 0x0058,
@@ -12333,10 +12331,9 @@ var afLangIdx = []uint16{
 	0x0770, 0x0770, 0x0788, 0x0788, 0x07a1, 0x07a1, 0x07a1, 0x07b5,
 	0x07b5, 0x07b5, 0x07b5, 0x07b5, 0x07b5, 0x07b5, 0x07b5, 0x07b5,
 	0x07b5, 0x07b5, 0x07c1, 0x07c7, 0x07c7, 0x07c7, 0x07d0,
-}
+} // Size: 1238 bytes
 
-// Size: 5352 bytes
-var amLangStr string = "" +
+var amLangStr string = "" + // Size: 5352 bytes
 	"አፋርኛአብሐዚኛአቬስታንአፍሪካንኛአካንኛአማርኛአራጎንስዓረብኛአሳሜዛዊአቫሪክአያማርኛአዘርባጃንኛባስኪርኛቤላራሻኛቡልጋሪ" +
 	"ኛቢስላምኛባምባርኛቤንጋሊኛቲቤታንኛብሬቶንኛቦስኒያንኛካታላንኛችችንቻሞሮኮርሲካኛክሪቼክኛቸርች ስላቪክቹቫሽወልሽዴኒሽ" +
 	"ጀርመንዲቬህድዞንግኻኛኢዊግሪክኛእንግሊዝኛኤስፐራንቶስፓንሽኛኢስቶኒያንኛባስክኛፐርሺያኛፊኒሽፊጂኛፋሮኛፈረንሳይኛየምዕ" +
@@ -12365,8 +12362,7 @@ var amLangStr string = "" +
 	"ረንሳይኛየስዊዝ ፈረንሳይኛየታችኛው ሳክሰንፍሌሚሽየብራዚል ፖርቹጋልኛየአውሮፓ ፖርቹጋልኛሞልዳቫዊናቀለል ያለ ቻይን" +
 	"ኛባህላዊ ቻይንኛ"
 
-// Size: 1244 bytes, 610 elements
-var amLangIdx = []uint16{
+var amLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x001b, 0x002a, 0x003c, 0x0048, 0x0054, 0x0063,
 	0x006f, 0x007e, 0x008a, 0x0099, 0x00ae, 0x00bd, 0x00cc, 0x00db,
@@ -12454,10 +12450,9 @@ var amLangIdx = []uint16{
 	0x132f, 0x134e, 0x1370, 0x1392, 0x13b8, 0x13d7, 0x13f6, 0x13f6,
 	0x1415, 0x1434, 0x1450, 0x145c, 0x147e, 0x14a0, 0x14b2, 0x14b2,
 	0x14cf, 0x14e8,
-}
+} // Size: 1244 bytes
 
-// Size: 9700 bytes
-var arLangStr string = "" +
+var arLangStr string = "" + // Size: 9700 bytes
 	"الأفاريةالأبخازيةالأفستيةالأفريقانيةالأكانيةالأمهريةالأراغونيةالعربيةالأ" +
 	"ساميةالأواريةالأيماراالأذربيجانيةالباشكيريةالبيلاروسيةالبلغاريةالبيسلام" +
 	"يةالبامباراالبنغاليةالتبتيةالبريتونيةالبوسنيةالكتالانيةالشيشانيةالتشامو" +
@@ -12529,8 +12524,7 @@ var arLangStr string = "" +
 	"زيليةالبرتغالية الأوروبيةالمولدوفيةصربية-كرواتيةالصينية المبسطةالصينية " +
 	"التقليدية"
 
-// Size: 1244 bytes, 610 elements
-var arLangIdx = []uint16{
+var arLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0022, 0x0032, 0x0048, 0x0058, 0x0068, 0x007c,
 	0x008a, 0x009a, 0x00aa, 0x00ba, 0x00d2, 0x00e6, 0x00fc, 0x010e,
@@ -12618,10 +12612,9 @@ var arLangIdx = []uint16{
 	0x23c7, 0x23ea, 0x2413, 0x243a, 0x246c, 0x2491, 0x24b6, 0x24b6,
 	0x24d5, 0x24f8, 0x2517, 0x2529, 0x2552, 0x2579, 0x258d, 0x25a6,
 	0x25c3, 0x25e4,
-}
+} // Size: 1244 bytes
 
-// Size: 3706 bytes
-var azLangStr string = "" +
+var azLangStr string = "" + // Size: 3706 bytes
 	"afarcaabxazavestancaafrikaansakancaamhararagoncaərəbassamavarikcəaymarca" +
 	"azərbaycan dilibaşqırdbelarusbolqarbislamabambarabenqaltibetBretoncabosn" +
 	"iakkatalançeçençamorokorsikakri diliçexkilsə slavçuvaşuelsdanimarkaalman" +
@@ -12672,8 +12665,7 @@ var azLangStr string = "" +
 	"sızcasıİsveçrə fransızcasıaşağı saksonflamandBraziliya portuqalcasıPortu" +
 	"qaliya portuqalcasımoldavserb-xorvatcasadələşmiş çinənənəvi çin"
 
-// Size: 1244 bytes, 610 elements
-var azLangIdx = []uint16{
+var azLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0006, 0x000b, 0x0014, 0x001d, 0x0023, 0x0028, 0x0030,
 	0x0036, 0x003b, 0x0044, 0x004b, 0x005b, 0x0064, 0x006b, 0x0071,
@@ -12761,10 +12753,9 @@ var azLangIdx = []uint16{
 	0x0d54, 0x0d67, 0x0d7d, 0x0d91, 0x0dad, 0x0dc1, 0x0dd3, 0x0dd3,
 	0x0de7, 0x0dff, 0x0e0e, 0x0e15, 0x0e2c, 0x0e45, 0x0e4b, 0x0e58,
 	0x0e6b, 0x0e7a,
-}
+} // Size: 1244 bytes
 
-// Size: 7628 bytes
-var bgLangStr string = "" +
+var bgLangStr string = "" + // Size: 7628 bytes
 	"афарабхазкиавестскиафрикаансаканамхарскиарагонскиарабскиасамскиаварскиай" +
 	"мараазербайджанскибашкирскибеларускибългарскибисламабамбарабенгалскитиб" +
 	"етскибретонскибосненскикаталонскичеченскичаморокорсиканскикриичешкицърк" +
@@ -12821,8 +12812,7 @@ var bgLangStr string = "" +
 	"тандартен арабскианглийски (САЩ)долносаксонскифламандскимолдовскисърбох" +
 	"ърватски"
 
-// Size: 1240 bytes, 608 elements
-var bgLangIdx = []uint16{
+var bgLangIdx = []uint16{ // 608 elements
 	// Entry 0 - 3F
 	0x0000, 0x0008, 0x0016, 0x0026, 0x0038, 0x0040, 0x0050, 0x0062,
 	0x0070, 0x007e, 0x008c, 0x0098, 0x00b4, 0x00c6, 0x00d8, 0x00ea,
@@ -12909,10 +12899,9 @@ var bgLangIdx = []uint16{
 	0x1cd7, 0x1cdf, 0x1d13, 0x1d1b, 0x1d53, 0x1d53, 0x1d53, 0x1d53,
 	0x1d53, 0x1d53, 0x1d53, 0x1d6e, 0x1d6e, 0x1d6e, 0x1d6e, 0x1d6e,
 	0x1d6e, 0x1d6e, 0x1d8a, 0x1d9e, 0x1d9e, 0x1d9e, 0x1db0, 0x1dcc,
-}
+} // Size: 1240 bytes
 
-// Size: 11932 bytes
-var bnLangStr string = "" +
+var bnLangStr string = "" + // Size: 11932 bytes
 	"আফারআবখাজিয়ানআবেস্তীয়আফ্রিকান্সআকানআমহারিকআর্গোনিজআরবীআসামিআভেরিকআয়মা" +
 	"রাআজারবাইজানীবাশকিরবেলারুশিয়বুলগেরিয়বিসলামাবামবারাবাংলাতিব্বতিব্রেটন" +
 	"বসনীয়ানকাতালানচেচেনচামোরোকর্সিকানক্রিচেকচার্চ স্লাভিকচুবাসওয়েলশডেনিশ" +
@@ -12972,8 +12961,7 @@ var bnLangStr string = "" +
 	"স্প্যানিশকানাডীয় ফরাসিসুইস ফরাসিলো স্যাক্সনফ্লেমিশব্রাজিলের পর্তুগীজই" +
 	"উরোপের পর্তুগীজমলদাভিয়সার্বো-ক্রোয়েশিয়সরলীকৃত চীনাঐতিহ্যবাহি চীনা"
 
-// Size: 1244 bytes, 610 elements
-var bnLangIdx = []uint16{
+var bnLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x002a, 0x0045, 0x0063, 0x006f, 0x0084, 0x009c,
 	0x00a8, 0x00b7, 0x00c9, 0x00de, 0x00ff, 0x0111, 0x012f, 0x014a,
@@ -13061,10 +13049,9 @@ var bnLangIdx = []uint16{
 	0x2bf0, 0x2c1b, 0x2c43, 0x2c6e, 0x2cb8, 0x2cec, 0x2d29, 0x2d29,
 	0x2d51, 0x2d6d, 0x2d8c, 0x2da1, 0x2dd5, 0x2e03, 0x2e1b, 0x2e4f,
 	0x2e71, 0x2e9c,
-}
+} // Size: 1244 bytes
 
-// Size: 4535 bytes
-var caLangStr string = "" +
+var caLangStr string = "" + // Size: 4535 bytes
 	"àfarabkhazavèsticafrikaansàkanamhàricaragonèsàrabassamèsàvaraimaraazerba" +
 	"idjanèsbaixkirbielorúsbúlgarbislamabambarabengalítibetàbretóbosniàcatalà" +
 	"txetxèchamorrocorscreetxeceslau eclesiàstictxuvaixgal·lèsdanèsalemanydiv" +
@@ -13126,8 +13113,7 @@ var caLangStr string = "" +
 	"cfrancès canadencfrancès suísbaix saxóflamencportuguès del Brasilportugu" +
 	"ès de Portugalmoldauserbocroatxinès simplificatxinès tradicional"
 
-// Size: 1244 bytes, 610 elements
-var caLangIdx = []uint16{
+var caLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x000b, 0x0013, 0x001c, 0x0021, 0x0029, 0x0032,
 	0x0037, 0x003f, 0x0044, 0x004a, 0x0058, 0x005f, 0x0068, 0x006f,
@@ -13215,10 +13201,9 @@ var caLangIdx = []uint16{
 	0x10bd, 0x10cd, 0x10de, 0x10ee, 0x1106, 0x1116, 0x1128, 0x1128,
 	0x1139, 0x1147, 0x1151, 0x1158, 0x116d, 0x1183, 0x1189, 0x1193,
 	0x11a5, 0x11b7,
-}
+} // Size: 1244 bytes
 
-// Size: 7315 bytes
-var csLangStr string = "" +
+var csLangStr string = "" + // Size: 7315 bytes
 	"afarštinaabcházštinaavestánštinaafrikánštinaakanštinaamharštinaaragonšti" +
 	"naarabštinaásámštinaavarštinaajmarštinaázerbájdžánštinabaškirštinaběloru" +
 	"štinabulharštinabislamštinabambarštinabengálštinatibetštinabretonštinab" +
@@ -13312,8 +13297,7 @@ var csLangStr string = "" +
 	"mštinaportugalština (Evropa)moldavštinasrbochorvatštinačínština (zjednod" +
 	"ušená)"
 
-// Size: 1242 bytes, 609 elements
-var csLangIdx = []uint16{
+var csLangIdx = []uint16{ // 609 elements
 	// Entry 0 - 3F
 	0x0000, 0x000a, 0x0017, 0x0025, 0x0033, 0x003d, 0x0048, 0x0054,
 	0x005e, 0x006a, 0x0074, 0x007f, 0x0094, 0x00a1, 0x00ae, 0x00ba,
@@ -13401,10 +13385,9 @@ var csLangIdx = []uint16{
 	0x1c03, 0x1c03, 0x1c03, 0x1c14, 0x1c14, 0x1c2b, 0x1c2b, 0x1c2b,
 	0x1c2b, 0x1c2b, 0x1c38, 0x1c43, 0x1c43, 0x1c5a, 0x1c66, 0x1c77,
 	0x1c93,
-}
+} // Size: 1242 bytes
 
-// Size: 4019 bytes
-var daLangStr string = "" +
+var daLangStr string = "" + // Size: 4019 bytes
 	"afarabkhasiskavestanafrikaansakanamhariskaragonesiskarabiskassamesiskava" +
 	"riskaymaraaserbajdsjanskbashkirhviderussiskbulgarskbislamabambarabengali" +
 	"tibetanskbretonskbosniskcatalansktjetjenskchamorrokorsikanskcreetjekkisk" +
@@ -13462,8 +13445,7 @@ var daLangStr string = "" +
 	"mskbrasiliansk portugisiskeuropæisk portugisiskmoldoviskserbokroatiskfor" +
 	"enklet kinesisktraditionelt kinesisk"
 
-// Size: 1244 bytes, 610 elements
-var daLangIdx = []uint16{
+var daLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000d, 0x0014, 0x001d, 0x0021, 0x0029, 0x0034,
 	0x003b, 0x0045, 0x004c, 0x0052, 0x0060, 0x0067, 0x0073, 0x007b,
@@ -13551,10 +13533,9 @@ var daLangIdx = []uint16{
 	0x0ebb, 0x0ecb, 0x0eda, 0x0eec, 0x0f02, 0x0f13, 0x0f23, 0x0f23,
 	0x0f32, 0x0f43, 0x0f43, 0x0f49, 0x0f60, 0x0f76, 0x0f7f, 0x0f8c,
 	0x0f9e, 0x0fb3,
-}
+} // Size: 1244 bytes
 
-// Size: 6195 bytes
-var deLangStr string = "" +
+var deLangStr string = "" + // Size: 6195 bytes
 	"AfarAbchasischAvestischAfrikaansAkanAmharischAragonesischArabischAssames" +
 	"ischAwarischAymaraAserbaidschanischBaschkirischWeißrussischBulgarischBis" +
 	"lamaBambaraBengalischTibetischBretonischBosnischKatalanischTschetschenis" +
@@ -13642,8 +13623,7 @@ var deLangStr string = "" +
 	" PortugiesischMoldauischSerbo-KroatischChinesisch (vereinfacht)Chinesisc" +
 	"h (traditionell)"
 
-// Size: 1244 bytes, 610 elements
-var deLangIdx = []uint16{
+var deLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000e, 0x0017, 0x0020, 0x0024, 0x002d, 0x0039,
 	0x0041, 0x004c, 0x0054, 0x005a, 0x006b, 0x0077, 0x0084, 0x008e,
@@ -13731,10 +13711,9 @@ var deLangIdx = []uint16{
 	0x16e3, 0x16f7, 0x170a, 0x1721, 0x173e, 0x1754, 0x176a, 0x176a,
 	0x1782, 0x1798, 0x17a8, 0x17b1, 0x17ce, 0x17e9, 0x17f3, 0x1802,
 	0x181a, 0x1833,
-}
+} // Size: 1244 bytes
 
-// Size: 8953 bytes
-var elLangStr string = "" +
+var elLangStr string = "" + // Size: 8953 bytes
 	"ΑφάρΑμπχαζικάΑβεστάνΑφρικάανςΑκάνΑμαρικάΑραγκονικάΑραβικάΑσαμεζικάΆβαρικ" +
 	"ΑϊμάραΑζερμπαϊτζανικάΜπασκίρΛευκορωσικάΒουλγαρικάΜπισλάμαΜπαμπάραΜπενγκ" +
 	"άλιΘιβετιανάΒρετονικάΒοσνιακάΚαταλανικάΤσετσενικάΚαμόρροΚορσικανικάΚριΤ" +
@@ -13800,8 +13779,7 @@ var elLangStr string = "" +
 	"κά ΟλλανδίαςΦλαμανδικάΠορτογαλικά ΒραζιλίαςΠορτογαλικά ΕυρώπηςΜολδαβικά" +
 	"ΣερβοκροατικάΑπλοποιημένα ΚινεζικάΠαραδοσιακά Κινεζικά"
 
-// Size: 1244 bytes, 610 elements
-var elLangIdx = []uint16{
+var elLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0008, 0x001a, 0x0028, 0x003a, 0x0042, 0x0050, 0x0064,
 	0x0072, 0x0084, 0x0090, 0x009c, 0x00ba, 0x00c8, 0x00de, 0x00f2,
@@ -13889,10 +13867,9 @@ var elLangIdx = []uint16{
 	0x20d5, 0x20f0, 0x2122, 0x2141, 0x2175, 0x2194, 0x21b3, 0x21b3,
 	0x21ce, 0x21ed, 0x221b, 0x222f, 0x2258, 0x227d, 0x228f, 0x22a9,
 	0x22d2, 0x22f9,
-}
+} // Size: 1244 bytes
 
-// Size: 4897 bytes
-var enLangStr string = "" +
+var enLangStr string = "" + // Size: 4897 bytes
 	"AfarAbkhazianAvestanAfrikaansAkanAmharicAragoneseArabicAssameseAvaricAym" +
 	"araAzerbaijaniBashkirBelarusianBulgarianBislamaBambaraBengaliTibetanBret" +
 	"onBosnianCatalanChechenChamorroCorsicanCreeCzechChurch SlavicChuvashWels" +
@@ -13962,8 +13939,7 @@ var enLangStr string = "" +
 	"n FrenchSwiss FrenchLow SaxonFlemishBrazilian PortugueseEuropean Portugu" +
 	"eseMoldavianSerbo-CroatianSimplified ChineseTraditional Chinese"
 
-// Size: 1244 bytes, 610 elements
-var enLangIdx = []uint16{
+var enLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000d, 0x0014, 0x001d, 0x0021, 0x0028, 0x0031,
 	0x0037, 0x003f, 0x0045, 0x004b, 0x0056, 0x005d, 0x0067, 0x0070,
@@ -14051,13 +14027,11 @@ var enLangIdx = []uint16{
 	0x122b, 0x123b, 0x124a, 0x125a, 0x1270, 0x1280, 0x128f, 0x1293,
 	0x12a2, 0x12ae, 0x12b7, 0x12be, 0x12d2, 0x12e5, 0x12ee, 0x12fc,
 	0x130e, 0x1321,
-}
+} // Size: 1244 bytes
 
-// Size: 15 bytes
 const enGBLangStr string = "West Low German"
 
-// Size: 1230 bytes, 603 elements
-var enGBLangIdx = []uint16{
+var enGBLangIdx = []uint16{ // 603 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -14144,10 +14118,9 @@ var enGBLangIdx = []uint16{
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x000f,
-}
+} // Size: 1230 bytes
 
-// Size: 4253 bytes
-var esLangStr string = "" +
+var esLangStr string = "" + // Size: 4253 bytes
 	"afarabjasioavésticoafrikáansakanamáricoaragonésárabeasamésavaraimaraazer" +
 	"baiyanobaskirbielorrusobúlgarobislamabambarabengalítibetanobretónbosnioc" +
 	"atalánchechenochamorrocorsocreechecoeslavo eclesiásticochuvasiogalésdané" +
@@ -14207,8 +14180,7 @@ var esLangStr string = "" +
 	"Brasilportugués de Portugalmoldavoserbocroatachino simplificadochino tra" +
 	"dicional"
 
-// Size: 1244 bytes, 610 elements
-var esLangIdx = []uint16{
+var esLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000b, 0x0014, 0x001e, 0x0022, 0x002a, 0x0033,
 	0x0039, 0x0040, 0x0044, 0x004a, 0x0055, 0x005b, 0x0065, 0x006d,
@@ -14296,13 +14268,11 @@ var esLangIdx = []uint16{
 	0x0f9d, 0x0faf, 0x0fc1, 0x0fd7, 0x0fef, 0x1002, 0x1015, 0x1015,
 	0x1028, 0x1036, 0x1036, 0x103e, 0x1052, 0x1068, 0x106f, 0x107a,
 	0x108c, 0x109d,
-}
+} // Size: 1244 bytes
 
-// Size: 35 bytes
 var es419LangStr string = "vascoswahililuoswahili del Congovai"
 
-// Size: 1140 bytes, 558 elements
-var es419LangIdx = []uint16{
+var es419LangIdx = []uint16{ // 558 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -14382,10 +14352,9 @@ var es419LangIdx = []uint16{
 	0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020,
 	0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020,
 	0x0020, 0x0020, 0x0020, 0x0020, 0x0020, 0x0023,
-}
+} // Size: 1140 bytes
 
-// Size: 4576 bytes
-var etLangStr string = "" +
+var etLangStr string = "" + // Size: 4576 bytes
 	"afariabhaasiavestaafrikaaniakaniamhariaragoniaraabiaassamiavaariaimaraas" +
 	"erbaidžaanibaškiirivalgevenebulgaariabislamabambarabengalitiibetibretoon" +
 	"ibosniakatalaanitšetšeenitšamorrokorsikakriitšehhikirikuslaavitšuvašikõm" +
@@ -14449,8 +14418,7 @@ var etLangStr string = "" +
 	"ndi alamsaksaflaamiBrasiilia portugaliEuroopa portugalimoldovaserbia-hor" +
 	"vaadihiina (lihtsustatud)hiina (traditsiooniline)"
 
-// Size: 1244 bytes, 610 elements
-var etLangIdx = []uint16{
+var etLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x000c, 0x0012, 0x001b, 0x0020, 0x0026, 0x002d,
 	0x0034, 0x003a, 0x0040, 0x0046, 0x0054, 0x005d, 0x0066, 0x006f,
@@ -14538,10 +14506,9 @@ var etLangIdx = []uint16{
 	0x10da, 0x10e8, 0x10f5, 0x1105, 0x111e, 0x112f, 0x1140, 0x1140,
 	0x1150, 0x1162, 0x1174, 0x117a, 0x118d, 0x119e, 0x11a5, 0x11b4,
 	0x11c8, 0x11e0,
-}
+} // Size: 1244 bytes
 
-// Size: 7705 bytes
-var faLangStr string = "" +
+var faLangStr string = "" + // Size: 7705 bytes
 	"آفاریآبخازیاوستاییآفریکانسآکانامهریآراگونیعربیآسامیآواریآیماراییترکی آذر" +
 	"بایجانیباشغیریبلاروسیبلغاریبیسلامابامباراییبنگالیتبتیبرتونبوسنیاییکاتال" +
 	"انچچنیچاموروییکورسیکریاییچکیاسلاوی کلیساییچوواشیولزیدانمارکیآلمانیمالدی" +
@@ -14601,8 +14568,7 @@ var faLangStr string = "" +
 	"رانسوی سوئیسساکسونی سفلیفلمنگیپرتغالی برزیلپرتغالی اروپامولداویاییصرب و" +
 	" کرواتیچینی ساده\u200cشدهچینی سنتی"
 
-// Size: 1244 bytes, 610 elements
-var faLangIdx = []uint16{
+var faLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000a, 0x0016, 0x0024, 0x0034, 0x003c, 0x0046, 0x0054,
 	0x005c, 0x0066, 0x0070, 0x0080, 0x009d, 0x00ab, 0x00b9, 0x00c5,
@@ -14690,10 +14656,9 @@ var faLangIdx = []uint16{
 	0x1c7a, 0x1c95, 0x1cb4, 0x1ccf, 0x1cfb, 0x1d18, 0x1d35, 0x1d3b,
 	0x1d56, 0x1d6f, 0x1d86, 0x1d92, 0x1dab, 0x1dc4, 0x1dd8, 0x1dee,
 	0x1e08, 0x1e19,
-}
+} // Size: 1244 bytes
 
-// Size: 4703 bytes
-var fiLangStr string = "" +
+var fiLangStr string = "" + // Size: 4703 bytes
 	"afarabhaasiavestaafrikaansakanamharaaragoniaarabiaassamiavaariaimaraazer" +
 	"ibaškiirivalkovenäjäbulgariabislamabambarabengalitiibetbretonibosniakata" +
 	"laanitšetšeenitšamorrokorsikacreetšekkikirkkoslaavitšuvassikymritanskasa" +
@@ -14760,8 +14725,7 @@ var fiLangStr string = "" +
 	"galieuroopanportugalimoldovaserbokroaattiyksinkertaistettu kiinaperintei" +
 	"nen kiina"
 
-// Size: 1244 bytes, 610 elements
-var fiLangIdx = []uint16{
+var fiLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000b, 0x0011, 0x001a, 0x001e, 0x0024, 0x002c,
 	0x0032, 0x0038, 0x003e, 0x0044, 0x0049, 0x0052, 0x005f, 0x0067,
@@ -14849,10 +14813,9 @@ var fiLangIdx = []uint16{
 	0x116d, 0x117c, 0x118e, 0x119e, 0x11ad, 0x11bc, 0x11cb, 0x11cb,
 	0x11d8, 0x11e6, 0x11fa, 0x1200, 0x1212, 0x1223, 0x122a, 0x1237,
 	0x124e, 0x125f,
-}
+} // Size: 1244 bytes
 
-// Size: 2154 bytes
-var filLangStr string = "" +
+var filLangStr string = "" + // Size: 2154 bytes
 	"AbkhazianAfrikaansAkanAmharicArabeAssameseAymaraAzerbaijaniBashkirBelaru" +
 	"sianBulgarianBambaraBengaliTibetanBretonBosnianCatalanChechenCorsicanCze" +
 	"chChuvashWelshDanishGermanDivehiDzongkhaEweGreekInglesEsperantoEspanyolE" +
@@ -14884,8 +14847,7 @@ var filLangStr string = "" +
 	"l ng MehikoCanadian FrenchSwiss FrenchLow SaxonFlemishPortuges ng Brasil" +
 	"European PortugueseMoldavianSerbo-CroatianSimplified Chinese"
 
-// Size: 1242 bytes, 609 elements
-var filLangIdx = []uint16{
+var filLangIdx = []uint16{ // 609 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0009, 0x0009, 0x0012, 0x0016, 0x001d, 0x001d,
 	0x0022, 0x002a, 0x002a, 0x0030, 0x003b, 0x0042, 0x004c, 0x0055,
@@ -14973,10 +14935,9 @@ var filLangIdx = []uint16{
 	0x0789, 0x0799, 0x07aa, 0x07b5, 0x07cf, 0x07df, 0x07f1, 0x07f1,
 	0x0800, 0x080c, 0x0815, 0x081c, 0x082e, 0x0841, 0x084a, 0x0858,
 	0x086a,
-}
+} // Size: 1242 bytes
 
-// Size: 4218 bytes
-var frLangStr string = "" +
+var frLangStr string = "" + // Size: 4218 bytes
 	"afarabkhazeavestiqueafrikaansakanamhariquearagonaisarabeassamaisavarayma" +
 	"raazéribachkirbiélorussebulgarebichelamarbambarabengalitibétainbretonbos" +
 	"niaquecatalantchétchènechamorrocorsecreetchèqueslavon d’églisetchouvache" +
@@ -15036,8 +14997,7 @@ var frLangStr string = "" +
 	"lienportugais européenmoldaveserbo-croatechinois simplifiéchinois tradit" +
 	"ionnel"
 
-// Size: 1244 bytes, 610 elements
-var frLangIdx = []uint16{
+var frLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000b, 0x0014, 0x001d, 0x0021, 0x002a, 0x0033,
 	0x0038, 0x0040, 0x0044, 0x004a, 0x0050, 0x0057, 0x0062, 0x0069,
@@ -15125,13 +15085,11 @@ var frLangIdx = []uint16{
 	0x0f69, 0x0f79, 0x0f8c, 0x0f9e, 0x0fb8, 0x0fca, 0x0fdb, 0x0fdb,
 	0x0fed, 0x0ffd, 0x1013, 0x101a, 0x102e, 0x1041, 0x1048, 0x1054,
 	0x1066, 0x107a,
-}
+} // Size: 1244 bytes
 
-// Size: 29 bytes
 var frCALangStr string = "araukanluoMeta’bas allemand"
 
-// Size: 894 bytes, 435 elements
-var frCALangIdx = []uint16{
+var frCALangIdx = []uint16{ // 435 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -15194,10 +15152,9 @@ var frCALangIdx = []uint16{
 	0x0011, 0x0011, 0x0011, 0x0011, 0x0011, 0x0011, 0x0011, 0x0011,
 	0x0011, 0x0011, 0x0011, 0x0011, 0x0011, 0x0011, 0x0011, 0x0011,
 	0x0011, 0x0011, 0x001d,
-}
+} // Size: 894 bytes
 
-// Size: 11388 bytes
-var guLangStr string = "" +
+var guLangStr string = "" + // Size: 11388 bytes
 	"અફારઅબખાજિયનઅવેસ્તનઆફ્રિકન્સઅકાનએમ્હારિકઅર્ગોનીઝઅરબીઆસામીઅવેરિકઆયમારાઅઝર" +
 	"બૈજાનીબશ્કીરબેલારુશિયનબલ્ગેરિયનબિસ્લામાબામ્બારાબંગાળીતિબેટીયનબ્રેટોનબો" +
 	"સ્નિયનકતલાનચેચનકેમોરોકોર્સિકનક્રીચેકચર્ચ સ્લાવિકચૂવાશવેલ્શડેનિશજર્મનદિ" +
@@ -15255,8 +15212,7 @@ var guLangStr string = "" +
 	"પોર્ટુગીઝયુરોપિયન પોર્ટુગીઝમોલડાવિયનસર્બો-ક્રોએશિયનસરળીકૃત ચાઇનીઝપારંપ" +
 	"રિક ચાઇનીઝ"
 
-// Size: 1244 bytes, 610 elements
-var guLangIdx = []uint16{
+var guLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x0024, 0x0039, 0x0054, 0x0060, 0x0078, 0x0090,
 	0x009c, 0x00ab, 0x00bd, 0x00cf, 0x00ea, 0x00fc, 0x011a, 0x0135,
@@ -15344,10 +15300,9 @@ var guLangIdx = []uint16{
 	0x29d3, 0x2a04, 0x2a32, 0x2a60, 0x2a9b, 0x2ac9, 0x2af7, 0x2af7,
 	0x2b22, 0x2b44, 0x2b60, 0x2b75, 0x2baf, 0x2be3, 0x2bfe, 0x2c29,
 	0x2c51, 0x2c7c,
-}
+} // Size: 1244 bytes
 
-// Size: 7130 bytes
-var heLangStr string = "" +
+var heLangStr string = "" + // Size: 7130 bytes
 	"אפאריתאבחזיתאבסטןאפריקאנסאקאןאמהריתאראגוניתערביתאסאמיתאבאריתאיימאריתאזרי" +
 	"תבשקיריתבלארוסיתבולגריתביסלמהבמבארהבנגליתטיבטיתברטוניתבוסניתקטלאניתצ׳צ׳" +
 	"ניתצ׳מורוקורסיקניתקריצ׳כיתסלאבית כנסייתית עתיקהצ׳ובאשולשיתדניתגרמניתדיב" +
@@ -15401,8 +15356,7 @@ var heLangStr string = "" +
 	"לית ברזילאיתפורטוגלית אירופאיתמולדביתסרבו-קרואטיתסינית מפושטתסינית מסור" +
 	"תית"
 
-// Size: 1244 bytes, 610 elements
-var heLangIdx = []uint16{
+var heLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x0018, 0x0022, 0x0032, 0x003a, 0x0046, 0x0056,
 	0x0060, 0x006c, 0x0078, 0x0088, 0x0092, 0x00a0, 0x00b0, 0x00be,
@@ -15490,10 +15444,9 @@ var heLangIdx = []uint16{
 	0x1a38, 0x1a4f, 0x1a68, 0x1a85, 0x1aae, 0x1acb, 0x1ae8, 0x1ae8,
 	0x1aff, 0x1b1c, 0x1b35, 0x1b3f, 0x1b62, 0x1b85, 0x1b93, 0x1baa,
 	0x1bc1, 0x1bda,
-}
+} // Size: 1244 bytes
 
-// Size: 11180 bytes
-var hiLangStr string = "" +
+var hiLangStr string = "" + // Size: 11180 bytes
 	"अफ़ारअब्ख़ाज़ियनअवस्ताईअफ़्रीकीअकनअम्हेरीअर्गोनीअरबीअसमियाअवेरिकआयमाराअज" +
 	"़रबैजानीबशख़िरबेलारूसीबुल्गारियाईबिस्लामाबाम्बाराबंगालीतिब्बतीब्रेटनबो" +
 	"स्नियाईकातालानचेचनकमोरोकोर्सीकनक्रीचेकचर्च साल्विकचूवाशवेल्शडेनिशजर्मन" +
@@ -15550,8 +15503,7 @@ var hiLangStr string = "" +
 	"्तगालीयूरोपीय पुर्तगालीमोलडावियनसेर्बो-क्रोएशन्सरलीकृत चीनीपारंपरिक ची" +
 	"नी"
 
-// Size: 1244 bytes, 610 elements
-var hiLangIdx = []uint16{
+var hiLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x0030, 0x0045, 0x005d, 0x0066, 0x007b, 0x0090,
 	0x009c, 0x00ae, 0x00c0, 0x00d2, 0x00f0, 0x0102, 0x011a, 0x013b,
@@ -15639,10 +15591,9 @@ var hiLangIdx = []uint16{
 	0x290f, 0x293d, 0x296e, 0x299f, 0x29d7, 0x2a02, 0x2a30, 0x2a30,
 	0x2a58, 0x2a7d, 0x2a9f, 0x2ab7, 0x2aee, 0x2b1f, 0x2b3a, 0x2b65,
 	0x2b87, 0x2bac,
-}
+} // Size: 1244 bytes
 
-// Size: 4466 bytes
-var hrLangStr string = "" +
+var hrLangStr string = "" + // Size: 4466 bytes
 	"afarskiabhaskiavestanafrikaansakanskiamharskiaragonskiarapskiasamskiavar" +
 	"skiaymaraazerbajdžanskibaškirskibjeloruskibugarskibislamabambarabengalsk" +
 	"itibetanskibretonskibosanskikatalonskičečenskichamorrokorzičkicreečeškic" +
@@ -15705,8 +15656,7 @@ var hrLangStr string = "" +
 	"skiflamanskibrazilski portugalskieuropski portugalskimoldavskisrpsko-hrv" +
 	"atskikineski (pojednostavljeni)kineski (tradicionalni)"
 
-// Size: 1244 bytes, 610 elements
-var hrLangIdx = []uint16{
+var hrLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0007, 0x000e, 0x0015, 0x001e, 0x0025, 0x002d, 0x0036,
 	0x003d, 0x0044, 0x004b, 0x0051, 0x0060, 0x006a, 0x0074, 0x007c,
@@ -15794,10 +15744,9 @@ var hrLangIdx = []uint16{
 	0x104a, 0x105b, 0x106d, 0x107f, 0x109a, 0x10ae, 0x10c3, 0x10c3,
 	0x10d5, 0x10e9, 0x10f7, 0x1100, 0x1115, 0x1129, 0x1132, 0x1141,
 	0x115b, 0x1172,
-}
+} // Size: 1244 bytes
 
-// Size: 3938 bytes
-var huLangStr string = "" +
+var huLangStr string = "" + // Size: 3938 bytes
 	"afarabházavesztánafrikaansakanamharaaragonézarabasszámiavarajmaraazerbaj" +
 	"dzsánibaskírbeloruszbolgárbislamabambarabengálitibetibretonbosnyákkatalá" +
 	"ncsecsencsamorókorzikaikrícsehegyházi szlávcsuvaswalesidánnémetdivehibut" +
@@ -15851,8 +15800,7 @@ var huLangStr string = "" +
 	"szflamandbrazíliai portugáleurópai portugálmoldvaiszerbhorvátegyszerűsít" +
 	"ett kínaihagyományos kínai"
 
-// Size: 1244 bytes, 610 elements
-var huLangIdx = []uint16{
+var huLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000a, 0x0013, 0x001c, 0x0020, 0x0026, 0x002f,
 	0x0033, 0x003b, 0x003f, 0x0045, 0x0053, 0x005a, 0x0062, 0x0069,
@@ -15940,10 +15888,9 @@ var huLangIdx = []uint16{
 	0x0e72, 0x0e7f, 0x0e89, 0x0e97, 0x0ead, 0x0ebd, 0x0ecf, 0x0ecf,
 	0x0ede, 0x0eed, 0x0ef8, 0x0eff, 0x0f13, 0x0f25, 0x0f2c, 0x0f38,
 	0x0f4f, 0x0f62,
-}
+} // Size: 1244 bytes
 
-// Size: 6740 bytes
-var hyLangStr string = "" +
+var hyLangStr string = "" + // Size: 6740 bytes
 	"աֆարերենաբխազերենաֆրիկաանսաքաներենամհարերենարաբերենասամերենադրբեջաներենբ" +
 	"աշկիրերենբելառուսերենբուլղարերենբամբարաբենգալերենտիբեթերենբրետոներենբոս" +
 	"նիերենկատալաներենչեչեներենկորսիկերենչեխերենչուվաշերենուելսերենդանիերենգ" +
@@ -15993,8 +15940,7 @@ var hyLangStr string = "" +
 	"նադական ֆրանսերենշվեյցարական ֆրանսերենֆլամանդերենբրազիլական պորտուգալեր" +
 	"ենեվրոպական պորտուգալերենմոլդովերենպարզեցված չինարենավանդական չինարեն"
 
-// Size: 1244 bytes, 610 elements
-var hyLangIdx = []uint16{
+var hyLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0022, 0x0022, 0x0034, 0x0044, 0x0056, 0x0056,
 	0x0066, 0x0076, 0x0076, 0x0076, 0x008e, 0x00a2, 0x00ba, 0x00d0,
@@ -16082,10 +16028,9 @@ var hyLangIdx = []uint16{
 	0x1856, 0x1879, 0x189e, 0x18c1, 0x18f2, 0x1917, 0x193e, 0x193e,
 	0x1963, 0x198c, 0x198c, 0x19a2, 0x19d1, 0x19fe, 0x1a12, 0x1a12,
 	0x1a33, 0x1a54,
-}
+} // Size: 1244 bytes
 
-// Size: 3949 bytes
-var idLangStr string = "" +
+var idLangStr string = "" + // Size: 3949 bytes
 	"AfarAbkhazAvestaAfrikaansAkanAmharikAragonArabAssamAvarAymaraAzerbaijanB" +
 	"ashkirBelarusiaBulgariaBislamaBambaraBengaliTibetBretonBosniaKatalanChec" +
 	"henChamorroKorsikaKreeCheskaBahasa Gereja SlavoniaChuvashWelshDanskJerma" +
@@ -16142,8 +16087,7 @@ var idLangStr string = "" +
 	"a LatinSpanyol (Eropa)Spanyol MeksikoPortugis (Eropa)MoldaviaSerbo-Kroas" +
 	"iaChina (Aksara Sederhana)China (Aksara Tradisional)"
 
-// Size: 1244 bytes, 610 elements
-var idLangIdx = []uint16{
+var idLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000a, 0x0010, 0x0019, 0x001d, 0x0024, 0x002a,
 	0x002e, 0x0033, 0x0037, 0x003d, 0x0047, 0x004e, 0x0057, 0x005f,
@@ -16231,10 +16175,9 @@ var idLangIdx = []uint16{
 	0x0ee3, 0x0ee3, 0x0ee3, 0x0ee3, 0x0ef8, 0x0f07, 0x0f16, 0x0f16,
 	0x0f16, 0x0f16, 0x0f16, 0x0f16, 0x0f16, 0x0f26, 0x0f2e, 0x0f3b,
 	0x0f53, 0x0f6d,
-}
+} // Size: 1244 bytes
 
-// Size: 4301 bytes
-var isLangStr string = "" +
+var isLangStr string = "" + // Size: 4301 bytes
 	"abkasískaavestískaafríkanskaakanamharískaaragonskaarabískaassamskaavarís" +
 	"kaaímaraaserskabaskírhvítrússneskabúlgarskabíslamabambarabengalskatíbesk" +
 	"abretónskabosnískakatalónskatsjetsjenskakamorrókorsískakrítékkneskakirkj" +
@@ -16289,8 +16232,7 @@ var isLangStr string = "" +
 	"esk franskalágsaxneskaflæmskabrasílísk portúgalskaevrópsk portúgalskamol" +
 	"dóvskaserbókróatískakínverska (einfölduð)kínverska (hefðbundin)"
 
-// Size: 1244 bytes, 610 elements
-var isLangIdx = []uint16{
+var isLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x000a, 0x0014, 0x001f, 0x0023, 0x002d, 0x0036,
 	0x003f, 0x0047, 0x0050, 0x0057, 0x005e, 0x0065, 0x0074, 0x007e,
@@ -16378,10 +16320,9 @@ var isLangIdx = []uint16{
 	0x0fb6, 0x0fc5, 0x0fd0, 0x0fe0, 0x0ffb, 0x100c, 0x101f, 0x101f,
 	0x1030, 0x1041, 0x104d, 0x1055, 0x106d, 0x1082, 0x108c, 0x109d,
 	0x10b5, 0x10cd,
-}
+} // Size: 1244 bytes
 
-// Size: 4988 bytes
-var itLangStr string = "" +
+var itLangStr string = "" + // Size: 4988 bytes
 	"afarabcasoavestanafrikaansakanamaricoaragonesearaboassameseavaroaymaraaz" +
 	"erbaigianobaschirobielorussobulgarobislamabambarabengalesetibetanobreton" +
 	"ebosniacocatalanocecenochamorrocorsocreececoslavo della Chiesaciuvasciog" +
@@ -16453,8 +16394,7 @@ var itLangStr string = "" +
 	"noportoghese europeomoldavoserbo-croatocinese semplificatocinese tradizi" +
 	"onale"
 
-// Size: 1244 bytes, 610 elements
-var itLangIdx = []uint16{
+var itLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000a, 0x0011, 0x001a, 0x001e, 0x0025, 0x002e,
 	0x0033, 0x003b, 0x0040, 0x0046, 0x0052, 0x005a, 0x0064, 0x006b,
@@ -16542,10 +16482,9 @@ var itLangIdx = []uint16{
 	0x126e, 0x127e, 0x1290, 0x12a1, 0x12b9, 0x12c9, 0x12db, 0x12db,
 	0x12ec, 0x12fd, 0x1313, 0x131c, 0x1331, 0x1343, 0x134a, 0x1356,
 	0x1369, 0x137c,
-}
+} // Size: 1244 bytes
 
-// Size: 10000 bytes
-var jaLangStr string = "" +
+var jaLangStr string = "" + // Size: 10000 bytes
 	"アファル語アブハズ語アヴェスタ語アフリカーンス語アカン語アムハラ語アラゴン語アラビア語アッサム語アヴァル語アイマラ語アゼルバイジャン語バシキール" +
 	"語ベラルーシ語ブルガリア語ビスラマ語バンバラ語ベンガル語チベット語ブルトン語ボスニア語カタロニア語チェチェン語チャモロ語コルシカ語クリー語チ" +
 	"ェコ語教会スラブ語チュヴァシ語ウェールズ語デンマーク語ドイツ語ディベヒ語ゾンカ語エウェ語ギリシャ語英語エスペラント語スペイン語エストニア語バ" +
@@ -16595,8 +16534,7 @@ var jaLangStr string = "" +
 	"公用語)ズニ語言語的内容なしザザ語現代標準アラビア語標準ドイツ語 (スイス)オーストラリア英語カナダ英語イギリス英語アメリカ英語スペイン語 " +
 	"(イベリア半島)フレミッシュ語ポルトガル語 (イベリア半島)モルダビア語セルボ・クロアチア語簡体中国語繁体中国語"
 
-// Size: 1244 bytes, 610 elements
-var jaLangIdx = []uint16{
+var jaLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x001e, 0x0030, 0x0048, 0x0054, 0x0063, 0x0072,
 	0x0081, 0x0090, 0x009f, 0x00ae, 0x00c9, 0x00db, 0x00ed, 0x00ff,
@@ -16684,10 +16622,9 @@ var jaLangIdx = []uint16{
 	0x262f, 0x263e, 0x2650, 0x2662, 0x2662, 0x2686, 0x2686, 0x2686,
 	0x2686, 0x2686, 0x2686, 0x269b, 0x269b, 0x26c2, 0x26d4, 0x26f2,
 	0x2701, 0x2710,
-}
+} // Size: 1244 bytes
 
-// Size: 10123 bytes
-var kaLangStr string = "" +
+var kaLangStr string = "" + // Size: 10123 bytes
 	"აფარიაფხაზურიავესტურიაფრიკაანსიაკანიამჰარულიარაგონულიარაბულიასამურიაიმარ" +
 	"ააზერბაიჯანულიბაშკირულიბელორუსულიბულგარულიბამბარაბენგალურიტიბეტურიბრეტ" +
 	"ონულიბოსნიურიკატალანურიჩეჩნურიკორსიკულიკრიჩეხურისაეკლესიო სლავურიჩუვაშ" +
@@ -16738,8 +16675,7 @@ var kaLangStr string = "" +
 	"ემოსაქსონურიფლამანდიურიბრაზილიური პორტუგალიურიევროპული პორტუგალიურიმოლ" +
 	"დავურისერბულ-ხორვატულიგამარტივებული ჩინურიტრადიციული ჩინური"
 
-// Size: 1244 bytes, 610 elements
-var kaLangIdx = []uint16{
+var kaLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x0027, 0x003f, 0x005d, 0x006c, 0x0084, 0x009f,
 	0x00b4, 0x00c9, 0x00c9, 0x00db, 0x0102, 0x011d, 0x013b, 0x0156,
@@ -16827,10 +16763,9 @@ var kaLangIdx = []uint16{
 	0x2450, 0x2484, 0x24bb, 0x24f2, 0x253c, 0x256d, 0x25a1, 0x25a1,
 	0x25d2, 0x260c, 0x2636, 0x2657, 0x269a, 0x26d7, 0x26f2, 0x2720,
 	0x275a, 0x278b,
-}
+} // Size: 1244 bytes
 
-// Size: 5518 bytes
-var kkLangStr string = "" +
+var kkLangStr string = "" + // Size: 5518 bytes
 	"абхаз тіліафрикаанс тіліакан тіліамхар тіліараб тіліассам тіліәзірбайжан" +
 	" тілібашқұрт тілібеларусь тіліболгар тілібамбара тілібенгал тілітибет ті" +
 	"лібретон тілібосния тілікаталан тілішешен тілікорсика тілічех тілічуваш" +
@@ -16873,8 +16808,7 @@ var kkLangStr string = "" +
 	" тіліфламанд тілібразилиялық португал тіліеуропалық португал тілімолдова" +
 	"н тіліжеңілдетілген қытай тілідәстүрлі қытай тілі"
 
-// Size: 1244 bytes, 610 elements
-var kkLangIdx = []uint16{
+var kkLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0013, 0x0013, 0x002e, 0x003f, 0x0052, 0x0052,
 	0x0063, 0x0076, 0x0076, 0x0076, 0x0093, 0x00aa, 0x00c3, 0x00d8,
@@ -16962,10 +16896,9 @@ var kkLangIdx = []uint16{
 	0x1329, 0x1353, 0x1381, 0x13af, 0x13e4, 0x140a, 0x1432, 0x1432,
 	0x145c, 0x148c, 0x14b0, 0x14c7, 0x14f7, 0x1523, 0x153c, 0x153c,
 	0x156a, 0x158e,
-}
+} // Size: 1244 bytes
 
-// Size: 5497 bytes
-var kmLangStr string = "" +
+var kmLangStr string = "" + // Size: 5497 bytes
 	"ភាសាអាហ្វារអាប់ខាហ៊្សានភាសាអាវែស្តង់អាហ្វ្រិកានអាកានអាមហារីចភាសាអារ៉ាហ្គ" +
 	"ោនអារ៉ាប់អាសាមីសភាសាអីម៉ារ៉ាអាហ៊្សែរបែហ្សង់បែស្កឺបេឡារុស្សប៊ុលហ្ការីបា" +
 	"ម្បារាបង់ក្លាដែសទីបេប្រីស្តុនបូស្នីកាតាឡានឈីឆេនកូស៊ីខានឆេកឈូវ៉ាសវេលដាណ" +
@@ -16994,8 +16927,7 @@ var kmLangStr string = "" +
 	"្លូវការអេស្ប៉ាញ (អ៊ឺរ៉ុប)ហ្សាក់ស្យុងក្រោមផ្លាមីសព័រទុយហ្គាល់ (អឺរ៉ុប)ម" +
 	"៉ុលដាវីចិន\u200bអក្សរ\u200bកាត់ចិន\u200bអក្សរ\u200bពេញ"
 
-// Size: 1244 bytes, 610 elements
-var kmLangIdx = []uint16{
+var kmLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0021, 0x0045, 0x006c, 0x008d, 0x009c, 0x00b4, 0x00de,
 	0x00f3, 0x0108, 0x0108, 0x012c, 0x0159, 0x016b, 0x0186, 0x01a4,
@@ -17083,10 +17015,9 @@ var kmLangIdx = []uint16{
 	0x1462, 0x1462, 0x1462, 0x1462, 0x1462, 0x1492, 0x1492, 0x1492,
 	0x1492, 0x1492, 0x14c2, 0x14d7, 0x14d7, 0x1510, 0x1528, 0x1528,
 	0x1552, 0x1579,
-}
+} // Size: 1244 bytes
 
-// Size: 11656 bytes
-var knLangStr string = "" +
+var knLangStr string = "" + // Size: 11656 bytes
 	"ಅಫಾರ್ಅಬ್ಖಾಜಿಯನ್ಅವೆಸ್ಟನ್ಆಫ್ರಿಕಾನ್ಸ್ಅಕಾನ್ಅಂಹರಿಕ್ಅರಗೊನೀಸ್ಅರೇಬಿಕ್ಅಸ್ಸಾಮೀಸ್ಅವ" +
 	"ರಿಕ್ಅಯ್ಮಾರಾಅಜೆರ್ಬೈಜಾನಿಬಶ್ಕಿರ್ಬೆಲರೂಸಿಯನ್ಬಲ್ಗೇರಿಯನ್ಬಿಸ್ಲಾಮಾಬಂಬಾರಾಬೆಂಗಾಲಿ" +
 	"ಟಿಬೇಟಿಯನ್ಬ್ರೆಟನ್ಬೋಸ್ನಿಯನ್ಕೆಟಲಾನ್ಚೆಚನ್ಕಮೊರೊಕೋರ್ಸಿಕನ್ಕ್ರೀಜೆಕ್ಚರ್ಚ್ ಸ್ಲಾವ" +
@@ -17146,8 +17077,7 @@ var knLangStr string = "" +
 	" ಫ್ರೆಂಚ್ಫ್ಲೆಮಿಷ್ಬ್ರೆಜಿಲಿಯನ್ ಪೋರ್ಚುಗೀಸ್ಯೂರೋಪಿಯನ್ ಪೋರ್ಚುಗೀಸ್ಮೊಲ್ಡೆವಿಯನ್ಸರ್" +
 	"ಬೋ-ಕ್ರೊಯೇಶಿಯನ್ಸರಳೀಕೃತ ಚೈನೀಸ್ಸಾಂಪ್ರದಾಯಿಕ ಚೈನೀಸ್"
 
-// Size: 1244 bytes, 610 elements
-var knLangIdx = []uint16{
+var knLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x002d, 0x0045, 0x0066, 0x0075, 0x008a, 0x00a2,
 	0x00b7, 0x00d2, 0x00e4, 0x00f9, 0x011a, 0x012f, 0x014d, 0x016b,
@@ -17235,10 +17165,9 @@ var knLangIdx = []uint16{
 	0x2a95, 0x2ac9, 0x2afa, 0x2b2b, 0x2b7b, 0x2bb5, 0x2bef, 0x2bef,
 	0x2c20, 0x2c48, 0x2c48, 0x2c60, 0x2ca0, 0x2cda, 0x2cfb, 0x2d2c,
 	0x2d54, 0x2d88,
-}
+} // Size: 1244 bytes
 
-// Size: 7007 bytes
-var koLangStr string = "" +
+var koLangStr string = "" + // Size: 7007 bytes
 	"아파르어압카즈어아베스타어아프리칸스어아칸어암하라어아라곤어아랍어아삼어아바릭어아이마라어아제르바이잔어바슈키르어벨라루스어불가리아어비슬라마어" +
 	"밤바라어벵골어티베트어브르타뉴어보스니아어카탈로니아어체첸어차모로어코르시카어크리어체코어교회 슬라브어추바시어웨일스어덴마크어독일어디베히" +
 	"어종카어에웨어그리스어영어에스페란토어스페인어에스토니아어바스크어페르시아어풀라어핀란드어피지어페로어프랑스어서프리지아어아일랜드어스코틀랜" +
@@ -17275,8 +17204,7 @@ var koLangStr string = "" +
 	"야오족어얍페세어양본어옘바어사포테크어블리스 심볼제나가어표준 모로코 타마지트어주니어언어 관련 내용 없음자자어현대 표준 아랍어고지 " +
 	"독일어(스위스)영어(호주)플라망어몰도바어세르비아-크로아티아어"
 
-// Size: 1240 bytes, 608 elements
-var koLangIdx = []uint16{
+var koLangIdx = []uint16{ // 608 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x0018, 0x0027, 0x0039, 0x0042, 0x004e, 0x005a,
 	0x0063, 0x006c, 0x0078, 0x0087, 0x009c, 0x00ab, 0x00ba, 0x00c9,
@@ -17363,10 +17291,9 @@ var koLangIdx = []uint16{
 	0x1abb, 0x1ac4, 0x1adf, 0x1ae8, 0x1aff, 0x1aff, 0x1aff, 0x1b1a,
 	0x1b28, 0x1b28, 0x1b28, 0x1b28, 0x1b28, 0x1b28, 0x1b28, 0x1b28,
 	0x1b28, 0x1b28, 0x1b28, 0x1b34, 0x1b34, 0x1b34, 0x1b40, 0x1b5f,
-}
+} // Size: 1240 bytes
 
-// Size: 3906 bytes
-var kyLangStr string = "" +
+var kyLangStr string = "" + // Size: 3906 bytes
 	"абхазчаафрикаанчааканчаамхарчаарабчаассамчаазербайжанчабашкырчабеларусча" +
 	"болгарчабамбарадабангладешчетибетчебретончобоснийчекаталанчачеченчекорс" +
 	"иканчачехчечувашчауелшчедатчанемисчежонгучаэбечегрекчеанглисчеэсперанто" +
@@ -17396,8 +17323,7 @@ var kyLangStr string = "" +
 	"тилиндеиспанча (Европа)төмөнкү саксончофламандчапортугалча (Европа)молд" +
 	"ованчасерб-хорваткытайча (жөнөкөйлөштүрүлгөн)кытайча (салттуу)"
 
-// Size: 1244 bytes, 610 elements
-var kyLangIdx = []uint16{
+var kyLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x000e, 0x000e, 0x0022, 0x002e, 0x003c, 0x003c,
 	0x0048, 0x0056, 0x0056, 0x0056, 0x006e, 0x007e, 0x0090, 0x00a0,
@@ -17485,10 +17411,9 @@ var kyLangIdx = []uint16{
 	0x0e54, 0x0e54, 0x0e54, 0x0e54, 0x0e54, 0x0e71, 0x0e71, 0x0e71,
 	0x0e71, 0x0e71, 0x0e90, 0x0ea2, 0x0ea2, 0x0ec5, 0x0ed9, 0x0eee,
 	0x0f23, 0x0f42,
-}
+} // Size: 1244 bytes
 
-// Size: 10775 bytes
-var loLangStr string = "" +
+var loLangStr string = "" + // Size: 10775 bytes
 	"ອະຟາແອບຄາຊຽນອາເວັສແຕນອາຟຣິການອາການອຳຮາຣິກອາຣາໂກເນັດອາຣັບອັສຊາມີສອາວາຣິກອ" +
 	"າຍມາລາອາເຊີໄບຈານິບາຣກີເບລາຣັສຊຽນບັງກາຣຽນບິສລະມາບາມບາຣາເບັງກາລີທິເບທັນເ" +
 	"ບຣຕັນບອສນຽນຄາຕາລານຊີເຄນຊາມໍໂຣຄໍຊິກາຄີເຊກໂບດສລາວິກຊູວາຊເວວແດນິຊເຢຍລະມັນ" +
@@ -17542,8 +17467,7 @@ var loLangStr string = "" +
 	"ຣບເມັກຊິກັນ ສະແປນນິຊຟລັງ(ການາດາ)ຊາຊອນ ຕອນໄຕຟລີມິຊປອກຕຸຍກິສ ບະເລຊີ່ນປອກ" +
 	"ຕຸຍກິສ ຢຸໂຣບໂມດາວຽນເຊີໂບ-ໂກເຊຍຈີນແບບຮຽບງ່າຍຈີນແບບດັ້ງເດີມ"
 
-// Size: 1244 bytes, 610 elements
-var loLangIdx = []uint16{
+var loLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x0024, 0x003f, 0x0057, 0x0066, 0x007b, 0x0099,
 	0x00a8, 0x00c0, 0x00d5, 0x00ea, 0x010b, 0x011a, 0x0138, 0x0150,
@@ -17631,10 +17555,9 @@ var loLangIdx = []uint16{
 	0x27ee, 0x27ee, 0x2818, 0x2848, 0x288c, 0x28ae, 0x28e2, 0x28e2,
 	0x2902, 0x2902, 0x2921, 0x2933, 0x2967, 0x2992, 0x29a7, 0x29c6,
 	0x29ed, 0x2a17,
-}
+} // Size: 1244 bytes
 
-// Size: 5831 bytes
-var ltLangStr string = "" +
+var ltLangStr string = "" + // Size: 5831 bytes
 	"afarųabchazųavestųafrikanųakanųamharųaragonesųarabųasamųavarikųaimarųaze" +
 	"rbaidžaniečiųbaškirųbaltarusiųbulgarųbislamabambarųbengalųtibetiečiųbret" +
 	"onųbosniųkatalonųčečėnųčamorųkorsikiečiųkryčekųbažnytinė slavųčiuvašųval" +
@@ -17709,8 +17632,7 @@ var ltLangStr string = "" +
 	"dai)flamandųBrazilijos portugalųEuropos portugalųmoldavųserbų-kroatųsupa" +
 	"prastintoji kinųtradicinė kinų"
 
-// Size: 1244 bytes, 610 elements
-var ltLangIdx = []uint16{
+var ltLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0006, 0x000e, 0x0015, 0x001e, 0x0024, 0x002b, 0x0035,
 	0x003b, 0x0041, 0x0049, 0x0050, 0x0063, 0x006c, 0x0077, 0x007f,
@@ -17798,10 +17720,9 @@ var ltLangIdx = []uint16{
 	0x1592, 0x15a0, 0x15bd, 0x15d8, 0x15f0, 0x15ff, 0x160f, 0x160f,
 	0x1621, 0x1638, 0x165c, 0x1665, 0x167a, 0x168c, 0x1694, 0x16a2,
 	0x16b7, 0x16c7,
-}
+} // Size: 1244 bytes
 
-// Size: 4332 bytes
-var lvLangStr string = "" +
+var lvLangStr string = "" + // Size: 4332 bytes
 	"afāruabhāzuavestaafrikanduakanuamharuaragoniešuarābuasamiešuavāruaimarua" +
 	"zerbaidžāņubaškīrubaltkrievubulgārubišlamābambarubengāļutibetiešubretoņu" +
 	"bosniešukatalāņučečenučamorrukorsikāņukrīčehubaznīcslāvučuvašuvelsiešudā" +
@@ -17858,8 +17779,7 @@ var lvLangStr string = "" +
 	"Kanādas frančuŠveices frančulejassakšuflāmuBrazīlijas portugāļuEiropas p" +
 	"ortugāļumoldāvuserbu-horvātuķīniešu vienkāršotāķīniešu tradicionālā"
 
-// Size: 1244 bytes, 610 elements
-var lvLangIdx = []uint16{
+var lvLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0006, 0x000d, 0x0013, 0x001c, 0x0021, 0x0027, 0x0032,
 	0x0038, 0x0041, 0x0047, 0x004d, 0x005c, 0x0065, 0x006f, 0x0077,
@@ -17947,10 +17867,9 @@ var lvLangIdx = []uint16{
 	0x0fe4, 0x0ff3, 0x1009, 0x1013, 0x102a, 0x1039, 0x1049, 0x1049,
 	0x1059, 0x1069, 0x1074, 0x107a, 0x1091, 0x10a4, 0x10ac, 0x10ba,
 	0x10d3, 0x10ec,
-}
+} // Size: 1244 bytes
 
-// Size: 10127 bytes
-var mkLangStr string = "" +
+var mkLangStr string = "" + // Size: 10127 bytes
 	"афарскиапхаскиавестанскиафрикансаканскиамхарскиарагонскиарапскиасамскиав" +
 	"арскиајмарскиазербејџанскибашкирскибелорускибугарскибисламабамбарабенга" +
 	"лскитибетскибретонскибосанскикаталонскичеченскичаморскикорзиканскикриче" +
@@ -18024,8 +17943,7 @@ var mkLangStr string = "" +
 	"скишпански (во Европа)француски (во Канада)португалски (во Европа)молда" +
 	"вскисрпскохрватскипоедноставен кинескитрадиционален кинески"
 
-// Size: 1244 bytes, 610 elements
-var mkLangIdx = []uint16{
+var mkLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000e, 0x001c, 0x0030, 0x0040, 0x004e, 0x005e, 0x0070,
 	0x007e, 0x008c, 0x009a, 0x00aa, 0x00c4, 0x00d6, 0x00e8, 0x00f8,
@@ -18113,10 +18031,9 @@ var mkLangIdx = []uint16{
 	0x2655, 0x2655, 0x2678, 0x269f, 0x269f, 0x26c1, 0x26c1, 0x26c1,
 	0x26e7, 0x26e7, 0x26e7, 0x26e7, 0x26e7, 0x2711, 0x2723, 0x273f,
 	0x2766, 0x278f,
-}
+} // Size: 1244 bytes
 
-// Size: 11903 bytes
-var mlLangStr string = "" +
+var mlLangStr string = "" + // Size: 11903 bytes
 	"അഫാർഅബ്\u200cഖാസിയൻഅവസ്റ്റാൻആഫ്രിക്കാൻസ്അകാൻ\u200cഅംഹാരിക്അരഗോണീസ്അറബിക്" +
 	"ആസ്സാമീസ്അവാരിക്അയ്മാറഅസർബൈജാനിബഷ്ഖിർബെലാറുഷ്യൻബൾഗേറിയൻബിസ്\u200cലാമബം" +
 	"ബാറബംഗാളിടിബറ്റൻബ്രെട്ടൺബോസ്നിയൻകറ്റാലാൻചെചൻകമോറോകോർസിക്കൻക്രീചെക്ക്ചർ" +
@@ -18178,8 +18095,7 @@ var mlLangStr string = "" +
 	"രഞ്ച്ലോ സാക്സൺഫ്ലമിഷ്ബ്രസീലിയൻ പോർച്ചുഗീസ്യൂറോപ്യൻ പോർച്ചുഗീസ്മോൾഡാവിയ" +
 	"ൻസെർബോ-ക്രൊയേഷ്യൻ"
 
-// Size: 1240 bytes, 608 elements
-var mlLangIdx = []uint16{
+var mlLangIdx = []uint16{ // 608 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x002a, 0x0045, 0x0069, 0x0078, 0x0090, 0x00a8,
 	0x00ba, 0x00d5, 0x00ea, 0x00fc, 0x0117, 0x0129, 0x0147, 0x015f,
@@ -18266,10 +18182,9 @@ var mlLangIdx = []uint16{
 	0x2aa8, 0x2ab4, 0x2b09, 0x2b15, 0x2b5f, 0x2b5f, 0x2b8a, 0x2bb0,
 	0x2bed, 0x2c1b, 0x2c52, 0x2c86, 0x2cd3, 0x2d07, 0x2d3e, 0x2d3e,
 	0x2d69, 0x2d91, 0x2daa, 0x2dbf, 0x2dfc, 0x2e36, 0x2e51, 0x2e7f,
-}
+} // Size: 1240 bytes
 
-// Size: 3152 bytes
-var mnLangStr string = "" +
+var mnLangStr string = "" + // Size: 3152 bytes
 	"абхазафрикаканамхарарабассамазербайжанбашкирбеларусьболгарбамбарабенгалт" +
 	"өвдбретонбосникаталанкорсикчехуэлсданигерманжонхаэвэгреканглиэсперантои" +
 	"спаниэстонибаскперсфинляндфижифарерфранцбаруун фризынирландшотланд келт" +
@@ -18294,8 +18209,7 @@ var mnLangStr string = "" +
 	"паниканад францшвейцари францфламандпортугал (бразил)европын португалмо" +
 	"лдавхялбаршуулсан хятадуламжлалт хятад"
 
-// Size: 1244 bytes, 610 elements
-var mnLangIdx = []uint16{
+var mnLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x000a, 0x000a, 0x0014, 0x001c, 0x0026, 0x0026,
 	0x002e, 0x0038, 0x0038, 0x0038, 0x004c, 0x0058, 0x0068, 0x0074,
@@ -18383,10 +18297,9 @@ var mnLangIdx = []uint16{
 	0x0ad3, 0x0ae8, 0x0b05, 0x0b22, 0x0b4c, 0x0b67, 0x0b86, 0x0b86,
 	0x0b9b, 0x0bb6, 0x0bb6, 0x0bc4, 0x0be3, 0x0c02, 0x0c0e, 0x0c0e,
 	0x0c33, 0x0c50,
-}
+} // Size: 1244 bytes
 
-// Size: 11013 bytes
-var mrLangStr string = "" +
+var mrLangStr string = "" + // Size: 11013 bytes
 	"अफारअबखेजियनअवेस्तनअफ्रिकान्सअकानअम्हारिकअर्गोनीजअरबीआसामीअ\u200dॅव्हेरि" +
 	"कऐमराअझरबैजानीबष्किरबेलारुशियनबल्गेरियनबिस्लामाबाम्बाराबंगालीतिबेटीब्र" +
 	"ेतॉनबोस्नियनकातालानचेचेनकॅमोरोकॉर्सिकनक्रीझेकचर्च स्लाव्हिकचूवाशवेल्शड" +
@@ -18442,8 +18355,7 @@ var mrLangStr string = "" +
 	"ेमिशब्राझिलियन पोर्तुगीजयुरोपियन पोर्तुगीजमोल्डाव्हियनसर्बो-क्रोएशियनस" +
 	"रलीकृत चीनीपारंपारिक चीनी"
 
-// Size: 1244 bytes, 610 elements
-var mrLangIdx = []uint16{
+var mrLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x0024, 0x0039, 0x0057, 0x0063, 0x007b, 0x0093,
 	0x009f, 0x00ae, 0x00cc, 0x00d8, 0x00f3, 0x0105, 0x0123, 0x013e,
@@ -18531,10 +18443,9 @@ var mrLangIdx = []uint16{
 	0x286e, 0x2899, 0x28c4, 0x28ef, 0x292a, 0x2958, 0x2986, 0x2986,
 	0x29ae, 0x29d0, 0x29e9, 0x29fe, 0x2a38, 0x2a6c, 0x2a90, 0x2abb,
 	0x2add, 0x2b05,
-}
+} // Size: 1244 bytes
 
-// Size: 2443 bytes
-var msLangStr string = "" +
+var msLangStr string = "" + // Size: 2443 bytes
 	"AbkhaziaAvestanAfrikaansAkanAmharicArabAssamAvaricAymaraAzerbaijanBashki" +
 	"rBelarusBulgariaBambaraBenggalaTibetBretonBosniaCataloniaChechenCorsicaC" +
 	"zechSlavik GerejaChuvashWalesDenmarkJermanDivehiDzongkhaEweGreekInggeris" +
@@ -18570,8 +18481,7 @@ var msLangStr string = "" +
 	"Perancis KanadaPerancis SwitzerlandSaxon RendahFlemishPortugis BrazilPor" +
 	"tugis EropahMoldaviaSerboCroatiaCina RingkasCina Tradisional"
 
-// Size: 1244 bytes, 610 elements
-var msLangIdx = []uint16{
+var msLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0008, 0x000f, 0x0018, 0x001c, 0x0023, 0x0023,
 	0x0027, 0x002c, 0x0032, 0x0038, 0x0042, 0x0049, 0x0050, 0x0058,
@@ -18659,10 +18569,9 @@ var msLangIdx = []uint16{
 	0x08a9, 0x08b8, 0x08c8, 0x08d3, 0x08e9, 0x08f8, 0x0907, 0x0907,
 	0x0916, 0x092a, 0x0936, 0x093d, 0x094c, 0x095b, 0x0963, 0x096f,
 	0x097b, 0x098b,
-}
+} // Size: 1244 bytes
 
-// Size: 6975 bytes
-var myLangStr string = "" +
+var myLangStr string = "" + // Size: 6975 bytes
 	"အဘ်ခါဇီရန်အာဖရိကန်းစ်အာကိန်အန်ဟာရစျချအာရေဗီအက္စမီစ်အော်ဇောဘိုင်ဂျောနီဘက်" +
 	"ရှ်ကီအာဘီလာရုဘူဂေးရီးယားဘန်ဘာရာဘင်္ဂါလီတိဘက်ဘရီတွန်ဘော့စ်နီးယားကာတာလန်" +
 	"ချေချင်းခိုစီကန်ခရီးချက်ချူဗက်ရှ်ဝေလဒိန်းမတ်ဂျာမန်ဒွန်ကာဝီဂရိအင်္ဂလိပ်" +
@@ -18698,8 +18607,7 @@ var myLangStr string = "" +
 	"က စပိန်စပိန်(ဥရောပ)ကနေဒါ ပြင်သစ်ဆွစ် ပြင်သစ်ဖလီမစ်ရှ်ဘရာဇီး ပေါ်တူဂီဥရ" +
 	"ောပ ပေါ်တူဂီရိုးရှင်းသော တရုတ်ရှေးရိုးစဉ်လာ တရုတ်"
 
-// Size: 1244 bytes, 610 elements
-var myLangIdx = []uint16{
+var myLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x001e, 0x001e, 0x003f, 0x0051, 0x006f, 0x006f,
 	0x0081, 0x0099, 0x0099, 0x0099, 0x00cf, 0x00ed, 0x00ff, 0x0120,
@@ -18787,10 +18695,9 @@ var myLangIdx = []uint16{
 	0x1938, 0x1963, 0x1997, 0x19cb, 0x19ff, 0x1a1f, 0x1a1f, 0x1a1f,
 	0x1a44, 0x1a66, 0x1a66, 0x1a81, 0x1aac, 0x1ad4, 0x1ad4, 0x1ad4,
 	0x1b08, 0x1b3f,
-}
+} // Size: 1244 bytes
 
-// Size: 12514 bytes
-var neLangStr string = "" +
+var neLangStr string = "" + // Size: 12514 bytes
 	"अफारअब्खाजियालीअवेस्तानअफ्रिकान्सआकानअम्हारिकअरागोनीअरबीआसामीअवारिकऐमारा" +
 	"अजरबैजानीबास्किरबेलारुसीबुल्गेरियालीबिस्लामबाम्बाराबंगालीतिब्बतीब्रेटन" +
 	"बोस्नियालीक्याटालनचेचेनचामोर्रोकोर्सिकनक्रीचेकचर्च स्लाभिकचुभासवेल्शडे" +
@@ -18853,8 +18760,7 @@ var neLangStr string = "" +
 	"ानेडाली फ्रान्सेलीतल्लो साक्सनफ्लेमिसब्राजिली पोर्तुगीयुरोपेली पोर्तुग" +
 	"ीमाल्डाभियनसरलिकृत चिनियाँपरम्परागत चिनियाँ"
 
-// Size: 1244 bytes, 610 elements
-var neLangIdx = []uint16{
+var neLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x002d, 0x0045, 0x0063, 0x006f, 0x0087, 0x009c,
 	0x00a8, 0x00b7, 0x00c9, 0x00d8, 0x00f3, 0x0108, 0x0120, 0x0144,
@@ -18942,10 +18848,9 @@ var neLangIdx = []uint16{
 	0x2e62, 0x2e9c, 0x2ecd, 0x2efe, 0x2f3c, 0x2f67, 0x2f92, 0x2f92,
 	0x2fcf, 0x2fcf, 0x2ff1, 0x3006, 0x3037, 0x3068, 0x3086, 0x3086,
 	0x30b1, 0x30e2,
-}
+} // Size: 1244 bytes
 
-// Size: 4999 bytes
-var nlLangStr string = "" +
+var nlLangStr string = "" + // Size: 4999 bytes
 	"AfarAbchazischAvestischAfrikaansAkanAmhaarsAragoneesArabischAssameesAvar" +
 	"ischAymaraAzerbeidzjaansBasjkiersWit-RussischBulgaarsBislamaBambaraBenga" +
 	"alsTibetaansBretonsBosnischCatalaansTsjetsjeensChamorroCorsicaansCreeTsj" +
@@ -19017,8 +18922,7 @@ var nlLangStr string = "" +
 	"Europees PortugeesServo-Kroatischvereenvoudigd Chineestraditioneel Chine" +
 	"es"
 
-// Size: 1244 bytes, 610 elements
-var nlLangIdx = []uint16{
+var nlLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000e, 0x0017, 0x0020, 0x0024, 0x002b, 0x0034,
 	0x003c, 0x0044, 0x004c, 0x0052, 0x0060, 0x0069, 0x0075, 0x007d,
@@ -19106,10 +19010,9 @@ var nlLangIdx = []uint16{
 	0x12a2, 0x12b1, 0x12bd, 0x12ce, 0x12e7, 0x12f6, 0x1306, 0x1306,
 	0x1314, 0x1322, 0x1322, 0x1328, 0x133d, 0x134f, 0x134f, 0x135e,
 	0x1373, 0x1387,
-}
+} // Size: 1244 bytes
 
-// Size: 4987 bytes
-var noLangStr string = "" +
+var noLangStr string = "" + // Size: 4987 bytes
 	"afarabkhasiskavestiskafrikaansakanamhariskaragonskarabiskassamiskavarisk" +
 	"aymaraaserbajdsjanskbasjkirskhviterussiskbulgarskbislamabambarabengaliti" +
 	"betanskbretonskbosniskkatalansktsjetsjenskchamorrokorsikanskcreetsjekkis" +
@@ -19180,8 +19083,7 @@ var noLangStr string = "" +
 	"isk fransknedersaksiskflamskbrasiliansk portugisiskeuropeisk portugisisk" +
 	"moldovskserbokroatiskforenklet kinesisktradisjonell kinesisk"
 
-// Size: 1244 bytes, 610 elements
-var noLangIdx = []uint16{
+var noLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000d, 0x0015, 0x001e, 0x0022, 0x002a, 0x0032,
 	0x0039, 0x0041, 0x0048, 0x004e, 0x005c, 0x0065, 0x0071, 0x0079,
@@ -19269,10 +19171,9 @@ var noLangIdx = []uint16{
 	0x127a, 0x128a, 0x1299, 0x12ab, 0x12c1, 0x12d1, 0x12e2, 0x12e2,
 	0x12f1, 0x1301, 0x130d, 0x1313, 0x132a, 0x133f, 0x1347, 0x1354,
 	0x1366, 0x137b,
-}
+} // Size: 1244 bytes
 
-// Size: 5353 bytes
-var paLangStr string = "" +
+var paLangStr string = "" + // Size: 5353 bytes
 	"ਅਬਖਾਜ਼ੀਅਨਅਫ਼ਰੀਕੀਅਕਾਨਅਮਹਾਰਿਕਅਰਬੀਅਸਾਮੀਅਜ਼ਰਬਾਈਜਾਨੀਬਸ਼ਕੀਰਬੇਲਾਰੂਸੀਬੁਲਗਾਰੀਆਈਬੰ" +
 	"ਬਾਰਾਬੰਗਾਲੀਤਿੱਬਤੀਬਰੇਟਨਬੋਸਨੀਆਈਕੈਟਾਲਾਨਚੇਚਨਕੋਰਸੀਕਨਚੈਕਚੁਵਾਸ਼ਵੈਲਜ਼ਡੈਨਿਸ਼ਜਰਮਨ" +
 	"ਜ਼ੋਂਗਖਾਈਵਈਯੂਨਾਨੀਅੰਗਰੇਜ਼ੀਇਸਪੇਰਾਂਟੋਸਪੇਨੀਇਸਟੋਨੀਆਈਬਾਸਕਫ਼ਾਰਸੀਫਿਨਿਸ਼ਫ਼ਿਜ਼ੀਫ਼" +
@@ -19300,8 +19201,7 @@ var paLangStr string = "" +
 	"ਪੇਨੀਯੂਰਪੀ ਸਪੇਨੀਮੈਕਸੀਕਨ ਸਪੈਨਿਸ਼ਕੈਨੇਡੀਅਨ ਫਰਾਂਸੀਸੀਸਵਿਸ ਫਰਾਂਸੀਸੀਲੋ ਸੈਕਸਨਫਲ" +
 	"ੈਮਿਸ਼ਬ੍ਰਾਜ਼ੀਲੀਆਈ ਪੁਰਤਗਾਲੀਯੂਰਪੀ ਪੁਰਤਗਾਲੀਮੋਲਡਾਵੀਆਈਸਰਲ ਚੀਨੀਰਵਾਇਤੀ ਚੀਨੀ"
 
-// Size: 1244 bytes, 610 elements
-var paLangIdx = []uint16{
+var paLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x001b, 0x001b, 0x0030, 0x003c, 0x0051, 0x0051,
 	0x005d, 0x006c, 0x006c, 0x006c, 0x008d, 0x009f, 0x00b7, 0x00d2,
@@ -19389,10 +19289,9 @@ var paLangIdx = []uint16{
 	0x12ad, 0x12de, 0x130c, 0x1337, 0x136c, 0x138b, 0x13b6, 0x13b6,
 	0x13e7, 0x140c, 0x1422, 0x1437, 0x1471, 0x1499, 0x14b4, 0x14b4,
 	0x14ca, 0x14e9,
-}
+} // Size: 1244 bytes
 
-// Size: 5558 bytes
-var plLangStr string = "" +
+var plLangStr string = "" + // Size: 5558 bytes
 	"afarabchaskiawestyjskiafrikaansakanamharskiaragońskiarabskiasamskiawarsk" +
 	"iajmaraazerskibaszkirskibiałoruskibułgarskibislamabambarabengalskitybeta" +
 	"ńskibretońskibośniackikatalońskiczeczeńskichamorrokorsykańskikriczeskis" +
@@ -19470,8 +19369,7 @@ var plLangStr string = "" +
 	"galskimołdawskiserbsko-chorwackichiński (uproszczony)chiński (tradycyjny" +
 	")"
 
-// Size: 1244 bytes, 610 elements
-var plLangIdx = []uint16{
+var plLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000c, 0x0016, 0x001f, 0x0023, 0x002b, 0x0035,
 	0x003c, 0x0043, 0x004a, 0x0050, 0x0057, 0x0061, 0x006c, 0x0076,
@@ -19559,10 +19457,9 @@ var plLangIdx = []uint16{
 	0x148d, 0x14a1, 0x14b4, 0x14ca, 0x14e2, 0x14f8, 0x1510, 0x1510,
 	0x1524, 0x1539, 0x1539, 0x1543, 0x155a, 0x1570, 0x157a, 0x158b,
 	0x15a1, 0x15b6,
-}
+} // Size: 1244 bytes
 
-// Size: 4263 bytes
-var ptLangStr string = "" +
+var ptLangStr string = "" + // Size: 4263 bytes
 	"afarabcázioavésticoafricânerakanamáricoaragonêsárabeassamêsavaricaimaraa" +
 	"zerbaijanobashkirbielorrussobúlgarobislamábambarabengalitibetanobretãobó" +
 	"sniocatalãochechenochamorrocórsicocreetchecoeslavo eclesiásticotchuvache" +
@@ -19621,8 +19518,7 @@ var ptLangStr string = "" +
 	"rancês canadensefrancês suíçobaixo-saxãoflamengoportuguês do Brasilportu" +
 	"guês europeumoldávioservo-croatachinês simplificadochinês tradicional"
 
-// Size: 1244 bytes, 610 elements
-var ptLangIdx = []uint16{
+var ptLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000c, 0x0015, 0x001f, 0x0023, 0x002b, 0x0034,
 	0x003a, 0x0042, 0x0048, 0x004e, 0x0059, 0x0060, 0x006b, 0x0073,
@@ -19710,10 +19606,9 @@ var ptLangIdx = []uint16{
 	0x0fa1, 0x0fb2, 0x0fc4, 0x0fd5, 0x0fee, 0x0ffe, 0x100f, 0x100f,
 	0x1021, 0x1031, 0x103d, 0x1045, 0x1059, 0x106b, 0x1074, 0x1080,
 	0x1094, 0x10a7,
-}
+} // Size: 1244 bytes
 
-// Size: 591 bytes
-var ptPTLangStr string = "" +
+var ptPTLangStr string = "" + // Size: 591 bytes
 	"africânderchecochuvasheweestóniofrísico ocidentalhaúçahindiarménioigboco" +
 	"nguêscanarimgandamacedónionorueguês nynorsknorueguês bokmålprovençalossé" +
 	"ticopolacopastókinyarwandaturcomanotongamapuchebamunghomalajargão chinoo" +
@@ -19723,8 +19618,7 @@ var ptPTLangStr string = "" +
 	"akhaárabe do Chadelule samiinari samiskolt samirootvaisogaárabe moderno " +
 	"padrãoazeri meridionalinglês canadianofrancês canadiano"
 
-// Size: 1226 bytes, 601 elements
-var ptPTLangIdx = []uint16{
+var ptPTLangIdx = []uint16{ // 601 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000b, 0x000b, 0x000b, 0x000b,
 	0x000b, 0x000b, 0x000b, 0x000b, 0x000b, 0x000b, 0x000b, 0x000b,
@@ -19811,10 +19705,9 @@ var ptPTLangIdx = []uint16{
 	0x0206, 0x0206, 0x0206, 0x0206, 0x021c, 0x022c, 0x022c, 0x022c,
 	0x022c, 0x023d, 0x023d, 0x023d, 0x023d, 0x023d, 0x023d, 0x023d,
 	0x024f,
-}
+} // Size: 1226 bytes
 
-// Size: 4388 bytes
-var roLangStr string = "" +
+var roLangStr string = "" + // Size: 4388 bytes
 	"afarabhazăavestanăafrikaansakanamharicăaragonezăarabăasamezăavarăaymaraa" +
 	"zerăbașkirăbielorusăbulgarăbislamabambarabengalezătibetanăbretonăbosniac" +
 	"ăcatalanăcecenăchamorrocorsicanăcreecehăslavonăciuvașăgalezădanezăgerma" +
@@ -19874,8 +19767,7 @@ var roLangStr string = "" +
 	" brazilianăportugheză europeanămoldoveneascăsârbo-croatăchineză simplifi" +
 	"catăchineză tradițională"
 
-// Size: 1244 bytes, 610 elements
-var roLangIdx = []uint16{
+var roLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000b, 0x0014, 0x001d, 0x0021, 0x002a, 0x0034,
 	0x003a, 0x0042, 0x0048, 0x004e, 0x0054, 0x005d, 0x0067, 0x006f,
@@ -19963,10 +19855,9 @@ var roLangIdx = []uint16{
 	0x0ff4, 0x1007, 0x101a, 0x102d, 0x1048, 0x105c, 0x106f, 0x106f,
 	0x1083, 0x1098, 0x10a5, 0x10ae, 0x10c5, 0x10db, 0x10e9, 0x10f7,
 	0x110d, 0x1124,
-}
+} // Size: 1244 bytes
 
-// Size: 9370 bytes
-var ruLangStr string = "" +
+var ruLangStr string = "" + // Size: 9370 bytes
 	"афарабхазскийавестийскийафрикаансаканамхарскийарагонскийарабскийассамски" +
 	"йаварскийаймараазербайджанскийбашкирскийбелорусскийболгарскийбисламабам" +
 	"барийскийбенгальскийтибетскийбретонскийбоснийскийкаталанскийчеченскийча" +
@@ -20035,8 +19926,7 @@ var ruLangStr string = "" +
 	" португальскийевропейский португальскиймолдавскийсербскохорватскийупроще" +
 	"нный китайскийтрадиционный китайский"
 
-// Size: 1244 bytes, 610 elements
-var ruLangIdx = []uint16{
+var ruLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0008, 0x001a, 0x0030, 0x0042, 0x004a, 0x005c, 0x0070,
 	0x0080, 0x0092, 0x00a2, 0x00ae, 0x00cc, 0x00e0, 0x00f6, 0x010a,
@@ -20124,10 +20014,9 @@ var ruLangIdx = []uint16{
 	0x221e, 0x2245, 0x226e, 0x229b, 0x22d2, 0x22fb, 0x2326, 0x2326,
 	0x234f, 0x237c, 0x239a, 0x23b0, 0x23e1, 0x2412, 0x2426, 0x2448,
 	0x246f, 0x249a,
-}
+} // Size: 1244 bytes
 
-// Size: 5819 bytes
-var siLangStr string = "" +
+var siLangStr string = "" + // Size: 5819 bytes
 	"ඇබ්කාසියානුඅප්\u200dරිකානුඅකාන්ඇම්හාරික්අරාබිඇසමියානුඅසර්බයිජාන්බාෂ්කිර්" +
 	"බෙලරුසියානුබල්ගේරියානුබම්බරාබෙංගාලිටිබෙට්බ්\u200dරේටොන්බොස්නියානුකැටලන" +
 	"්චෙච්නියානුක්\u200dරොඑශියානුචෙත්චවේෂ්වේල්ස්ඩැනිශ්ජර්මන්දිවෙහිඩිසොන්කාඉ" +
@@ -20159,8 +20048,7 @@ var siLangStr string = "" +
 	"ැනේඩියානු ප්\u200dරංශස්විස් ප්\u200dරංශපහළ සැක්සන්ෆ්ලෙමිශ්බ්\u200dරසීල" +
 	" පෘතුගීසියුරෝපීය පෘතුගීසිමොල්ඩෝවාවසුළුකළ චීනසාම්ප්\u200dරදායික චීන"
 
-// Size: 1244 bytes, 610 elements
-var siLangIdx = []uint16{
+var siLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0021, 0x0021, 0x003f, 0x004e, 0x0069, 0x0069,
 	0x0078, 0x0090, 0x0090, 0x0090, 0x00b1, 0x00c9, 0x00ea, 0x010b,
@@ -20248,10 +20136,9 @@ var siLangIdx = []uint16{
 	0x141f, 0x1459, 0x1496, 0x14cd, 0x150b, 0x1536, 0x156a, 0x156a,
 	0x159b, 0x15c0, 0x15df, 0x15f7, 0x1625, 0x1653, 0x166e, 0x166e,
 	0x168a, 0x16bb,
-}
+} // Size: 1244 bytes
 
-// Size: 5626 bytes
-var skLangStr string = "" +
+var skLangStr string = "" + // Size: 5626 bytes
 	"afarčinaabcházčinaavestčinaafrikánčinaakančinaamharčinaaragónčinaarabčin" +
 	"aásamčinaavarčinaaymarčinaazerbajdžančinabaškirčinabieloruštinabulharčin" +
 	"abislamabambarčinabengálčinatibetčinabretónčinabosniačtinakatalánčinačeč" +
@@ -20323,8 +20210,7 @@ var skLangStr string = "" +
 	"naportugalčina (brazílska)portugalčina (európska)moldavčinasrbochorvátči" +
 	"načínština (zjednodušená)čínština (tradičná)"
 
-// Size: 1244 bytes, 610 elements
-var skLangIdx = []uint16{
+var skLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0009, 0x0015, 0x001f, 0x002c, 0x0035, 0x003f, 0x004b,
 	0x0054, 0x005e, 0x0067, 0x0071, 0x0082, 0x008e, 0x009b, 0x00a6,
@@ -20412,10 +20298,9 @@ var skLangIdx = []uint16{
 	0x1490, 0x14a7, 0x14bd, 0x14d4, 0x14f5, 0x150e, 0x1526, 0x1526,
 	0x1540, 0x155e, 0x156d, 0x1577, 0x1591, 0x15aa, 0x15b5, 0x15c6,
 	0x15e2, 0x15fa,
-}
+} // Size: 1244 bytes
 
-// Size: 6193 bytes
-var slLangStr string = "" +
+var slLangStr string = "" + // Size: 6193 bytes
 	"afarščinaabhaščinaavestijščinaafrikanščinaakanščinaamharščinaaragonščina" +
 	"arabščinaasamščinaavarščinaajmarščinaazerbajdžanščinabaškirščinabelorušč" +
 	"inabolgarščinabislamščinabambarščinabengalščinatibetanščinabretonščinabo" +
@@ -20492,8 +20377,7 @@ var slLangStr string = "" +
 	"činaiberska portugalščinamoldavščinasrbohrvaščinapoenostavljena kitajšč" +
 	"inatradicionalna kitajščina"
 
-// Size: 1244 bytes, 610 elements
-var slLangIdx = []uint16{
+var slLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000b, 0x0016, 0x0024, 0x0032, 0x003d, 0x0049, 0x0056,
 	0x0061, 0x006c, 0x0077, 0x0083, 0x0096, 0x00a4, 0x00b1, 0x00be,
@@ -20581,10 +20465,9 @@ var slLangIdx = []uint16{
 	0x16fe, 0x1713, 0x1724, 0x1736, 0x1754, 0x1768, 0x1768, 0x1768,
 	0x177e, 0x1796, 0x17a5, 0x17b0, 0x17c9, 0x17e0, 0x17ed, 0x17fc,
 	0x1817, 0x1831,
-}
+} // Size: 1244 bytes
 
-// Size: 2672 bytes
-var sqLangStr string = "" +
+var sqLangStr string = "" + // Size: 2672 bytes
 	"abkazishtafrikanishtakanishtamarikishtarabishtasamezishtazerbajxhanishtb" +
 	"ashkirishtbjellorusishtbullgarishtbambarishtbengalishttibetishtbretonish" +
 	"tboshnjakishtkatalonishtçeçenishtkorsikanishtçekishtçuvashishtuellsishtd" +
@@ -20623,8 +20506,7 @@ var sqLangStr string = "" +
 	"lamandishtportugalishte brazilianeportugalishte evropianemoldavishteSerb" +
 	"o-Kroatishtkinezishte e thjeshtuarkinezishte tradicionale"
 
-// Size: 1244 bytes, 610 elements
-var sqLangIdx = []uint16{
+var sqLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0009, 0x0009, 0x0014, 0x001c, 0x0026, 0x0026,
 	0x002e, 0x0038, 0x0038, 0x0038, 0x0047, 0x0052, 0x005f, 0x006a,
@@ -20712,10 +20594,9 @@ var sqLangIdx = []uint16{
 	0x091f, 0x0931, 0x0944, 0x0957, 0x0972, 0x0986, 0x099a, 0x099a,
 	0x09af, 0x09c5, 0x09ee, 0x09f9, 0x0a11, 0x0a28, 0x0a33, 0x0a42,
 	0x0a59, 0x0a70,
-}
+} // Size: 1244 bytes
 
-// Size: 7594 bytes
-var srLangStr string = "" +
+var srLangStr string = "" + // Size: 7594 bytes
 	"АфарскиабхаскиАвестанскиафрикансаканамхарскиАрагонежанскиарапскиасамскиА" +
 	"варскиАјмараазербејџанскибашкирскибелорускибугарскиБисламабамбарабенгал" +
 	"скитибетанскибретонскибосанскикаталонскиЧеченскиЧаморокорзиканскиКричеш" +
@@ -20771,8 +20652,7 @@ var srLangStr string = "" +
 	"ан стандардни арапскишвајцарски високи немачкинискосаксонскифламанскиБр" +
 	"азилски португалскиИберијски португалскимолдавскиСрпскохрватски"
 
-// Size: 1240 bytes, 608 elements
-var srLangIdx = []uint16{
+var srLangIdx = []uint16{ // 608 elements
 	// Entry 0 - 3F
 	0x0000, 0x000e, 0x001c, 0x0030, 0x0040, 0x0048, 0x0058, 0x0072,
 	0x0080, 0x008e, 0x009c, 0x00a8, 0x00c2, 0x00d4, 0x00e6, 0x00f6,
@@ -20859,10 +20739,9 @@ var srLangIdx = []uint16{
 	0x1c58, 0x1c60, 0x1c92, 0x1c9a, 0x1ccc, 0x1ccc, 0x1ccc, 0x1cfc,
 	0x1cfc, 0x1cfc, 0x1cfc, 0x1cfc, 0x1cfc, 0x1cfc, 0x1cfc, 0x1cfc,
 	0x1cfc, 0x1cfc, 0x1d18, 0x1d2a, 0x1d53, 0x1d7c, 0x1d8e, 0x1daa,
-}
+} // Size: 1240 bytes
 
-// Size: 3982 bytes
-var srLatnLangStr string = "" +
+var srLatnLangStr string = "" + // Size: 3982 bytes
 	"AfarskiabhaskiAvestanskiafrikansakanamharskiAragonežanskiarapskiasamskiA" +
 	"varskiAjmaraazerbejdžanskibaškirskibeloruskibugarskiBislamabambarabengal" +
 	"skitibetanskibretonskibosanskikatalonskiČečenskiČamorokorzikanskiKričešk" +
@@ -20918,8 +20797,7 @@ var srLatnLangStr string = "" +
 	"kišvajcarski visoki nemačkiniskosaksonskiflamanskiBrazilski portugalskiI" +
 	"berijski portugalskimoldavskiSrpskohrvatski"
 
-// Size: 1240 bytes, 608 elements
-var srLatnLangIdx = []uint16{
+var srLatnLangIdx = []uint16{ // 608 elements
 	// Entry 0 - 3F
 	0x0000, 0x0007, 0x000e, 0x0018, 0x0020, 0x0024, 0x002c, 0x003a,
 	0x0041, 0x0048, 0x004f, 0x0055, 0x0064, 0x006e, 0x0077, 0x007f,
@@ -21006,10 +20884,9 @@ var srLatnLangIdx = []uint16{
 	0x0edd, 0x0ee1, 0x0efd, 0x0f01, 0x0f1b, 0x0f1b, 0x0f1b, 0x0f36,
 	0x0f36, 0x0f36, 0x0f36, 0x0f36, 0x0f36, 0x0f36, 0x0f36, 0x0f36,
 	0x0f36, 0x0f36, 0x0f44, 0x0f4d, 0x0f62, 0x0f77, 0x0f80, 0x0f8e,
-}
+} // Size: 1240 bytes
 
-// Size: 5432 bytes
-var svLangStr string = "" +
+var svLangStr string = "" + // Size: 5432 bytes
 	"afarabchaziskaavestiskaafrikaansakanamhariskaaragonesiskaarabiskaassames" +
 	"iskaavariskaaymaraazerbajdzjanskabasjkiriskavitryskabulgariskabislamabam" +
 	"barabengalitibetanskabretonskabosniskakatalanskatjetjenskachamorrokorsik" +
@@ -21086,8 +20963,7 @@ var svLangStr string = "" +
 	"ändskabrasiliansk portugisiskaeuropeisk portugisiskamoldaviskaserbokroa" +
 	"tiskaförenklad kinesiskatraditionell kinesiska"
 
-// Size: 1244 bytes, 610 elements
-var svLangIdx = []uint16{
+var svLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000e, 0x0017, 0x0020, 0x0024, 0x002d, 0x0039,
 	0x0041, 0x004c, 0x0054, 0x005a, 0x0069, 0x0074, 0x007c, 0x0086,
@@ -21175,10 +21051,9 @@ var svLangIdx = []uint16{
 	0x141b, 0x142f, 0x1440, 0x1453, 0x146a, 0x147b, 0x148c, 0x148c,
 	0x149f, 0x14b1, 0x14bc, 0x14c8, 0x14e0, 0x14f6, 0x1500, 0x150e,
 	0x1522, 0x1538,
-}
+} // Size: 1244 bytes
 
-// Size: 2426 bytes
-var swLangStr string = "" +
+var swLangStr string = "" + // Size: 2426 bytes
 	"KiabkhaziKiafrikanaKiakaniKiamhariKiarabuKiassamKiaimaraKiazabajaniKibas" +
 	"hkirKibelarusiKibulgariaKibambaraKibengaliKitibetiKibretoniKibosniaKikat" +
 	"alaniKichecheniaKikosikaniKichekiKichuvashKiwelisiKidenmakiKijerumaniKid" +
@@ -21214,8 +21089,7 @@ var swLangStr string = "" +
 	"Tamaziti Msingi ya KimorokoHakuna maudhui ya lughaKiarabu Sanifu cha Kis" +
 	"asaKichina (Kilichorahisishwa)Kichina cha Jadi"
 
-// Size: 1244 bytes, 610 elements
-var swLangIdx = []uint16{
+var swLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0009, 0x0009, 0x0013, 0x001a, 0x0022, 0x0022,
 	0x0029, 0x0030, 0x0030, 0x0038, 0x0043, 0x004c, 0x0056, 0x0060,
@@ -21303,10 +21177,9 @@ var swLangIdx = []uint16{
 	0x094f, 0x094f, 0x094f, 0x094f, 0x094f, 0x094f, 0x094f, 0x094f,
 	0x094f, 0x094f, 0x094f, 0x094f, 0x094f, 0x094f, 0x094f, 0x094f,
 	0x096a, 0x097a,
-}
+} // Size: 1244 bytes
 
-// Size: 12271 bytes
-var taLangStr string = "" +
+var taLangStr string = "" + // Size: 12271 bytes
 	"அஃபார்அப்காஜியான்அவெஸ்தான்ஆஃப்ரிகான்ஸ்அகான்அம்ஹாரிக்ஆர்கோனீஸ்அரபிக்அஸ்ஸா" +
 	"மீஸ்அவேரிக்அய்மராஅஸர்பைஜானிபஷ்கிர்பெலாருஷியன்பல்கேரியன்பிஸ்லாமாபம்பாரா" +
 	"வங்காளம்திபெத்தியன்பிரெட்டன்போஸ்னியன்கேட்டலான்செச்சென்சாமோரோகார்சிகன்க" +
@@ -21368,8 +21241,7 @@ var taLangStr string = "" +
 	" (பிரேசில்)போர்ச்சுகீஸ் (ஐரோப்பா)மோல்டாவியன்செர்போ-க்ரோஷியன்எளிதாக்கப்பட" +
 	"்ட சீனம்பாரம்பரிய சீனம்"
 
-// Size: 1244 bytes, 610 elements
-var taLangIdx = []uint16{
+var taLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0012, 0x0033, 0x004e, 0x0072, 0x0081, 0x009c, 0x00b7,
 	0x00c9, 0x00e4, 0x00f9, 0x010b, 0x0129, 0x013e, 0x015f, 0x017d,
@@ -21457,10 +21329,9 @@ var taLangIdx = []uint16{
 	0x2d79, 0x2da1, 0x2dd8, 0x2e09, 0x2e09, 0x2e39, 0x2e39, 0x2e39,
 	0x2e61, 0x2e89, 0x2ea5, 0x2ec0, 0x2eff, 0x2f3b, 0x2f5c, 0x2f8a,
 	0x2fc4, 0x2fef,
-}
+} // Size: 1244 bytes
 
-// Size: 11712 bytes
-var teLangStr string = "" +
+var teLangStr string = "" + // Size: 11712 bytes
 	"అఫార్అబ్ఖాజియన్అవేస్టాన్ఆఫ్రికాన్స్అకాన్అమ్హారిక్అరగోనిస్అరబిక్అస్సామీఅవ" +
 	"ారిక్ఐమారాఅజర్బైజానిబష్కిర్బెలరుశియన్బల్గేరియన్బిస్లామాబంబారాబెంగాలీటి" +
 	"బెటన్బ్రెటన్బోస్నియన్కెటలాన్చెచెన్చమర్రోకోర్సికన్క్రిచెక్చర్చ స్లావిక్" +
@@ -21519,8 +21390,7 @@ var teLangStr string = "" +
 	"రెంచ్లో సాక్సన్ఫ్లెమిష్బ్రెజీలియన్ పోర్చుగీస్యూరోపియన్ పోర్చుగీస్మొల్డ" +
 	"ావియన్సేర్బో-క్రొయేషియన్సరళీకృత చైనీస్సాంప్రదాయక చైనీస్"
 
-// Size: 1244 bytes, 610 elements
-var teLangIdx = []uint16{
+var teLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x002d, 0x0048, 0x0069, 0x0078, 0x0093, 0x00ab,
 	0x00bd, 0x00d2, 0x00e7, 0x00f6, 0x0114, 0x0129, 0x0147, 0x0165,
@@ -21608,10 +21478,9 @@ var teLangIdx = []uint16{
 	0x2ac9, 0x2afa, 0x2b2b, 0x2b5c, 0x2ba3, 0x2bd7, 0x2c0b, 0x2c0b,
 	0x2c3c, 0x2c64, 0x2c80, 0x2c98, 0x2cd8, 0x2d12, 0x2d33, 0x2d67,
 	0x2d8f, 0x2dc0,
-}
+} // Size: 1244 bytes
 
-// Size: 13735 bytes
-var thLangStr string = "" +
+var thLangStr string = "" + // Size: 13735 bytes
 	"อะฟาร์อับคาซอเวสตะแอฟริกานส์อาคันอัมฮาราอารากอนอาหรับอัสสัมอาวาร์ไอย์มาร" +
 	"าอาเซอร์ไบจานบัชคีร์เบลารุสบัลแกเรียบิสลามาบัมบาราเบงกาลีทิเบตเบรตันบอ" +
 	"สเนียกาตาลังเชเชนชามอร์โรคอร์ซิกาครีเช็กเชอร์ชสลาวิกชูวัชเวลส์เดนมาร์ก" +
@@ -21679,8 +21548,7 @@ var thLangStr string = "" +
 	"็กซิโกฝรั่งเศส - แคนาดาฝรั่งเศส (สวิส)แซกซอนใต้เฟลมิชโปรตุเกส - บราซิล" +
 	"โปรตุเกส - ยุโรปมอลโดวาเซอร์โบ-โครเอเชียจีนตัวย่อจีนตัวเต็ม"
 
-// Size: 1244 bytes, 610 elements
-var thLangIdx = []uint16{
+var thLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0012, 0x0024, 0x0036, 0x0054, 0x0063, 0x0078, 0x008d,
 	0x009f, 0x00b1, 0x00c3, 0x00db, 0x00ff, 0x0114, 0x0129, 0x0144,
@@ -21768,10 +21636,9 @@ var thLangIdx = []uint16{
 	0x3348, 0x336f, 0x33ab, 0x33d8, 0x340b, 0x3429, 0x3450, 0x3450,
 	0x347d, 0x34a4, 0x34bf, 0x34d1, 0x34fe, 0x3528, 0x353d, 0x356e,
 	0x3589, 0x35a7,
-}
+} // Size: 1244 bytes
 
-// Size: 5557 bytes
-var trLangStr string = "" +
+var trLangStr string = "" + // Size: 5557 bytes
 	"AfarAbhazcaAvestçeAfrikaancaAkanAmharcaAragoncaArapçaAssamcaAvar DiliAym" +
 	"araAzericeBaşkırtçaBeyaz RusçaBulgarcaBislamaBambaraBengalceTibetçeBreto" +
 	"ncaBoşnakçaKatalancaÇeçenceChamorroKorsikacaCreeÇekçeKilise SlavcasıÇuva" +
@@ -21847,8 +21714,7 @@ var trLangStr string = "" +
 	"aFlamancaBrezilya PortekizcesiAvrupa PortekizcesiMoldovacaSırp-Hırvat Di" +
 	"liBasitleştirilmiş ÇinceGeleneksel Çince"
 
-// Size: 1244 bytes, 610 elements
-var trLangIdx = []uint16{
+var trLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0004, 0x000b, 0x0013, 0x001d, 0x0021, 0x0028, 0x0030,
 	0x0037, 0x003e, 0x0047, 0x004d, 0x0054, 0x0060, 0x006c, 0x0074,
@@ -21936,10 +21802,9 @@ var trLangIdx = []uint16{
 	0x1480, 0x1493, 0x14a8, 0x14bd, 0x14d9, 0x14ee, 0x1504, 0x1504,
 	0x1518, 0x152f, 0x1540, 0x1548, 0x155d, 0x1570, 0x1579, 0x158b,
 	0x15a4, 0x15b5,
-}
+} // Size: 1244 bytes
 
-// Size: 9058 bytes
-var ukLangStr string = "" +
+var ukLangStr string = "" + // Size: 9058 bytes
 	"афарськаабхазькаавестійськаафрикаансаканамхарськаарагонськаарабськаассам" +
 	"ськааварськааймараазербайджанськабашкирськабілоруськаболгарськабісламаб" +
 	"амбарабенгальськатибетськабретонськабоснійськакаталонськачеченськачамор" +
@@ -22006,8 +21871,7 @@ var ukLangStr string = "" +
 	"португальська (Європа)молдавськасербсько-хорватськакитайська спрощенаки" +
 	"тайська традиційна"
 
-// Size: 1244 bytes, 610 elements
-var ukLangIdx = []uint16{
+var ukLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0020, 0x0036, 0x0048, 0x0050, 0x0062, 0x0076,
 	0x0086, 0x0098, 0x00a8, 0x00b4, 0x00d2, 0x00e6, 0x00fa, 0x010e,
@@ -22095,10 +21959,9 @@ var ukLangIdx = []uint16{
 	0x2236, 0x2236, 0x225f, 0x225f, 0x225f, 0x2280, 0x2280, 0x2280,
 	0x2280, 0x2280, 0x22a0, 0x22b6, 0x22b6, 0x22df, 0x22f3, 0x2318,
 	0x233b, 0x2362,
-}
+} // Size: 1244 bytes
 
-// Size: 3619 bytes
-var urLangStr string = "" +
+var urLangStr string = "" + // Size: 3619 bytes
 	"ابقازیانایفریکانزاکانامہاریعربیآسامیایماراآزربائیجانیباشکیربیلاروسیبلغار" +
 	"یبمبارابنگالیتبتیبریٹنبوسنیکیٹالانچیچنکوراسیکنچیکچوواشویلشڈینشجرمنڈیویہ" +
 	"یژونگکھاایویونانیانگریزیایسپرانٹوہسپانویاسٹونینباسکیفارسیفینیشفجیفیروئی" +
@@ -22126,8 +21989,7 @@ var urLangStr string = "" +
 	"انویمیکسیکن ہسپانویکینیڈین فرانسیسیسوئس فرینچادنی سیکسنفلیمِشبرازیلی پر" +
 	"تگالییورپی پرتگالیمالدوواسربو-کروئیشینچینی (آسان کردہ)روایتی چینی"
 
-// Size: 1244 bytes, 610 elements
-var urLangIdx = []uint16{
+var urLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0010, 0x0010, 0x0022, 0x002a, 0x0036, 0x0036,
 	0x003e, 0x0048, 0x0048, 0x0054, 0x006a, 0x0076, 0x0086, 0x0092,
@@ -22215,10 +22077,9 @@ var urLangIdx = []uint16{
 	0x0c91, 0x0cae, 0x0ccb, 0x0ce6, 0x0d0e, 0x0d27, 0x0d44, 0x0d44,
 	0x0d63, 0x0d76, 0x0d89, 0x0d95, 0x0db2, 0x0dcb, 0x0dd9, 0x0df2,
 	0x0e0e, 0x0e23,
-}
+} // Size: 1244 bytes
 
-// Size: 1850 bytes
-var uzLangStr string = "" +
+var uzLangStr string = "" + // Size: 1850 bytes
 	"abxazafrikaansakanamxararabassamozarbayjonboshqirdbelarusbolgarbambarben" +
 	"galtibetbretonbosniykatalanchechenkorsikanchexchuvashvalliydatnemischadz" +
 	"ongkaevegrekinglizchaesperantoispanchaestonchabaskforsfinchafijifarercha" +
@@ -22246,8 +22107,7 @@ var uzLangStr string = "" +
 	"ariya)quyi saksonflamandportugal (Braziliya)portugal (Yevropa)moldovanso" +
 	"ddalashgan xitoyan’anaviy xitoy"
 
-// Size: 1244 bytes, 610 elements
-var uzLangIdx = []uint16{
+var uzLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0005, 0x0005, 0x000e, 0x0012, 0x0017, 0x0017,
 	0x001b, 0x0020, 0x0020, 0x0020, 0x002a, 0x0032, 0x0039, 0x003f,
@@ -22335,10 +22195,9 @@ var uzLangIdx = []uint16{
 	0x064b, 0x065a, 0x066c, 0x067c, 0x0693, 0x06a2, 0x06b1, 0x06b1,
 	0x06c1, 0x06d7, 0x06e2, 0x06e9, 0x06fd, 0x070f, 0x0717, 0x0717,
 	0x0729, 0x073a,
-}
+} // Size: 1244 bytes
 
-// Size: 8556 bytes
-var viLangStr string = "" +
+var viLangStr string = "" + // Size: 8556 bytes
 	"Tiếng AfarTiếng AbkhaziaTiếng AvestanTiếng Nam PhiTiếng AkanTiếng Amhari" +
 	"cTiếng AragonTiếng Ả RậpTiếng AssamTiếng AvaricTiếng AymaraTiếng Azerbai" +
 	"janTiếng BashkirTiếng BelarusTiếng BulgariaTiếng BislamaTiếng BambaraTiế" +
@@ -22440,8 +22299,7 @@ var viLangStr string = "" +
 	"inh)Tiếng Tây Ban Nha (Châu Âu)Tiếng Hạ SaxonTiếng FlemishTiếng Bồ Đào N" +
 	"ha (Braxin)Tiếng Bồ Đào Nha (Châu Âu)Tiếng MoldovaTiếng Xéc bi - Croatia"
 
-// Size: 1240 bytes, 608 elements
-var viLangIdx = []uint16{
+var viLangIdx = []uint16{ // 608 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x001c, 0x002b, 0x003a, 0x0046, 0x0055, 0x0063,
 	0x0074, 0x0081, 0x008f, 0x009d, 0x00af, 0x00be, 0x00cd, 0x00dd,
@@ -22528,10 +22386,9 @@ var viLangIdx = []uint16{
 	0x1ffc, 0x2008, 0x2029, 0x2035, 0x2054, 0x2054, 0x2054, 0x207c,
 	0x207c, 0x207c, 0x208d, 0x209f, 0x20c2, 0x20e2, 0x20e2, 0x20e2,
 	0x20e2, 0x20e2, 0x20f4, 0x2103, 0x2122, 0x2144, 0x2153, 0x216c,
-}
+} // Size: 1240 bytes
 
-// Size: 6405 bytes
-var zhLangStr string = "" +
+var zhLangStr string = "" + // Size: 6405 bytes
 	"阿法文阿布哈西亚文阿维斯塔文南非荷兰文阿肯文阿姆哈拉文阿拉贡文阿拉伯文阿萨姆文阿瓦尔文艾马拉文阿塞拜疆文巴什客尔文白俄罗斯文保加利亚文比斯拉马文" +
 	"班巴拉文孟加拉文藏文布里多尼文波斯尼亚文加泰罗尼亚文车臣文查莫罗文科西嘉文克里族文捷克文宗教斯拉夫文楚瓦什文威尔士文丹麦文德文迪维希文不丹文" +
 	"埃维文希腊文英文世界文西班牙文爱沙尼亚文巴斯克文波斯文夫拉文芬兰文斐济文法罗文法文西弗里西亚文爱尔兰文苏格兰盖尔文加利西亚文瓜拉尼文古吉拉特" +
@@ -22564,8 +22421,7 @@ var zhLangStr string = "" +
 	"南阿塞拜疆文奥地利德文瑞士高地德文澳大利亚英文加拿大英文英式英文美式英文拉丁美洲西班牙文欧洲西班牙文墨西哥西班牙文加拿大法文瑞士法文佛兰芒文" +
 	"巴西葡萄牙文欧洲葡萄牙文摩尔多瓦文塞尔维亚-克罗地亚文简体中文繁体中文"
 
-// Size: 1244 bytes, 610 elements
-var zhLangIdx = []uint16{
+var zhLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0009, 0x001b, 0x002a, 0x0039, 0x0042, 0x0051, 0x005d,
 	0x0069, 0x0075, 0x0081, 0x008d, 0x009c, 0x00ab, 0x00ba, 0x00c9,
@@ -22653,10 +22509,9 @@ var zhLangIdx = []uint16{
 	0x1811, 0x1820, 0x182c, 0x1838, 0x1850, 0x1862, 0x1877, 0x1877,
 	0x1886, 0x1892, 0x1892, 0x189e, 0x18b0, 0x18c2, 0x18d1, 0x18ed,
 	0x18f9, 0x1905,
-}
+} // Size: 1244 bytes
 
-// Size: 7582 bytes
-var zhHantLangStr string = "" +
+var zhHantLangStr string = "" + // Size: 7582 bytes
 	"阿法文阿布哈茲文阿緯斯陀文南非荷蘭文阿坎文阿姆哈拉文阿拉貢文阿拉伯文阿薩姆文阿瓦爾文艾馬拉文亞塞拜然文巴什客爾文白俄羅斯文保加利亞文比斯拉馬文班" +
 	"巴拉文孟加拉文藏文布列塔尼文波士尼亞文加泰羅尼亞文車臣文查莫洛文科西嘉文克裡文捷克文宗教斯拉夫文楚瓦什文威爾斯文丹麥文德文迪維西文宗卡文埃維" +
 	"文希臘文英文世界文西班牙文愛沙尼亞文巴斯克文波斯文富拉文芬蘭文斐濟文法羅文法文西弗里西亞文愛爾蘭文蘇格蘭蓋爾文加利西亞文瓜拉尼文古吉拉特文曼" +
@@ -22695,8 +22550,7 @@ var zhHantLangStr string = "" +
 	"克文布列斯符號西蘭文澤納加文標準摩洛哥塔馬塞特文祖尼文無語言內容扎扎文現代標準阿拉伯文高地德文（瑞士）低地薩克遜文佛蘭芒文摩爾多瓦文塞爾維亞" +
 	"克羅埃西亞文簡體中文繁體中文"
 
-// Size: 1244 bytes, 610 elements
-var zhHantLangIdx = []uint16{
+var zhHantLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0009, 0x0018, 0x0027, 0x0036, 0x003f, 0x004e, 0x005a,
 	0x0066, 0x0072, 0x007e, 0x008a, 0x0099, 0x00a8, 0x00b7, 0x00c6,
@@ -22784,10 +22638,9 @@ var zhHantLangIdx = []uint16{
 	0x1d3b, 0x1d3b, 0x1d3b, 0x1d3b, 0x1d3b, 0x1d3b, 0x1d3b, 0x1d3b,
 	0x1d3b, 0x1d3b, 0x1d4d, 0x1d59, 0x1d59, 0x1d59, 0x1d68, 0x1d86,
 	0x1d92, 0x1d9e,
-}
+} // Size: 1244 bytes
 
-// Size: 3045 bytes
-var zuLangStr string = "" +
+var zuLangStr string = "" + // Size: 3045 bytes
 	"isi-Abkhaziani-Afrikaansisi-Akanisi-Amharicisi-Arabicisi-Assameseisi-Aym" +
 	"araisi-Azerbaijaniisi-Bashkirisi-Belarusianisi-Bulgariisi-Bambaraisi-Ben" +
 	"galiisi-Tibetanisi-Bretonisi-Bosnianisi-Catalanisi-Chechenisi-Corsicanis" +
@@ -22832,8 +22685,7 @@ var zuLangStr string = "" +
 	"mishisi-Brazillian Portugueseisi-European Portugueseisi-Moldavianisi-Chi" +
 	"nese (Okosiko)"
 
-// Size: 1244 bytes, 610 elements
-var zuLangIdx = []uint16{
+var zuLangIdx = []uint16{ // 610 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x000d, 0x000d, 0x0018, 0x0020, 0x002b, 0x002b,
 	0x0035, 0x0041, 0x0041, 0x004b, 0x005a, 0x0065, 0x0073, 0x007e,
@@ -22921,7 +22773,7 @@ var zuLangIdx = []uint16{
 	0x0aea, 0x0afc, 0x0b0d, 0x0b1f, 0x0b39, 0x0b4b, 0x0b5c, 0x0b5c,
 	0x0b6d, 0x0b7b, 0x0b88, 0x0b93, 0x0bac, 0x0bc3, 0x0bd0, 0x0bd0,
 	0x0bd0, 0x0be5,
-}
+} // Size: 1244 bytes
 
 // Total size for lang: 896067 bytes (896 KB)
 
@@ -25225,16 +25077,14 @@ var scriptHeaders = [218]header{
 	},
 }
 
-// Size: 315 bytes
-var afScriptStr string = "" +
+var afScriptStr string = "" + // Size: 315 bytes
 	"ArabiesArmeensBengaalsBopomofoBrailleSirilliesDevanagariEtiopiesGeorgies" +
 	"GrieksGudjaratiGurmukhiHangulHanVereenvoudigde HanTradisionele HanHebree" +
 	"usHiraganaJapanneesKatakanaKhmerKannadaKoreaansLaoLatynMalabaarsMongools" +
 	"MianmarOriyaSinhalaTamilTeloegoeThaanaThaiTibettaansSimboleOngeskreweAlg" +
 	"emeenOnbekende skryfstelsel"
 
-// Size: 360 bytes, 168 elements
-var afScriptIdx = []uint16{
+var afScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0007, 0x0007, 0x000e, 0x000e,
 	0x000e, 0x000e, 0x000e, 0x000e, 0x0016, 0x0016, 0x001e, 0x001e,
@@ -25259,16 +25109,14 @@ var afScriptIdx = []uint16{
 	0x00f0, 0x00f0, 0x00f8, 0x00f8, 0x00f8, 0x00f8, 0x00fe, 0x0102,
 	0x010c, 0x010c, 0x010c, 0x010c, 0x010c, 0x010c, 0x010c, 0x010c,
 	0x010c, 0x010c, 0x010c, 0x010c, 0x0113, 0x011d, 0x0125, 0x013b,
-}
+} // Size: 360 bytes
 
-// Size: 505 bytes
-var amScriptStr string = "" +
+var amScriptStr string = "" + // Size: 505 bytes
 	"ዓረብኛአርሜንያዊቤንጋሊቦፖሞፎብሬይልሲይሪልክደቫንጋሪኢትዮፒክጆርጂያዊግሪክጉጃራቲጉርሙኪሐንጉልሃንቀለል ያለ ሃንባህላዊ" +
 	" ሃንእብራይስጥሂራጋናጃፓንኛካታካናክህመርካንአዳኮሪያኛላኦላቲንማላያልምሞንጎሊያኛምያንማርኦሪያሲንሃላታሚልተሉጉታናታይቲ" +
 	"ቤታንምልክቶችያልተጻፈየጋራያልታወቀ ስክሪፕት"
 
-// Size: 360 bytes, 168 elements
-var amScriptIdx = []uint16{
+var amScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000c, 0x000c, 0x001e, 0x001e,
 	0x001e, 0x001e, 0x001e, 0x001e, 0x002a, 0x002a, 0x0036, 0x0036,
@@ -25293,10 +25141,9 @@ var amScriptIdx = []uint16{
 	0x0192, 0x0192, 0x019b, 0x019b, 0x019b, 0x019b, 0x01a1, 0x01a7,
 	0x01b3, 0x01b3, 0x01b3, 0x01b3, 0x01b3, 0x01b3, 0x01b3, 0x01b3,
 	0x01b3, 0x01b3, 0x01b3, 0x01b3, 0x01c2, 0x01d1, 0x01da, 0x01f9,
-}
+} // Size: 360 bytes
 
-// Size: 2430 bytes
-var arScriptStr string = "" +
+var arScriptStr string = "" + // Size: 2430 bytes
 	"العربيةالأرمينيةالباليةالباتاكالبنغاليةرموز بليسالبوبوموفوالهندوسيةالبرا" +
 	"يلالبجينيزالبهيديةمقاطع كندية أصلية موحدةالكاريةالتشاميةالشيروكيالسيرثا" +
 	"لقبطيةالقبرصيةالسيريليةالسيريلية السلافية الكنسية القديمةالديفاناجاريال" +
@@ -25316,8 +25163,7 @@ var arScriptStr string = "" +
 	"كلام المرئيالفارسية القديمةالكتابة المسمارية الأكدية السومريةالييالمورو" +
 	"ثرموزغير مكتوبعامنظام كتابة غير معروف"
 
-// Size: 360 bytes, 168 elements
-var arScriptIdx = []uint16{
+var arScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000e, 0x000e, 0x0020, 0x0020,
 	0x002e, 0x002e, 0x002e, 0x003c, 0x004e, 0x005f, 0x0073, 0x0085,
@@ -25342,10 +25188,9 @@ var arScriptIdx = []uint16{
 	0x0813, 0x0813, 0x0821, 0x0833, 0x0845, 0x0859, 0x0865, 0x087b,
 	0x0889, 0x0889, 0x08a1, 0x08ab, 0x08c4, 0x08c4, 0x08c4, 0x08e3,
 	0x0924, 0x092c, 0x093a, 0x093a, 0x0942, 0x0953, 0x0959, 0x097e,
-}
+} // Size: 360 bytes
 
-// Size: 1043 bytes
-var azScriptStr string = "" +
+var azScriptStr string = "" + // Size: 1043 bytes
 	"ərəbarmierməniavestanbalibatakbenqalblissymbolsbopomofobrahmibraylbuqinb" +
 	"uhidkakmbirləşmiş kanada yerli yazısıkariyançamçirokisirtkoptikkiprkiril" +
 	"qədimi kilsa kirilidevanaqarideseretmisir demotikmisir hiyeratikmisir hi" +
@@ -25361,8 +25206,7 @@ var azScriptStr string = "" +
 	"loqthanataytibetuqaritvaydanışma səsləriqədimi farssumer-akadyan kuneyfo" +
 	"rmyizmthsimvollaryazısızümumi yazınaməlum skript"
 
-// Size: 360 bytes, 168 elements
-var azScriptIdx = []uint16{
+var azScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0006, 0x000a, 0x0011, 0x0018,
 	0x001c, 0x001c, 0x001c, 0x0021, 0x0027, 0x0032, 0x003a, 0x0040,
@@ -25387,10 +25231,9 @@ var azScriptIdx = []uint16{
 	0x0375, 0x0379, 0x037f, 0x0386, 0x038d, 0x0394, 0x0399, 0x039c,
 	0x03a1, 0x03a1, 0x03a7, 0x03aa, 0x03bd, 0x03bd, 0x03bd, 0x03c9,
 	0x03e0, 0x03e2, 0x03e2, 0x03e6, 0x03ef, 0x03f8, 0x0404, 0x0413,
-}
+} // Size: 360 bytes
 
-// Size: 2324 bytes
-var bgScriptStr string = "" +
+var bgScriptStr string = "" + // Size: 2324 bytes
 	"арабскаАрамейскаарменскаАвестанскаБалийскиБатакскабенгалскаБлис символиб" +
 	"опомофоБрахмиБрайловаБугинскаБухидЧакмаУнифицирани символи на канадски " +
 	"аборигениКарийскаХамитскаЧерокиКиртКоптскаКипърскакирилицадеванагариДез" +
@@ -25409,8 +25252,7 @@ var bgScriptStr string = "" +
 	"йскаВидима речСтароперсийскаШумеро-акадски клинописЙиМатематически симв" +
 	"олисимволибез писменостобщанепозната писменост"
 
-// Size: 360 bytes, 168 elements
-var bgScriptIdx = []uint16{
+var bgScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000e, 0x0020, 0x0030, 0x0044,
 	0x0054, 0x0054, 0x0054, 0x0064, 0x0076, 0x008d, 0x009d, 0x00a9,
@@ -25435,10 +25277,9 @@ var bgScriptIdx = []uint16{
 	0x07da, 0x07da, 0x07e6, 0x07e6, 0x07e6, 0x07f4, 0x07fe, 0x080a,
 	0x081a, 0x081a, 0x082c, 0x0838, 0x084b, 0x084b, 0x084b, 0x0867,
 	0x0893, 0x0897, 0x0897, 0x08c0, 0x08ce, 0x08e7, 0x08ef, 0x0914,
-}
+} // Size: 360 bytes
 
-// Size: 3576 bytes
-var bnScriptStr string = "" +
+var bnScriptStr string = "" + // Size: 3576 bytes
 	"আরবিআরমিআর্মেনীয়আভেসতানবালীয়বাটাকবাংলাব্লিসপ্রতীকবোপোমোফোব্রাহ্মীব্রেই" +
 	"লবুগিবুহিডচাকমাসংযুক্ত কানাডিয়ান অ্যাব্রোজিনিয়ান সিলেবিক্সক্যারিয়ান" +
 	"চ্যামচেরোকিকির্টকোপ্টিকসাইপ্রোয়েটসিরিলিকপ্রাচীন চার্চ স্লাভোনিক সিরিল" +
@@ -25458,8 +25299,7 @@ var bnScriptStr string = "" +
 	"শ্যমান ভাষাপ্রাচীন ফার্সিসুমের-আক্কাদীয় কীলকরূপউইকাইগানিতিক চিহ্নপ্রত" +
 	"ীকসমুহঅলিখিতসাধারনঅজানা লিপি"
 
-// Size: 360 bytes, 168 elements
-var bnScriptIdx = []uint16{
+var bnScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000c, 0x0018, 0x0033, 0x0048,
 	0x005a, 0x005a, 0x005a, 0x0069, 0x0078, 0x0099, 0x00b1, 0x00c9,
@@ -25484,10 +25324,9 @@ var bnScriptIdx = []uint16{
 	0x0c1a, 0x0c36, 0x0c48, 0x0c66, 0x0c7b, 0x0c8d, 0x0c99, 0x0ca2,
 	0x0cb7, 0x0cb7, 0x0ccf, 0x0cd8, 0x0cfd, 0x0cfd, 0x0cfd, 0x0d25,
 	0x0d66, 0x0d6c, 0x0d75, 0x0d9a, 0x0db8, 0x0dca, 0x0ddc, 0x0df8,
-}
+} // Size: 360 bytes
 
-// Size: 1535 bytes
-var caScriptStr string = "" +
+var caScriptStr string = "" + // Size: 1535 bytes
 	"afakaàrabarameu imperialarmeniavèsticbalinèsbamumbassa vahbatakbengalísí" +
 	"mbols Blissbopomofobrahmibraillebuginèsbuhidchakmasíl·labes dels aboríge" +
 	"ns canadencs unificatscariàchamcherokeecirthcoptexipriotaciríl·licciríl·" +
@@ -25510,8 +25349,7 @@ var caScriptStr string = "" +
 	"ïforme sumeri-accadiyiheretatnotació matemàticasímbolssense escripturac" +
 	"omúescriptura desconeguda"
 
-// Size: 360 bytes, 168 elements
-var caScriptIdx = []uint16{
+var caScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0005, 0x0005, 0x000a, 0x0019, 0x001f, 0x0027,
 	0x002f, 0x0034, 0x003d, 0x0042, 0x004a, 0x0058, 0x0060, 0x0066,
@@ -25536,10 +25374,9 @@ var caScriptIdx = []uint16{
 	0x0518, 0x0520, 0x0526, 0x052d, 0x0535, 0x053d, 0x0543, 0x054d,
 	0x0554, 0x055a, 0x0563, 0x0566, 0x0578, 0x0585, 0x058b, 0x0596,
 	0x05af, 0x05b1, 0x05b8, 0x05cc, 0x05d4, 0x05e4, 0x05e9, 0x05ff,
-}
+} // Size: 360 bytes
 
-// Size: 1891 bytes
-var csScriptStr string = "" +
+var csScriptStr string = "" + // Size: 1891 bytes
 	"afakakavkazskoalbánskéarabskéaramejské (imperiální)arménskéavestánskébal" +
 	"ijskébamumskébassa vahbatackébengálskéBlissovo písmobopomofobráhmíBraill" +
 	"ovo písmobuginskébuhidskéčakmaslabičné písmo kanadských domorodcůkarijsk" +
@@ -25565,8 +25402,7 @@ var csScriptStr string = "" +
 	"rské klínové písmosumero-akkadské klínové písmoyimatematický zápissymbol" +
 	"ybez zápisuobecnéneznámé písmo"
 
-// Size: 360 bytes, 168 elements
-var csScriptIdx = []uint16{
+var csScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0018, 0x0018, 0x0020, 0x0039, 0x0043, 0x004f,
 	0x0058, 0x0061, 0x006a, 0x0072, 0x007d, 0x008c, 0x0094, 0x009c,
@@ -25591,10 +25427,9 @@ var csScriptIdx = []uint16{
 	0x0655, 0x065d, 0x0666, 0x066d, 0x0677, 0x0680, 0x0686, 0x068e,
 	0x0697, 0x069e, 0x06b2, 0x06b5, 0x06c5, 0x06d2, 0x06e7, 0x0704,
 	0x0725, 0x0727, 0x0727, 0x073a, 0x0741, 0x074c, 0x0753, 0x0763,
-}
+} // Size: 360 bytes
 
-// Size: 1443 bytes
-var daScriptStr string = "" +
+var daScriptStr string = "" + // Size: 1443 bytes
 	"afakaarabiskarmiarmenskavestanskbalinesiskbamumbassabatakbengaliblissymb" +
 	"olerbopomofobramiskbrailleskriftbuginesiskbuhidcakmoprindelige canadiske" +
 	" symbolerkarianskchamcherokeecirtkoptiskcypriotiskkyrilliskkyrillisk - o" +
@@ -25616,8 +25451,7 @@ var daScriptStr string = "" +
 	"utaugaritiskvaisynlig talevarang kshitiwoleaioldpersisksumero-akkadisk c" +
 	"uneiformyiarvetzmthzsymuden skriftsprogfællesukendt skriftsprog"
 
-// Size: 360 bytes, 168 elements
-var daScriptIdx = []uint16{
+var daScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0005, 0x0005, 0x000c, 0x0010, 0x0017, 0x0020,
 	0x002a, 0x002f, 0x0034, 0x0039, 0x0040, 0x004c, 0x0054, 0x005b,
@@ -25642,10 +25476,9 @@ var daScriptIdx = []uint16{
 	0x04de, 0x04e2, 0x04e8, 0x04ef, 0x04f7, 0x04fe, 0x0504, 0x050e,
 	0x0517, 0x051e, 0x0527, 0x052a, 0x0535, 0x0542, 0x0548, 0x0552,
 	0x056b, 0x056d, 0x0572, 0x0576, 0x057a, 0x058a, 0x0591, 0x05a3,
-}
+} // Size: 360 bytes
 
-// Size: 1682 bytes
-var deScriptStr string = "" +
+var deScriptStr string = "" + // Size: 1682 bytes
 	"AfakaKaukasisch-AlbanischArabischArmiArmenischAvestischBalinesischBamunB" +
 	"assaBattakischBengalischBliss-SymboleBopomofoBrahmiBlindenschriftBugines" +
 	"ischBuhidChakmaUCASKarischChamCherokeeCirthKoptischZypriotischKyrillisch" +
@@ -25671,8 +25504,7 @@ var deScriptStr string = "" +
 	"rbter SchriftwertMathematische NotationSymboleSchriftlosUnbestimmtUnbeka" +
 	"nnte Schrift"
 
-// Size: 360 bytes, 168 elements
-var deScriptIdx = []uint16{
+var deScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0019, 0x0019, 0x0021, 0x0025, 0x002e, 0x0037,
 	0x0042, 0x0047, 0x004c, 0x0056, 0x0060, 0x006d, 0x0075, 0x007b,
@@ -25697,10 +25529,9 @@ var deScriptIdx = []uint16{
 	0x0599, 0x05a1, 0x05a7, 0x05ae, 0x05b6, 0x05bd, 0x05c3, 0x05c7,
 	0x05d0, 0x05d7, 0x05e1, 0x05e4, 0x05f5, 0x0602, 0x060e, 0x0619,
 	0x0639, 0x063b, 0x064f, 0x0665, 0x066c, 0x0676, 0x0680, 0x0692,
-}
+} // Size: 360 bytes
 
-// Size: 2635 bytes
-var elScriptStr string = "" +
+var elScriptStr string = "" + // Size: 2635 bytes
 	"ΑραβικόΑυτοκρατορικό ΑραμαϊκόΑρμενικόΑβεστάνΜπαλινίζΜπατάκΜπενγκάλιΣύμβο" +
 	"λα BlissΜποπομόφοΜπραχμίΜπράιγΜπούγκιςΜπουχίντΤσάκμαΕνοποιημένοι Καναδε" +
 	"ζικοί Συλλαβισμοί ΙθαγενώνΚαριάνΤσαμΤσερόκιΣερθΚοπτικόΚυπριακόΚυριλλικό" +
@@ -25721,8 +25552,7 @@ var elScriptStr string = "" +
 	"ανόΟυγκαριτικόΒάιΟρατή ομιλίαΠαλαιό ΠερσικόΣούμερο-Ακάντιαν ΚουνεϊφόρμΓ" +
 	"ιΚληρονομημένοΜαθηματική παράστασηΣύμβολαΆγραφοΚοινόΆγνωστη γραφή"
 
-// Size: 360 bytes, 168 elements
-var elScriptIdx = []uint16{
+var elScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000e, 0x0039, 0x0049, 0x0057,
 	0x0067, 0x0067, 0x0067, 0x0073, 0x0085, 0x0099, 0x00ab, 0x00b9,
@@ -25747,10 +25577,9 @@ var elScriptIdx = []uint16{
 	0x08c2, 0x08d1, 0x08e3, 0x08f5, 0x0905, 0x0917, 0x0921, 0x0935,
 	0x0947, 0x0947, 0x095d, 0x0963, 0x097a, 0x097a, 0x097a, 0x0995,
 	0x09c9, 0x09cd, 0x09e7, 0x0a0e, 0x0a1c, 0x0a28, 0x0a32, 0x0a4b,
-}
+} // Size: 360 bytes
 
-// Size: 1531 bytes
-var enScriptStr string = "" +
+var enScriptStr string = "" + // Size: 1531 bytes
 	"AfakaCaucasian AlbanianAhomArabicImperial AramaicArmenianAvestanBalinese" +
 	"BamumBassa VahBatakBengaliBlissymbolsBopomofoBrahmiBrailleBugineseBuhidC" +
 	"hakmaUnified Canadian Aboriginal SyllabicsCarianChamCherokeeCirthCopticC" +
@@ -25774,8 +25603,7 @@ var enScriptStr string = "" +
 	"o-Akkadian CuneiformYiInheritedMathematical NotationSymbolsUnwrittenComm" +
 	"onUnknown Script"
 
-// Size: 360 bytes, 168 elements
-var enScriptIdx = []uint16{
+var enScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0017, 0x001b, 0x0021, 0x0031, 0x0039, 0x0040,
 	0x0048, 0x004d, 0x0056, 0x005b, 0x0062, 0x006d, 0x0075, 0x007b,
@@ -25800,16 +25628,15 @@ var enScriptIdx = []uint16{
 	0x052b, 0x0533, 0x0539, 0x0540, 0x0548, 0x054f, 0x0555, 0x0559,
 	0x0560, 0x0567, 0x056f, 0x0572, 0x0580, 0x058d, 0x0593, 0x059e,
 	0x05b7, 0x05b9, 0x05c2, 0x05d7, 0x05de, 0x05e7, 0x05ed, 0x05fb,
-}
+} // Size: 360 bytes
 
-// Size: 0 bytes
 const enGBScriptStr string = ""
 
-// Size: 24 bytes, 0 elements
-var enGBScriptIdx = []uint16{}
+var enGBScriptIdx = []uint16{ // 0 elements
 
-// Size: 1165 bytes
-var esScriptStr string = "" +
+} // Size: 24 bytes
+
+var esScriptStr string = "" + // Size: 1165 bytes
 	"árabearmenioavésticobalinésbatakbengalísímbolos blisbopomofobrahmibraill" +
 	"ebuginésbuhidsímbolos aborígenes canadienses unificadoscariochamcherokee" +
 	"cirthcoptochipriotacirílicocirílico del antiguo eslavo eclesiásticodevan" +
@@ -25827,8 +25654,7 @@ var esScriptStr string = "" +
 	"ougaríticovailenguaje visiblepersa antiguocuneiforme sumerio-acadioyiher" +
 	"edadosímbolosno escritocomúnalfabeto desconocido"
 
-// Size: 360 bytes, 168 elements
-var esScriptIdx = []uint16{
+var esScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0006, 0x0006, 0x000d, 0x0016,
 	0x001e, 0x001e, 0x001e, 0x0023, 0x002b, 0x0039, 0x0041, 0x0047,
@@ -25853,16 +25679,15 @@ var esScriptIdx = []uint16{
 	0x03e0, 0x03e0, 0x03e6, 0x03ed, 0x03f5, 0x03fb, 0x0401, 0x040b,
 	0x0413, 0x0413, 0x041d, 0x0420, 0x0430, 0x0430, 0x0430, 0x043d,
 	0x0456, 0x0458, 0x0460, 0x0460, 0x0469, 0x0473, 0x0479, 0x048d,
-}
+} // Size: 360 bytes
 
-// Size: 0 bytes
 const es419ScriptStr string = ""
 
-// Size: 24 bytes, 0 elements
-var es419ScriptIdx = []uint16{}
+var es419ScriptIdx = []uint16{ // 0 elements
 
-// Size: 1541 bytes
-var etScriptStr string = "" +
+} // Size: 24 bytes
+
+var etScriptStr string = "" + // Size: 1541 bytes
 	"afakaalbaaniahomiaraabiavanaarameaarmeeniaavestabalibamumibassabatakiben" +
 	"galiBlissi sümbolidbopomofobraahmipunktkiribugibuhiditšaakmaKanada põlis" +
 	"rahvaste ühtlustatud silpkirikaariatšaamitšerokiiCirthikoptiKüprose silp" +
@@ -25885,8 +25710,7 @@ var etScriptStr string = "" +
 	" kõnehoovoleaivanapärsiasumeri-akadi kiilkirijiipäritudmatemaatiline täh" +
 	"istussümbolidkirjakeeletaüldinemääramata kiri"
 
-// Size: 360 bytes, 168 elements
-var etScriptIdx = []uint16{
+var etScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x000c, 0x0011, 0x0018, 0x0022, 0x002a, 0x0030,
 	0x0034, 0x003a, 0x003f, 0x0045, 0x004c, 0x005c, 0x0064, 0x006b,
@@ -25911,10 +25735,9 @@ var etScriptIdx = []uint16{
 	0x0539, 0x0542, 0x0548, 0x0550, 0x0558, 0x0560, 0x0565, 0x0568,
 	0x056f, 0x0576, 0x057d, 0x0580, 0x058e, 0x0591, 0x0597, 0x05a2,
 	0x05b7, 0x05ba, 0x05c2, 0x05d9, 0x05e2, 0x05ee, 0x05f5, 0x0605,
-}
+} // Size: 360 bytes
 
-// Size: 1849 bytes
-var faScriptStr string = "" +
+var faScriptStr string = "" + // Size: 1849 bytes
 	"آلبانیایی قفقازیعربیآرامی هخامنشیارمنیاوستاییبالیاییباتاکیبنگالینمادهای " +
 	"بلیسبوپوموفوبراهمیبریلبوگیاییبوهیدچاکماییکاریچمیچروکیاییکرتقبطیقبرسیسیر" +
 	"یلیدوناگریدیسرتیکاهنی مصریهیروگلیف مصریاتیوپیاییگرجی خوتسوریگرجیگلاگولی" +
@@ -25930,8 +25753,7 @@ var faScriptStr string = "" +
 	"الوگیتانه\u200cایتایلندیتبتیاوگاریتیویاییگفتار قابل مشاهدهفارسی باستانم" +
 	"یخی سومری‐اکدیییموروثیعلائم ریاضیعلائمنانوشتهمشترکخط نامشخص"
 
-// Size: 360 bytes, 168 elements
-var faScriptIdx = []uint16{
+var faScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x001f, 0x001f, 0x0027, 0x0040, 0x004a, 0x0058,
 	0x0066, 0x0066, 0x0066, 0x0072, 0x007e, 0x0095, 0x00a5, 0x00b1,
@@ -25956,10 +25778,9 @@ var faScriptIdx = []uint16{
 	0x0613, 0x0613, 0x0621, 0x062d, 0x063d, 0x064d, 0x065c, 0x066a,
 	0x0672, 0x0672, 0x0682, 0x068c, 0x06ac, 0x06ac, 0x06ac, 0x06c3,
 	0x06e1, 0x06e5, 0x06f1, 0x0706, 0x0710, 0x071e, 0x0728, 0x0739,
-}
+} // Size: 360 bytes
 
-// Size: 2325 bytes
-var fiScriptStr string = "" +
+var fiScriptStr string = "" + // Size: 2325 bytes
 	"afakakaukasianalbanialainenahomarabialainenvaltakunnanaramealainenarmeni" +
 	"alainenavestalainenbalilainenbamumbassabatakilainenbengalilainenbliss-sy" +
 	"mbolitbopomofobrahmibraille-pistekirjoitusbugilainenbuhidilainenchakmala" +
@@ -25993,8 +25814,7 @@ var fiScriptStr string = "" +
 	"ilais-akkadilainen nuolenpääkirjoitusyiläinenperittymatemaattinensymboli" +
 	"tkirjoittamatonmäärittämätöntuntematon kirjoitusjärjestelmä"
 
-// Size: 360 bytes, 168 elements
-var fiScriptIdx = []uint16{
+var fiScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x001b, 0x001f, 0x002b, 0x0042, 0x004f, 0x005b,
 	0x0065, 0x006a, 0x006f, 0x007b, 0x0088, 0x0096, 0x009e, 0x00a4,
@@ -26019,18 +25839,16 @@ var fiScriptIdx = []uint16{
 	0x07e4, 0x07ec, 0x07f8, 0x07ff, 0x0807, 0x0815, 0x081b, 0x0825,
 	0x0833, 0x083a, 0x0847, 0x0850, 0x085d, 0x086a, 0x0870, 0x0883,
 	0x08af, 0x08b8, 0x08bf, 0x08cc, 0x08d4, 0x08e2, 0x08f4, 0x0915,
-}
+} // Size: 360 bytes
 
-// Size: 311 bytes
-var filScriptStr string = "" +
+var filScriptStr string = "" + // Size: 311 bytes
 	"ArabicArmenianBengaliBopomofoBrailleCyrillicDevanagariEthiopicGeorgianGr" +
 	"eekGujaratiGurmukhiHangulHanPinasimpleng HanTradisyonal na HanHebrewHira" +
 	"ganaJapaneseKatakanaKhmerKannadaKoreanLaoLatinMalayalamMongolianMyanmarO" +
 	"riyaSinhalaTamilTeluguThaanaThaiTibetanMga SimboloHindi NakasulatKaraniw" +
 	"anHindi Kilalang Script"
 
-// Size: 360 bytes, 168 elements
-var filScriptIdx = []uint16{
+var filScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0006, 0x0006, 0x000e, 0x000e,
 	0x000e, 0x000e, 0x000e, 0x000e, 0x0015, 0x0015, 0x001d, 0x001d,
@@ -26055,10 +25873,9 @@ var filScriptIdx = []uint16{
 	0x00e8, 0x00e8, 0x00ee, 0x00ee, 0x00ee, 0x00ee, 0x00f4, 0x00f8,
 	0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x00ff,
 	0x00ff, 0x00ff, 0x00ff, 0x00ff, 0x010a, 0x0119, 0x0122, 0x0137,
-}
+} // Size: 360 bytes
 
-// Size: 1445 bytes
-var frScriptStr string = "" +
+var frScriptStr string = "" + // Size: 1445 bytes
 	"arabearaméen impérialarménienavestiquebalinaisbatakbengalisymboles Bliss" +
 	"bopomofobrâhmîbraillebouguisbouhidechakmasyllabaire autochtone canadien " +
 	"unifiécarienchamcherokeecirthcoptesyllabaire chypriotecyrilliquecyrilliq" +
@@ -26080,8 +25897,7 @@ var frScriptStr string = "" +
 	"uméro-akkadienyihériténotation mathématiquesymbolesnon écritcommunécritu" +
 	"re inconnue"
 
-// Size: 360 bytes, 168 elements
-var frScriptIdx = []uint16{
+var frScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0005, 0x0017, 0x0020, 0x0029,
 	0x0031, 0x0031, 0x0031, 0x0036, 0x003d, 0x004b, 0x0053, 0x005b,
@@ -26106,23 +25922,20 @@ var frScriptIdx = []uint16{
 	0x04cd, 0x04d7, 0x04e0, 0x04e7, 0x04ef, 0x04f4, 0x04fa, 0x04ff,
 	0x0508, 0x0508, 0x0513, 0x0517, 0x0525, 0x0525, 0x0525, 0x053f,
 	0x055b, 0x055d, 0x0565, 0x057b, 0x0583, 0x058d, 0x0593, 0x05a5,
-}
+} // Size: 360 bytes
 
-// Size: 18 bytes
 var frCAScriptStr string = "devanagarigujarati"
 
-// Size: 112 bytes, 44 elements
-var frCAScriptIdx = []uint16{
+var frCAScriptIdx = []uint16{ // 44 elements
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x000a, 0x000a, 0x000a,
 	0x000a, 0x000a, 0x000a, 0x000a, 0x000a, 0x000a, 0x000a, 0x000a,
 	0x000a, 0x000a, 0x000a, 0x0012,
-}
+} // Size: 112 bytes
 
-// Size: 3319 bytes
-var guScriptStr string = "" +
+var guScriptStr string = "" + // Size: 3319 bytes
 	"અરબીઇમ્પિરિયલ આર્મનિકઅર્મેનિયનઅવેસ્તનબાલીનીઝબટાકબંગાળીબ્લિસિમ્બોલ્સબોપોમ" +
 	"ોફોબ્રહ્મીબ્રેલબગિનીસબુહિદચકમાયુનાઇટેડ કેનેડિયન એબોરિજનલ સિલેબિક્સકરૈન" +
 	"ચેરોકીસિર્થકોપ્ટિકસિપ્રાયટસિરિલિકઓલ્ડ ચર્ચ સ્લાવોનિક સિરિલિકદેવનાગરીડે" +
@@ -26141,8 +25954,7 @@ var guScriptStr string = "" +
 	"ારસીસુમેરો અક્કાદિયન સુનિફોર્મયીવંશાગતગણિતીય સંકેતલિપિપ્રતીકોઅલિખિતસામ" +
 	"ાન્યઅજ્ઞાત લિપિ"
 
-// Size: 360 bytes, 168 elements
-var guScriptIdx = []uint16{
+var guScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000c, 0x003d, 0x0058, 0x006d,
 	0x0082, 0x0082, 0x0082, 0x008e, 0x00a0, 0x00c7, 0x00df, 0x00f4,
@@ -26167,10 +25979,9 @@ var guScriptIdx = []uint16{
 	0x0b19, 0x0b2f, 0x0b41, 0x0b59, 0x0b6e, 0x0b83, 0x0b8f, 0x0b98,
 	0x0baa, 0x0baa, 0x0bc5, 0x0bce, 0x0bf0, 0x0bf0, 0x0bf0, 0x0c0c,
 	0x0c56, 0x0c5c, 0x0c6e, 0x0c9c, 0x0cb1, 0x0cc3, 0x0cd8, 0x0cf7,
-}
+} // Size: 360 bytes
 
-// Size: 849 bytes
-var heScriptStr string = "" +
+var heScriptStr string = "" + // Size: 849 bytes
 	"ערביארמניבאלינזיבנגליבופומופובריילצ׳אםצ׳ירוקיקופטיקפריסאיקיריליקירילי סל" +
 	"אבוני כנסייתי עתיקדוואנגריכתב חרטומיםאתיופיגאורגיגותייווניגוג׳רטיגורמוק" +
 	"יהאנגולהאןכתב האן פשוטכתב האן מסורתיעבריהירגאנההונגרי עתיקאינדוסאיטלקי " +
@@ -26179,8 +25990,7 @@ var heScriptStr string = "" +
 	"כתב טאנהתאיטיבטיאוגריתיפרסי עתיקמורשסימון מתמטיסימניםלא כתוברגילכתב שאי" +
 	"נו ידוע"
 
-// Size: 360 bytes, 168 elements
-var heScriptIdx = []uint16{
+var heScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0008, 0x0008, 0x0012, 0x0012,
 	0x0020, 0x0020, 0x0020, 0x0020, 0x002a, 0x002a, 0x003a, 0x003a,
@@ -26205,10 +26015,9 @@ var heScriptIdx = []uint16{
 	0x02a7, 0x02a7, 0x02b1, 0x02b1, 0x02b1, 0x02bb, 0x02ca, 0x02d0,
 	0x02da, 0x02da, 0x02e8, 0x02e8, 0x02e8, 0x02e8, 0x02e8, 0x02f9,
 	0x02f9, 0x02f9, 0x0301, 0x0316, 0x0322, 0x032f, 0x0337, 0x0351,
-}
+} // Size: 360 bytes
 
-// Size: 3328 bytes
-var hiScriptStr string = "" +
+var hiScriptStr string = "" + // Size: 3328 bytes
 	"अरबीइम्पिरियल आर्मेनिकआर्मेनियाईअवेस्तनबालीबटकीबंगालीब्लिसिम्बॉल्सबोपोमो" +
 	"फ़ोब्रह्मीब्रेलबगिनीसबुहिदचकमायुनिफाइड कैनेडियन एबोरिजनल सिलेबिक्सकरैन" +
 	"चामचेरोकीकिर्थकॉप्टिककाइप्रायटसिरिलिकओल्ड चर्च स्लावोनिक सिरिलिकदेवनाग" +
@@ -26227,8 +26036,7 @@ var hiScriptStr string = "" +
 	"ीचपुरानी फारसीसुमेरो अक्कादियन सुनिफॉर्मयीविरासतगणितीय संकेतनचिह्नअलिख" +
 	"ितसामान्यअज्ञात लिपि"
 
-// Size: 360 bytes, 168 elements
-var hiScriptIdx = []uint16{
+var hiScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000c, 0x0040, 0x005e, 0x0073,
 	0x007f, 0x007f, 0x007f, 0x008b, 0x009d, 0x00c4, 0x00df, 0x00f4,
@@ -26253,10 +26061,9 @@ var hiScriptIdx = []uint16{
 	0x0b28, 0x0b3e, 0x0b50, 0x0b68, 0x0b7d, 0x0b92, 0x0b9e, 0x0ba7,
 	0x0bbc, 0x0bbc, 0x0bd7, 0x0be0, 0x0c02, 0x0c02, 0x0c02, 0x0c24,
 	0x0c6e, 0x0c74, 0x0c86, 0x0cab, 0x0cba, 0x0ccc, 0x0ce1, 0x0d00,
-}
+} // Size: 360 bytes
 
-// Size: 2371 bytes
-var hrScriptStr string = "" +
+var hrScriptStr string = "" + // Size: 2371 bytes
 	"afaka pismoarapsko pismoaramejsko pismoarmensko pismoavestansko pismobal" +
 	"ijsko pismobamum pismobassa vah pismobatak pismobengalsko pismoblissymbo" +
 	"lsbopomofo pismobrahmi pismobrajicabuginsko pismobuhid pismochakma pismo" +
@@ -26291,8 +26098,7 @@ var hrScriptStr string = "" +
 	"dsko cuneiform pismoYi pismonasljedno pismomatematičko znakovljesimbolij" +
 	"ezik bez pismenostizajedničko pismonepoznato pismo"
 
-// Size: 360 bytes, 168 elements
-var hrScriptIdx = []uint16{
+var hrScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x000b, 0x000b, 0x000b, 0x0018, 0x0027, 0x0035, 0x0045,
 	0x0053, 0x005e, 0x006d, 0x0078, 0x0087, 0x0092, 0x00a0, 0x00ac,
@@ -26317,10 +26123,9 @@ var hrScriptIdx = []uint16{
 	0x07ed, 0x07fb, 0x0807, 0x0814, 0x081b, 0x0828, 0x0834, 0x0844,
 	0x0854, 0x0861, 0x0870, 0x0879, 0x0887, 0x089a, 0x08a6, 0x08bb,
 	0x08db, 0x08e3, 0x08f2, 0x0908, 0x090f, 0x0923, 0x0934, 0x0943,
-}
+} // Size: 360 bytes
 
-// Size: 1273 bytes
-var huScriptStr string = "" +
+var huScriptStr string = "" + // Size: 1273 bytes
 	"ArabBirodalmi arámiÖrményAvesztánBalinézBatakBengáliBliss jelképrendszer" +
 	"BopomofoBrámiVakírásBuginézBuhidCsakmaEgyesített kanadai őslakos jelekKa" +
 	"riCsámCserokiKoptCiprusiCirillÓegyházi szláv cirillDevanagáriDeseretEgyi" +
@@ -26339,8 +26144,7 @@ var huScriptStr string = "" +
 	"méro-akkádJiSzármaztatottMatematikai jelrendszerSzimbólumÍratlan nyelvek" +
 	" kódjaMeghatározatlanIsmeretlen írásrendszer"
 
-// Size: 360 bytes, 168 elements
-var huScriptIdx = []uint16{
+var huScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0004, 0x0014, 0x001c, 0x0025,
 	0x002d, 0x002d, 0x002d, 0x0032, 0x003a, 0x004f, 0x0057, 0x005d,
@@ -26365,18 +26169,16 @@ var huScriptIdx = []uint16{
 	0x041b, 0x0423, 0x0429, 0x0430, 0x0436, 0x043d, 0x0443, 0x0447,
 	0x044d, 0x044d, 0x0452, 0x0455, 0x0466, 0x0466, 0x0466, 0x046e,
 	0x0488, 0x048a, 0x0498, 0x04af, 0x04b9, 0x04d0, 0x04e0, 0x04f9,
-}
+} // Size: 360 bytes
 
-// Size: 679 bytes
-var hyScriptStr string = "" +
+var hyScriptStr string = "" + // Size: 679 bytes
 	"արաբականհայկականբենգալականբոպոմոֆոբրայլիկյուրեղագիրդեվանագարիեթովպականվր" +
 	"ացականհունականգուջարաթիգուրմուխիհանգուլչինականպարզեցված չինականավանդակա" +
 	"ն չինականեբրայականհիրագանաճապոնականկատականաքմերականկաննադակորեականլաոսա" +
 	"կանլատինականմալայալամմոնղոլականմյանմարականօրիյասինհալականթամիլականթելու" +
 	"գութաանաթայականտիբեթականնշաններչգրվածընդհանուրանհայտ գիր"
 
-// Size: 360 bytes, 168 elements
-var hyScriptIdx = []uint16{
+var hyScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0010, 0x0010, 0x0020, 0x0020,
 	0x0020, 0x0020, 0x0020, 0x0020, 0x0034, 0x0034, 0x0044, 0x0044,
@@ -26401,10 +26203,9 @@ var hyScriptIdx = []uint16{
 	0x022e, 0x022e, 0x023e, 0x023e, 0x023e, 0x023e, 0x0248, 0x0256,
 	0x0268, 0x0268, 0x0268, 0x0268, 0x0268, 0x0268, 0x0268, 0x0268,
 	0x0268, 0x0268, 0x0268, 0x0268, 0x0276, 0x0282, 0x0294, 0x02a7,
-}
+} // Size: 360 bytes
 
-// Size: 1396 bytes
-var idScriptStr string = "" +
+var idScriptStr string = "" + // Size: 1396 bytes
 	"AfakaAlbania KaukasiaArabAram ImperialArmeniaAvestaBaliBamumBassa VahBat" +
 	"akBengaliBlissymbolBopomofoBrahmiBrailleBugisBuhidChakmaSimbol Aborigin " +
 	"Kanada KesatuanKariaChamCherokeeCirthKoptikSiprusSirilikGereja Slavonia " +
@@ -26426,8 +26227,7 @@ var idScriptStr string = "" +
 	"ia KunoCuneiform Sumero-AkkadiaYiWarisanNotasi MatematikaSimbolTidak Ter" +
 	"tulisUmumSkrip Tak Dikenal"
 
-// Size: 360 bytes, 168 elements
-var idScriptIdx = []uint16{
+var idScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0015, 0x0015, 0x0019, 0x0026, 0x002d, 0x0033,
 	0x0037, 0x003c, 0x0045, 0x004a, 0x0051, 0x005b, 0x0063, 0x0069,
@@ -26452,18 +26252,16 @@ var idScriptIdx = []uint16{
 	0x04a6, 0x04ae, 0x04b4, 0x04bc, 0x04c4, 0x04cb, 0x04d1, 0x04d5,
 	0x04da, 0x04e1, 0x04e9, 0x04ec, 0x04fb, 0x0508, 0x050e, 0x0519,
 	0x0531, 0x0533, 0x053a, 0x054b, 0x0551, 0x055f, 0x0563, 0x0574,
-}
+} // Size: 360 bytes
 
-// Size: 363 bytes
-var isScriptStr string = "" +
+var isScriptStr string = "" + // Size: 363 bytes
 	"arabísktarmensktbengalsktbopomofoblindraleturkyrillísktdevanagarieþíópís" +
 	"ktgeorgísktgrísktgújaratígurmukhihangulkínverskteinfaldað hanhefðbundið " +
 	"hanhebreskthiraganakatakana eða hiraganajapansktkatakanakmerkannadakóres" +
 	"ktlaolatnesktmalalajammongólsktmjanmarsktoriyasinhalatamílskttelúgúthaan" +
 	"ataílenskttíbeskttáknóskrifaðalmenntóþekkt letur"
 
-// Size: 360 bytes, 168 elements
-var isScriptIdx = []uint16{
+var isScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0009, 0x0009, 0x0011, 0x0011,
 	0x0011, 0x0011, 0x0011, 0x0011, 0x001a, 0x001a, 0x0022, 0x0022,
@@ -26488,10 +26286,9 @@ var isScriptIdx = []uint16{
 	0x0127, 0x0127, 0x012f, 0x012f, 0x012f, 0x012f, 0x0135, 0x013f,
 	0x0147, 0x0147, 0x0147, 0x0147, 0x0147, 0x0147, 0x0147, 0x0147,
 	0x0147, 0x0147, 0x0147, 0x0147, 0x014c, 0x0156, 0x015d, 0x016b,
-}
+} // Size: 360 bytes
 
-// Size: 1562 bytes
-var itScriptStr string = "" +
+var itScriptStr string = "" + // Size: 1562 bytes
 	"afakaaraboaramaico imperialearmenoavesticobalinesebamumBassa Vahbatakben" +
 	"galesesimboli blissbopomofobrahmibraillebuginesebuhidchakmasimboli abori" +
 	"geni canadesi unificaticarianchamcherokeecirthcoptocipriotacirillicociri" +
@@ -26515,8 +26312,7 @@ var itScriptStr string = "" +
 	"aipersiano anticosumero-accadiano cuneiformeyiereditatonotazione matemat" +
 	"icasimbolinon scrittocomunescrittura sconosciuta"
 
-// Size: 360 bytes, 168 elements
-var itScriptIdx = []uint16{
+var itScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0005, 0x0005, 0x000a, 0x001c, 0x0022, 0x002a,
 	0x0032, 0x0037, 0x0040, 0x0045, 0x004e, 0x005b, 0x0063, 0x0069,
@@ -26541,10 +26337,9 @@ var itScriptIdx = []uint16{
 	0x0533, 0x053b, 0x0541, 0x0548, 0x0550, 0x0557, 0x055d, 0x0568,
 	0x0570, 0x0577, 0x057e, 0x0582, 0x0591, 0x059e, 0x05a4, 0x05b3,
 	0x05ce, 0x05d0, 0x05d9, 0x05ed, 0x05f4, 0x05ff, 0x0605, 0x061a,
-}
+} // Size: 360 bytes
 
-// Size: 3253 bytes
-var jaScriptStr string = "" +
+var jaScriptStr string = "" + // Size: 3253 bytes
 	"アファカ文字カフカス・アルバニア文字アラビア文字帝国アラム文字アルメニア文字アヴェスター文字バリ文字バムン文字バサ文字バタク文字ベンガル文字ブリ" +
 	"スシンボル注音字母ブラーフミー文字ブライユ点字ブギス文字ブヒッド文字チャクマ文字統合カナダ先住民音節文字カリア文字チャム文字チェロキー文字キ" +
 	"アス文字コプト文字キプロス文字キリル文字古代教会スラブ語キリル文字デーバナーガリー文字デセレット文字デュプロワエ式速記エジプト民衆文字エジプ" +
@@ -26562,8 +26357,7 @@ var jaScriptStr string = "" +
 	"ナ文字タイ文字チベット文字ティルフータ文字ウガリット文字ヴァイ文字視話法バラン・クシティ文字ウォレアイ文字古代ペルシア文字シュメール＝アッカ" +
 	"ド語楔形文字イ文字基底文字の種別を継承する結合文字数学記号記号文字非表記共通文字未定義文字"
 
-// Size: 360 bytes, 168 elements
-var jaScriptIdx = []uint16{
+var jaScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0012, 0x0036, 0x0036, 0x0048, 0x005d, 0x0072, 0x008a,
 	0x0096, 0x00a5, 0x00b1, 0x00c0, 0x00d2, 0x00e7, 0x00f3, 0x010b,
@@ -26588,10 +26382,9 @@ var jaScriptIdx = []uint16{
 	0x0af0, 0x0b08, 0x0b17, 0x0b2f, 0x0b44, 0x0b56, 0x0b65, 0x0b71,
 	0x0b83, 0x0b9b, 0x0bb0, 0x0bbf, 0x0bc8, 0x0be6, 0x0bfb, 0x0c13,
 	0x0c40, 0x0c49, 0x0c79, 0x0c85, 0x0c91, 0x0c9a, 0x0ca6, 0x0cb5,
-}
+} // Size: 360 bytes
 
-// Size: 4008 bytes
-var kaScriptStr string = "" +
+var kaScriptStr string = "" + // Size: 4008 bytes
 	"აფაკაარაბულიიმპერიული არამეულისომხურიავესტურიბალიურიბამუმიბასა ვაჰიბატაკ" +
 	"იბენგალურიბლისსიმბოლოებიბოპომოფობრაჰმიბრაილიბუჰიდიჩაკმაკარიულიჩამიჩერო" +
 	"კიკირთიკოპტურიკვიპროსულიკირილიცაძველი სლავური კირილიცადევანაგარიდეზერე" +
@@ -26613,8 +26406,7 @@ var kaScriptStr string = "" +
 	" სპარსულიშუმერულ-აქადური ლურსმნულიგადაღებულიმათემატიკური ნოტაციასიმბოლოე" +
 	"ბიუმწერლობოზოგადიუცნობი დამწერლობა"
 
-// Size: 360 bytes, 168 elements
-var kaScriptIdx = []uint16{
+var kaScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x000f, 0x000f, 0x0024, 0x0058, 0x006d, 0x0085,
 	0x009a, 0x00ac, 0x00c5, 0x00d7, 0x00f2, 0x011c, 0x0134, 0x0146,
@@ -26639,10 +26431,9 @@ var kaScriptIdx = []uint16{
 	0x0d3c, 0x0d55, 0x0d67, 0x0d7f, 0x0d97, 0x0d97, 0x0da6, 0x0daf,
 	0x0dc7, 0x0ddc, 0x0df7, 0x0e00, 0x0e31, 0x0e53, 0x0e65, 0x0e8d,
 	0x0ed4, 0x0ed4, 0x0ef2, 0x0f2c, 0x0f4a, 0x0f65, 0x0f77, 0x0fa8,
-}
+} // Size: 360 bytes
 
-// Size: 918 bytes
-var kkScriptStr string = "" +
+var kkScriptStr string = "" + // Size: 918 bytes
 	"араб жазуыармян жазуыбенгал жазуыбопомофо жазуБрайль жазуыкирилл жазуыде" +
 	"ванагари жазуыэфиоп жазугрузин жазуыгрек жазуыгуджарати жазуыгурмукхи ж" +
 	"азуыхангул жазуықытай жазуыжеңілдетілген қытай иероглифыдәстүрлі қытай " +
@@ -26651,8 +26442,7 @@ var kkScriptStr string = "" +
 	"ьянма жазуыория жазуысингаль жазуытамиль жазуытелугу жазуытаана жазуыта" +
 	"й жазуытибет жазуытаңбаларжазусызжалпыбелгісіз жазу"
 
-// Size: 360 bytes, 168 elements
-var kkScriptIdx = []uint16{
+var kkScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0013, 0x0013, 0x0028, 0x0028,
 	0x0028, 0x0028, 0x0028, 0x0028, 0x003f, 0x003f, 0x0058, 0x0058,
@@ -26677,10 +26467,9 @@ var kkScriptIdx = []uint16{
 	0x0303, 0x0303, 0x031a, 0x031a, 0x031a, 0x031a, 0x032f, 0x0340,
 	0x0355, 0x0355, 0x0355, 0x0355, 0x0355, 0x0355, 0x0355, 0x0355,
 	0x0355, 0x0355, 0x0355, 0x0355, 0x0365, 0x0373, 0x037d, 0x0396,
-}
+} // Size: 360 bytes
 
-// Size: 957 bytes
-var kmScriptStr string = "" +
+var kmScriptStr string = "" + // Size: 957 bytes
 	"អារ៉ាប់អាម៉ានីបង់ក្លាដែសបូផូម៉ូហ្វូអក្សរ\u200bសម្រាប់មនុស្ស\u200bពិការ" +
 	"\u200bភ្នែកស៊ីរីលីកដាវ៉ាន់ណាការិអេត្យូពីហ្សកហ្ស៊ីក្រិចគូចារ៉ាទីកុមុយឃីហា" +
 	"ំងកុលហានអក្សរ\u200bហាន\u200bកាត់អក្សរ\u200bហាន\u200bពេញអ៊ីស្រាអែលហ៊ីរ៉" +
@@ -26688,8 +26477,7 @@ var kmScriptStr string = "" +
 	"ស៊ីនហាឡាតាមីលតេលុគុថាណាថៃទីបេនិមិត្តសញ្ញាគ្មានការសរសេរទូទៅអក្សរមិនស្គា" +
 	"ល់"
 
-// Size: 360 bytes, 168 elements
-var kmScriptIdx = []uint16{
+var kmScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0015, 0x0015, 0x002a, 0x002a,
 	0x002a, 0x002a, 0x002a, 0x002a, 0x0048, 0x0048, 0x0069, 0x0069,
@@ -26714,10 +26502,9 @@ var kmScriptIdx = []uint16{
 	0x030c, 0x030c, 0x031e, 0x031e, 0x031e, 0x031e, 0x032a, 0x0330,
 	0x033c, 0x033c, 0x033c, 0x033c, 0x033c, 0x033c, 0x033c, 0x033c,
 	0x033c, 0x033c, 0x033c, 0x033c, 0x0360, 0x0387, 0x0393, 0x03bd,
-}
+} // Size: 360 bytes
 
-// Size: 3788 bytes
-var knScriptStr string = "" +
+var knScriptStr string = "" + // Size: 3788 bytes
 	"ಅರೇಬಿಕ್ಇಂಪೀರಿಯಲ್ ಅರೆಮಾಯಿಕ್ಅರ್ಮೇನಿಯನ್ಅವೆಸ್ತಾನ್ಬಾಲಿನೀಸ್ಬಾಟಕ್ಬೆಂಗಾಲಿಬ್ಲಿಸ್" +
 	"\u200cಸಿಂಬಲ್ಸ್ಬೋಪೊಮೋಫೋಬ್ರಾಹ್ಮಿಬ್ರೈಲ್ಬಗಿನೀಸ್ಬುಹಿದ್ಕಾಕಂಯುನಿಟೆಡ್ ಕೆನೆಡಿಯನ್ " +
 	"ಅಬೊರಿಜಿನಲ್ ಸಿಲ್ಯಾಬಿಕ್ಸ್ಕರೇನ್ಚಾಮ್ಚೆರೋಕೀಸಿರ್ಥ್ಕಾಪ್ಟಿಕ್ಸಿಪ್ರಿಯಾಟ್ಸಿರಿಲಿಕ್" +
@@ -26738,8 +26525,7 @@ var knScriptStr string = "" +
 	"ಿಕ್ವಾಯ್ವಿಸಿಬಲ್ ಸ್ಪೀಚ್ಪ್ರಾಚೀನ ಪರ್ಶಿಯನ್ಸುಮೇರೋ-ಅಕ್ಕಾಡಿಯನ್ ಕ್ಯೂನಿಫಾರ್ಮ್ಯಿಇ" +
 	"ನ್\u200dಹೆರಿಟೆಡ್ಗಣೀತ ಸಂಕೇತಲಿಪಿಸಂಕೇತಗಳುಅಲಿಖಿತಸಾಮಾನ್ಯಗೊತ್ತಿಲ್ಲದ ಲಿಪಿ"
 
-// Size: 360 bytes, 168 elements
-var knScriptIdx = []uint16{
+var knScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0015, 0x004c, 0x006a, 0x0085,
 	0x009d, 0x009d, 0x009d, 0x00ac, 0x00c1, 0x00ee, 0x0106, 0x011e,
@@ -26764,10 +26550,9 @@ var knScriptIdx = []uint16{
 	0x0c8e, 0x0cad, 0x0cbf, 0x0cdd, 0x0cf5, 0x0d10, 0x0d1c, 0x0d28,
 	0x0d3d, 0x0d3d, 0x0d58, 0x0d64, 0x0d8c, 0x0d8c, 0x0d8c, 0x0dba,
 	0x0e10, 0x0e16, 0x0e3a, 0x0e62, 0x0e7a, 0x0e8c, 0x0ea1, 0x0ecc,
-}
+} // Size: 360 bytes
 
-// Size: 2788 bytes
-var koScriptStr string = "" +
+var koScriptStr string = "" + // Size: 2788 bytes
 	"아파카 문자코카시안 알바니아 문자아랍 문자아랍제국 문자아르메니아 문자아베스타 문자발리 문자바뭄 문자바사바흐 문자바타크 문자벵골 문" +
 	"자블리스기호 문자주음부호브라미브라유 점자부기 문자부히드 문자차크마 문자통합 캐나다 토착어카리 문자칸 고어체로키 문자키르쓰콥트 " +
 	"문자키프로스 문자키릴 문자고대교회슬라브어 키릴문자데바나가리 문자디저렛 문자듀플로이안 문자고대 이집트 민중문자고대 이집트 신관문" +
@@ -26784,8 +26569,7 @@ var koScriptStr string = "" +
 	" 문자텔루구 문자텡과르 문자티피나그 문자타갈로그 문자타나 문자타이 문자티베트 문자티르후타 문자우가리트 문자바이 문자시화법바랑 크시" +
 	"티 문자울레아이고대 페르시아 문자수메르-아카드어 설형문자이 문자구전 문자수학 기호기호구전일반 문자기록되지 않은 문자(구전)"
 
-// Size: 360 bytes, 168 elements
-var koScriptIdx = []uint16{
+var koScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0030, 0x0030, 0x003d, 0x0050, 0x0066, 0x0079,
 	0x0086, 0x0093, 0x00a6, 0x00b6, 0x00c3, 0x00d9, 0x00e5, 0x00ee,
@@ -26810,17 +26594,15 @@ var koScriptIdx = []uint16{
 	0x0962, 0x0979, 0x0989, 0x0999, 0x09ac, 0x09bf, 0x09cc, 0x09d9,
 	0x09e9, 0x09fc, 0x0a0f, 0x0a1c, 0x0a25, 0x0a3c, 0x0a48, 0x0a62,
 	0x0a85, 0x0a8f, 0x0a9c, 0x0aa9, 0x0aaf, 0x0ab5, 0x0ac2, 0x0ae4,
-}
+} // Size: 360 bytes
 
-// Size: 491 bytes
-var kyScriptStr string = "" +
+var kyScriptStr string = "" + // Size: 491 bytes
 	"АрабАрмянБенгалБопомофоБрейлКириллДеванагариЭфиопГрузинГрекГужаратиГурму" +
 	"хиХангулХаньЖөн. КытайСалт. КытайИвритХираганаЖапанКатаканаКмерКаннадаК" +
 	"орейЛаоЛатынМалайаламМоңголМйанмарОрийаСингалаТамилТелуТаанаТайТибетБел" +
 	"гилерЖазылбаганЖалпыБелгисиз жазуу"
 
-// Size: 360 bytes, 168 elements
-var kyScriptIdx = []uint16{
+var kyScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0008, 0x0008, 0x0012, 0x0012,
 	0x0012, 0x0012, 0x0012, 0x0012, 0x001e, 0x001e, 0x002e, 0x002e,
@@ -26845,10 +26627,9 @@ var kyScriptIdx = []uint16{
 	0x0180, 0x0180, 0x0188, 0x0188, 0x0188, 0x0188, 0x0192, 0x0198,
 	0x01a2, 0x01a2, 0x01a2, 0x01a2, 0x01a2, 0x01a2, 0x01a2, 0x01a2,
 	0x01a2, 0x01a2, 0x01a2, 0x01a2, 0x01b2, 0x01c6, 0x01d0, 0x01eb,
-}
+} // Size: 360 bytes
 
-// Size: 3892 bytes
-var loScriptStr string = "" +
+var loScriptStr string = "" + // Size: 3892 bytes
 	"ອັບຟາກາອາລັບອິມພີຮຽນ ອາເມອິກອາເມນຽນອະເວສຕະບາລີບາມູມບັດຊາບາຕັກເບັງກາລິບລິ" +
 	"ກຊິມໂບລສຈູ້ອິນພຮາຫມີເບຣວບູກິສບູຮິດຊາກມາສັນຍາລັກຊົນເຜົ່າພື້ນເມືອງແຄນນາດ" +
 	"າຄາເຮຍຈາມເຊໂຮກີເຊີຮຄອບຕິກໄຊເປຍຊີຣິວລິກເຊຮັດສລາ ໂວນິກຊີຮິກລິກໂບຮານດີວານ" +
@@ -26869,8 +26650,7 @@ var loScriptStr string = "" +
 	"ເປຮເຊຍໂບຮານອັກສອນຮູບປລີ່ມສຸເມເຮຍ-ອັດຄາເດຍຍີອິນເຮຮິດເຄື່ອງໝາຍທາງຄະນິດສາ" +
 	"ດສັນຍາລັກບໍ່ມີພາສາຂຽນສາມັນການຂຽນທີ່ບໍ່ຮູ້ຈັກ"
 
-// Size: 360 bytes, 168 elements
-var loScriptIdx = []uint16{
+var loScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0015, 0x0015, 0x0015, 0x0024, 0x0052, 0x0067, 0x007c,
 	0x0088, 0x0097, 0x00a6, 0x00b5, 0x00cd, 0x00ee, 0x0100, 0x0112,
@@ -26895,10 +26675,9 @@ var loScriptIdx = []uint16{
 	0x0cb7, 0x0cc9, 0x0cdb, 0x0cf0, 0x0d05, 0x0d1a, 0x0d26, 0x0d2c,
 	0x0d41, 0x0d53, 0x0d68, 0x0d6e, 0x0db0, 0x0dce, 0x0de0, 0x0e01,
 	0x0e59, 0x0e5f, 0x0e77, 0x0eb3, 0x0ecb, 0x0eef, 0x0efe, 0x0f34,
-}
+} // Size: 360 bytes
 
-// Size: 1634 bytes
-var ltScriptStr string = "" +
+var ltScriptStr string = "" + // Size: 1634 bytes
 	"AfakaKaukazo Albanijosarabųimperinė aramaikųarmėnųavestanoBaliečiųBamumB" +
 	"assa Vahbatakbengalų„Bliss“ simboliaibopomofobrahmibrailiobuginezųbuhidč" +
 	"akmasuvienodinti Kanados aborigenų silabiniaikariųčamčerokiųkirtkoptųkip" +
@@ -26922,8 +26701,7 @@ var ltScriptStr string = "" +
 	"štisjipaveldėtasmatematiniai simboliaisimboliųneparašytabendrinežinomi " +
 	"rašmenys"
 
-// Size: 360 bytes, 168 elements
-var ltScriptIdx = []uint16{
+var ltScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0016, 0x0016, 0x001c, 0x002f, 0x0037, 0x003f,
 	0x0049, 0x004e, 0x0057, 0x005c, 0x0064, 0x0079, 0x0081, 0x0087,
@@ -26948,10 +26726,9 @@ var ltScriptIdx = []uint16{
 	0x057f, 0x0586, 0x058d, 0x0594, 0x059b, 0x05a4, 0x05a8, 0x05ad,
 	0x05b9, 0x05c0, 0x05c8, 0x05cb, 0x05d7, 0x05e4, 0x05ea, 0x05f8,
 	0x0612, 0x0614, 0x061f, 0x0635, 0x063e, 0x0649, 0x064f, 0x0662,
-}
+} // Size: 360 bytes
 
-// Size: 761 bytes
-var lvScriptStr string = "" +
+var lvScriptStr string = "" + // Size: 761 bytes
 	"arābuaramiešuarmēņubaliešubengāļubopomofobrahmiBraila rakstsirokēzukoptu" +
 	"kirilicasenslāvudevānagāridemotiskais rakstshierātiskais rakstsēģiptiešu" +
 	" hieroglifietiopiešugruzīnugotugrieķugudžaratupandžabuhangilaķīniešuhanu" +
@@ -26963,8 +26740,7 @@ var lvScriptStr string = "" +
 	"nperiešušumeru-akadiešu ķīļrakstsjimantotāmatemātiskais pierakstssimboli" +
 	"bez rakstībasvispārējānezināma rakstība"
 
-// Size: 360 bytes, 168 elements
-var lvScriptIdx = []uint16{
+var lvScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0006, 0x000f, 0x0017, 0x0017,
 	0x001f, 0x001f, 0x001f, 0x001f, 0x0028, 0x0028, 0x0030, 0x0036,
@@ -26989,10 +26765,9 @@ var lvScriptIdx = []uint16{
 	0x025b, 0x025b, 0x0261, 0x0261, 0x0261, 0x0267, 0x026c, 0x0270,
 	0x027a, 0x027a, 0x027a, 0x027a, 0x027a, 0x027a, 0x027a, 0x0285,
 	0x02a3, 0x02a5, 0x02ad, 0x02c5, 0x02cc, 0x02da, 0x02e6, 0x02f9,
-}
+} // Size: 360 bytes
 
-// Size: 3505 bytes
-var mkScriptStr string = "" +
+var mkScriptStr string = "" + // Size: 3505 bytes
 	"афакакавкаскоалбанскиарапско писмоцарскоарамејскиерменско писмоавестанск" +
 	"обалискобамумскобасабатачкобенгалско писмоблиссимболибопомофобрамибрајо" +
 	"во писмобугискобухидскочакманскоканадско слоговнокарискочамскочерокиско" +
@@ -27020,8 +26795,7 @@ var mkScriptStr string = "" +
 	"ко клинестојинаследеноматематичка нотацијасимболибез писмоопштонепознат" +
 	"о писмо"
 
-// Size: 360 bytes, 168 elements
-var mkScriptIdx = []uint16{
+var mkScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x000a, 0x002a, 0x002a, 0x0043, 0x0061, 0x007c, 0x0090,
 	0x009e, 0x00ae, 0x00b6, 0x00c4, 0x00e1, 0x00f7, 0x0107, 0x0111,
@@ -27046,10 +26820,9 @@ var mkScriptIdx = []uint16{
 	0x0bf8, 0x0c07, 0x0c13, 0x0c21, 0x0c2f, 0x0c41, 0x0c49, 0x0c68,
 	0x0c83, 0x0c91, 0x0ca3, 0x0ca9, 0x0cc0, 0x0cd7, 0x0ce9, 0x0d03,
 	0x0d2e, 0x0d32, 0x0d44, 0x0d6b, 0x0d79, 0x0d8a, 0x0d94, 0x0db1,
-}
+} // Size: 360 bytes
 
-// Size: 3465 bytes
-var mlScriptStr string = "" +
+var mlScriptStr string = "" + // Size: 3465 bytes
 	"അറബിക്അർമിഅർമേനിയൻഅവെസ്ഥൻബാലിനീസ്ബട്ടക്ബംഗാളിബ്ലിസ് ചിത്ര ലിപിബോപ്പോമോഫോ" +
 	"ബ്രാഹ്മിബ്രെയ്\u200cലിബുഗിനീസ്ബുഹിഡ്ചകംഏകീകൃത കനേഡിയൻ ഗോത്രലിപിചരിയൻഛം" +
 	"ചെറോക്കിചിർത്ത്കോപ്റ്റിക്സൈപ്രിയോട്ട്സിറിലിക്പുരാതന ചർച്ച് സ്ലവോണിക് സ" +
@@ -27069,8 +26842,7 @@ var mlScriptStr string = "" +
 	" ക്യുണിഫോംയിപാരമ്പര്യമായഗണിത രൂപംചിഹ്നങ്ങൾഎഴുതപ്പെടാത്തത്സാധാരണഅജ്ഞാത ലി" +
 	"പി"
 
-// Size: 360 bytes, 168 elements
-var mlScriptIdx = []uint16{
+var mlScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0012, 0x001e, 0x0036, 0x004b,
 	0x0063, 0x0063, 0x0063, 0x0075, 0x0087, 0x00b6, 0x00d4, 0x00ec,
@@ -27095,17 +26867,15 @@ var mlScriptIdx = []uint16{
 	0x0b95, 0x0ba4, 0x0bbc, 0x0bd1, 0x0be9, 0x0bfb, 0x0c04, 0x0c10,
 	0x0c25, 0x0c25, 0x0c46, 0x0c4c, 0x0c64, 0x0c64, 0x0c64, 0x0c83,
 	0x0ccd, 0x0cd3, 0x0cf7, 0x0d10, 0x0d2b, 0x0d58, 0x0d6a, 0x0d89,
-}
+} // Size: 360 bytes
 
-// Size: 532 bytes
-var mnScriptStr string = "" +
+var mnScriptStr string = "" + // Size: 532 bytes
 	"арабарменбенгалвопомофобрайлкирилдеванагариэтиопгүржгрекгүжаратигурмукхи" +
 	"хангулханхялбаршуулсан ханзуламжлалт ханзеврейхираганаяпонкатаканакхмер" +
 	"каннадасолонгослаослатинмалаяламмонгол бичигмьянмарориясинхалатамилтэлү" +
 	"гүтанатайтөвдтэмдэгбичигдээгүйнийтлэгтодорхойгүй бичиг"
 
-// Size: 360 bytes, 168 elements
-var mnScriptIdx = []uint16{
+var mnScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0008, 0x0008, 0x0012, 0x0012,
 	0x0012, 0x0012, 0x0012, 0x0012, 0x001e, 0x001e, 0x002e, 0x002e,
@@ -27130,10 +26900,9 @@ var mnScriptIdx = []uint16{
 	0x01a1, 0x01a1, 0x01ad, 0x01ad, 0x01ad, 0x01ad, 0x01b5, 0x01bb,
 	0x01c3, 0x01c3, 0x01c3, 0x01c3, 0x01c3, 0x01c3, 0x01c3, 0x01c3,
 	0x01c3, 0x01c3, 0x01c3, 0x01c3, 0x01cf, 0x01e5, 0x01f3, 0x0214,
-}
+} // Size: 360 bytes
 
-// Size: 3386 bytes
-var mrScriptStr string = "" +
+var mrScriptStr string = "" + // Size: 3386 bytes
 	"अरबीइम्पिरियल आर्मेनिकअर्मेनियनअवेस्तानबालीबटाकबंगालीब्लिसिम्बॉल्सबोपोमो" +
 	"फोब्रह्मीब्रेलबूगीबुहिदचकमायूनिफाइड कॅनेडियन अ\u200dॅबोरिदनल सिलॅबिक्स" +
 	"कॅरियनचामचेरोकीकिर्थकॉप्टिकसायप्रिऑटसीरिलिकपुरातन चर्च स्लाव्होनिक सिर" +
@@ -27152,8 +26921,7 @@ var mrScriptStr string = "" +
 	"ईतिबेटीयुगारिटिकवाईदृश्य संवादपुरातन फारसीदृश्यमान भाषायीवंशपरंपरागतगण" +
 	"िती संकेतलिपीप्रतीकअलिखितसामान्यअज्ञात लिपी"
 
-// Size: 360 bytes, 168 elements
-var mrScriptIdx = []uint16{
+var mrScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000c, 0x0040, 0x005b, 0x0073,
 	0x007f, 0x007f, 0x007f, 0x008b, 0x009d, 0x00c4, 0x00dc, 0x00f1,
@@ -27178,18 +26946,16 @@ var mrScriptIdx = []uint16{
 	0x0b78, 0x0b8e, 0x0b9d, 0x0bb5, 0x0bca, 0x0bdf, 0x0beb, 0x0bf4,
 	0x0c06, 0x0c06, 0x0c21, 0x0c2a, 0x0c49, 0x0c49, 0x0c49, 0x0c6b,
 	0x0c90, 0x0c96, 0x0cb7, 0x0ce2, 0x0cf4, 0x0d06, 0x0d1b, 0x0d3a,
-}
+} // Size: 360 bytes
 
-// Size: 289 bytes
-var msScriptStr string = "" +
+var msScriptStr string = "" + // Size: 289 bytes
 	"ArabArmeniaBaliBamuBengaliBopomofoBrailleCansCyrilDevanagariEthiopiaGeor" +
 	"giaGreekGujaratGurmukhiHangulHanHan RingkasHan TradisionalIbraniHiragana" +
 	"JepunKatakanaKhmerKannadaKoreaLaoLatinMalayalamMongoliaMyammarOriyaSinha" +
 	"laTamilTeluguThaanaThaiTibetSimbolTidak ditulisBiasaSkrip Tidak Diketahu" +
 	"i"
 
-// Size: 360 bytes, 168 elements
-var msScriptIdx = []uint16{
+var msScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0004, 0x0004, 0x000b, 0x000b,
 	0x000f, 0x0013, 0x0013, 0x0013, 0x001a, 0x001a, 0x0022, 0x0022,
@@ -27214,10 +26980,9 @@ var msScriptIdx = []uint16{
 	0x00df, 0x00df, 0x00e5, 0x00e5, 0x00e5, 0x00e5, 0x00eb, 0x00ef,
 	0x00f4, 0x00f4, 0x00f4, 0x00f4, 0x00f4, 0x00f4, 0x00f4, 0x00f4,
 	0x00f4, 0x00f4, 0x00f4, 0x00f4, 0x00fa, 0x0107, 0x010c, 0x0121,
-}
+} // Size: 360 bytes
 
-// Size: 1208 bytes
-var myScriptStr string = "" +
+var myScriptStr string = "" + // Size: 1208 bytes
 	"အာရေဗျအာမေးနီးယားဘင်္ဂါလီဘိုပိုဗြဟ္မမီဘရေစစ်ရိလစ်ဒီဗနာဂရီအီသီယိုးပီးယားဂ" +
 	"ျော်ဂျီယန်ဂရိဂုဂျာရသီဂူရူဟန်ဂူးလ်ဟန်ရိုးရှင်းသော ဟန်ရှေးရိုးစဉ်လာဟန်ဟီ" +
 	"ဗရူးဟိရဂဏခတခဏ သို့မဟုတ် ဟိရဂဏဂျာဗားနီးစ်ဂျပန်ကယားလီခတခဏခမာခန္နာဒါကိုးရ" +
@@ -27225,8 +26990,7 @@ var myScriptStr string = "" +
 	"လုတဂလော့ဂ်သာအ်ထိုင်းတိဘက်မြင်နိုင်သော စကားပါရှန် အဟောင်းရီသင်္ကေတမရေးထ" +
 	"ားသောအများနှင့်သက်ဆိုင်သောမသိ သို့မဟုတ် မရှိသော စကားလုံး"
 
-// Size: 360 bytes, 168 elements
-var myScriptIdx = []uint16{
+var myScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0012, 0x0012, 0x0033, 0x0033,
 	0x0033, 0x0033, 0x0033, 0x0033, 0x004b, 0x004b, 0x005d, 0x0072,
@@ -27251,10 +27015,9 @@ var myScriptIdx = []uint16{
 	0x0342, 0x0342, 0x034e, 0x034e, 0x034e, 0x0366, 0x0372, 0x0384,
 	0x0393, 0x0393, 0x0393, 0x0393, 0x03c4, 0x03c4, 0x03c4, 0x03ec,
 	0x03ec, 0x03f2, 0x03f2, 0x03f2, 0x0407, 0x0425, 0x0464, 0x04b8,
-}
+} // Size: 360 bytes
 
-// Size: 3010 bytes
-var neScriptStr string = "" +
+var neScriptStr string = "" + // Size: 3010 bytes
 	"अरबीआर्मीआर्मेनियालीआभेस्टानबालीबाटकबङ्गालीब्लिजसिम्बोल्सबोपोमोफोब्राह्म" +
 	"ीब्रेलबुगिनिजबुहिदकाक्म्कारियनचामचेरोकीकिर्थकप्टिककप्रियटसिरिलिकदेवाना" +
 	"गरीडेसेरेटइजिप्टियन डेमोटिकइजिप्टियन हाइरटिकइजिप्टियन हाइरोग्लिफ्सइथिय" +
@@ -27271,8 +27034,7 @@ var neScriptStr string = "" +
 	"िनाघटागालोगथानाथाईतिब्बतीयुगारिटिकभाइदृश्यमय वाणीपुरानो पर्सियनयीइन्हे" +
 	"रिटेडजमथप्रतीकहरूनलेखिएकोसाझाअज्ञात लिपि"
 
-// Size: 360 bytes, 168 elements
-var neScriptIdx = []uint16{
+var neScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000c, 0x001b, 0x003c, 0x0054,
 	0x0060, 0x0060, 0x0060, 0x006c, 0x0081, 0x00ab, 0x00c3, 0x00db,
@@ -27297,10 +27059,9 @@ var neScriptIdx = []uint16{
 	0x0a3f, 0x0a4e, 0x0a60, 0x0a75, 0x0a8a, 0x0a9f, 0x0aab, 0x0ab4,
 	0x0ac9, 0x0ac9, 0x0ae4, 0x0aed, 0x0b0f, 0x0b0f, 0x0b0f, 0x0b37,
 	0x0b37, 0x0b3d, 0x0b5b, 0x0b64, 0x0b7f, 0x0b97, 0x0ba3, 0x0bc2,
-}
+} // Size: 360 bytes
 
-// Size: 1633 bytes
-var nlScriptStr string = "" +
+var nlScriptStr string = "" + // Size: 1633 bytes
 	"DefakaKaukasisch AlbaneesAhomArabischKeizerlijk ArameesArmeensAvestaansB" +
 	"alineesBamounBassa VahBatakBengaalsBlissymbolenBopomofoBrahmiBrailleBugi" +
 	"neesBuhidChakmaVerenigde Canadese Aboriginal-symbolenCarischChamCherokee" +
@@ -27325,8 +27086,7 @@ var nlScriptStr string = "" +
 	"rzischSumero-Akkadian CuneiformYiOvergeërfdWiskundige notatieSymbolenong" +
 	"eschrevenalgemeenonbekend schriftsysteem"
 
-// Size: 360 bytes, 168 elements
-var nlScriptIdx = []uint16{
+var nlScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0006, 0x0019, 0x001d, 0x0025, 0x0037, 0x003e, 0x0047,
 	0x004f, 0x0055, 0x005e, 0x0063, 0x006b, 0x0077, 0x007f, 0x0085,
@@ -27351,10 +27111,9 @@ var nlScriptIdx = []uint16{
 	0x057d, 0x0585, 0x058b, 0x0592, 0x059a, 0x05a1, 0x05a7, 0x05ab,
 	0x05b4, 0x05bb, 0x05c5, 0x05c8, 0x05d8, 0x05e5, 0x05eb, 0x05f6,
 	0x060f, 0x0611, 0x061c, 0x062e, 0x0636, 0x0642, 0x064a, 0x0661,
-}
+} // Size: 360 bytes
 
-// Size: 1588 bytes
-var noScriptStr string = "" +
+var noScriptStr string = "" + // Size: 1588 bytes
 	"afakakaukasus-albanskahomarabiskarameiskarmenskavestiskbalinesiskbamumba" +
 	"ssa vahbatakbengalskblissymbolbopomofobrahmibraillebuginesiskbuhidchakma" +
 	"felles kanadiske urspråksstavelserkariskchamcherokeecirthkoptiskkyprioti" +
@@ -27378,8 +27137,7 @@ var noScriptStr string = "" +
 	" talevarang kshitiwoleaigammelpersisksumersk-akkadisk kileskriftyinedarv" +
 	"etmatematisk notasjonsymbolerspråk uten skriftfellesukjent skrift"
 
-// Size: 360 bytes, 168 elements
-var noScriptIdx = []uint16{
+var noScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0015, 0x0019, 0x0020, 0x0028, 0x002f, 0x0037,
 	0x0041, 0x0046, 0x004f, 0x0054, 0x005c, 0x0066, 0x006e, 0x0074,
@@ -27404,17 +27162,15 @@ var noScriptIdx = []uint16{
 	0x055a, 0x0562, 0x0568, 0x056f, 0x0577, 0x057e, 0x0584, 0x0588,
 	0x0591, 0x0598, 0x05a1, 0x05a4, 0x05af, 0x05bc, 0x05c2, 0x05cf,
 	0x05ea, 0x05ec, 0x05f4, 0x0607, 0x060f, 0x0621, 0x0627, 0x0634,
-}
+} // Size: 360 bytes
 
-// Size: 740 bytes
-var paScriptStr string = "" +
+var paScriptStr string = "" + // Size: 740 bytes
 	"ਅਰਬੀਅਰਮੀਨੀਆਈਬੰਗਾਲੀਬੋਪੋਮੋਫੋਬਰੇਲਸਿਰੀਲਿਕਦੇਵਨਾਗਰੀਇਥੀਓਪਿਕਜਾਰਜੀਆਈਗ੍ਰੀਕਗੁਜਰਾਤੀਗ" +
 	"ੁਰਮੁਖੀਹੰਗੁਲਹਾਨਸਰਲ ਹਾਨਰਵਾਇਤੀ ਹਾਨਹਿਬਰੂਹਿਰਾਗਾਨਾਜਪਾਨੀਕਾਟਾਕਾਨਾਖਮੇਰਕੰਨੜਕੋਰੀਆ" +
 	"ਈਲਾਓਲਾਤੀਨੀਮਲਿਆਲਮਮੰਗੋਲੀਅਨਮਿਆਂਮਾਰਉੜੀਆਸਿੰਹਾਲਾਤਮਿਲਤੇਲਗੂਥਾਨਾਥਾਈਤਿੱਬਤੀਗਣਿਤ ਚ" +
 	"ਿੰਨ੍ਹ-ਲਿਪੀਚਿੰਨ੍ਹਅਲਿਖਤਸਧਾਰਨਅਣਪਛਾਤੀ ਲਿਪੀ"
 
-// Size: 360 bytes, 168 elements
-var paScriptIdx = []uint16{
+var paScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000c, 0x000c, 0x0024, 0x0024,
 	0x0024, 0x0024, 0x0024, 0x0024, 0x0036, 0x0036, 0x004e, 0x004e,
@@ -27439,10 +27195,9 @@ var paScriptIdx = []uint16{
 	0x0230, 0x0230, 0x023f, 0x023f, 0x023f, 0x023f, 0x024b, 0x0254,
 	0x0266, 0x0266, 0x0266, 0x0266, 0x0266, 0x0266, 0x0266, 0x0266,
 	0x0266, 0x0266, 0x0266, 0x0292, 0x02a4, 0x02b3, 0x02c2, 0x02e4,
-}
+} // Size: 360 bytes
 
-// Size: 1483 bytes
-var plScriptStr string = "" +
+var plScriptStr string = "" + // Size: 1483 bytes
 	"arabskiearmiormiańskieawestyjskiebalijskiebamunbatakbengalskiesymbole Bl" +
 	"issabopomofobrahmiBraille’abugińskiebuhidchakmazunifikowane symbole kana" +
 	"dyjskich autochtonówkaryjskieczamskieczirokeskicirthkoptyjskiecypryjskie" +
@@ -27465,8 +27220,7 @@ var plScriptStr string = "" +
 	"cja matematycznasymbolejęzyk bez systemu pismawspólnenieznane lub niepop" +
 	"rawne"
 
-// Size: 360 bytes, 168 elements
-var plScriptIdx = []uint16{
+var plScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0008, 0x000c, 0x0017, 0x0022,
 	0x002b, 0x0030, 0x0030, 0x0035, 0x003f, 0x004d, 0x0055, 0x005b,
@@ -27491,10 +27245,9 @@ var plScriptIdx = []uint16{
 	0x04e2, 0x04ea, 0x04f0, 0x04f7, 0x050b, 0x0512, 0x0518, 0x051f,
 	0x052b, 0x052b, 0x0534, 0x0537, 0x0545, 0x0545, 0x0545, 0x0551,
 	0x056a, 0x056c, 0x0578, 0x058c, 0x0593, 0x05ab, 0x05b3, 0x05cb,
-}
+} // Size: 360 bytes
 
-// Size: 1251 bytes
-var ptScriptStr string = "" +
+var ptScriptStr string = "" + // Size: 1251 bytes
 	"árabearmiarmênioavésticobalinêsbamumbataquebengalisímbolos blissbopomofo" +
 	"brahmibraillebuginêsbuhidcakmescrita silábica unificada dos aborígenes c" +
 	"anadensescarianochamcherokeecirthcópticocipriotacirílicocirílico eslavo " +
@@ -27513,8 +27266,7 @@ var ptScriptStr string = "" +
 	"betanougaríticovaivisible speechpersa antigosumério-acadiano cuneiformey" +
 	"iherdadozmthzsymágrafocomumescrita desconhecida"
 
-// Size: 360 bytes, 168 elements
-var ptScriptIdx = []uint16{
+var ptScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0006, 0x000a, 0x0012, 0x001b,
 	0x0023, 0x0028, 0x0028, 0x002f, 0x0036, 0x0045, 0x004d, 0x0053,
@@ -27539,15 +27291,13 @@ var ptScriptIdx = []uint16{
 	0x0437, 0x043b, 0x0442, 0x0449, 0x0451, 0x0457, 0x045d, 0x0467,
 	0x046f, 0x046f, 0x0479, 0x047c, 0x048a, 0x048a, 0x048a, 0x0496,
 	0x04b2, 0x04b4, 0x04bb, 0x04bf, 0x04c3, 0x04ca, 0x04cf, 0x04e3,
-}
+} // Size: 360 bytes
 
-// Size: 103 bytes
-var ptPTScriptStr string = "" +
+var ptPTScriptStr string = "" + // Size: 103 bytes
 	"arménioegípcio demóticoegípcio hieráticoguzerateindussiloti nagritai let" +
 	"elugusímbolosnão escrito"
 
-// Size: 356 bytes, 166 elements
-var ptPTScriptIdx = []uint16{
+var ptPTScriptIdx = []uint16{ // 166 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0008, 0x0008,
 	0x0008, 0x0008, 0x0008, 0x0008, 0x0008, 0x0008, 0x0008, 0x0008,
@@ -27572,10 +27322,9 @@ var ptPTScriptIdx = []uint16{
 	0x004c, 0x004c, 0x0052, 0x0052, 0x0052, 0x0052, 0x0052, 0x0052,
 	0x0052, 0x0052, 0x0052, 0x0052, 0x0052, 0x0052, 0x0052, 0x0052,
 	0x0052, 0x0052, 0x0052, 0x0052, 0x005b, 0x0067,
-}
+} // Size: 356 bytes
 
-// Size: 825 bytes
-var roScriptStr string = "" +
+var roScriptStr string = "" + // Size: 825 bytes
 	"arabăarmeanăbalinezăbengalezăbopomofobraillesilabică aborigenă canadiană" +
 	" unificatăcoptăcipriotăchirilicăchirilică slavonă bisericească vechedeva" +
 	"nagarimormonădemotică egipteanăhieratică egipteanăhieroglife egipteneeti" +
@@ -27588,8 +27337,7 @@ var roScriptStr string = "" +
 	"thailandezătibetanăpersană vechecuneiformă sumero-akkadianămoștenităsimb" +
 	"olurinescrisăcomunăscriere necunoscută"
 
-// Size: 360 bytes, 168 elements
-var roScriptIdx = []uint16{
+var roScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0006, 0x0006, 0x000e, 0x000e,
 	0x0017, 0x0017, 0x0017, 0x0017, 0x0021, 0x0021, 0x0029, 0x0029,
@@ -27614,10 +27362,9 @@ var roScriptIdx = []uint16{
 	0x02ad, 0x02ad, 0x02b3, 0x02b3, 0x02bb, 0x02bb, 0x02c1, 0x02cd,
 	0x02d6, 0x02d6, 0x02d6, 0x02d6, 0x02d6, 0x02d6, 0x02d6, 0x02e4,
 	0x0301, 0x0301, 0x030c, 0x030c, 0x0315, 0x031e, 0x0325, 0x0339,
-}
+} // Size: 360 bytes
 
-// Size: 3384 bytes
-var ruScriptStr string = "" +
+var ruScriptStr string = "" + // Size: 3384 bytes
 	"афакаарабицаарамейскаяармянскаяавестийскаябалийскаябамумбасса (вах)батак" +
 	"скаябенгальскаяблиссимволикабопомофобрахмиБрайлябугинизийскаябухидчакми" +
 	"йскаяканадское слоговое письмокарийскаячамскаячерокикирткоптскаякипрска" +
@@ -27644,8 +27391,7 @@ var ruScriptStr string = "" +
 	"аяматематические обозначениясимволыбесписьменныйобщепринятаянеизвестная" +
 	" письменность"
 
-// Size: 360 bytes, 168 elements
-var ruScriptIdx = []uint16{
+var ruScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x000a, 0x000a, 0x000a, 0x0018, 0x002c, 0x003e, 0x0054,
 	0x0066, 0x0070, 0x0083, 0x0095, 0x00ab, 0x00c5, 0x00d5, 0x00e1,
@@ -27670,18 +27416,16 @@ var ruScriptIdx = []uint16{
 	0x0b37, 0x0b46, 0x0b52, 0x0b68, 0x0b86, 0x0b94, 0x0b9e, 0x0bac,
 	0x0bbe, 0x0bcc, 0x0be0, 0x0bee, 0x0c05, 0x0c1c, 0x0c28, 0x0c46,
 	0x0c78, 0x0c7a, 0x0c96, 0x0cc9, 0x0cd7, 0x0cf1, 0x0d09, 0x0d38,
-}
+} // Size: 360 bytes
 
-// Size: 809 bytes
-var siScriptStr string = "" +
+var siScriptStr string = "" + // Size: 809 bytes
 	"අරාබිආර්මේනියානුබෙංගාලිබොපොමොෆෝබ්\u200dරේල්සිරිලික්දේවනාගරීඉතියෝපියානුජෝ" +
 	"ර්ජියානුග්\u200dරීකගුජරාටිගුර්මුඛිහැන්ගුල්හන්සුළුකළ හෑන්සම්ප්\u200dරදා" +
 	"යික හෑන්හීබෲහිරඟනාජපන්කතකනාකමර්කණ්ණඩකොරියානුලාඕලතින්මලයාලම්මොන්ගෝලියාන" +
 	"ුමියන්මාරඔරියාසිංහලදෙමළතෙළිඟුතානතායිටි\u200dබෙට්සංකේතඅලිඛිතපොදු.නොදත් " +
 	"අක්ෂර මාලාව"
 
-// Size: 360 bytes, 168 elements
-var siScriptIdx = []uint16{
+var siScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000f, 0x000f, 0x0030, 0x0030,
 	0x0030, 0x0030, 0x0030, 0x0030, 0x0045, 0x0045, 0x005d, 0x005d,
@@ -27706,10 +27450,9 @@ var siScriptIdx = []uint16{
 	0x0290, 0x0290, 0x02a2, 0x02a2, 0x02a2, 0x02a2, 0x02ab, 0x02b7,
 	0x02cc, 0x02cc, 0x02cc, 0x02cc, 0x02cc, 0x02cc, 0x02cc, 0x02cc,
 	0x02cc, 0x02cc, 0x02cc, 0x02cc, 0x02db, 0x02ed, 0x02fa, 0x0329,
-}
+} // Size: 360 bytes
 
-// Size: 487 bytes
-var skScriptStr string = "" +
+var skScriptStr string = "" + // Size: 487 bytes
 	"arabskéarménskebalijskýbengálskebopomofobraillovocyrilikadévanágaríegypt" +
 	"ské hieroglyfyetiópskegruzínskehlaholikagotickýgréckegudžarátígurmukhiha" +
 	"ngulčínskečínske zjednodušenéčínske tradičnéhebrejskéhiraganajaponskékat" +
@@ -27718,8 +27461,7 @@ var skScriptStr string = "" +
 	"tamilskételugskétánathajskétibetskésymbolybez zápisuvšeobecnéneznáme pís" +
 	"mo"
 
-// Size: 360 bytes, 168 elements
-var skScriptIdx = []uint16{
+var skScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0008, 0x0008, 0x0011, 0x0011,
 	0x001a, 0x001a, 0x001a, 0x001a, 0x0024, 0x0024, 0x002c, 0x002c,
@@ -27744,10 +27486,9 @@ var skScriptIdx = []uint16{
 	0x019c, 0x019c, 0x01a5, 0x01a5, 0x01a5, 0x01a5, 0x01aa, 0x01b2,
 	0x01bb, 0x01bb, 0x01bb, 0x01bb, 0x01bb, 0x01bb, 0x01bb, 0x01bb,
 	0x01bb, 0x01bb, 0x01bb, 0x01bb, 0x01c2, 0x01cd, 0x01d8, 0x01e7,
-}
+} // Size: 360 bytes
 
-// Size: 1487 bytes
-var slScriptStr string = "" +
+var slScriptStr string = "" + // Size: 1487 bytes
 	"arabskiimperialno-aramejskiarmenskiavestanskibalijskibataškibengalskizna" +
 	"kovna pisava Blissbopomofobramanskibraillova pisavabuginskibuhidskipoeno" +
 	"tena zlogovna pisava kanadskih staroselcevChamčerokeškikirtkoptskiciprsk" +
@@ -27770,8 +27511,7 @@ var slScriptStr string = "" +
 	"akadski klinopispodedovanmatematična znamenjasimbolinenapisanosplošnonez" +
 	"nan ali neveljaven zapis"
 
-// Size: 360 bytes, 168 elements
-var slScriptIdx = []uint16{
+var slScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0007, 0x001b, 0x0023, 0x002d,
 	0x0035, 0x0035, 0x0035, 0x003d, 0x0046, 0x005b, 0x0063, 0x006c,
@@ -27796,18 +27536,16 @@ var slScriptIdx = []uint16{
 	0x04e0, 0x04f1, 0x04f9, 0x0503, 0x050d, 0x0517, 0x051f, 0x0525,
 	0x052f, 0x052f, 0x0538, 0x054b, 0x0556, 0x0556, 0x0556, 0x0564,
 	0x057d, 0x057d, 0x0586, 0x059b, 0x05a2, 0x05ac, 0x05b4, 0x05cf,
-}
+} // Size: 360 bytes
 
-// Size: 290 bytes
-var sqScriptStr string = "" +
+var sqScriptStr string = "" + // Size: 290 bytes
 	"arabikarmenbengalbopomofbrailishtcirilikdevanagaretiopikgjeorgjiangrekgu" +
 	"xharatgurmukhangulhanhan i thjeshtuarhan tradicionalhebraikhiraganjapone" +
 	"zkatakankmerkanadkoreanlaosishtlatinmalajalammongolbirmanorijasinhaltami" +
 	"ltelugtanishttajlandeztibetishtme simbolei pashkruari zakonshëmi panjohu" +
 	"r"
 
-// Size: 360 bytes, 168 elements
-var sqScriptIdx = []uint16{
+var sqScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0006, 0x0006, 0x000b, 0x000b,
 	0x000b, 0x000b, 0x000b, 0x000b, 0x0011, 0x0011, 0x0018, 0x0018,
@@ -27832,10 +27570,9 @@ var sqScriptIdx = []uint16{
 	0x00d9, 0x00d9, 0x00de, 0x00de, 0x00de, 0x00de, 0x00e5, 0x00ee,
 	0x00f7, 0x00f7, 0x00f7, 0x00f7, 0x00f7, 0x00f7, 0x00f7, 0x00f7,
 	0x00f7, 0x00f7, 0x00f7, 0x00f7, 0x0101, 0x010c, 0x0118, 0x0122,
-}
+} // Size: 360 bytes
 
-// Size: 3698 bytes
-var srScriptStr string = "" +
+var srScriptStr string = "" + // Size: 3698 bytes
 	"арапско писмоимперијско арамејско писмојерменско писмоавестанско писмоба" +
 	"лијско писмобатак писмобенгалско писмоблисимболично писмобопомофо писмо" +
 	"браманско писмоБрајево писмобугинско писмобухидско писмочакманско писмо" +
@@ -27865,8 +27602,7 @@ var srScriptStr string = "" +
 	"оматематичка нотацијасимболинеписани језикзаједничко писмонепознато пис" +
 	"мо"
 
-// Size: 360 bytes, 168 elements
-var srScriptIdx = []uint16{
+var srScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0019, 0x004b, 0x0068, 0x0087,
 	0x00a2, 0x00a2, 0x00a2, 0x00b7, 0x00d4, 0x00f9, 0x0114, 0x0131,
@@ -27891,10 +27627,9 @@ var srScriptIdx = []uint16{
 	0x0c4d, 0x0c67, 0x0c7e, 0x0c97, 0x0cb0, 0x0cbe, 0x0cd3, 0x0cf2,
 	0x0d11, 0x0d11, 0x0d2e, 0x0d3f, 0x0d58, 0x0d58, 0x0d58, 0x0d7f,
 	0x0dbc, 0x0dcb, 0x0de6, 0x0e0d, 0x0e1b, 0x0e36, 0x0e55, 0x0e72,
-}
+} // Size: 360 bytes
 
-// Size: 1953 bytes
-var srLatnScriptStr string = "" +
+var srLatnScriptStr string = "" + // Size: 1953 bytes
 	"arapsko pismoimperijsko aramejsko pismojermensko pismoavestansko pismoba" +
 	"lijsko pismobatak pismobengalsko pismoblisimbolično pismobopomofo pismob" +
 	"ramansko pismoBrajevo pismobuginsko pismobuhidsko pismočakmansko pismouj" +
@@ -27923,8 +27658,7 @@ var srLatnScriptStr string = "" +
 	"mosumersko-akadsko kuneiform pismoji pismonasledno pismomatematička nota" +
 	"cijasimbolinepisani jezikzajedničko pismonepoznato pismo"
 
-// Size: 360 bytes, 168 elements
-var srLatnScriptIdx = []uint16{
+var srLatnScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x000d, 0x0027, 0x0036, 0x0046,
 	0x0054, 0x0054, 0x0054, 0x005f, 0x006e, 0x0082, 0x0090, 0x009f,
@@ -27949,10 +27683,9 @@ var srLatnScriptIdx = []uint16{
 	0x0681, 0x068f, 0x069b, 0x06a8, 0x06b5, 0x06bc, 0x06c7, 0x06d7,
 	0x06e7, 0x06e7, 0x06f6, 0x06ff, 0x070d, 0x070d, 0x070d, 0x0721,
 	0x0741, 0x0749, 0x0757, 0x076c, 0x0773, 0x0781, 0x0792, 0x07a1,
-}
+} // Size: 360 bytes
 
-// Size: 1661 bytes
-var svScriptStr string = "" +
+var svScriptStr string = "" + // Size: 1661 bytes
 	"afakiskakaukasiska albanskaahomarabiskaimperisk arameiskaarmeniskaavesti" +
 	"skabalinesiskabamunskabassaiska vahbatakbengaliskablissymbolerbopomofobr" +
 	"amipunktskriftbuginesiskabuhidchakmakanadensiska stavelseteckenkariskach" +
@@ -27977,8 +27710,7 @@ var svScriptStr string = "" +
 	"talvarang kshitiwoleaifornpersiskasumeo-akkadisk kilskriftyiärvdamatemat" +
 	"isk notationsymboleroskrivet språkgemensammaokänt skriftsystem"
 
-// Size: 360 bytes, 168 elements
-var svScriptIdx = []uint16{
+var svScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0008, 0x001b, 0x001f, 0x0027, 0x0039, 0x0042, 0x004b,
 	0x0056, 0x005e, 0x006b, 0x0070, 0x007a, 0x0086, 0x008e, 0x0093,
@@ -28003,18 +27735,16 @@ var svScriptIdx = []uint16{
 	0x0595, 0x059d, 0x05a3, 0x05aa, 0x05b6, 0x05bd, 0x05c2, 0x05ce,
 	0x05d8, 0x05df, 0x05e9, 0x05ec, 0x05f7, 0x0604, 0x060a, 0x0616,
 	0x062e, 0x0630, 0x0636, 0x0649, 0x0651, 0x0660, 0x066a, 0x067d,
-}
+} // Size: 360 bytes
 
-// Size: 346 bytes
-var swScriptStr string = "" +
+var swScriptStr string = "" + // Size: 346 bytes
 	"KiarabuKiarmeniaKibengaliKibopomofoBrailleKisirilikiKidevanagariKiethiop" +
 	"iaKijojiaKigirikiKigujaratiKigurmukhiKihangulKihanKihan RahisiKihan cha " +
 	"JadiKiebraniaKihiraganaKijapaniKikatakanaKikambodiaKikannadaKikoreaKilao" +
 	"siKilatiniKimalayalamKimongoliaMyamaKioriyaKisinhalaKitamilKiteluguKitha" +
 	"anaKitaiKitibetiAlamaHaijaandikwaKawaidaHati isiyojulikana"
 
-// Size: 360 bytes, 168 elements
-var swScriptIdx = []uint16{
+var swScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0007, 0x0007, 0x0010, 0x0010,
 	0x0010, 0x0010, 0x0010, 0x0010, 0x0019, 0x0019, 0x0023, 0x0023,
@@ -28039,10 +27769,9 @@ var swScriptIdx = []uint16{
 	0x0113, 0x0113, 0x011b, 0x011b, 0x011b, 0x011b, 0x0123, 0x0128,
 	0x0130, 0x0130, 0x0130, 0x0130, 0x0130, 0x0130, 0x0130, 0x0130,
 	0x0130, 0x0130, 0x0130, 0x0130, 0x0135, 0x0141, 0x0148, 0x015a,
-}
+} // Size: 360 bytes
 
-// Size: 3904 bytes
-var taScriptStr string = "" +
+var taScriptStr string = "" + // Size: 3904 bytes
 	"அரபிக்இம்பேரியல் அரமெய்க்அர்மேனியன்அவெஸ்தான்பாலினீஸ்பாடாக்வங்காளம்ப்லிஸ்" +
 	"ஸிமிபால்ஸ்போபோமோஃபோபிரம்மிபிரெயில்புகினீஸ்புகித்சக்மாயுனிஃபைடு கனடியன்" +
 	" அபொரிஜினல் சிலபிக்ஸ்கரியன்சாம்செரோக்கிகிர்த்காப்டிக்சைப்ரியாட்சிரிலிக்ப" +
@@ -28063,8 +27792,7 @@ var taScriptStr string = "" +
 	"ரதிக்வைவிசிபிள் ஸ்பீச்பழைய பெர்ஷியன்சுமெரோ-அக்கடியன் க்யூனிஃபார்ம்யீபா" +
 	"ரம்பரியமானகணிதக்குறியீடுசின்னங்கள்எழுதப்படாததுபொதுஅறியப்படாத எழுத்து"
 
-// Size: 360 bytes, 168 elements
-var taScriptIdx = []uint16{
+var taScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0012, 0x0049, 0x0067, 0x0082,
 	0x009a, 0x009a, 0x009a, 0x00ac, 0x00c4, 0x00f4, 0x010f, 0x0124,
@@ -28089,10 +27817,9 @@ var taScriptIdx = []uint16{
 	0x0cf7, 0x0d0d, 0x0d25, 0x0d3d, 0x0d58, 0x0d6a, 0x0d76, 0x0d82,
 	0x0da3, 0x0da3, 0x0dbb, 0x0dc1, 0x0dec, 0x0dec, 0x0dec, 0x0e14,
 	0x0e6a, 0x0e70, 0x0e94, 0x0ebe, 0x0edc, 0x0f00, 0x0f0c, 0x0f40,
-}
+} // Size: 360 bytes
 
-// Size: 3721 bytes
-var teScriptStr string = "" +
+var teScriptStr string = "" + // Size: 3721 bytes
 	"అరబిక్ఇంపీరియల్ అరామాక్అర్మేనియన్అవేస్టాన్బాలినీస్బాటక్బెంగాలిబ్లిస్సింబ" +
 	"ల్స్బోపోమోఫోబ్రాహ్మిబ్రెయిల్బ్యుగినీస్బుహిడ్చక్మాయునిఫైడ్ కెనెడియన్ అబ" +
 	"ొరిజినల్ సిలబిక్స్కారియన్చామ్చిరోకిసిర్థ్కోప్టిక్సైప్రోట్సిరిలిక్ప్రాచ" +
@@ -28113,8 +27840,7 @@ var teScriptStr string = "" +
 	" అక్కడియన్ క్యునిఫార్మ్యివారసత్వంగణిత సంకేతలిపిచిహ్నాలులిపి లేనిసామాన్యత" +
 	"ెలియని లిపి"
 
-// Size: 360 bytes, 168 elements
-var teScriptIdx = []uint16{
+var teScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0012, 0x0043, 0x0061, 0x007c,
 	0x0094, 0x0094, 0x0094, 0x00a3, 0x00b8, 0x00e2, 0x00fa, 0x0112,
@@ -28139,10 +27865,9 @@ var teScriptIdx = []uint16{
 	0x0c73, 0x0c89, 0x0c9b, 0x0cb6, 0x0cce, 0x0ce0, 0x0cec, 0x0cf8,
 	0x0d0d, 0x0d0d, 0x0d2b, 0x0d37, 0x0d59, 0x0d59, 0x0d59, 0x0d87,
 	0x0ddb, 0x0de1, 0x0df9, 0x0e21, 0x0e39, 0x0e52, 0x0e67, 0x0e89,
-}
+} // Size: 360 bytes
 
-// Size: 4317 bytes
-var thScriptStr string = "" +
+var thScriptStr string = "" + // Size: 4317 bytes
 	"อะฟาคาแอลเบเนีย คอเคเซียอาหรับอิมพีเรียล อราเมอิกอาร์เมเนียอเวสตะบาหลีบา" +
 	"มุมบัสซาบาตักเบงกาลีบลิสซิมโบลส์ปอพอมอฟอพราหมีเบรลล์บูกิสบูฮิดชากมาสัญ" +
 	"ลักษณ์ชนเผ่าพื้นเมืองแคนาดาคาเรียจามเชอโรกีเซิร์ทคอปติกไซเปรียทซีริลลิ" +
@@ -28165,8 +27890,7 @@ var thScriptStr string = "" +
 	"บราณอักษรรูปลิ่มสุเมเรีย-อัคคาเดียยิอินเฮอริตเครื่องหมายทางคณิตศาสตร์ซ" +
 	"ิมโบลส์ไม่มีภาษาเขียนสามัญสคริปต์ที่ไม่รู้จัก"
 
-// Size: 360 bytes, 168 elements
-var thScriptIdx = []uint16{
+var thScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0012, 0x0046, 0x0046, 0x0058, 0x008f, 0x00ad, 0x00bf,
 	0x00ce, 0x00dd, 0x00ec, 0x00fb, 0x0110, 0x0134, 0x014c, 0x015e,
@@ -28191,10 +27915,9 @@ var thScriptIdx = []uint16{
 	0x0e42, 0x0e57, 0x0e69, 0x0e81, 0x0e96, 0x0eae, 0x0eba, 0x0ec3,
 	0x0ed2, 0x0ee7, 0x0efc, 0x0f02, 0x0f38, 0x0f56, 0x0f68, 0x0f92,
 	0x0fea, 0x0ff0, 0x100b, 0x1053, 0x106b, 0x1095, 0x10a4, 0x10dd,
-}
+} // Size: 360 bytes
 
-// Size: 1491 bytes
-var trScriptStr string = "" +
+var trScriptStr string = "" + // Size: 1491 bytes
 	"AfakaKafkas AlbanyasıArapİmparatorluk AramicesiErmeniAvestaBali DiliBamu" +
 	"mBassa VahBatakBengalBlis SembolleriBopomofoBrahmiBrailleBugisBuhidChakm" +
 	"aUCASKaryaChamÇerokiCirthKıptiKıbrısKirilEski Kilise Slavcası KirilDevan" +
@@ -28216,8 +27939,7 @@ var trScriptStr string = "" +
 	"Sesleri ÇizimlemesiVarang KshitiWoleaiEski FarsSümer-Akad Çivi YazısıYiK" +
 	"alıtsalMatematiksel GösterimSembolYazılı OlmayanOrtakBilinmeyen Alfabe"
 
-// Size: 360 bytes, 168 elements
-var trScriptIdx = []uint16{
+var trScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0005, 0x0016, 0x0016, 0x001a, 0x0031, 0x0037, 0x003d,
 	0x0046, 0x004b, 0x0054, 0x0059, 0x005f, 0x006e, 0x0076, 0x007c,
@@ -28242,10 +27964,9 @@ var trScriptIdx = []uint16{
 	0x04e2, 0x04ea, 0x04f0, 0x04f7, 0x04ff, 0x0506, 0x050c, 0x050f,
 	0x0514, 0x051b, 0x0530, 0x0533, 0x0550, 0x055d, 0x0563, 0x056c,
 	0x0586, 0x0588, 0x0591, 0x05a7, 0x05ad, 0x05bd, 0x05c2, 0x05d3,
-}
+} // Size: 360 bytes
 
-// Size: 2925 bytes
-var ukScriptStr string = "" +
+var ukScriptStr string = "" + // Size: 2925 bytes
 	"афакакавказька албанськаахомарабицяАрмівірменськаАвестійськийБалійськийБ" +
 	"амумбассаБатакбенгальськасимволи БліссабопомофоБрахмішрифт БрайляБугійс" +
 	"ькийБухідЧакмауніфіковані символи канадських тубільцівКаріанськийХамітс" +
@@ -28268,8 +27989,7 @@ var ukScriptStr string = "" +
 	"йВаївидиме мовленняДавньоперськийШумеро-аккадський клінописЙїуспадкован" +
 	"аматематичнасимвольнабезписемназвичайнаневідома система письма"
 
-// Size: 360 bytes, 168 elements
-var ukScriptIdx = []uint16{
+var ukScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x000a, 0x002f, 0x0037, 0x0045, 0x004d, 0x0061, 0x0079,
 	0x008d, 0x0097, 0x00a1, 0x00ab, 0x00c1, 0x00dc, 0x00ec, 0x00f8,
@@ -28294,17 +28014,15 @@ var ukScriptIdx = []uint16{
 	0x09dd, 0x09ec, 0x09f8, 0x0a06, 0x0a14, 0x0a2a, 0x0a34, 0x0a42,
 	0x0a54, 0x0a54, 0x0a6a, 0x0a70, 0x0a8d, 0x0a8d, 0x0a8d, 0x0aa9,
 	0x0adb, 0x0adf, 0x0af5, 0x0b0b, 0x0b1d, 0x0b31, 0x0b41, 0x0b6d,
-}
+} // Size: 360 bytes
 
-// Size: 492 bytes
-var urScriptStr string = "" +
+var urScriptStr string = "" + // Size: 492 bytes
 	"عربیآرمینیائیبنگالیبوپوموفوبریلسیریلکدیوناگریایتھوپیائیجارجیائییونانیگجر" +
 	"اتیگرمکھیہنگولہانآسان ہانروایتی ہانعبرانیہیراگیناجاپانیکٹاکاناخمیرکنڑکو" +
 	"ریائیلاؤلاطینیملیالممنگولیائیمیانماراڑیہسنہالاتملتیلگوتھاناتھائیتبتیعلا" +
 	"ماتغیر تحریر شدہعامنامعلوم رسم الخط"
 
-// Size: 360 bytes, 168 elements
-var urScriptIdx = []uint16{
+var urScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0008, 0x0008, 0x001a, 0x001a,
 	0x001a, 0x001a, 0x001a, 0x001a, 0x0026, 0x0026, 0x0036, 0x0036,
@@ -28329,17 +28047,15 @@ var urScriptIdx = []uint16{
 	0x017e, 0x017e, 0x0188, 0x0188, 0x0188, 0x0188, 0x0192, 0x019c,
 	0x01a4, 0x01a4, 0x01a4, 0x01a4, 0x01a4, 0x01a4, 0x01a4, 0x01a4,
 	0x01a4, 0x01a4, 0x01a4, 0x01a4, 0x01b0, 0x01c8, 0x01ce, 0x01ec,
-}
+} // Size: 360 bytes
 
-// Size: 273 bytes
-var uzScriptStr string = "" +
+var uzScriptStr string = "" + // Size: 273 bytes
 	"arabarmanbengalbopomofoBraylkirilldevanagarhabashgruzingrekgujarotgurmuk" +
 	"xihangulxitoysoddalashgan xitoyan’anaviy xitoyibroniyhiraganayaponkataka" +
 	"naxmerkannadakoreyslaoslotinmalayalammo‘g‘ulmyanmaoriyasingaltamiltelugu" +
 	"taanataytibetbelgilaryozuvsizumumiynoma’lum yozuv"
 
-// Size: 360 bytes, 168 elements
-var uzScriptIdx = []uint16{
+var uzScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0004, 0x0004, 0x0009, 0x0009,
 	0x0009, 0x0009, 0x0009, 0x0009, 0x000f, 0x000f, 0x0017, 0x0017,
@@ -28364,10 +28080,9 @@ var uzScriptIdx = []uint16{
 	0x00d8, 0x00d8, 0x00de, 0x00de, 0x00de, 0x00de, 0x00e3, 0x00e6,
 	0x00eb, 0x00eb, 0x00eb, 0x00eb, 0x00eb, 0x00eb, 0x00eb, 0x00eb,
 	0x00eb, 0x00eb, 0x00eb, 0x00eb, 0x00f3, 0x00fb, 0x0101, 0x0111,
-}
+} // Size: 360 bytes
 
-// Size: 2484 bytes
-var viScriptStr string = "" +
+var viScriptStr string = "" + // Size: 2484 bytes
 	"Chữ AfakaChữ Ả RậpChữ Imperial AramaicChữ ArmeniaChữ AvestanChữ BaliChữ " +
 	"BamumChữ Bassa VahChữ BatakChữ BengaliChữ BlissymbolsChữ BopomofoChữ Bra" +
 	"hmiChữ nổi BrailleChữ BuginChữ BuhidChữ ChakmaÂm tiết Thổ dân Canada Hợp" +
@@ -28397,8 +28112,7 @@ var viScriptStr string = "" +
 	" WoleaiChữ Ba Tư cổChữ hình nêm Sumero-AkkadianChữ DiChữ Kế thừaKý hiệu " +
 	"Toán họcKý hiệuChưa có chữ viếtChungChữ viết không xác định"
 
-// Size: 360 bytes, 168 elements
-var viScriptIdx = []uint16{
+var viScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x000b, 0x000b, 0x000b, 0x001a, 0x0030, 0x003d, 0x004a,
 	0x0054, 0x005f, 0x006e, 0x0079, 0x0086, 0x0097, 0x00a5, 0x00b1,
@@ -28423,10 +28137,9 @@ var viScriptIdx = []uint16{
 	0x083e, 0x0850, 0x085c, 0x0869, 0x0877, 0x0884, 0x0890, 0x089b,
 	0x08ac, 0x08b9, 0x08c5, 0x08ce, 0x08f0, 0x0903, 0x090f, 0x0920,
 	0x0940, 0x0948, 0x0959, 0x096f, 0x0979, 0x098f, 0x0994, 0x09b4,
-}
+} // Size: 360 bytes
 
-// Size: 2184 bytes
-var zhScriptStr string = "" +
+var zhScriptStr string = "" + // Size: 2184 bytes
 	"阿法卡文阿拉伯文皇室亚拉姆文亚美尼亚文阿维斯陀文巴厘文巴姆穆文巴萨文巴塔克文孟加拉文布列斯符号汉语拼音婆罗米文字布莱叶盲文布吉文布希德文查克马文" +
 	"加拿大土著统一音节卡里亚文占文切罗基文色斯文克普特文塞浦路斯文西里尔文西里尔文字（古教会斯拉夫文的变体）天城文德塞莱特文杜普洛伊速记后期埃及" +
 	"文古埃及僧侣书写体古埃及象形文埃塞俄比亚文格鲁吉亚文（教堂体）格鲁吉亚文格拉哥里文哥特文格兰塔文希腊文古吉拉特文果鲁穆奇文韩文字汉字汉奴罗文" +
@@ -28439,8 +28152,7 @@ var zhScriptStr string = "" +
 	"尔文唐古特文越南傣文泰卢固文腾格瓦文字提非纳文塔加路文塔安那文泰文藏文迈蒂利文乌加里特文瓦依文可见语言瓦郎奇蒂文字沃莱艾文古波斯文苏美尔-阿" +
 	"卡德楔形文字彝文遗传学术语数学符号符号非书面文字通用未知文字"
 
-// Size: 360 bytes, 168 elements
-var zhScriptIdx = []uint16{
+var zhScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x000c, 0x000c, 0x0018, 0x002a, 0x0039, 0x0048,
 	0x0051, 0x005d, 0x0066, 0x0072, 0x007e, 0x008d, 0x0099, 0x00a8,
@@ -28465,10 +28177,9 @@ var zhScriptIdx = []uint16{
 	0x0770, 0x077c, 0x0788, 0x0797, 0x07a3, 0x07af, 0x07bb, 0x07c1,
 	0x07c7, 0x07d3, 0x07e2, 0x07eb, 0x07f7, 0x0809, 0x0815, 0x0821,
 	0x0840, 0x0846, 0x0855, 0x0861, 0x0867, 0x0876, 0x087c, 0x0888,
-}
+} // Size: 360 bytes
 
-// Size: 2409 bytes
-var zhHantScriptStr string = "" +
+var zhHantScriptStr string = "" + // Size: 2409 bytes
 	"阿法卡文字高加索阿爾巴尼亞文阿拉伯文皇室亞美尼亞文亞美尼亞文阿維斯陀文峇里文巴姆穆文巴薩文巴塔克文孟加拉文布列斯文注音符號婆羅米文盲人用點字布吉" +
 	"斯文布希德文查克馬文加拿大原住民通用字符卡里亞文占文柴羅基文色斯文科普特文塞浦路斯文斯拉夫文西里爾文（古教會斯拉夫文變體）天城文德瑟雷特文杜" +
 	"普洛伊速記古埃及世俗體古埃及僧侶體古埃及象形文字愛爾巴桑文衣索比亞文喬治亞語系（阿索他路里和努斯克胡里文）喬治亞文格拉哥里文歌德文格蘭他文字" +
@@ -28482,8 +28193,7 @@ var zhHantScriptStr string = "" +
 	"文坦米爾文西夏文傣擔文泰盧固文談格瓦文提非納文塔加拉文塔安那文泰文西藏文邁蒂利文烏加列文瓦依文視覺語音文字瓦郎奇蒂文字沃雷艾文古波斯文蘇米魯" +
 	"亞甲文楔形文字彞文繼承文字（Unicode）數學符號符號非書寫語言一般文字未知文字"
 
-// Size: 360 bytes, 168 elements
-var zhHantScriptIdx = []uint16{
+var zhHantScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x002a, 0x002a, 0x0036, 0x004b, 0x005a, 0x0069,
 	0x0072, 0x007e, 0x0087, 0x0093, 0x009f, 0x00ab, 0x00b7, 0x00c3,
@@ -28508,10 +28218,9 @@ var zhHantScriptIdx = []uint16{
 	0x0842, 0x084b, 0x0857, 0x0863, 0x086f, 0x087b, 0x0887, 0x088d,
 	0x0896, 0x08a2, 0x08ae, 0x08b7, 0x08c9, 0x08db, 0x08e7, 0x08f3,
 	0x0911, 0x0917, 0x0930, 0x093c, 0x0942, 0x0951, 0x095d, 0x0969,
-}
+} // Size: 360 bytes
 
-// Size: 371 bytes
-var zuScriptStr string = "" +
+var zuScriptStr string = "" + // Size: 371 bytes
 	"i-Arabi-Armeniani-Bengalii-Bopomofoi-Braillei-Cyrillici-Devanagarii-Ethi" +
 	"opici-Georgiani-Greeki-Gujaratii-Gurmukhii-Hanguli-Hani-Simplified Hani-" +
 	"Traditional Hani-Hebrewi-Hiraganai-Japanesei-Katakanai-Khmeri-Kannadai-K" +
@@ -28519,8 +28228,7 @@ var zuScriptStr string = "" +
 	"elegui-Thaanai-Thaii-Tibetanamasimbuliokungabhaliweejwayelekileiskripthi" +
 	" esingaziwa"
 
-// Size: 360 bytes, 168 elements
-var zuScriptIdx = []uint16{
+var zuScriptIdx = []uint16{ // 168 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0006, 0x0006, 0x0010, 0x0010,
 	0x0010, 0x0010, 0x0010, 0x0010, 0x0019, 0x0019, 0x0023, 0x0023,
@@ -28545,7 +28253,7 @@ var zuScriptIdx = []uint16{
 	0x011d, 0x011d, 0x0125, 0x0125, 0x0125, 0x0125, 0x012d, 0x0133,
 	0x013c, 0x013c, 0x013c, 0x013c, 0x013c, 0x013c, 0x013c, 0x013c,
 	0x013c, 0x013c, 0x013c, 0x013c, 0x0146, 0x0153, 0x015f, 0x0173,
-}
+} // Size: 360 bytes
 
 // Total size for script: 230112 bytes (230 KB)
 
@@ -38348,8 +38056,7 @@ var regionHeaders = [218]header{
 	},
 }
 
-// Size: 3021 bytes
-var afRegionStr string = "" +
+var afRegionStr string = "" + // Size: 3021 bytes
 	"AscensioneilandAndorraVerenigde Arabiese EmirateAfganistanAntigua en Bar" +
 	"budaAnguillaAlbaniëArmeniëNederlands-AntilleAngolaAntarktikaArgentiniëAm" +
 	"erikaans-SamoaOostenrykAustraliëArubaÅlandeilandeAzerbeidjanBosnië en He" +
@@ -38393,8 +38100,7 @@ var afRegionStr string = "" +
 	"ëAsiëSentraal-AsiëWes-AsiëEuropaOos-EuropaNoord-EuropaWes-EuropaLatyns-" +
 	"Amerika"
 
-// Size: 606 bytes, 291 elements
-var afRegionIdx = []uint16{
+var afRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x0016, 0x0030, 0x003a, 0x004c, 0x0054, 0x005c,
 	0x0064, 0x0076, 0x007c, 0x0086, 0x0091, 0x00a1, 0x00aa, 0x00b4,
@@ -38437,10 +38143,9 @@ var afRegionIdx = []uint16{
 	0x0b05, 0x0b17, 0x0b1f, 0x0b28, 0x0b32, 0x0b3f, 0x0b4a, 0x0b56,
 	0x0b60, 0x0b73, 0x0b7d, 0x0b82, 0x0b90, 0x0b99, 0x0b9f, 0x0ba9,
 	0x0bb5, 0x0bbf, 0x0bcd,
-}
+} // Size: 606 bytes
 
-// Size: 5336 bytes
-var amRegionStr string = "" +
+var amRegionStr string = "" + // Size: 5336 bytes
 	"አሴንሽን ደሴትአንዶራየተባበሩት አረብ ኤምሬትስአፍጋኒስታንአንቲጓ እና ባሩዳአንጉኢላአልባኒያአርሜኒያኔዘርላንድስ አን" +
 	"ቲልስአንጐላአንታርክቲካአርጀንቲናየአሜሪካ ሳሞአኦስትሪያአውስትራልያአሩባየአላንድ ደሴቶችአዘርባጃንቦስኒያ እና ሄር" +
 	"ዞጎቪኒያባርቤዶስባንግላዲሽቤልጄምቡርኪና ፋሶቡልጌሪያባህሬንብሩንዲቤኒንቅዱስ በርቴሎሜቤርሙዳብሩኒቦሊቪያየካሪቢያን " +
@@ -38469,8 +38174,7 @@ var amRegionStr string = "" +
 	"ቡባዊ እሲያምዕራባዊ ደቡብ እሲያደቡባዊ አውሮፓአውስትራሊያሜላኔዥያየማይክሮኔዥያን ክልልፖሊኔዥያእሲያመካከለኛው እ" +
 	"ሲያምስራቃዊ እሲያአውሮፓምዕራባዊ አውሮፓሰሜናዊ አውሮፓምስራቃዊ አውሮፓላቲን አሜሪካ"
 
-// Size: 606 bytes, 291 elements
-var amRegionIdx = []uint16{
+var amRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0019, 0x0025, 0x0051, 0x0066, 0x0083, 0x0092, 0x00a1,
 	0x00b0, 0x00d5, 0x00e1, 0x00f6, 0x0108, 0x0121, 0x0130, 0x0145,
@@ -38513,10 +38217,9 @@ var amRegionIdx = []uint16{
 	0x133c, 0x1355, 0x1364, 0x137d, 0x1393, 0x13b6, 0x13cf, 0x13e4,
 	0x13f3, 0x1418, 0x1427, 0x1430, 0x144c, 0x1465, 0x1471, 0x148d,
 	0x14a6, 0x14c2, 0x14d8,
-}
+} // Size: 606 bytes
 
-// Size: 5380 bytes
-var arRegionStr string = "" +
+var arRegionStr string = "" + // Size: 5380 bytes
 	"جزيرة أسينشيونأندوراالإمارات العربية المتحدةأفغانستانأنتيغوا وبربوداأنغو" +
 	"يلاألبانياأرمينياجزر الأنتيل الهولنديةأنغولاأنتاركتيكاالأرجنتينساموا ال" +
 	"أمريكيةالنمساأسترالياأروباجزر آلاندأذربيجانالبوسنة والهرسكبربادوسبنجلاد" +
@@ -38557,8 +38260,7 @@ var arRegionStr string = "" +
 	"سياجنوب أوروباأسترالاسياميلانيزياالجزر الميكرونيزيةبولينيزياآسياوسط آسي" +
 	"اغرب آسياأوروباشرق أوروباشمال أوروباغرب أوروباأمريكا اللاتينية"
 
-// Size: 606 bytes, 291 elements
-var arRegionIdx = []uint16{
+var arRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001b, 0x0027, 0x0055, 0x0067, 0x0084, 0x0092, 0x00a0,
 	0x00ae, 0x00d6, 0x00e2, 0x00f6, 0x0108, 0x0125, 0x0131, 0x0141,
@@ -38601,10 +38303,9 @@ var arRegionIdx = []uint16{
 	0x13ab, 0x13c0, 0x13d0, 0x13df, 0x13f0, 0x1408, 0x141d, 0x1431,
 	0x1443, 0x1466, 0x1478, 0x1480, 0x148f, 0x149e, 0x14aa, 0x14bd,
 	0x14d2, 0x14e5, 0x1504,
-}
+} // Size: 606 bytes
 
-// Size: 3197 bytes
-var azRegionStr string = "" +
+var azRegionStr string = "" + // Size: 3197 bytes
 	"Yüksəliş AdasıAndorraBirləşmiş Ərəb ƏmirlikləriƏfqanıstanAntiqua və Barb" +
 	"udaAngilaAlbaniyaErmənistanHollandiya antilleriAnqolaAntarktikaArgentina" +
 	"Amerika SamoasıAvstriyaAvstraliyaArubaAland AdalarıAzərbaycanBosniya və " +
@@ -38648,8 +38349,7 @@ var azRegionStr string = "" +
 	"aneziyaMikroneziya RegionuPolineziyaAsiyaMərkəzi AsiyaQərbi AsiyaAvropaŞ" +
 	"ərqi AvropaŞimali AvropaQərbi AvropaLatın Amerikası"
 
-// Size: 606 bytes, 291 elements
-var azRegionIdx = []uint16{
+var azRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0012, 0x0019, 0x003a, 0x0046, 0x0059, 0x005f, 0x0067,
 	0x0072, 0x0086, 0x008c, 0x0096, 0x009f, 0x00af, 0x00b7, 0x00c1,
@@ -38692,10 +38392,9 @@ var azRegionIdx = []uint16{
 	0x0b98, 0x0ba9, 0x0bae, 0x0bbb, 0x0bc8, 0x0bdc, 0x0bea, 0x0bf6,
 	0x0c00, 0x0c13, 0x0c1d, 0x0c22, 0x0c31, 0x0c3d, 0x0c43, 0x0c51,
 	0x0c5f, 0x0c6c, 0x0c7d,
-}
+} // Size: 606 bytes
 
-// Size: 5899 bytes
-var bgRegionStr string = "" +
+var bgRegionStr string = "" + // Size: 5899 bytes
 	"остров ВъзнесениеАндораОбединени арабски емирстваАфганистанАнтигуа и Бар" +
 	"будаАнгуилаАлбанияАрменияХоландски АнтилиАнголаАнтарктикаАржентинаАмери" +
 	"канска СамоаАвстрияАвстралияАрубаОландски островиАзербайджанБосна и Хер" +
@@ -38740,8 +38439,7 @@ var bgRegionStr string = "" +
 	"зийски регионПолинезияАзияЦентрална АзияЗападна АзияЕвропаИзточна Европ" +
 	"аСеверна ЕвропаЗападна ЕвропаЛатинска Америка"
 
-// Size: 606 bytes, 291 elements
-var bgRegionIdx = []uint16{
+var bgRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0021, 0x002d, 0x005f, 0x0073, 0x0093, 0x00a1, 0x00af,
 	0x00bd, 0x00dc, 0x00e8, 0x00fc, 0x010e, 0x012f, 0x013d, 0x014f,
@@ -38784,10 +38482,9 @@ var bgRegionIdx = []uint16{
 	0x1560, 0x157d, 0x159a, 0x15b1, 0x15c2, 0x15df, 0x15f4, 0x160a,
 	0x161c, 0x1643, 0x1655, 0x165d, 0x1678, 0x168f, 0x169b, 0x16b6,
 	0x16d1, 0x16ec, 0x170b,
-}
+} // Size: 606 bytes
 
-// Size: 9571 bytes
-var bnRegionStr string = "" +
+var bnRegionStr string = "" + // Size: 9571 bytes
 	"অ্যাসসেনশন আইল্যান্ডএ্যান্ডোরাসংযুক্ত আরব আমিরাতআফগানিস্তানএন্টিগুয়া ও " +
 	"বারবুডাএ্যাঙ্গুইলাআলব্যানিয়াআর্মেনিয়ানেদারল্যান্ডস এ্যান্টিলিসঅ্যাঙ্" +
 	"গোলাঅ্যান্টার্কটিকাআর্জেন্টিনাআমেরিকান সামোয়াঅস্ট্রিয়াঅস্ট্রেলিয়াআর" +
@@ -38836,8 +38533,7 @@ var bnRegionStr string = "" +
 	"েশিয়াম্যালেনেশিয়াম্যালেনিশা অঞ্চলপলিনেশিয়াএশিয়ামধ্য এশিয়াপশ্চিম এ" +
 	"শিয়াইউরোপপূর্ব ইউরোপউত্তর ইউরোপপশ্চিম ইউরোপল্যাটিন আমেরিকা"
 
-// Size: 606 bytes, 291 elements
-var bnRegionIdx = []uint16{
+var bnRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x003a, 0x0058, 0x008a, 0x00ab, 0x00e3, 0x0104, 0x0125,
 	0x0143, 0x018c, 0x01aa, 0x01d7, 0x01f8, 0x0226, 0x0244, 0x0268,
@@ -38880,10 +38576,9 @@ var bnRegionIdx = []uint16{
 	0x22d7, 0x2314, 0x2338, 0x235a, 0x237f, 0x23b4, 0x23d6, 0x2400,
 	0x2427, 0x2455, 0x2473, 0x2485, 0x24a4, 0x24c9, 0x24d8, 0x24f7,
 	0x2516, 0x2538, 0x2563,
-}
+} // Size: 606 bytes
 
-// Size: 3171 bytes
-var caRegionStr string = "" +
+var caRegionStr string = "" + // Size: 3171 bytes
 	"Illa de l’AscensióAndorraEmirats Àrabs UnitsAfganistanAntigua i BarbudaA" +
 	"nguillaAlbàniaArmèniaAntilles NeerlandesesAngolaAntàrtidaArgentinaSamoa " +
 	"Nord-americanaÀustriaAustràliaArubaIlles ÅlandAzerbaidjanBòsnia i Herceg" +
@@ -38928,8 +38623,7 @@ var caRegionStr string = "" +
 	"ralÀsia occidentalEuropaEuropa orientalEuropa septentrionalEuropa occide" +
 	"ntalAmèrica Llatina"
 
-// Size: 606 bytes, 291 elements
-var caRegionIdx = []uint16{
+var caRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0015, 0x001c, 0x0030, 0x003a, 0x004b, 0x0053, 0x005b,
 	0x0063, 0x0078, 0x007e, 0x0088, 0x0091, 0x00a5, 0x00ad, 0x00b7,
@@ -38972,10 +38666,9 @@ var caRegionIdx = []uint16{
 	0x0b63, 0x0b79, 0x0b7e, 0x0b8c, 0x0b9c, 0x0bae, 0x0bbf, 0x0bcb,
 	0x0bd5, 0x0bed, 0x0bf7, 0x0bfc, 0x0c09, 0x0c19, 0x0c1f, 0x0c2e,
 	0x0c42, 0x0c53, 0x0c63,
-}
+} // Size: 606 bytes
 
-// Size: 3229 bytes
-var csRegionStr string = "" +
+var csRegionStr string = "" + // Size: 3229 bytes
 	"AscensionAndorraSpojené arabské emirátyAfghánistánAntigua a BarbudaAngui" +
 	"llaAlbánieArménieNizozemské AntilyAngolaAntarktidaArgentinaAmerická Samo" +
 	"aRakouskoAustrálieArubaÅlandyÁzerbájdžánBosna a HercegovinaBarbadosBangl" +
@@ -39019,8 +38712,7 @@ var csRegionStr string = "" +
 	"ésieMikronésie (region)PolynésieAsieStřední AsieZápadní AsieEvropaVýcho" +
 	"dní EvropaSeverní EvropaZápadní EvropaLatinská Amerika"
 
-// Size: 606 bytes, 291 elements
-var csRegionIdx = []uint16{
+var csRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0009, 0x0010, 0x002a, 0x0037, 0x0048, 0x0050, 0x0058,
 	0x0060, 0x0072, 0x0078, 0x0082, 0x008b, 0x009a, 0x00a2, 0x00ac,
@@ -39063,10 +38755,9 @@ var csRegionIdx = []uint16{
 	0x0ba7, 0x0bc0, 0x0bc7, 0x0bd6, 0x0be2, 0x0bf5, 0x0c03, 0x0c0e,
 	0x0c18, 0x0c2c, 0x0c36, 0x0c3a, 0x0c48, 0x0c56, 0x0c5c, 0x0c6d,
 	0x0c7c, 0x0c8c, 0x0c9d,
-}
+} // Size: 606 bytes
 
-// Size: 2956 bytes
-var daRegionStr string = "" +
+var daRegionStr string = "" + // Size: 2956 bytes
 	"AscensionøenAndorraDe Forenede Arabiske EmiraterAfghanistanAntigua og Ba" +
 	"rbudaAnguillaAlbanienArmenienHollandske AntillerAngolaAntarktisArgentina" +
 	"Amerikansk SamoaØstrigAustralienArubaÅlandAserbajdsjanBosnien-Hercegovin" +
@@ -39109,8 +38800,7 @@ var daRegionStr string = "" +
 	"lasienMelanesienMikronesienPolynesienAsienCentralasienVestasienEuropaØst" +
 	"europaNordeuropaVesteuropaLatinamerika"
 
-// Size: 606 bytes, 291 elements
-var daRegionIdx = []uint16{
+var daRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000d, 0x0014, 0x0031, 0x003c, 0x004e, 0x0056, 0x005e,
 	0x0066, 0x0079, 0x007f, 0x0088, 0x0091, 0x00a1, 0x00a8, 0x00b2,
@@ -39153,10 +38843,9 @@ var daRegionIdx = []uint16{
 	0x0ad5, 0x0ae9, 0x0af1, 0x0afa, 0x0b02, 0x0b0e, 0x0b17, 0x0b23,
 	0x0b2d, 0x0b38, 0x0b42, 0x0b47, 0x0b53, 0x0b5c, 0x0b62, 0x0b6c,
 	0x0b76, 0x0b80, 0x0b8c,
-}
+} // Size: 606 bytes
 
-// Size: 3107 bytes
-var deRegionStr string = "" +
+var deRegionStr string = "" + // Size: 3107 bytes
 	"AscensionAndorraVereinigte Arabische EmirateAfghanistanAntigua und Barbu" +
 	"daAnguillaAlbanienArmenienNiederländische AntillenAngolaAntarktisArgenti" +
 	"nienAmerikanisch-SamoaÖsterreichAustralienArubaÅlandinselnAserbaidschanB" +
@@ -39201,8 +38890,7 @@ var deRegionStr string = "" +
 	"ienMikronesisches InselgebietPolynesienAsienZentralasienWestasienEuropaO" +
 	"steuropaNordeuropaWesteuropaLateinamerika"
 
-// Size: 606 bytes, 291 elements
-var deRegionIdx = []uint16{
+var deRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0009, 0x0010, 0x002c, 0x0037, 0x004a, 0x0052, 0x005a,
 	0x0062, 0x007b, 0x0081, 0x008a, 0x0095, 0x00a7, 0x00b2, 0x00bc,
@@ -39245,10 +38933,9 @@ var deRegionIdx = []uint16{
 	0x0b5e, 0x0b71, 0x0b78, 0x0b80, 0x0b89, 0x0b95, 0x0b9f, 0x0bab,
 	0x0bb5, 0x0bcf, 0x0bd9, 0x0bde, 0x0bea, 0x0bf3, 0x0bf9, 0x0c02,
 	0x0c0c, 0x0c16, 0x0c23,
-}
+} // Size: 606 bytes
 
-// Size: 6260 bytes
-var elRegionStr string = "" +
+var elRegionStr string = "" + // Size: 6260 bytes
 	"Νήσος ΑσενσιόνΑνδόραΗνωμένα Αραβικά ΕμιράταΑφγανιστάνΑντίγκουα και Μπαρμ" +
 	"πούνταΑνγκουίλαΑλβανίαΑρμενίαΟλλανδικές ΑντίλλεςΑνγκόλαΑνταρκτικήΑργεντ" +
 	"ινήΑμερικανική ΣαμόαΑυστρίαΑυστραλίαΑρούμπαΝήσοι ΌλαντΑζερμπαϊτζάνΒοσνί" +
@@ -39296,8 +38983,7 @@ var elRegionStr string = "" +
 	"τρική ΑσίαΔυτική ΑσίαΕυρώπηΑνατολική ΕυρώπηΒόρεια ΕυρώπηΔυτική ΕυρώπηΛα" +
 	"τινική Αμερική"
 
-// Size: 606 bytes, 291 elements
-var elRegionIdx = []uint16{
+var elRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001b, 0x0027, 0x0053, 0x0067, 0x0097, 0x00a9, 0x00b7,
 	0x00c5, 0x00ea, 0x00f8, 0x010c, 0x011e, 0x013f, 0x014d, 0x015f,
@@ -39340,10 +39026,9 @@ var elRegionIdx = []uint16{
 	0x16ca, 0x16e7, 0x16f9, 0x1714, 0x1727, 0x174c, 0x1763, 0x1779,
 	0x178b, 0x17b0, 0x17c2, 0x17ca, 0x17e3, 0x17f8, 0x1804, 0x1823,
 	0x183c, 0x1855, 0x1874,
-}
+} // Size: 606 bytes
 
-// Size: 2940 bytes
-var enRegionStr string = "" +
+var enRegionStr string = "" + // Size: 2940 bytes
 	"Ascension IslandAndorraUnited Arab EmiratesAfghanistanAntigua & BarbudaA" +
 	"nguillaAlbaniaArmeniaNetherlands AntillesAngolaAntarcticaArgentinaAmeric" +
 	"an SamoaAustriaAustraliaArubaÅland IslandsAzerbaijanBosnia & Herzegovina" +
@@ -39386,8 +39071,7 @@ var enRegionStr string = "" +
 	"nesiaMicronesian RegionPolynesiaAsiaCentral AsiaWestern AsiaEuropeEaster" +
 	"n EuropeNorthern EuropeWestern EuropeLatin America"
 
-// Size: 606 bytes, 291 elements
-var enRegionIdx = []uint16{
+var enRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0017, 0x002b, 0x0036, 0x0047, 0x004f, 0x0056,
 	0x005d, 0x0071, 0x0077, 0x0081, 0x008a, 0x0098, 0x009f, 0x00a8,
@@ -39430,16 +39114,15 @@ var enRegionIdx = []uint16{
 	0x0aa4, 0x0ab4, 0x0abd, 0x0ac9, 0x0ad6, 0x0ae4, 0x0af3, 0x0afe,
 	0x0b07, 0x0b19, 0x0b22, 0x0b26, 0x0b32, 0x0b3e, 0x0b44, 0x0b52,
 	0x0b61, 0x0b6f, 0x0b7c,
-}
+} // Size: 606 bytes
 
-// Size: 0 bytes
 const enGBRegionStr string = ""
 
-// Size: 24 bytes, 0 elements
-var enGBRegionIdx = []uint16{}
+var enGBRegionIdx = []uint16{ // 0 elements
 
-// Size: 3128 bytes
-var esRegionStr string = "" +
+} // Size: 24 bytes
+
+var esRegionStr string = "" + // Size: 3128 bytes
 	"Isla de la AscensiónAndorraEmiratos Árabes UnidosAfganistánAntigua y Bar" +
 	"budaAnguilaAlbaniaArmeniaAntillas NeerlandesasAngolaAntártidaArgentinaSa" +
 	"moa AmericanaAustriaAustraliaArubaIslas ÅlandAzerbaiyánBosnia-Herzegovin" +
@@ -39484,8 +39167,7 @@ var esRegionStr string = "" +
 	"alAsia occidentalEuropaEuropa orientalEuropa septentrionalEuropa occiden" +
 	"talLatinoamérica"
 
-// Size: 606 bytes, 291 elements
-var esRegionIdx = []uint16{
+var esRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0015, 0x001c, 0x0033, 0x003e, 0x004f, 0x0056, 0x005d,
 	0x0064, 0x0079, 0x007f, 0x0089, 0x0092, 0x00a1, 0x00a8, 0x00b1,
@@ -39528,16 +39210,15 @@ var esRegionIdx = []uint16{
 	0x0b4e, 0x0b5b, 0x0b61, 0x0b6e, 0x0b7d, 0x0b8e, 0x0b9f, 0x0baa,
 	0x0bb3, 0x0bc8, 0x0bd1, 0x0bd5, 0x0be1, 0x0bf0, 0x0bf6, 0x0c05,
 	0x0c19, 0x0c2a, 0x0c38,
-}
+} // Size: 606 bytes
 
-// Size: 0 bytes
 const es419RegionStr string = ""
 
-// Size: 24 bytes, 0 elements
-var es419RegionIdx = []uint16{}
+var es419RegionIdx = []uint16{ // 0 elements
 
-// Size: 2993 bytes
-var etRegionStr string = "" +
+} // Size: 24 bytes
+
+var etRegionStr string = "" + // Size: 2993 bytes
 	"Ascensioni saarAndorraAraabia ÜhendemiraadidAfganistanAntigua ja Barbuda" +
 	"AnguillaAlbaaniaArmeeniaHollandi AntillidAngolaAntarktisArgentinaAmeerik" +
 	"a SamoaAustriaAustraaliaArubaAhvenamaaAserbaidžaanBosnia ja Hertsegoviin" +
@@ -39580,8 +39261,7 @@ var etRegionStr string = "" +
 	"esiaMikroneesia (piirkond)PolüneesiaAasiaKesk-AasiaLääne-AasiaEuroopaIda" +
 	"-EuroopaPõhja-EuroopaLääne-EuroopaLadina-Ameerika"
 
-// Size: 606 bytes, 291 elements
-var etRegionIdx = []uint16{
+var etRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x0016, 0x002d, 0x0037, 0x0049, 0x0051, 0x0059,
 	0x0061, 0x0072, 0x0078, 0x0081, 0x008a, 0x0098, 0x009f, 0x00a9,
@@ -39624,10 +39304,9 @@ var etRegionIdx = []uint16{
 	0x0ad1, 0x0ae3, 0x0af3, 0x0afc, 0x0b08, 0x0b12, 0x0b20, 0x0b2c,
 	0x0b36, 0x0b4c, 0x0b57, 0x0b5c, 0x0b66, 0x0b73, 0x0b7a, 0x0b85,
 	0x0b93, 0x0ba2, 0x0bb1,
-}
+} // Size: 606 bytes
 
-// Size: 5002 bytes
-var faRegionStr string = "" +
+var faRegionStr string = "" + // Size: 5002 bytes
 	"جزایر آسنسیونآندوراامارات متحدهٔ عربیافغانستانآنتیگوا و باربوداآنگویلاآل" +
 	"بانیارمنستانآنتیل هلندآنگولاجنوبگانآرژانتینساموآی امریکااتریشاسترالیاآر" +
 	"وباجزایر آلاندجمهوری آذربایجانبوسنی و هرزگوینباربادوسبنگلادشبلژیکبورکین" +
@@ -39667,8 +39346,7 @@ var faRegionStr string = "" +
 	"حیهٔ میکرونزیپلی\u200cنزیآسیاآسیای مرکزیغرب آسیااروپاشرق اروپاشمال اروپ" +
 	"اغرب اروپاامریکای لاتین"
 
-// Size: 606 bytes, 291 elements
-var faRegionIdx = []uint16{
+var faRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0019, 0x0025, 0x0047, 0x0059, 0x0079, 0x0087, 0x0093,
 	0x00a3, 0x00b6, 0x00c2, 0x00d0, 0x00e0, 0x00f9, 0x0103, 0x0113,
@@ -39711,10 +39389,9 @@ var faRegionIdx = []uint16{
 	0x1250, 0x1265, 0x1273, 0x1282, 0x1293, 0x12ab, 0x12be, 0x12ce,
 	0x12da, 0x12f7, 0x1306, 0x130e, 0x1323, 0x1332, 0x133c, 0x134d,
 	0x1360, 0x1371, 0x138a,
-}
+} // Size: 606 bytes
 
-// Size: 3017 bytes
-var fiRegionStr string = "" +
+var fiRegionStr string = "" + // Size: 3017 bytes
 	"Ascension-saariAndorraArabiemiirikunnatAfganistanAntigua ja BarbudaAngui" +
 	"llaAlbaniaArmeniaAlankomaiden AntillitAngolaAntarktisArgentiinaAmerikan " +
 	"SamoaItävaltaAustraliaArubaAhvenanmaaAzerbaidžanBosnia ja HertsegovinaBa" +
@@ -39758,8 +39435,7 @@ var fiRegionStr string = "" +
 	"ki-AasiaLänsi-AasiaEurooppaItä-EurooppaPohjois-EurooppaLänsi-EurooppaLat" +
 	"inalainen Amerikka"
 
-// Size: 606 bytes, 291 elements
-var fiRegionIdx = []uint16{
+var fiRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x0016, 0x0027, 0x0031, 0x0043, 0x004b, 0x0052,
 	0x0059, 0x006e, 0x0074, 0x007d, 0x0087, 0x0095, 0x009e, 0x00a7,
@@ -39802,10 +39478,9 @@ var fiRegionIdx = []uint16{
 	0x0af0, 0x0b02, 0x0b09, 0x0b13, 0x0b1f, 0x0b2d, 0x0b3c, 0x0b48,
 	0x0b51, 0x0b5b, 0x0b64, 0x0b69, 0x0b74, 0x0b80, 0x0b88, 0x0b95,
 	0x0ba5, 0x0bb4, 0x0bc9,
-}
+} // Size: 606 bytes
 
-// Size: 3038 bytes
-var filRegionStr string = "" +
+var filRegionStr string = "" + // Size: 3038 bytes
 	"Acsencion islandAndorraUnited Arab EmiratesAfghanistanAntigua and Barbud" +
 	"aAnguillaAlbaniaArmeniaNetherlands AntillesAngolaAntarcticaArgentinaAmer" +
 	"ican SamoaAustriaAustraliaArubaÅland IslandsAzerbaijanBosnia and Herzego" +
@@ -39850,8 +39525,7 @@ var filRegionStr string = "" +
 	"urang AsyaEuropeSilangang EuropeHilagang EuropeKanlurang EuropeLatin Ame" +
 	"rica"
 
-// Size: 606 bytes, 291 elements
-var filRegionIdx = []uint16{
+var filRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0017, 0x002b, 0x0036, 0x0049, 0x0051, 0x0058,
 	0x005f, 0x0073, 0x0079, 0x0083, 0x008c, 0x009a, 0x00a1, 0x00aa,
@@ -39894,10 +39568,9 @@ var filRegionIdx = []uint16{
 	0x0af0, 0x0b00, 0x0b0a, 0x0b18, 0x0b27, 0x0b3b, 0x0b4c, 0x0b57,
 	0x0b60, 0x0b75, 0x0b7e, 0x0b82, 0x0b8e, 0x0b9c, 0x0ba2, 0x0bb2,
 	0x0bc1, 0x0bd1, 0x0bde,
-}
+} // Size: 606 bytes
 
-// Size: 3330 bytes
-var frRegionStr string = "" +
+var frRegionStr string = "" + // Size: 3330 bytes
 	"Île de l’AscensionAndorreÉmirats arabes unisAfghanistanAntigua-et-Barbud" +
 	"aAnguillaAlbanieArménieAntilles néerlandaisesAngolaAntarctiqueArgentineS" +
 	"amoa américainesAutricheAustralieArubaÎles ÅlandAzerbaïdjanBosnie-Herzég" +
@@ -39944,8 +39617,7 @@ var frRegionStr string = "" +
 	"ie occidentaleEuropeEurope de l’EstEurope septentrionaleEurope occidenta" +
 	"leAmérique latine"
 
-// Size: 606 bytes, 291 elements
-var frRegionIdx = []uint16{
+var frRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0015, 0x001c, 0x0030, 0x003b, 0x004d, 0x0055, 0x005c,
 	0x0064, 0x007b, 0x0081, 0x008c, 0x0095, 0x00a7, 0x00af, 0x00b8,
@@ -39988,15 +39660,13 @@ var frRegionIdx = []uint16{
 	0x0c01, 0x0c19, 0x0c22, 0x0c30, 0x0c3b, 0x0c4a, 0x0c5d, 0x0c68,
 	0x0c73, 0x0c89, 0x0c93, 0x0c97, 0x0ca4, 0x0cb4, 0x0cba, 0x0ccb,
 	0x0ce0, 0x0cf2, 0x0d02,
-}
+} // Size: 606 bytes
 
-// Size: 145 bytes
-var frCARegionStr string = "" +
+var frCARegionStr string = "" + // Size: 145 bytes
 	"BélarusÎles Cocos (Keeling)MicronésieSaint-Martin (France)MyanmarSaint-M" +
 	"artin (Pays-Bas)TokelauSaint-Vincent-et-les GrenadinesEurope orientale"
 
-// Size: 600 bytes, 288 elements
-var frCARegionIdx = []uint16{
+var frCARegionIdx = []uint16{ // 288 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -40038,10 +39708,9 @@ var frCARegionIdx = []uint16{
 	0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0081,
 	0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0081,
 	0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0081, 0x0091,
-}
+} // Size: 600 bytes
 
-// Size: 8706 bytes
-var guRegionStr string = "" +
+var guRegionStr string = "" + // Size: 8706 bytes
 	"એસેન્શન આઇલેન્ડઍંડોરાયુનાઇટેડ આરબ અમીરાતઅફઘાનિસ્તાનએન્ટીગુઆ અને બર્મુડાઍ" +
 	"ંગ્વિલાઅલ્બેનિયાઆર્મેનિયાનેધરલેંડ્સ એંટિલેસઅંગોલાએન્ટાર્કટિકાઆર્જેન્ટી" +
 	"નાઅમેરીકન સમોઆઑસ્ટ્રિયાઑસ્ટ્રેલિયાઅરુબાએલેંડ ટાપુઓઅઝરબૈજાનબોસ્નિયા અને" +
@@ -40086,8 +39755,7 @@ var guRegionStr string = "" +
 	"ેલેશિયામેલાનેશિયામાઈક્રોનેશિયન ક્ષેત્રપોલિનેશિયાએશિયામધ્ય એશિયાપશ્ચિમી" +
 	" એશિયાયુરોપપૂર્વીય યુરોપઉત્તરીય યુરોપપશ્ચિમ યુરોપલેટિન અમેરિકા"
 
-// Size: 606 bytes, 291 elements
-var guRegionIdx = []uint16{
+var guRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x002b, 0x003d, 0x0072, 0x0093, 0x00cb, 0x00e3, 0x00fe,
 	0x0119, 0x014d, 0x015f, 0x0183, 0x01a4, 0x01c6, 0x01e1, 0x0202,
@@ -40130,10 +39798,9 @@ var guRegionIdx = []uint16{
 	0x1f9b, 0x1fc6, 0x1fde, 0x2003, 0x2022, 0x2053, 0x2072, 0x2099,
 	0x20b7, 0x20f4, 0x2112, 0x2121, 0x213d, 0x2162, 0x2171, 0x2196,
 	0x21bb, 0x21dd, 0x2202,
-}
+} // Size: 606 bytes
 
-// Size: 5023 bytes
-var heRegionStr string = "" +
+var heRegionStr string = "" + // Size: 5023 bytes
 	"האי אסנשןאנדורהאיחוד האמירויות הערביותאפגניסטןאנטיגואה וברבודהאנגילהאלבנ" +
 	"יהארמניהאנטילים הולנדייםאנגולהאנטארקטיקהארגנטינהסמואה האמריקניתאוסטריהא" +
 	"וסטרליהארובהאיי אולנדאזרבייג׳ןבוסניה והרצגובינהברבדוסבנגלדשבלגיהבורקינה" +
@@ -40172,8 +39839,7 @@ var heRegionStr string = "" +
 	"סיהמלנזיהאזור מיקרונזיהפולינזיהאסיהמרכז אסיהמערב אסיהאירופהמזרח אירופהצ" +
 	"פון אירופהמערב אירופהאמריקה הלטינית"
 
-// Size: 606 bytes, 291 elements
-var heRegionIdx = []uint16{
+var heRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0011, 0x001d, 0x0049, 0x0059, 0x0078, 0x0084, 0x0090,
 	0x009c, 0x00bb, 0x00c7, 0x00db, 0x00eb, 0x0108, 0x0116, 0x0126,
@@ -40216,10 +39882,9 @@ var heRegionIdx = []uint16{
 	0x123c, 0x1257, 0x1272, 0x1283, 0x1294, 0x12af, 0x12c4, 0x12d8,
 	0x12e4, 0x12ff, 0x130f, 0x1317, 0x1328, 0x1339, 0x1345, 0x135a,
 	0x136f, 0x1384, 0x139f,
-}
+} // Size: 606 bytes
 
-// Size: 8760 bytes
-var hiRegionStr string = "" +
+var hiRegionStr string = "" + // Size: 8760 bytes
 	"असेंशन द्वीपएंडोरासंयुक्त अरब अमीरातअफ़गानिस्तानएंटिगुआ और बरबुडाएंग्विल" +
 	"ाअल्बानियाआर्मेनियानीदरलैंडी ऐंटीलअंगोलाअंटार्कटिकाअर्जेंटीनाअमेरिकी स" +
 	"मोआऑस्ट्रियाऑस्ट्रेलियाअरूबाएलैंड द्वीपसमूहअज़रबैजानबोस्निया और हर्ज़े" +
@@ -40265,8 +39930,7 @@ var hiRegionStr string = "" +
 	"ियाएशियामध्य एशियापश्चिमी एशियायूरोपपूर्वी यूरोपउत्तरी यूरोपपश्चिमी यू" +
 	"रोपलैटिन अमेरिका"
 
-// Size: 606 bytes, 291 elements
-var hiRegionIdx = []uint16{
+var hiRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0022, 0x0034, 0x0066, 0x008a, 0x00b9, 0x00d1, 0x00ec,
 	0x0107, 0x0132, 0x0144, 0x0165, 0x0183, 0x01a5, 0x01c0, 0x01e1,
@@ -40309,10 +39973,9 @@ var hiRegionIdx = []uint16{
 	0x1fca, 0x1ff2, 0x200a, 0x202c, 0x2051, 0x2083, 0x20a8, 0x20cf,
 	0x20ed, 0x212d, 0x214b, 0x215a, 0x2176, 0x219b, 0x21aa, 0x21cc,
 	0x21ee, 0x2213, 0x2238,
-}
+} // Size: 606 bytes
 
-// Size: 3113 bytes
-var hrRegionStr string = "" +
+var hrRegionStr string = "" + // Size: 3113 bytes
 	"Otok AscensionAndoraUjedinjeni Arapski EmiratiAfganistanAntigua i Barbud" +
 	"aAngvilaAlbanijaArmenijaNizozemski AntiliAngolaAntarktikaArgentinaAmerič" +
 	"ka SamoaAustrijaAustralijaArubaOtoci AlandAzerbajdžanBosna i Hercegovina" +
@@ -40357,8 +40020,7 @@ var hrRegionStr string = "" +
 	"olinezijaAzijaSrednja AzijaZapadna AzijaEuropaIstočna EuropaSjeverna Eur" +
 	"opaZapadna EuropaLatinska Amerika"
 
-// Size: 606 bytes, 291 elements
-var hrRegionIdx = []uint16{
+var hrRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000e, 0x0014, 0x002e, 0x0038, 0x0049, 0x0050, 0x0058,
 	0x0060, 0x0071, 0x0077, 0x0081, 0x008a, 0x0099, 0x00a1, 0x00ab,
@@ -40401,10 +40063,9 @@ var hrRegionIdx = []uint16{
 	0x0b42, 0x0b52, 0x0b58, 0x0b66, 0x0b72, 0x0b84, 0x0b91, 0x0b9d,
 	0x0ba7, 0x0bbe, 0x0bc8, 0x0bcd, 0x0bda, 0x0be7, 0x0bed, 0x0bfc,
 	0x0c0b, 0x0c19, 0x0c29,
-}
+} // Size: 606 bytes
 
-// Size: 3354 bytes
-var huRegionStr string = "" +
+var huRegionStr string = "" + // Size: 3354 bytes
 	"Ascension-szigetAndorraEgyesült Arab EmírségekAfganisztánAntigua és Barb" +
 	"udaAnguillaAlbániaÖrményországHolland AntillákAngolaAntarktiszArgentínaA" +
 	"merikai SzamoaAusztriaAusztráliaArubaÅland-szigetekAzerbajdzsánBosznia-H" +
@@ -40450,8 +40111,7 @@ var huRegionStr string = "" +
 	"éziai régióPolinéziaÁzsiaKözép-ÁzsiaNyugat-ÁzsiaEurópaKelet-EurópaÉszak" +
 	"-EurópaNyugat-EurópaLatin-Amerika"
 
-// Size: 606 bytes, 291 elements
-var huRegionIdx = []uint16{
+var huRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0017, 0x0031, 0x003d, 0x0050, 0x0058, 0x0060,
 	0x006f, 0x0080, 0x0086, 0x0090, 0x009a, 0x00a9, 0x00b1, 0x00bc,
@@ -40494,10 +40154,9 @@ var huRegionIdx = []uint16{
 	0x0c2e, 0x0c44, 0x0c52, 0x0c5e, 0x0c69, 0x0c79, 0x0c85, 0x0c94,
 	0x0c9e, 0x0cb2, 0x0cbc, 0x0cc2, 0x0cd0, 0x0cdd, 0x0ce4, 0x0cf1,
 	0x0cff, 0x0d0d, 0x0d1a,
-}
+} // Size: 606 bytes
 
-// Size: 6292 bytes
-var hyRegionStr string = "" +
+var hyRegionStr string = "" + // Size: 6292 bytes
 	"Համբարձման կղզիԱնդորրաԱրաբական Միացյալ ԷմիրություններԱֆղանստանԱնտիգուա և" +
 	" ԲարբուդաԱնգիլյաԱլբանիաՀայաստանԱնգոլաԱնտարկտիդաԱրգենտինաԱմերիկյան ՍամոաԱ" +
 	"վստրիաԱվստրալիաԱրուբաԱլանդյան կղզիներԱդրբեջանԲոսնիա և ՀերցեգովինաԲարբադ" +
@@ -40545,8 +40204,7 @@ var hyRegionStr string = "" +
 	"տրոնական ԱսիաԱրևմտյան ԱսիաԵվրոպաԱրևելյան ԵվրոպաՀյուսիսային ԵվրոպաԱրևմտյ" +
 	"ան ԵվրոպաԼատինական Ամերիկա"
 
-// Size: 606 bytes, 291 elements
-var hyRegionIdx = []uint16{
+var hyRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001d, 0x002b, 0x0067, 0x0079, 0x009d, 0x00ab, 0x00b9,
 	0x00c9, 0x00c9, 0x00d5, 0x00e9, 0x00fb, 0x0118, 0x0126, 0x0138,
@@ -40589,10 +40247,9 @@ var hyRegionIdx = []uint16{
 	0x1676, 0x16b4, 0x16d3, 0x16ec, 0x1707, 0x172b, 0x174a, 0x1777,
 	0x1789, 0x17b8, 0x17ca, 0x17d2, 0x17f1, 0x180a, 0x1816, 0x1833,
 	0x1856, 0x1873, 0x1894,
-}
+} // Size: 606 bytes
 
-// Size: 3042 bytes
-var idRegionStr string = "" +
+var idRegionStr string = "" + // Size: 3042 bytes
 	"Pulau AscensionAndorraUni Emirat ArabAfganistanAntigua dan BarbudaAnguil" +
 	"laAlbaniaArmeniaAntilla BelandaAngolaAntarktikaArgentinaSamoa AmerikaAus" +
 	"triaAustraliaArubaKepulauan AlandAzerbaijanBosnia dan HerzegovinaBarbado" +
@@ -40637,8 +40294,7 @@ var idRegionStr string = "" +
 	"a Bagian BaratEropaEropa Bagian TimurEropa Bagian UtaraEropa Bagian Bara" +
 	"tAmerika Latin"
 
-// Size: 606 bytes, 291 elements
-var idRegionIdx = []uint16{
+var idRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x0016, 0x0025, 0x002f, 0x0042, 0x004a, 0x0051,
 	0x0058, 0x0067, 0x006d, 0x0077, 0x0080, 0x008d, 0x0094, 0x009d,
@@ -40681,10 +40337,9 @@ var idRegionIdx = []uint16{
 	0x0ae1, 0x0af5, 0x0b06, 0x0b17, 0x0b2a, 0x0b37, 0x0b4b, 0x0b56,
 	0x0b5f, 0x0b71, 0x0b7a, 0x0b7e, 0x0b89, 0x0b9a, 0x0b9f, 0x0bb1,
 	0x0bc3, 0x0bd5, 0x0be2,
-}
+} // Size: 606 bytes
 
-// Size: 3324 bytes
-var isRegionStr string = "" +
+var isRegionStr string = "" + // Size: 3324 bytes
 	"Ascension-eyjaAndorraSameinuðu arabísku furstadæminAfganistanAntígva og " +
 	"BarbúdaAngvillaAlbaníaArmeníaHollensku AntillurAngólaSuðurskautslandiðAr" +
 	"gentínaBandaríska SamóaAusturríkiÁstralíaArúbaÁlandseyjarAserbaídsjanBos" +
@@ -40728,8 +40383,7 @@ var isRegionStr string = "" +
 	"síaMið-AsíaVestur-AsíaEvrópaAustur-EvrópaNorður-EvrópaVestur-EvrópaRóman" +
 	"ska Ameríka"
 
-// Size: 606 bytes, 291 elements
-var isRegionIdx = []uint16{
+var isRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000e, 0x0015, 0x0036, 0x0040, 0x0054, 0x005c, 0x0064,
 	0x006c, 0x007e, 0x0085, 0x0098, 0x00a2, 0x00b4, 0x00bf, 0x00c9,
@@ -40772,10 +40426,9 @@ var isRegionIdx = []uint16{
 	0x0c0a, 0x0c22, 0x0c2f, 0x0c3b, 0x0c47, 0x0c57, 0x0c65, 0x0c71,
 	0x0c7b, 0x0c91, 0x0c9d, 0x0ca2, 0x0cac, 0x0cb8, 0x0cbf, 0x0ccd,
 	0x0cdc, 0x0cea, 0x0cfc,
-}
+} // Size: 606 bytes
 
-// Size: 3049 bytes
-var itRegionStr string = "" +
+var itRegionStr string = "" + // Size: 3049 bytes
 	"Isola AscensioneAndorraEmirati Arabi UnitiAfghanistanAntigua e BarbudaAn" +
 	"guillaAlbaniaArmeniaAntille OlandesiAngolaAntartideArgentinaSamoa americ" +
 	"aneAustriaAustraliaArubaIsole ÅlandAzerbaigianBosnia ed ErzegovinaBarbad" +
@@ -40820,8 +40473,7 @@ var itRegionStr string = "" +
 	"ntaleEuropaEuropa orientaleEuropa settentrionaleEuropa occidentaleAmeric" +
 	"a Latina"
 
-// Size: 606 bytes, 291 elements
-var itRegionIdx = []uint16{
+var itRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0017, 0x002a, 0x0035, 0x0046, 0x004e, 0x0055,
 	0x005c, 0x006c, 0x0072, 0x007b, 0x0084, 0x0093, 0x009a, 0x00a3,
@@ -40864,10 +40516,9 @@ var itRegionIdx = []uint16{
 	0x0af9, 0x0b09, 0x0b10, 0x0b1e, 0x0b2a, 0x0b3a, 0x0b4c, 0x0b57,
 	0x0b60, 0x0b74, 0x0b7d, 0x0b81, 0x0b8e, 0x0b9e, 0x0ba4, 0x0bb4,
 	0x0bc9, 0x0bdb, 0x0be9,
-}
+} // Size: 606 bytes
 
-// Size: 4839 bytes
-var jaRegionStr string = "" +
+var jaRegionStr string = "" + // Size: 4839 bytes
 	"アセンション島アンドラアラブ首長国連邦アフガニスタンアンティグア・バーブーダアンギラアルバニアアルメニアオランダ領アンティルアンゴラ南極アルゼン" +
 	"チン米領サモアオーストリアオーストラリアアルバオーランド諸島アゼルバイジャンボスニア・ヘルツェゴビナバルバドスバングラデシュベルギーブルキナ" +
 	"ファソブルガリアバーレーンブルンジベナンサン・バルテルミー島バミューダブルネイボリビアオランダ領カリブブラジルバハマブータンブーベ島ボツワナ" +
@@ -40893,8 +40544,7 @@ var jaRegionStr string = "" +
 	"アジア南ヨーロッパオーストララシアメラネシアミクロネシアポリネシアアジア中央アジア西アジアヨーロッパ東ヨーロッパ北ヨーロッパ西ヨーロッパラテ" +
 	"ンアメリカ"
 
-// Size: 606 bytes, 291 elements
-var jaRegionIdx = []uint16{
+var jaRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0015, 0x0021, 0x0039, 0x004e, 0x0072, 0x007e, 0x008d,
 	0x009c, 0x00ba, 0x00c6, 0x00cc, 0x00de, 0x00ed, 0x00ff, 0x0114,
@@ -40937,10 +40587,9 @@ var jaRegionIdx = []uint16{
 	0x11d0, 0x11df, 0x11e8, 0x11f4, 0x1200, 0x120f, 0x1221, 0x1239,
 	0x1248, 0x125a, 0x1269, 0x1272, 0x1281, 0x128d, 0x129c, 0x12ae,
 	0x12c0, 0x12d2, 0x12e7,
-}
+} // Size: 606 bytes
 
-// Size: 9560 bytes
-var kaRegionStr string = "" +
+var kaRegionStr string = "" + // Size: 9560 bytes
 	"ამაღლების კუნძულიანდორაარაბთა გაერთიანებული საამიროებიავღანეთიანტიგუა და" +
 	" ბარბუდაანგილიაალბანეთისომხეთინიდერლანდების ანტილებიანგოლაანტარქტიკაარგე" +
 	"ნტინაამერიკის სამოაავსტრიაავსტრალიაარუბაალანდის კუნძულებიაზერბაიჯანიბო" +
@@ -40989,8 +40638,7 @@ var kaRegionStr string = "" +
 	"ზიამიკრონეზიის რეგიონიპოლინეზიააზიაცენტრალური აზიადასავლეთი აზიაევროპა" +
 	"აღმოსავლეთი ევროპაჩრდილოეთი ევროპადასავლეთი ევროპალათინური ამერიკა"
 
-// Size: 606 bytes, 291 elements
-var kaRegionIdx = []uint16{
+var kaRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0031, 0x0043, 0x009c, 0x00b4, 0x00e6, 0x00fb, 0x0113,
 	0x0128, 0x0168, 0x017a, 0x0198, 0x01b3, 0x01db, 0x01f0, 0x020b,
@@ -41033,10 +40681,9 @@ var kaRegionIdx = []uint16{
 	0x2283, 0x22b7, 0x22d9, 0x2307, 0x232c, 0x2370, 0x239b, 0x23bc,
 	0x23d7, 0x240e, 0x2429, 0x2435, 0x2460, 0x2488, 0x249a, 0x24ce,
 	0x24fc, 0x252a, 0x2558,
-}
+} // Size: 606 bytes
 
-// Size: 6084 bytes
-var kkRegionStr string = "" +
+var kkRegionStr string = "" + // Size: 6084 bytes
 	"Әскенжін аралыАндорраБіріккен Араб ӘмірліктеріАуғанстанАнтигуа мен Барбу" +
 	"даАнгильяАлбанияАрменияАнголаАнтарктикаАргентинаАмерикандық СамоаАвстри" +
 	"яАвстралияАрубаАланд аралдарыӘзірбайжанБосния және ГерцеговинаБарбадосБ" +
@@ -41082,8 +40729,7 @@ var kkRegionStr string = "" +
 	"ЕуропаАвстралазияМеланезияМикронезия аймағыПолинезияАзияОрталық АзияБат" +
 	"ыс АзияЕуропаШығыс ЕуропаСолтүстік ЕуропаБатыс ЕуропаЛатын Америкасы"
 
-// Size: 606 bytes, 291 elements
-var kkRegionIdx = []uint16{
+var kkRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001b, 0x0029, 0x0059, 0x006b, 0x008f, 0x009d, 0x00ab,
 	0x00b9, 0x00b9, 0x00c5, 0x00d9, 0x00eb, 0x010c, 0x011a, 0x012c,
@@ -41126,10 +40772,9 @@ var kkRegionIdx = []uint16{
 	0x1621, 0x164a, 0x1654, 0x1667, 0x1680, 0x16a4, 0x16c1, 0x16d7,
 	0x16e9, 0x170a, 0x171c, 0x1724, 0x173b, 0x174e, 0x175a, 0x1771,
 	0x1790, 0x17a7, 0x17c4,
-}
+} // Size: 606 bytes
 
-// Size: 9048 bytes
-var kmRegionStr string = "" +
+var kmRegionStr string = "" + // Size: 9048 bytes
 	"កោះ\u200bអាសេនសិនអង់ដូរ៉ាអារ៉ាប់រួមអាហ្វហ្គានីស្ថានអង់ទីគ័រ និង\u200bបាប" +
 	"ុយដាអង់កូឡាអាល់បានីអារមេនីអង់ហ្គោឡាអង់តាក់ទិកអាហ្សង់ទីនសាម៉ូអាអាមេរិកអ" +
 	"ូទ្រីសអូស្ត្រាលីអារូបាកោះ\u200bអាឡាំងអាហ៊្សែរបែហ្សង់បូស្នី និងហឺហ្សីហ្" +
@@ -41182,8 +40827,7 @@ var kmRegionStr string = "" +
 	"\u200bកណ្ដាលអាស៊ី\u200bខាង\u200bលិចអឺរ៉ុបអឺរ៉ុប\u200bខាង\u200bកើតអឺរ៉ុប" +
 	"\u200bខាង\u200bជើងអឺរ៉ុប\u200bខាង\u200bលិចអាមេរិក\u200bឡាទីន"
 
-// Size: 606 bytes, 291 elements
-var kmRegionIdx = []uint16{
+var kmRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0024, 0x003c, 0x005a, 0x008a, 0x00c4, 0x00d9, 0x00f1,
 	0x0106, 0x0106, 0x0121, 0x013f, 0x015d, 0x0187, 0x019c, 0x01ba,
@@ -41226,10 +40870,9 @@ var kmRegionIdx = []uint16{
 	0x20b5, 0x20ee, 0x2109, 0x2130, 0x215d, 0x2184, 0x21b4, 0x21db,
 	0x21f6, 0x2229, 0x2247, 0x2256, 0x227a, 0x22a1, 0x22b3, 0x22dd,
 	0x2307, 0x2331, 0x2358,
-}
+} // Size: 606 bytes
 
-// Size: 9427 bytes
-var knRegionStr string = "" +
+var knRegionStr string = "" + // Size: 9427 bytes
 	"ಅಸೆನ್ಶನ್ ದ್ವೀಪಅಂಡೋರಾಸಂಯುಕ್ತ ಅರಬ್ ಎಮಿರೇಟಸ್ಅಫಘಾನಿಸ್ಥಾನ್ಆಂಟಿಗುವಾ ಮತ್ತು ಬರ್ಬ" +
 	"ುಡಾಆಂಗುಯಿಲ್ಲಾಅಲ್ಬೇನಿಯಾಅರ್ಮೇನಿಯಾನೆದರ್\u200cಲ್ಯಾಂಡ್ಅಂಗೋಲಾಅಂಟಾರ್ಟಿಕಾಅರ್ಜೆ" +
 	"ಂಟಿನಾಅಮೇರಿಕನ್ ಸಮೋವಾಆಸ್ಟ್ರಿಯಾಆಸ್ಟ್ರೇಲಿಯಅರುಬಾಆಲ್ಯಾಂಡ್ ದ್ವೀಪಗಳುಅಜರ್ಬೈಜಾನ್" +
@@ -41279,8 +40922,7 @@ var knRegionStr string = "" +
 	"ಿಯಾಮೈಕ್ರೋನೇಶಿಯನ್ ಪ್ರದೇಶಪಾಲಿನೇಷ್ಯಾಏಷ್ಯಾಮಧ್ಯ ಏಷ್ಯಾಪಶ್ಚಿಮ ಏಷ್ಯಾಯೂರೋಪ್ಪೂರ್" +
 	"ವ ಯೂರೋಪ್ಉತ್ತರ ಯೂರೋಪ್ಪಶ್ಚಿಮ ಯೂರೋಪ್ಲ್ಯಾಟಿನ್ ಅಮೇರಿಕಾ"
 
-// Size: 606 bytes, 291 elements
-var knRegionIdx = []uint16{
+var knRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0028, 0x003a, 0x0075, 0x0099, 0x00d7, 0x00f5, 0x0110,
 	0x012b, 0x0152, 0x0164, 0x0182, 0x01a0, 0x01c8, 0x01e3, 0x0201,
@@ -41323,10 +40965,9 @@ var knRegionIdx = []uint16{
 	0x226e, 0x22a0, 0x22bb, 0x22da, 0x22fc, 0x231e, 0x2343, 0x236a,
 	0x2385, 0x23bf, 0x23dd, 0x23ec, 0x2408, 0x242a, 0x243c, 0x245e,
 	0x2480, 0x24a5, 0x24d3,
-}
+} // Size: 606 bytes
 
-// Size: 3916 bytes
-var koRegionStr string = "" +
+var koRegionStr string = "" + // Size: 3916 bytes
 	"어센션 섬안도라아랍에미리트아프가니스탄앤티가 바부다앵귈라알바니아아르메니아네덜란드령 안틸레스앙골라남극 대륙아르헨티나아메리칸 사모아오스" +
 	"트리아오스트레일리아아루바올란드 제도아제르바이잔보스니아 헤르체고비나바베이도스방글라데시벨기에부르키나파소불가리아바레인부룬디베냉생바르" +
 	"텔레미버뮤다브루나이볼리비아네덜란드령 카리브브라질바하마부탄부베섬보츠와나벨라루스벨리즈캐나다코코스 제도콩고-킨샤사중앙 아프리카 공화" +
@@ -41348,8 +40989,7 @@ var koRegionStr string = "" +
 	"메리카 대륙북부 아메리카카리브 제도동아시아남아시아동남아시아남유럽오스트랄라시아멜라네시아미크로네시아 지역폴리네시아아시아중앙 아시아" +
 	"서아시아유럽동유럽북유럽서유럽라틴 아메리카"
 
-// Size: 606 bytes, 291 elements
-var koRegionIdx = []uint16{
+var koRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000d, 0x0016, 0x0028, 0x003a, 0x004d, 0x0056, 0x0062,
 	0x0071, 0x008d, 0x0096, 0x00a3, 0x00b2, 0x00c8, 0x00d7, 0x00ec,
@@ -41392,10 +41032,9 @@ var koRegionIdx = []uint16{
 	0x0e54, 0x0e67, 0x0e77, 0x0e83, 0x0e8f, 0x0e9e, 0x0ea7, 0x0ebc,
 	0x0ecb, 0x0ee4, 0x0ef3, 0x0efc, 0x0f0c, 0x0f18, 0x0f1e, 0x0f27,
 	0x0f30, 0x0f39, 0x0f4c,
-}
+} // Size: 606 bytes
 
-// Size: 5805 bytes
-var kyRegionStr string = "" +
+var kyRegionStr string = "" + // Size: 5805 bytes
 	"Ассеншин аралыАндорраБириккен Араб ЭмираттарыАфганистанАнтигуа жана Барб" +
 	"удаАнгуилаАлбанияАрменияАнголаАнтарктикаАргентинаАмерика СамоасыАвстрия" +
 	"АвстралияАрубаАланд аралдарыАзербайжанБосния жана ГерцеговинаБарбадосБа" +
@@ -41439,8 +41078,7 @@ var kyRegionStr string = "" +
 	"к ЕвропаАвстралазияМеланезияМикронезия РегионуПолинезияАзияБорбор АзияБ" +
 	"атыш АзияЕвропаЧыгыш ЕвропаТүндүк ЕвропаБатыш ЕвропаЛатын Америкасы"
 
-// Size: 606 bytes, 291 elements
-var kyRegionIdx = []uint16{
+var kyRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001b, 0x0029, 0x0057, 0x006b, 0x0091, 0x009f, 0x00ad,
 	0x00bb, 0x00bb, 0x00c7, 0x00db, 0x00ed, 0x010a, 0x0118, 0x012a,
@@ -41483,10 +41121,9 @@ var kyRegionIdx = []uint16{
 	0x150a, 0x1534, 0x154f, 0x1562, 0x1577, 0x1597, 0x15b0, 0x15c6,
 	0x15d8, 0x15fb, 0x160d, 0x1615, 0x162a, 0x163d, 0x1649, 0x1660,
 	0x1679, 0x1690, 0x16ad,
-}
+} // Size: 606 bytes
 
-// Size: 8043 bytes
-var loRegionStr string = "" +
+var loRegionStr string = "" + // Size: 8043 bytes
 	"ເກາະອາເຊນຊັນອັນດໍຣາສະຫະລັດອາຣັບເອມິເຣດອາຟການິສຖານອາທິກົວ ບາບູດາແອນກຸຍລາແ" +
 	"ອວເບເນຍອາເມເນຍອັນໂກລາແອນຕາດຕິກາອາເຈນທິນາອາເມຣິກາ ຊາມົວໂອຕາລິກອອສເຕຣເລຍ" +
 	"ອໍຣູບາຫມູ່ເກາະໂອລັນອາເຊີໄບຈານບອດສະເນຍ ແລະ ແຮສໂກວີນາບາບາໂດສບັງກະລາເທດແບ" +
@@ -41527,8 +41164,7 @@ var loRegionStr string = "" +
 	"ອກສ່ຽງໄຕ້ຢູໂຣບໃຕ້ໂອດສະຕາລີເມລານີເຊຍເຂດໄມໂຄຣເນຊຽນໂພລີນີເຊຍອາຊີອາຊີກາງອາ" +
 	"ຊີຕາເວັນຕົກຢູໂຣບຢູໂຣບຕາເວັນອອກຢູໂຣບເໜືອຢູໂຣບຕາເວັນຕົກລາຕິນ ອາເມລິກາ"
 
-// Size: 606 bytes, 291 elements
-var loRegionIdx = []uint16{
+var loRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0024, 0x0039, 0x0072, 0x0093, 0x00bb, 0x00d3, 0x00eb,
 	0x0100, 0x0100, 0x0115, 0x0133, 0x014e, 0x0176, 0x018b, 0x01a6,
@@ -41571,10 +41207,9 @@ var loRegionIdx = []uint16{
 	0x1d30, 0x1d5d, 0x1d75, 0x1d9c, 0x1db1, 0x1ded, 0x1e05, 0x1e20,
 	0x1e3b, 0x1e62, 0x1e7d, 0x1e89, 0x1e9e, 0x1ec5, 0x1ed4, 0x1efe,
 	0x1f19, 0x1f43, 0x1f6b,
-}
+} // Size: 606 bytes
 
-// Size: 3396 bytes
-var ltRegionStr string = "" +
+var ltRegionStr string = "" + // Size: 3396 bytes
 	"Dangun Žengimo salaAndoraJungtiniai Arabų EmyrataiAfganistanasAntigva ir" +
 	" BarbudaAngilijaAlbanijaArmėnijaOlandijos AntilaiAngolaAntarktidaArgenti" +
 	"naAmerikos SamoaAustrijaAustralijaArubaAlandų SalosAzerbaidžanasBosnija " +
@@ -41622,8 +41257,7 @@ var ltRegionStr string = "" +
 	"onezijos regionasPolinezijaAzijaCentrinė AzijaVakarų AzijaEuropaRytų Eur" +
 	"opaŠiaurės EuropaVakarų EuropaLotynų Amerika"
 
-// Size: 606 bytes, 291 elements
-var ltRegionIdx = []uint16{
+var ltRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0014, 0x001a, 0x0034, 0x0040, 0x0052, 0x005a, 0x0062,
 	0x006b, 0x007c, 0x0082, 0x008c, 0x0095, 0x00a3, 0x00ab, 0x00b5,
@@ -41666,10 +41300,9 @@ var ltRegionIdx = []uint16{
 	0x0c61, 0x0c73, 0x0c7a, 0x0c85, 0x0c91, 0x0ca2, 0x0caf, 0x0cbb,
 	0x0cc5, 0x0cda, 0x0ce4, 0x0ce9, 0x0cf8, 0x0d05, 0x0d0b, 0x0d17,
 	0x0d27, 0x0d35, 0x0d44,
-}
+} // Size: 606 bytes
 
-// Size: 3293 bytes
-var lvRegionStr string = "" +
+var lvRegionStr string = "" + // Size: 3293 bytes
 	"Debesbraukšanas salaAndoraApvienotie Arābu EmirātiAfganistānaAntigva un " +
 	"BarbudaAngiljaAlbānijaArmēnijaNīderlandes AntiļasAngolaAntarktikaArgentī" +
 	"naAmerikāņu SamoaAustrijaAustrālijaArubaOlandes salasAzerbaidžānaBosnija" +
@@ -41714,8 +41347,7 @@ var lvRegionStr string = "" +
 	"strālāzijaMelanēzijaMikronēzijas reģionsPolinēzijaĀzijaCentrālāzijaRietu" +
 	"māzijaEiropaAustrumeiropaZiemeļeiropaRietumeiropaLatīņamerika"
 
-// Size: 606 bytes, 291 elements
-var lvRegionIdx = []uint16{
+var lvRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0015, 0x001b, 0x0035, 0x0041, 0x0053, 0x005a, 0x0063,
 	0x006c, 0x0081, 0x0087, 0x0091, 0x009b, 0x00ac, 0x00b4, 0x00bf,
@@ -41758,10 +41390,9 @@ var lvRegionIdx = []uint16{
 	0x0bdf, 0x0bf6, 0x0c0d, 0x0c1a, 0x0c27, 0x0c3c, 0x0c49, 0x0c57,
 	0x0c62, 0x0c78, 0x0c83, 0x0c89, 0x0c97, 0x0ca3, 0x0ca9, 0x0cb6,
 	0x0cc3, 0x0ccf, 0x0cdd,
-}
+} // Size: 606 bytes
 
-// Size: 6058 bytes
-var mkRegionStr string = "" +
+var mkRegionStr string = "" + // Size: 6058 bytes
 	"Остров АсенсионАндораОбединети Арапски ЕмиратиАвганистанАнтигва и Барбуд" +
 	"аАнгвилаАлбанијаЕрменијаХоландски АнтилиАнголаАнтарктикАргентинаАмерика" +
 	"нска СамоаАвстријаАвстралијаАрубаОландски островиАзербејџанБосна и Херц" +
@@ -41807,8 +41438,7 @@ var mkRegionStr string = "" +
 	"икронезиски регионПолинезијаАзијаЦентрална АзијаЗападна АзијаЕвропаИсто" +
 	"чна ЕвропаСеверна ЕвропаЗападна ЕвропаЛатинска Америка"
 
-// Size: 606 bytes, 291 elements
-var mkRegionIdx = []uint16{
+var mkRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001d, 0x0029, 0x0059, 0x006d, 0x008d, 0x009b, 0x00ab,
 	0x00bb, 0x00da, 0x00e6, 0x00f8, 0x010a, 0x012b, 0x013b, 0x014f,
@@ -41851,10 +41481,9 @@ var mkRegionIdx = []uint16{
 	0x15df, 0x1617, 0x1623, 0x163c, 0x1651, 0x1672, 0x1689, 0x16a1,
 	0x16b5, 0x16da, 0x16ee, 0x16f8, 0x1715, 0x172e, 0x173a, 0x1755,
 	0x1770, 0x178b, 0x17aa,
-}
+} // Size: 606 bytes
 
-// Size: 9275 bytes
-var mlRegionStr string = "" +
+var mlRegionStr string = "" + // Size: 9275 bytes
 	"അസൻഷൻ ദ്വീപ്അന്റോറയുണൈറ്റഡ് അറബ് എമിറൈറ്റ്\u200cസ്അഫ്\u200cഗാനിസ്ഥാൻആൻറി" +
 	"ഗ്വയും ബർബുഡയുംആൻഗ്വില്ലഅൽബേനിയഅർമേനിയനെതർലൻഡ്സ് ആൻറിലിസ്അംഗോളഅൻറാർട്ട" +
 	"ിക്കഅർജൻറീനഅമേരിക്കൻ സമോവഓസ്ട്രിയഓസ്\u200cട്രേലിയഅറൂബഅലൻഡ് ദ്വീപുകൾഅസർ" +
@@ -41904,8 +41533,7 @@ var mlRegionStr string = "" +
 	"്യമദ്ധ്യേഷ്യപശ്ചിമേഷ്യയൂറോപ്പ്കിഴക്കൻ യൂറോപ്പ്വടക്കേ യൂറോപ്പ്പശ്ചിമ യൂ" +
 	"റോപ്പ്ലാറ്റിനമേരിക്ക"
 
-// Size: 606 bytes, 291 elements
-var mlRegionIdx = []uint16{
+var mlRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0022, 0x0034, 0x0081, 0x00a8, 0x00df, 0x00fa, 0x010f,
 	0x0124, 0x015b, 0x016a, 0x018e, 0x01a3, 0x01cb, 0x01e3, 0x0204,
@@ -41948,10 +41576,9 @@ var mlRegionIdx = []uint16{
 	0x2190, 0x21bb, 0x21d0, 0x21f2, 0x2211, 0x2246, 0x2271, 0x22c0,
 	0x22d8, 0x2312, 0x232d, 0x2339, 0x2357, 0x2375, 0x238d, 0x23bb,
 	0x23e6, 0x2411, 0x243b,
-}
+} // Size: 606 bytes
 
-// Size: 5487 bytes
-var mnRegionStr string = "" +
+var mnRegionStr string = "" + // Size: 5487 bytes
 	"Аскенсион АралАндорраАрабын Нэгдсэн ЭмиратАфганистанАнтигуа ба БарбудаАн" +
 	"гилаАлбаниАрменАнголАнтарктикАргентинАмерикийн СамоаАвстриАвстралиАруба" +
 	"Аландын АрлуудАзербайжанБосни ХерцеговинБарбадосБангладешБелгиБуркина ф" +
@@ -41993,8 +41620,7 @@ var mnRegionStr string = "" +
 	"Өмнөд АзиӨмнөд ЕвропАвстралиазиМеланезиМикронезийн бүсПолинезАзиТөв Ази" +
 	"Баруун АзиЕвропЗүүн ЕвропХойд ЕвропБаруун ЕвропЛатин Америк"
 
-// Size: 606 bytes, 291 elements
-var mnRegionIdx = []uint16{
+var mnRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001b, 0x0029, 0x0051, 0x0065, 0x0087, 0x0093, 0x009f,
 	0x00a9, 0x00a9, 0x00b3, 0x00c5, 0x00d5, 0x00f2, 0x00fe, 0x010e,
@@ -42037,10 +41663,9 @@ var mnRegionIdx = []uint16{
 	0x1421, 0x143d, 0x144b, 0x145a, 0x146b, 0x1485, 0x149a, 0x14b0,
 	0x14c0, 0x14dd, 0x14eb, 0x14f1, 0x14fe, 0x1511, 0x151b, 0x152e,
 	0x1541, 0x1558, 0x156f,
-}
+} // Size: 606 bytes
 
-// Size: 8490 bytes
-var mrRegionStr string = "" +
+var mrRegionStr string = "" + // Size: 8490 bytes
 	"अ\u200dॅसेन्शियन बेटअँडोरासंयुक्त अरब अमीरातअफगाणिस्तानअँटिग्वा आणि बर्ब" +
 	"ुडाअँग्विलाअल्बानियाअर्मेनियानेदरलँड्\u200dस अँ\u200dटिल्सअंगोलाअंटार्" +
 	"क्टिकाअर्जेंटिनाअमेरिकन सामोआऑस्ट्रियाऑस्ट्रेलियाअरुबाअ\u200dॅलँड बेटे" +
@@ -42085,8 +41710,7 @@ var mrRegionStr string = "" +
 	"अशियामध्य आशियापश्चिम आशियायुरोपपूर्व युरोपउत्तर युरोपपश्चिम युरोपलॅटि" +
 	"न अमेरिका"
 
-// Size: 606 bytes, 291 elements
-var mrRegionIdx = []uint16{
+var mrRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x002b, 0x003d, 0x006f, 0x0090, 0x00c8, 0x00e0, 0x00fb,
 	0x0116, 0x014d, 0x015f, 0x0183, 0x01a1, 0x01c6, 0x01e1, 0x0202,
@@ -42129,10 +41753,9 @@ var mrRegionIdx = []uint16{
 	0x1ed4, 0x1efc, 0x1f14, 0x1f33, 0x1f55, 0x1f87, 0x1fa9, 0x1fd3,
 	0x1ff1, 0x202b, 0x2049, 0x2058, 0x2074, 0x2096, 0x20a5, 0x20c4,
 	0x20e3, 0x2105, 0x212a,
-}
+} // Size: 606 bytes
 
-// Size: 2966 bytes
-var msRegionStr string = "" +
+var msRegionStr string = "" + // Size: 2966 bytes
 	"Pulau AscensionAndorraEmiriah Arab BersatuAfghanistanAntigua dan Barbuda" +
 	"AnguillaAlbaniaArmeniaNetherlands AntillesAngolaAntartikaArgentinaSamoa " +
 	"AmerikaAustriaAustraliaArubaKepulauan AlandAzerbaijanBosnia dan Herzegov" +
@@ -42176,8 +41799,7 @@ var msRegionStr string = "" +
 	"siaAsiaAsia TengahAsia BaratEropahEropah TimurEropah UtaraEropah BaratAm" +
 	"erika Latin"
 
-// Size: 606 bytes, 291 elements
-var msRegionIdx = []uint16{
+var msRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x0016, 0x002a, 0x0035, 0x0048, 0x0050, 0x0057,
 	0x005e, 0x0072, 0x0078, 0x0081, 0x008a, 0x0097, 0x009e, 0x00a7,
@@ -42220,10 +41842,9 @@ var msRegionIdx = []uint16{
 	0x0ad0, 0x0add, 0x0ae6, 0x0af0, 0x0afc, 0x0b09, 0x0b17, 0x0b22,
 	0x0b2b, 0x0b3d, 0x0b46, 0x0b4a, 0x0b55, 0x0b5f, 0x0b65, 0x0b71,
 	0x0b7d, 0x0b89, 0x0b96,
-}
+} // Size: 606 bytes
 
-// Size: 9769 bytes
-var myRegionStr string = "" +
+var myRegionStr string = "" + // Size: 9769 bytes
 	"အက်စ်စင်ရှီအွန်ကျွန်းအန်ဒိုရာယူအေအီးအာဖဂန်နစ္စတန်အန်တီဂုအာနှင့်ဘာဘုဒါအန်" +
 	"ဂွီလာအဲလ်ဘာနီအာအာမေနီးယားအင်ဂိုလာအန္တာတိကအာဂျင်တီးနားအမေရိကန် စမိုအဩစတ" +
 	"ြီးယားဩစတြေးလျအာရုဘာအာလန်ကျွန်းအဇာဘိုင်ဂျန်ဘော့စနီးယား နှင့် ဟာဇီဂိုဘီ" +
@@ -42273,8 +41894,7 @@ var myRegionStr string = "" +
 	"ှအလယ် အာရှအနောက် အာရှဥရောပအရှေ့ပိုင်း ဥရောပမြောက်ပိုင်း ဥရောပအနောက်ပို" +
 	"င်း ဥရောပလက်တင်အမေရိက"
 
-// Size: 606 bytes, 291 elements
-var myRegionIdx = []uint16{
+var myRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x003f, 0x0057, 0x006c, 0x0093, 0x00cf, 0x00e7, 0x0105,
 	0x0123, 0x0123, 0x013b, 0x0153, 0x0177, 0x019f, 0x01ba, 0x01d2,
@@ -42317,10 +41937,9 @@ var myRegionIdx = []uint16{
 	0x2346, 0x237d, 0x2395, 0x23c3, 0x23f1, 0x242d, 0x245e, 0x24a1,
 	0x24c2, 0x24f8, 0x2519, 0x2525, 0x253e, 0x255d, 0x256c, 0x259d,
 	0x25d1, 0x2605, 0x2629,
-}
+} // Size: 606 bytes
 
-// Size: 9084 bytes
-var neRegionStr string = "" +
+var neRegionStr string = "" + // Size: 9084 bytes
 	"एस्केन्सन टापुअन्डोर्रासंयुक्त अरब इमिराट्सअफगानिस्तानएन्टिगुआ र बारबुडा" +
 	"आङ्गुइलाअल्बानियाआर्मेनियानेदरल्याण्ड्स एण्टिलिसअङ्गोलाअन्टारतिकाअर्जे" +
 	"न्टिनाअमेरिकी समोआअष्ट्रियाअष्ट्रेलियाआरूबाअलान्ड टापुहरुअजरबैजानबोस्न" +
@@ -42367,8 +41986,7 @@ var neRegionStr string = "" +
 	"नेसियाली क्षेत्रपोलिनेशियाएशियाकेन्द्रीय एशियापश्चिमी एशियायुरोपपूर्वी" +
 	" युरोपउत्तरी युरोपपश्चिमी युरोपल्याटिन अमेरिका"
 
-// Size: 606 bytes, 291 elements
-var neRegionIdx = []uint16{
+var neRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0028, 0x0043, 0x007b, 0x009c, 0x00ce, 0x00e6, 0x0101,
 	0x011c, 0x015c, 0x0171, 0x018f, 0x01b0, 0x01d2, 0x01ed, 0x020e,
@@ -42411,10 +42029,9 @@ var neRegionIdx = []uint16{
 	0x20ed, 0x2115, 0x2133, 0x2155, 0x217a, 0x21af, 0x21d4, 0x21fb,
 	0x2219, 0x225c, 0x227a, 0x2289, 0x22b4, 0x22d9, 0x22e8, 0x230a,
 	0x232c, 0x2351, 0x237c,
-}
+} // Size: 606 bytes
 
-// Size: 3081 bytes
-var nlRegionStr string = "" +
+var nlRegionStr string = "" + // Size: 3081 bytes
 	"AscensionAndorraVerenigde Arabische EmiratenAfghanistanAntigua en Barbud" +
 	"aAnguillaAlbaniëArmeniëNederlandse AntillenAngolaAntarcticaArgentiniëAme" +
 	"rikaans-SamoaOostenrijkAustraliëArubaÅlandAzerbeidzjanBosnië en Herzegov" +
@@ -42459,8 +42076,7 @@ var nlRegionStr string = "" +
 	"ntraal-AziëWest-AziëEuropaOost-EuropaNoord-EuropaWest-EuropaLatijns-Amer" +
 	"ika"
 
-// Size: 606 bytes, 291 elements
-var nlRegionIdx = []uint16{
+var nlRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0009, 0x0010, 0x002c, 0x0037, 0x0049, 0x0051, 0x0059,
 	0x0061, 0x0075, 0x007b, 0x0085, 0x0090, 0x00a0, 0x00aa, 0x00b4,
@@ -42503,10 +42119,9 @@ var nlRegionIdx = []uint16{
 	0x0b33, 0x0b45, 0x0b55, 0x0b5f, 0x0b69, 0x0b77, 0x0b82, 0x0b8e,
 	0x0b98, 0x0bab, 0x0bb5, 0x0bba, 0x0bc8, 0x0bd2, 0x0bd8, 0x0be3,
 	0x0bef, 0x0bfa, 0x0c09,
-}
+} // Size: 606 bytes
 
-// Size: 2836 bytes
-var noRegionStr string = "" +
+var noRegionStr string = "" + // Size: 2836 bytes
 	"AscensionAndorraDe forente arabiske emiraterAfghanistanAntigua og Barbud" +
 	"aAnguillaAlbaniaArmeniaDe nederlandske antillerAngolaAntarktisArgentinaA" +
 	"merikansk SamoaØsterrikeAustraliaArubaÅlandAserbajdsjanBosnia-Hercegovin" +
@@ -42547,8 +42162,7 @@ var noRegionStr string = "" +
 	"Sør-EuropaAustralasiaMelanesiaMikronesiaPolynesiaAsiaSentral-AsiaVest-As" +
 	"iaEuropaØst-EuropaNord-EuropaVest-EuropaLatin-Amerika"
 
-// Size: 606 bytes, 291 elements
-var noRegionIdx = []uint16{
+var noRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0009, 0x0010, 0x002c, 0x0037, 0x0049, 0x0051, 0x0058,
 	0x005f, 0x0077, 0x007d, 0x0086, 0x008f, 0x009f, 0x00a9, 0x00b2,
@@ -42591,10 +42205,9 @@ var noRegionIdx = []uint16{
 	0x0a5f, 0x0a6f, 0x0a76, 0x0a7f, 0x0a88, 0x0a95, 0x0aa0, 0x0aab,
 	0x0ab4, 0x0abe, 0x0ac7, 0x0acb, 0x0ad7, 0x0ae0, 0x0ae6, 0x0af1,
 	0x0afc, 0x0b07, 0x0b14,
-}
+} // Size: 606 bytes
 
-// Size: 7688 bytes
-var paRegionStr string = "" +
+var paRegionStr string = "" + // Size: 7688 bytes
 	"ਅਸੈਂਸ਼ਨ ਟਾਪੂਅੰਡੋਰਾਸੰਯੁਕਤ ਅਰਬ ਅਮੀਰਾਤਅਫ਼ਗਾਨਿਸਤਾਨਐਂਟੀਗੁਆ ਅਤੇ ਬਾਰਬੁਡਾਅੰਗੁਇਲਾ" +
 	"ਅਲਬਾਨੀਆਅਰਮੀਨੀਆਅੰਗੋਲਾਅੰਟਾਰਕਟਿਕਾਅਰਜਨਟੀਨਾਅਮੈਰੀਕਨ ਸਮੋਆਆਸਟਰੀਆਆਸਟ੍ਰੇਲੀਆਅਰੂਬਾ" +
 	"ਅਲੈਂਡ ਟਾਪੂਅਜ਼ਰਬਾਈਜਾਨਬੋਸਨੀਆ ਅਤੇ ਹਰਜ਼ੇਗੋਵੀਨਾਬਾਰਬਾਡੋਸਬੰਗਲਾਦੇਸ਼ਬੈਲਜੀਅਮਬੁਰਕ" +
@@ -42634,8 +42247,7 @@ var paRegionStr string = "" +
 	"ਏਸ਼ੀਆਦੱਖਣੀ ਯੂਰਪਆਸਟਰੇਲੇਸ਼ੀਆਮੇਲਾਨੇਸ਼ੀਆਮਾਇਕ੍ਰੋਨੇਸ਼ੀਆਈ ਖੇਤਰਪੋਲੀਨੇਸ਼ੀਆਏਸ਼ੀਆ" +
 	"ਕੇਂਦਰੀ ਏਸ਼ੀਆਪੱਛਮੀ ਏਸ਼ੀਆਯੂਰਪਪੂਰਬੀ ਯੂਰਪਉੱਤਰੀ ਯੂਰਪਪੱਛਮੀ ਯੂਰਪਲਾਤੀਨੀ ਅਮਰੀਕਾ"
 
-// Size: 606 bytes, 291 elements
-var paRegionIdx = []uint16{
+var paRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0022, 0x0034, 0x0063, 0x0084, 0x00b9, 0x00ce, 0x00e3,
 	0x00f8, 0x00f8, 0x010a, 0x0128, 0x0140, 0x0162, 0x0174, 0x018f,
@@ -42678,10 +42290,9 @@ var paRegionIdx = []uint16{
 	0x1bdf, 0x1c01, 0x1c19, 0x1c38, 0x1c57, 0x1c83, 0x1c9f, 0x1cc0,
 	0x1cde, 0x1d15, 0x1d33, 0x1d42, 0x1d64, 0x1d83, 0x1d8f, 0x1dab,
 	0x1dc7, 0x1de3, 0x1e08,
-}
+} // Size: 606 bytes
 
-// Size: 3161 bytes
-var plRegionStr string = "" +
+var plRegionStr string = "" + // Size: 3161 bytes
 	"Wyspa WniebowstąpieniaAndoraZjednoczone Emiraty ArabskieAfganistanAntigu" +
 	"a i BarbudaAnguillaAlbaniaArmeniaAntyle HolenderskieAngolaAntarktykaArge" +
 	"ntynaSamoa AmerykańskieAustriaAustraliaArubaWyspy AlandzkieAzerbejdżanBo" +
@@ -42726,8 +42337,7 @@ var plRegionStr string = "" +
 	"stralazjaMelanezjaRegion MikronezjiPolinezjaAzjaAzja ŚrodkowaAzja Zachod" +
 	"niaEuropaEuropa WschodniaEuropa PółnocnaEuropa ZachodniaAmeryka Łacińska"
 
-// Size: 606 bytes, 291 elements
-var plRegionIdx = []uint16{
+var plRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0017, 0x001d, 0x0039, 0x0043, 0x0054, 0x005c, 0x0063,
 	0x006a, 0x007d, 0x0083, 0x008d, 0x0096, 0x00a9, 0x00b0, 0x00b9,
@@ -42770,10 +42380,9 @@ var plRegionIdx = []uint16{
 	0x0b51, 0x0b71, 0x0b78, 0x0b86, 0x0b96, 0x0bb0, 0x0bc2, 0x0bcd,
 	0x0bd6, 0x0be7, 0x0bf0, 0x0bf4, 0x0c02, 0x0c10, 0x0c16, 0x0c26,
 	0x0c37, 0x0c47, 0x0c59,
-}
+} // Size: 606 bytes
 
-// Size: 3176 bytes
-var ptRegionStr string = "" +
+var ptRegionStr string = "" + // Size: 3176 bytes
 	"Ilha de AscensãoAndorraEmirados Árabes UnidosAfeganistãoAntígua e Barbud" +
 	"aAnguillaAlbâniaArmêniaAntilhas HolandesasAngolaAntártidaArgentinaSamoa " +
 	"AmericanaÁustriaAustráliaArubaIlhas ÅlandAzerbaijãoBósnia e HerzegovinaB" +
@@ -42818,8 +42427,7 @@ var ptRegionStr string = "" +
 	"ntalEuropaEuropa OrientalEuropa SetentrionalEuropa OcidentalAmérica Lati" +
 	"na"
 
-// Size: 606 bytes, 291 elements
-var ptRegionIdx = []uint16{
+var ptRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0011, 0x0018, 0x002f, 0x003b, 0x004d, 0x0055, 0x005d,
 	0x0065, 0x0078, 0x007e, 0x0088, 0x0091, 0x00a0, 0x00a8, 0x00b2,
@@ -42862,10 +42470,9 @@ var ptRegionIdx = []uint16{
 	0x0b77, 0x0b8c, 0x0b92, 0x0ba0, 0x0bac, 0x0bbd, 0x0bca, 0x0bd6,
 	0x0be0, 0x0bf6, 0x0c00, 0x0c05, 0x0c12, 0x0c21, 0x0c27, 0x0c36,
 	0x0c49, 0x0c59, 0x0c68,
-}
+} // Size: 606 bytes
 
-// Size: 687 bytes
-var ptPTRegionStr string = "" +
+var ptPTRegionStr string = "" + // Size: 687 bytes
 	"AnguilaArméniaAlandaBangladecheBarémBenimBaamasIlhas dos Cocos (Keeling)" +
 	"Congo-KinshasaCongo-BrazzavilleCamarõesCuraçauIlha do NatalRepública Che" +
 	"caJibutiDomínicaEstóniaIlhas FalklandIlhas FaroéGronelândiaGuameIrãoQuén" +
@@ -42877,8 +42484,7 @@ var ptPTRegionStr string = "" +
 	"oVietnameIémenMaioteZimbabuéOceâniaNorte de ÁfricaCaraíbasEuropa do Nort" +
 	"e"
 
-// Size: 602 bytes, 289 elements
-var ptPTRegionIdx = []uint16{
+var ptPTRegionIdx = []uint16{ // 289 elements
 	// Entry 0 - 3F
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0007, 0x0007,
 	0x000f, 0x000f, 0x000f, 0x000f, 0x000f, 0x000f, 0x000f, 0x000f,
@@ -42921,10 +42527,9 @@ var ptPTRegionIdx = []uint16{
 	0x0297, 0x0297, 0x02a0, 0x02a0, 0x02a0, 0x02a0, 0x02a0, 0x02a0,
 	0x02a0, 0x02a0, 0x02a0, 0x02a0, 0x02a0, 0x02a0, 0x02a0, 0x02a0,
 	0x02af,
-}
+} // Size: 602 bytes
 
-// Size: 3238 bytes
-var roRegionStr string = "" +
+var roRegionStr string = "" + // Size: 3238 bytes
 	"Insula AscensionAndorraEmiratele Arabe UniteAfganistanAntigua și Barbuda" +
 	"AnguillaAlbaniaArmeniaAntilele OlandezeAngolaAntarcticaArgentinaSamoa Am" +
 	"ericanăAustriaAustraliaArubaInsulele ÅlandAzerbaidjanBosnia și Herțegovi" +
@@ -42971,8 +42576,7 @@ var roRegionStr string = "" +
 	"ăEuropaEuropa OrientalăEuropa SeptentrionalăEuropa OccidentalăAmerica L" +
 	"atină"
 
-// Size: 606 bytes, 291 elements
-var roRegionIdx = []uint16{
+var roRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0017, 0x002c, 0x0036, 0x0049, 0x0051, 0x0058,
 	0x005f, 0x0070, 0x0076, 0x0080, 0x0089, 0x0099, 0x00a0, 0x00a9,
@@ -43015,10 +42619,9 @@ var roRegionIdx = []uint16{
 	0x0ba4, 0x0bbb, 0x0bc2, 0x0bd1, 0x0be2, 0x0bf1, 0x0c04, 0x0c0f,
 	0x0c18, 0x0c2b, 0x0c34, 0x0c38, 0x0c46, 0x0c57, 0x0c5d, 0x0c6e,
 	0x0c84, 0x0c97, 0x0ca6,
-}
+} // Size: 606 bytes
 
-// Size: 5872 bytes
-var ruRegionStr string = "" +
+var ruRegionStr string = "" + // Size: 5872 bytes
 	"о-в ВознесенияАндорраОАЭАфганистанАнтигуа и БарбудаАнгильяАлбанияАрмения" +
 	"Нидерландские Антильские о-ваАнголаАнтарктидаАргентинаАмериканское Само" +
 	"аАвстрияАвстралияАрубаАландские о-ваАзербайджанБосния и ГерцеговинаБарб" +
@@ -43063,8 +42666,7 @@ var ruRegionStr string = "" +
 	"зияПолинезияАзияСредняя АзияБлижний и Средний ВостокЕвропаВосточная Евр" +
 	"опаСеверная ЕвропаЗападная ЕвропаЛатинская Америка"
 
-// Size: 606 bytes, 291 elements
-var ruRegionIdx = []uint16{
+var ruRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001a, 0x0028, 0x002e, 0x0042, 0x0062, 0x0070, 0x007e,
 	0x008c, 0x00c3, 0x00cf, 0x00e3, 0x00f5, 0x0118, 0x0126, 0x0138,
@@ -43107,10 +42709,9 @@ var ruRegionIdx = []uint16{
 	0x1523, 0x155d, 0x1569, 0x1584, 0x1597, 0x15b9, 0x15d0, 0x15e6,
 	0x15f8, 0x160c, 0x161e, 0x1626, 0x163d, 0x166a, 0x1676, 0x1695,
 	0x16b2, 0x16cf, 0x16f0,
-}
+} // Size: 606 bytes
 
-// Size: 9356 bytes
-var siRegionStr string = "" +
+var siRegionStr string = "" + // Size: 9356 bytes
 	"ඇසෙන්ෂන් දිවයිනඇන්ඩෝරාවඑක්සත් අරාබි එමිර් රාජ්\u200dයයඇෆ්ගනිස්ථානයඇන්ටිග" +
 	"ුවා සහ බාබියුඩාවඇන්ගුයිලාවඇල්බේනියාවආර්මේනියාවනෙදර්ලන්ත ඇන්ටිලීසියඇන්ග" +
 	"ෝලාවඇන්ටාක්ටිකාවආර්ජෙන්ටිනාවඇමරිකානු සැමෝවාවඔස්ට්\u200dරියාවඕස්ට්" +
@@ -43162,8 +42763,7 @@ var siRegionStr string = "" +
 	"\u200dයම ආසියාවබටහිර ආසියාවයුරෝපයනැගෙනහිර යුරෝපයඋතුරු යුරෝපයබටහිර යුරෝපය" +
 	"ලතින් ඇමෙරිකාව"
 
-// Size: 606 bytes, 291 elements
-var siRegionIdx = []uint16{
+var siRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x002b, 0x0043, 0x008b, 0x00af, 0x00ed, 0x010b, 0x0129,
 	0x0147, 0x0181, 0x0199, 0x01bd, 0x01e1, 0x020f, 0x0230, 0x0257,
@@ -43206,10 +42806,9 @@ var siRegionIdx = []uint16{
 	0x21f2, 0x2223, 0x223e, 0x2269, 0x228b, 0x22b6, 0x22e1, 0x230b,
 	0x2329, 0x2369, 0x238a, 0x239c, 0x23c1, 0x23e3, 0x23f5, 0x2420,
 	0x2442, 0x2464, 0x248c,
-}
+} // Size: 606 bytes
 
-// Size: 3211 bytes
-var skRegionStr string = "" +
+var skRegionStr string = "" + // Size: 3211 bytes
 	"AscensiónAndorraSpojené arabské emirátyAfganistanAntigua a BarbudaAnguil" +
 	"laAlbánskoArménskoHolandské AntilyAngolaAntarktídaArgentínaAmerická Samo" +
 	"aRakúskoAustráliaArubaÅlandyAzerbajdžanBosna a HercegovinaBarbadosBangla" +
@@ -43253,8 +42852,7 @@ var skRegionStr string = "" +
 	"ziePolynéziaÁziastredná Áziazápadná ÁziaEurópavýchodná Európaseverná Eur" +
 	"ópazápadná EurópaLatinská Amerika"
 
-// Size: 606 bytes, 291 elements
-var skRegionIdx = []uint16{
+var skRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000a, 0x0011, 0x002b, 0x0035, 0x0046, 0x004e, 0x0057,
 	0x0060, 0x0071, 0x0077, 0x0082, 0x008c, 0x009b, 0x00a3, 0x00ad,
@@ -43297,10 +42895,9 @@ var skRegionIdx = []uint16{
 	0x0b8c, 0x0ba4, 0x0bab, 0x0bbb, 0x0bc8, 0x0bdc, 0x0beb, 0x0bf7,
 	0x0c01, 0x0c14, 0x0c1e, 0x0c23, 0x0c31, 0x0c40, 0x0c47, 0x0c59,
 	0x0c69, 0x0c7a, 0x0c8b,
-}
+} // Size: 606 bytes
 
-// Size: 3205 bytes
-var slRegionStr string = "" +
+var slRegionStr string = "" + // Size: 3205 bytes
 	"Otok AscensionAndoraZdruženi arabski emiratiAfganistanAntigva in Barbuda" +
 	"AngvilaAlbanijaArmenijaNizozemski AntiliAngolaAntarktikaArgentinaAmerišk" +
 	"a SamoaAvstrijaAvstralijaArubaÅlandski otokiAzerbajdžanBosna in Hercegov" +
@@ -43346,8 +42943,7 @@ var slRegionStr string = "" +
 	"nezijska regijaPolinezijaAzijaOsrednja AzijaZahodna AzijaEvropaVzhodna E" +
 	"vropaSeverna EvropaZahodna EvropaLatinska Amerika"
 
-// Size: 606 bytes, 291 elements
-var slRegionIdx = []uint16{
+var slRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000e, 0x0014, 0x002d, 0x0037, 0x0049, 0x0050, 0x0058,
 	0x0060, 0x0071, 0x0077, 0x0081, 0x008a, 0x0099, 0x00a1, 0x00ab,
@@ -43390,10 +42986,9 @@ var slRegionIdx = []uint16{
 	0x0b8d, 0x0ba4, 0x0baa, 0x0bb7, 0x0bc3, 0x0bd4, 0x0be1, 0x0bfd,
 	0x0c07, 0x0c1b, 0x0c25, 0x0c2a, 0x0c38, 0x0c45, 0x0c4b, 0x0c59,
 	0x0c67, 0x0c75, 0x0c85,
-}
+} // Size: 606 bytes
 
-// Size: 3130 bytes
-var sqRegionStr string = "" +
+var sqRegionStr string = "" + // Size: 3130 bytes
 	"Ishulli AsenshionAndorrëEmiratet e Bashkuara ArabeAfganistanAntigua e Ba" +
 	"rbudaAnguilëShqipëriArmeniAngolëAntarktikëArgjentinëSamoa AmerikaneAustr" +
 	"iAustraliArubëIshujt AlandëAzerbajxhanBosnjë-HercegovinëBarbadosBanglade" +
@@ -43438,8 +43033,7 @@ var sqRegionStr string = "" +
 	"ia PerëndimoreEuropëEuropa LindoreEuropa VerioreEuropa PerëndimoreAmerik" +
 	"a Latine"
 
-// Size: 606 bytes, 291 elements
-var sqRegionIdx = []uint16{
+var sqRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0011, 0x0019, 0x0033, 0x003d, 0x004e, 0x0056, 0x005f,
 	0x0065, 0x0065, 0x006c, 0x0077, 0x0082, 0x0091, 0x0097, 0x009f,
@@ -43482,10 +43076,9 @@ var sqRegionIdx = []uint16{
 	0x0b5d, 0x0b6c, 0x0b73, 0x0b7f, 0x0b8a, 0x0b99, 0x0ba6, 0x0bb1,
 	0x0bba, 0x0bcc, 0x0bd5, 0x0bd8, 0x0be5, 0x0bf6, 0x0bfd, 0x0c0b,
 	0x0c19, 0x0c2c, 0x0c3a,
-}
+} // Size: 606 bytes
 
-// Size: 5923 bytes
-var srRegionStr string = "" +
+var srRegionStr string = "" + // Size: 5923 bytes
 	"Острво АсенсионАндораУједињени Арапски ЕмиратиАвганистанАнтигва и Барбуд" +
 	"аАнгвилаАлбанијаЈерменијаХоландски АнтилиАнголаАнтарктикАргентинаАмерич" +
 	"ка СамоаАустријаАустралијаАрубаОландска острваАзербејџанБосна и Херцего" +
@@ -43530,8 +43123,7 @@ var srRegionStr string = "" +
 	"Микронезијски регионПолинезијаАзијаЦентрална АзијаЗападна АзијаЕвропаИс" +
 	"точна ЕвропаСеверна ЕвропаЗападна ЕвропаЛатинска Америка"
 
-// Size: 606 bytes, 291 elements
-var srRegionIdx = []uint16{
+var srRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001d, 0x0029, 0x0059, 0x006d, 0x008d, 0x009b, 0x00ab,
 	0x00bd, 0x00dc, 0x00e8, 0x00fa, 0x010c, 0x0127, 0x0137, 0x014b,
@@ -43574,10 +43166,9 @@ var srRegionIdx = []uint16{
 	0x155c, 0x1579, 0x1585, 0x159e, 0x15b3, 0x15d4, 0x15eb, 0x1618,
 	0x162c, 0x1653, 0x1667, 0x1671, 0x168e, 0x16a7, 0x16b3, 0x16ce,
 	0x16e9, 0x1704, 0x1723,
-}
+} // Size: 606 bytes
 
-// Size: 3112 bytes
-var srLatnRegionStr string = "" +
+var srLatnRegionStr string = "" + // Size: 3112 bytes
 	"Ostrvo AsensionAndoraUjedinjeni Arapski EmiratiAvganistanAntigva i Barbu" +
 	"daAngvilaAlbanijaJermenijaHolandski AntiliAngolaAntarktikArgentinaAmerič" +
 	"ka SamoaAustrijaAustralijaArubaOlandska ostrvaAzerbejdžanBosna i Hercego" +
@@ -43622,8 +43213,7 @@ var srLatnRegionStr string = "" +
 	"inezijaAzijaCentralna AzijaZapadna AzijaEvropaIstočna EvropaSeverna Evro" +
 	"paZapadna EvropaLatinska Amerika"
 
-// Size: 606 bytes, 291 elements
-var srLatnRegionIdx = []uint16{
+var srLatnRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000f, 0x0015, 0x002f, 0x0039, 0x004a, 0x0051, 0x0059,
 	0x0062, 0x0072, 0x0078, 0x0081, 0x008a, 0x0099, 0x00a1, 0x00ab,
@@ -43666,10 +43256,9 @@ var srLatnRegionIdx = []uint16{
 	0x0b38, 0x0b47, 0x0b4d, 0x0b5b, 0x0b67, 0x0b79, 0x0b86, 0x0b9e,
 	0x0ba8, 0x0bbc, 0x0bc6, 0x0bcb, 0x0bda, 0x0be7, 0x0bed, 0x0bfc,
 	0x0c0a, 0x0c18, 0x0c28,
-}
+} // Size: 606 bytes
 
-// Size: 2924 bytes
-var svRegionStr string = "" +
+var svRegionStr string = "" + // Size: 2924 bytes
 	"AscensionAndorraFörenade ArabemiratenAfghanistanAntigua och BarbudaAngui" +
 	"llaAlbanienArmenienNederländska AntillernaAngolaAntarktisArgentinaAmerik" +
 	"anska SamoaÖsterrikeAustralienArubaÅlandAzerbajdzjanBosnien och Hercegov" +
@@ -43711,8 +43300,7 @@ var svRegionStr string = "" +
 	"tasienSydeuropaAustralasienMelanesienMikronesiska öarnaPolynesienAsienCe" +
 	"ntralasienVästasienEuropaÖsteuropaNordeuropaVästeuropaLatinamerika"
 
-// Size: 606 bytes, 291 elements
-var svRegionIdx = []uint16{
+var svRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0009, 0x0010, 0x0026, 0x0031, 0x0044, 0x004c, 0x0054,
 	0x005c, 0x0074, 0x007a, 0x0083, 0x008c, 0x009d, 0x00a7, 0x00b1,
@@ -43755,10 +43343,9 @@ var svRegionIdx = []uint16{
 	0x0ab3, 0x0ac0, 0x0ac8, 0x0ad1, 0x0ad9, 0x0ae4, 0x0aed, 0x0af9,
 	0x0b03, 0x0b16, 0x0b20, 0x0b25, 0x0b31, 0x0b3b, 0x0b41, 0x0b4b,
 	0x0b55, 0x0b60, 0x0b6c,
-}
+} // Size: 606 bytes
 
-// Size: 3122 bytes
-var swRegionStr string = "" +
+var swRegionStr string = "" + // Size: 3122 bytes
 	"Kisiwa cha AscensionAndoraFalme za KiarabuAfghanistanAntigua na BarbudaA" +
 	"nguillaAlbaniaArmeniaAntili za UholanziAngolaAntaktikaAjentinaSamoa ya M" +
 	"arekaniAustriaAustraliaArubaVisiwa vya AlandiAzabajaniBosnia na Hezegovi" +
@@ -43804,8 +43391,7 @@ var swRegionStr string = "" +
 	"a ya MagharibiUlayaUlaya ya MasharikiUlaya ya KaskaziniUlaya ya Magharib" +
 	"iAmerika ya Kilatini"
 
-// Size: 606 bytes, 291 elements
-var swRegionIdx = []uint16{
+var swRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0014, 0x001a, 0x002a, 0x0035, 0x0047, 0x004f, 0x0056,
 	0x005d, 0x006f, 0x0075, 0x007e, 0x0086, 0x0097, 0x009e, 0x00a7,
@@ -43848,10 +43434,9 @@ var swRegionIdx = []uint16{
 	0x0b34, 0x0b48, 0x0b51, 0x0b5f, 0x0b6d, 0x0b85, 0x0b94, 0x0b9f,
 	0x0ba8, 0x0bba, 0x0bc3, 0x0bc7, 0x0bd3, 0x0be4, 0x0be9, 0x0bfb,
 	0x0c0d, 0x0c1f, 0x0c32,
-}
+} // Size: 606 bytes
 
-// Size: 9580 bytes
-var taRegionStr string = "" +
+var taRegionStr string = "" + // Size: 9580 bytes
 	"அஷன்ஷியன் தீவுஅன்டோராஐக்கிய அரபு எமிரேட்ஸ்ஆப்கானிஸ்தான்ஆண்டிகுவா மற்றும்" +
 	" பார்புடாஅங்குய்லாஅல்பேனியாஅர்மேனியாநெதர்லாந்து ஆண்டில்லெஸ்அங்கோலாஅண்டார" +
 	"்டிகாஅர்ஜென்டினாஅமெரிக்க சமோவாஆஸ்திரியாஆஸ்திரேலியாஅரூபாஆலந்து தீவுகள்அ" +
@@ -43901,8 +43486,7 @@ var taRegionStr string = "" +
 	"ு ஆசியாஐரோப்பாகிழக்கு ஐரோப்பாவடக்கு ஐரோப்பாமேற்கு ஐரோப்பாலத்தீன் அமெரி" +
 	"க்கா"
 
-// Size: 606 bytes, 291 elements
-var taRegionIdx = []uint16{
+var taRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0028, 0x003d, 0x0078, 0x009f, 0x00e9, 0x0104, 0x011f,
 	0x013a, 0x017d, 0x0192, 0x01b3, 0x01d4, 0x01fc, 0x0217, 0x0238,
@@ -43945,10 +43529,9 @@ var taRegionIdx = []uint16{
 	0x22d7, 0x2305, 0x231d, 0x2342, 0x2364, 0x2395, 0x23bd, 0x23e1,
 	0x23fc, 0x243a, 0x2458, 0x2467, 0x2489, 0x24ab, 0x24c0, 0x24eb,
 	0x2513, 0x253b, 0x256c,
-}
+} // Size: 606 bytes
 
-// Size: 9380 bytes
-var teRegionStr string = "" +
+var teRegionStr string = "" + // Size: 9380 bytes
 	"ఎసెషన్ దీవిఅండొర్రాయునైటెడ్ అరబ్ ఎమిరేట్స్ఆఫ్ఘనిస్తాన్ఆంటిగ్వా మరియు బార" +
 	"్బుడాఆంగవిల్లాఅల్బేనియాఆర్మేనియానేదేర్లేండ్స్ అంటిల్లిస్అంగోలాఅంటార్కట" +
 	"ికాఅర్జెంటీనాఅమెరికన్ సమోవాఆస్ట్రియాఆస్ట్రేలియాఅరుబాఆలేండ్ దీవులుఅజర్బ" +
@@ -43997,8 +43580,7 @@ var teRegionStr string = "" +
 	"రాంతంపాలినేషియాఆసియామధ్య ఆసియాపడమటి ఆసియాయూరోప్తూర్పు యూరోప్ఉత్తర యూరో" +
 	"ప్పశ్చిమ యూరోప్లాటిన్ అమెరికా"
 
-// Size: 606 bytes, 291 elements
-var teRegionIdx = []uint16{
+var teRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x001f, 0x0037, 0x0078, 0x009c, 0x00dd, 0x00f8, 0x0113,
 	0x012e, 0x0174, 0x0186, 0x01a7, 0x01c5, 0x01ed, 0x0208, 0x0229,
@@ -44041,10 +43623,9 @@ var teRegionIdx = []uint16{
 	0x223f, 0x2277, 0x2295, 0x22b7, 0x22d9, 0x22fb, 0x2320, 0x2347,
 	0x235f, 0x2396, 0x23b4, 0x23c3, 0x23df, 0x23fe, 0x2410, 0x2435,
 	0x2457, 0x247c, 0x24a4,
-}
+} // Size: 606 bytes
 
-// Size: 9078 bytes
-var thRegionStr string = "" +
+var thRegionStr string = "" + // Size: 9078 bytes
 	"เกาะแอสเซนชันอันดอร์ราสหรัฐอาหรับเอมิเรตส์อัฟกานิสถานแอนติกาและบาร์บูดาแ" +
 	"องกวิลลาแอลเบเนียอาร์เมเนียเนเธอร์แลนด์แอนทิลลิสแองโกลาแอนตาร์กติกาอาร" +
 	"์เจนตินาอเมริกันซามัวออสเตรียออสเตรเลียอารูบาหมู่เกาะโอลันด์อาเซอร์ไบจ" +
@@ -44090,8 +43671,7 @@ var thRegionStr string = "" +
 	"ยโปลินีเซียเอเชียเอเชียกลางเอเชียตะวันตกยุโรปยุโรปตะวันออกยุโรปเหนือยุ" +
 	"โรปตะวันตกละตินอเมริกา"
 
-// Size: 606 bytes, 291 elements
-var thRegionIdx = []uint16{
+var thRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0027, 0x0042, 0x007e, 0x009f, 0x00d5, 0x00f0, 0x010b,
 	0x0129, 0x0168, 0x017d, 0x01a1, 0x01c2, 0x01e9, 0x0201, 0x021f,
@@ -44134,10 +43714,9 @@ var thRegionIdx = []uint16{
 	0x210f, 0x213c, 0x215a, 0x2184, 0x219f, 0x21e1, 0x21f9, 0x221d,
 	0x223b, 0x2265, 0x2283, 0x2295, 0x22b3, 0x22da, 0x22e9, 0x2310,
 	0x232e, 0x2352, 0x2376,
-}
+} // Size: 606 bytes
 
-// Size: 3053 bytes
-var trRegionStr string = "" +
+var trRegionStr string = "" + // Size: 3053 bytes
 	"Ascension AdasıAndorraBirleşik Arap EmirlikleriAfganistanAntigua ve Barb" +
 	"udaAnguillaArnavutlukErmenistanHollanda AntilleriAngolaAntarktikaArjanti" +
 	"nAmerikan SamoasıAvusturyaAvustralyaArubaÅland AdalarıAzerbaycanBosna He" +
@@ -44180,8 +43759,7 @@ var trRegionStr string = "" +
 	"upaAvustralasyaMelanezyaMikronezya BölgesiPolinezyaAsyaOrta AsyaBatı Asy" +
 	"aAvrupaDoğu AvrupaKuzey AvrupaBatı AvrupaLatin Amerika"
 
-// Size: 606 bytes, 291 elements
-var trRegionIdx = []uint16{
+var trRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0017, 0x0031, 0x003b, 0x004d, 0x0055, 0x005f,
 	0x0069, 0x007b, 0x0081, 0x008b, 0x0093, 0x00a4, 0x00ad, 0x00b7,
@@ -44224,10 +43802,9 @@ var trRegionIdx = []uint16{
 	0x0b1d, 0x0b32, 0x0b3c, 0x0b46, 0x0b51, 0x0b61, 0x0b6e, 0x0b7a,
 	0x0b83, 0x0b96, 0x0b9f, 0x0ba3, 0x0bac, 0x0bb6, 0x0bbc, 0x0bc8,
 	0x0bd4, 0x0be0, 0x0bed,
-}
+} // Size: 606 bytes
 
-// Size: 6146 bytes
-var ukRegionStr string = "" +
+var ukRegionStr string = "" + // Size: 6146 bytes
 	"Острів ВознесінняАндорраОбʼєднані Арабські ЕміратиАфганістанАнтигуа і Ба" +
 	"рбудаАнгільяАлбаніяВірменіяНідерландські Антильські ОстровиАнголаАнтарк" +
 	"тикаАргентинаАмериканське СамоаАвстріяАвстраліяАрубаАландські островиАз" +
@@ -44274,8 +43851,7 @@ var ukRegionStr string = "" +
 	"зіяАзіяЦентральна АзіяЗахідна АзіяЄвропаСхідна ЄвропаПівнічна ЄвропаЗах" +
 	"ідна ЄвропаЛатинська Америка"
 
-// Size: 606 bytes, 291 elements
-var ukRegionIdx = []uint16{
+var ukRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0021, 0x002f, 0x0061, 0x0075, 0x0095, 0x00a3, 0x00b1,
 	0x00c1, 0x00ff, 0x010b, 0x011f, 0x0131, 0x0154, 0x0162, 0x0174,
@@ -44318,10 +43894,9 @@ var ukRegionIdx = []uint16{
 	0x1623, 0x1651, 0x1672, 0x1687, 0x16a0, 0x16c6, 0x16e3, 0x16f9,
 	0x170b, 0x1736, 0x1748, 0x1750, 0x176d, 0x1784, 0x1790, 0x17a9,
 	0x17c6, 0x17e1, 0x1802,
-}
+} // Size: 606 bytes
 
-// Size: 5159 bytes
-var urRegionStr string = "" +
+var urRegionStr string = "" + // Size: 5159 bytes
 	"اسینشن آئلینڈانڈورامتحدہ عرب اماراتافغانستانانٹیگوا اور باربوداانگوئیلاا" +
 	"لبانیہآرمینیانیدرلینڈز انٹیلیزانگولاانٹارکٹیکاارجنٹیناامریکی ساموآآسٹری" +
 	"اآسٹریلیااروباآلینڈ آئلینڈزآذربائجانبوسنیا اور ہرزیگووینابارباڈوسبنگلہ " +
@@ -44361,8 +43936,7 @@ var urRegionStr string = "" +
 	"مالینیشیامائکرونیشیائی علاقہپولینیشیاایشیاوسطی ایشیامغربی ایشیایورپمشرق" +
 	"ی یورپشمالی یورپمغربی یورپلاطینی امریکہ"
 
-// Size: 606 bytes, 291 elements
-var urRegionIdx = []uint16{
+var urRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0019, 0x0025, 0x0043, 0x0055, 0x0079, 0x0089, 0x0097,
 	0x00a5, 0x00c6, 0x00d2, 0x00e6, 0x00f6, 0x010d, 0x0119, 0x0129,
@@ -44405,10 +43979,9 @@ var urRegionIdx = []uint16{
 	0x12ac, 0x12d3, 0x12e3, 0x12f8, 0x130d, 0x132b, 0x133e, 0x1352,
 	0x1364, 0x1389, 0x139b, 0x13a5, 0x13b8, 0x13cd, 0x13d5, 0x13e8,
 	0x13fb, 0x140e, 0x1427,
-}
+} // Size: 606 bytes
 
-// Size: 3194 bytes
-var uzRegionStr string = "" +
+var uzRegionStr string = "" + // Size: 3194 bytes
 	"Me’roj oroliAndorraBirlashgan Arab AmirliklariAfgʻonistonAntigua va Barb" +
 	"adosAngilyaAlbaniyaArmanistonAngolaAntarktidaArgentinaAmerika SamoasiAvs" +
 	"triyaAvstraliyaArubaAland orollariOzarbayjonBosniya va GertsegovinaBarba" +
@@ -44454,8 +44027,7 @@ var uzRegionStr string = "" +
 	"yaMelaneziyaMikroneziya mintaqasiPolineziyaOsiyoMarkaziy OsiyoG‘arbiy Os" +
 	"iyoYevropaSharqiy YevropaShimoliy YevropaG‘arbiy YevropaLotin Amerikasi"
 
-// Size: 606 bytes, 291 elements
-var uzRegionIdx = []uint16{
+var uzRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000e, 0x0015, 0x0030, 0x003c, 0x004f, 0x0056, 0x005e,
 	0x0068, 0x0068, 0x006e, 0x0078, 0x0081, 0x0090, 0x0098, 0x00a2,
@@ -44498,10 +44070,9 @@ var uzRegionIdx = []uint16{
 	0x0b70, 0x0b93, 0x0ba0, 0x0bad, 0x0bba, 0x0bce, 0x0bdd, 0x0be9,
 	0x0bf3, 0x0c08, 0x0c12, 0x0c17, 0x0c25, 0x0c34, 0x0c3b, 0x0c4a,
 	0x0c5a, 0x0c6b, 0x0c7a,
-}
+} // Size: 606 bytes
 
-// Size: 3230 bytes
-var viRegionStr string = "" +
+var viRegionStr string = "" + // Size: 3230 bytes
 	"Đảo AscensionAndorraCác Tiểu V.quốc Ả Rập T.nhấtAfghanistanAntigua và Ba" +
 	"rbudaAnguillaAlbaniArmeniaTây Ấn Hà LanAngolaNam CựcArgentinaĐảo Somoa t" +
 	"huộc MỹÁoÚcArubaQuần đảo ÅlandAzerbaijanBosnia và HerzegovinaBarbadosBan" +
@@ -44543,8 +44114,7 @@ var viRegionStr string = "" +
 	"landMelanesiaVùng MicronesianPolynesiaChâu ÁTrung ÁTây ÁChâu ÂuĐông ÂuBắ" +
 	"c ÂuTây ÂuChâu Mỹ La-tinh"
 
-// Size: 606 bytes, 291 elements
-var viRegionIdx = []uint16{
+var viRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0010, 0x0017, 0x003e, 0x0049, 0x005c, 0x0064, 0x006a,
 	0x0071, 0x0082, 0x0088, 0x0091, 0x009a, 0x00b3, 0x00b6, 0x00b9,
@@ -44587,10 +44157,9 @@ var viRegionIdx = []uint16{
 	0x0bd8, 0x0bef, 0x0bf8, 0x0c01, 0x0c07, 0x0c14, 0x0c1b, 0x0c2e,
 	0x0c37, 0x0c48, 0x0c51, 0x0c59, 0x0c61, 0x0c68, 0x0c71, 0x0c7b,
 	0x0c84, 0x0c8c, 0x0c9e,
-}
+} // Size: 606 bytes
 
-// Size: 3331 bytes
-var zhRegionStr string = "" +
+var zhRegionStr string = "" + // Size: 3331 bytes
 	"阿森松岛安道尔阿拉伯联合酋长国阿富汗安提瓜和巴布达安圭拉阿尔巴尼亚亚美尼亚荷属安的列斯群岛安哥拉南极洲阿根廷美属萨摩亚奥地利澳大利亚阿鲁巴奥兰群" +
 	"岛阿塞拜疆波斯尼亚和黑塞哥维那巴巴多斯孟加拉国比利时布基纳法索保加利亚巴林布隆迪贝宁圣巴泰勒米百慕大文莱玻利维亚荷兰加勒比区巴西巴哈马不丹布" +
 	"维岛博茨瓦纳白俄罗斯伯利兹加拿大科科斯（基林）群岛刚果（金）中非共和国刚果（布）瑞士科特迪瓦库克群岛智利喀麦隆中国哥伦比亚克利珀顿岛哥斯达黎" +
@@ -44608,8 +44177,7 @@ var zhRegionStr string = "" +
 	"京群岛越南瓦努阿图瓦利斯和富图纳萨摩亚科索沃也门马约特南非赞比亚津巴布韦未知地区世界非洲北美洲南美洲大洋洲西非中美洲东非北非中非南部非洲美洲" +
 	"美洲北部加勒比地区东亚南亚东南亚南欧澳大拉西亚美拉尼西亚密克罗尼西亚地区玻利尼西亚亚洲中亚西亚欧洲东欧北欧西欧拉丁美洲"
 
-// Size: 606 bytes, 291 elements
-var zhRegionIdx = []uint16{
+var zhRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x0015, 0x002d, 0x0036, 0x004b, 0x0054, 0x0063,
 	0x006f, 0x0087, 0x0090, 0x0099, 0x00a2, 0x00b1, 0x00ba, 0x00c6,
@@ -44652,10 +44220,9 @@ var zhRegionIdx = []uint16{
 	0x0c52, 0x0c5e, 0x0c6d, 0x0c73, 0x0c79, 0x0c82, 0x0c88, 0x0c97,
 	0x0ca6, 0x0cbe, 0x0ccd, 0x0cd3, 0x0cd9, 0x0cdf, 0x0ce5, 0x0ceb,
 	0x0cf1, 0x0cf7, 0x0d03,
-}
+} // Size: 606 bytes
 
-// Size: 3333 bytes
-var zhHantRegionStr string = "" +
+var zhHantRegionStr string = "" + // Size: 3333 bytes
 	"阿森松島安道爾阿拉伯聯合大公國阿富汗安地卡及巴布達安圭拉阿爾巴尼亞亞美尼亞荷屬安地列斯安哥拉南極洲阿根廷美屬薩摩亞奧地利澳洲荷屬阿魯巴奧蘭群島亞" +
 	"塞拜然波士尼亞與赫塞哥維納巴貝多孟加拉比利時布吉納法索保加利亞巴林蒲隆地貝南聖巴瑟米百慕達汶萊玻利維亞荷蘭加勒比區巴西巴哈馬不丹布威島波札那" +
 	"白俄羅斯貝里斯加拿大科科斯（基林）群島剛果（金夏沙）中非共和國剛果（布拉薩）瑞士象牙海岸庫克群島智利喀麥隆中華人民共和國哥倫比亞克里派頓島哥" +
@@ -44673,8 +44240,7 @@ var zhHantRegionStr string = "" +
 	"群島美屬維京群島越南萬那杜瓦利斯和富圖納群島薩摩亞科索沃葉門馬約特南非尚比亞辛巴威未知區域世界非洲北美洲南美洲大洋洲西非中美東非北非中非非洲" +
 	"南部美洲北美加勒比海東亞南亞東南亞南歐澳洲與紐西蘭美拉尼西亞密克羅尼西亞玻里尼西亞亞洲中亞西亞歐洲東歐北歐西歐拉丁美洲"
 
-// Size: 606 bytes, 291 elements
-var zhHantRegionIdx = []uint16{
+var zhHantRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x000c, 0x0015, 0x002d, 0x0036, 0x004b, 0x0054, 0x0063,
 	0x006f, 0x0081, 0x008a, 0x0093, 0x009c, 0x00ab, 0x00b4, 0x00ba,
@@ -44717,10 +44283,9 @@ var zhHantRegionIdx = []uint16{
 	0x0c60, 0x0c66, 0x0c72, 0x0c78, 0x0c7e, 0x0c87, 0x0c8d, 0x0c9f,
 	0x0cae, 0x0cc0, 0x0ccf, 0x0cd5, 0x0cdb, 0x0ce1, 0x0ce7, 0x0ced,
 	0x0cf3, 0x0cf9, 0x0d05,
-}
+} // Size: 606 bytes
 
-// Size: 3578 bytes
-var zuRegionStr string = "" +
+var zuRegionStr string = "" + // Size: 3578 bytes
 	"i-Ascension Islandi-Andorrai-United Arab Emiratesi-Afghanistani-Antigua " +
 	"and Barbudai-Anguillai-Albaniai-Armeniai-Netherlands Antillesi-Angolai-A" +
 	"ntarcticai-Argentinai-American Samoai-Austriai-Australiai-Arubai-Åland I" +
@@ -44772,8 +44337,7 @@ var zuRegionStr string = "" +
 	"ynesiai-Asiai-Central Asiai-Western Asiai-Europei-Eastern Europei-Northe" +
 	"rn Europei-Western Europei-Latin America"
 
-// Size: 606 bytes, 291 elements
-var zuRegionIdx = []uint16{
+var zuRegionIdx = []uint16{ // 291 elements
 	// Entry 0 - 3F
 	0x0000, 0x0012, 0x001b, 0x0031, 0x003e, 0x0053, 0x005d, 0x0066,
 	0x006f, 0x0085, 0x008d, 0x0099, 0x00a4, 0x00b4, 0x00bd, 0x00c8,
@@ -44816,14 +44380,13 @@ var zuRegionIdx = []uint16{
 	0x0cfa, 0x0d0c, 0x0d17, 0x0d25, 0x0d34, 0x0d48, 0x0d59, 0x0d66,
 	0x0d71, 0x0d85, 0x0d90, 0x0d96, 0x0da4, 0x0db2, 0x0dba, 0x0dca,
 	0x0ddb, 0x0deb, 0x0dfa,
-}
+} // Size: 606 bytes
 
 // Total size for region: 808214 bytes (808 KB)
 
 const numSupported = 218
 
-// Size: 833 bytes
-var supported string = "" +
+var supported string = "" + // Size: 833 bytes
 	"af|agq|ak|am|ar|ar-EG|as|asa|ast|az|az-Cyrl|bas|be|bem|bez|bg|bm|bn|bo|b" +
 	"o-IN|br|brx|bs|bs-Cyrl|ca|ce|cgg|chr|ckb|cs|cy|da|dav|de|de-CH|dje|dsb|d" +
 	"ua|dyo|dz|ebu|ee|el|en|en-AU|en-GB|eo|es|es-419|es-CL|es-MX|et|eu|ewo|fa" +

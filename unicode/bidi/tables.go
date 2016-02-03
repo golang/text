@@ -7,10 +7,9 @@ const UnicodeVersion = "8.0.0"
 
 // xorMasks contains masks to be xor-ed with brackets to get the reverse
 // version.
-// Size: 56 bytes, 8 elements
-var xorMasks = []int32{
+var xorMasks = []int32{ // 8 elements
 	0, 1, 6, 7, 3, 15, 29, 63,
-}
+} // Size: 56 bytes
 
 // lookup returns the trie value for the first UTF-8 encoding in s and
 // the width in bytes of this encoding. The size will be 0 if s does not

@@ -6,11 +6,10 @@ package language
 // NumCompactTags-1.
 const NumCompactTags = 710
 
-// Size: 72 bytes, 2 elements
-var specialTags = []Tag{
-	{lang: 0x61, region: 0x6d, script: 0x0, pVariant: 0x5, pExt: 0xe, str: "ca-ES-valencia"},
-	{lang: 0x9a, region: 0x132, script: 0x0, pVariant: 0x5, pExt: 0x5, str: "en-US-u-va-posix"},
-}
+var specialTags = []Tag{ // 2 elements
+	0: {lang: 0x61, region: 0x6d, script: 0x0, pVariant: 0x5, pExt: 0xe, str: "ca-ES-valencia"},
+	1: {lang: 0x9a, region: 0x132, script: 0x0, pVariant: 0x5, pExt: 0x5, str: "en-US-u-va-posix"},
+} // Size: 72 bytes
 
 var coreTags = map[uint32]uint16{
 	0x0:        0,   // und
