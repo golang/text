@@ -1453,7 +1453,7 @@ func (b *builder) writeMatchData() {
 			}
 		}
 	}
-	sort.Sort(sortByConf(matchLang))
+	sort.Stable(sortByConf(matchLang))
 	// collapse percentage into confidence classes
 	for i, m := range matchLang {
 		matchLang[i].conf = toConf(m.conf)
