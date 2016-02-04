@@ -145,7 +145,7 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 
 	nNumberSystems := numberSystem(len(numberSystemMap))
 
-	type symbols [numSymbolTypes]string
+	type symbols [NumSymbolTypes]string
 
 	type key struct {
 		tag          int // from language.CompactIndex
@@ -177,25 +177,25 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 				continue
 			}
 			symbolMap[key{langIndex, getNumberSystem(sym.NumberSystem)}] = &symbols{
-				symDecimal:                getFirst("decimal", sym.Decimal),
-				symGroup:                  getFirst("group", sym.Group),
-				symList:                   getFirst("list", sym.List),
-				symPercentSign:            getFirst("percentSign", sym.PercentSign),
-				symPlusSign:               getFirst("plusSign", sym.PlusSign),
-				symMinusSign:              getFirst("minusSign", sym.MinusSign),
-				symExponential:            getFirst("exponential", sym.Exponential),
-				symSuperscriptingExponent: getFirst("superscriptingExponent", sym.SuperscriptingExponent),
-				symPerMille:               getFirst("perMille", sym.PerMille),
-				symInfinity:               getFirst("infinity", sym.Infinity),
-				symNan:                    getFirst("nan", sym.Nan),
-				symTimeSeparator:          getFirst("timeSeparator", sym.TimeSeparator),
+				SymDecimal:                getFirst("decimal", sym.Decimal),
+				SymGroup:                  getFirst("group", sym.Group),
+				SymList:                   getFirst("list", sym.List),
+				SymPercentSign:            getFirst("percentSign", sym.PercentSign),
+				SymPlusSign:               getFirst("plusSign", sym.PlusSign),
+				SymMinusSign:              getFirst("minusSign", sym.MinusSign),
+				SymExponential:            getFirst("exponential", sym.Exponential),
+				SymSuperscriptingExponent: getFirst("superscriptingExponent", sym.SuperscriptingExponent),
+				SymPerMille:               getFirst("perMille", sym.PerMille),
+				SymInfinity:               getFirst("infinity", sym.Infinity),
+				SymNan:                    getFirst("nan", sym.Nan),
+				SymTimeSeparator:          getFirst("timeSeparator", sym.TimeSeparator),
 			}
 		}
 	}
 
 	// Expand all values.
 	for k, syms := range symbolMap {
-		for t := symDecimal; t < numSymbolTypes; t++ {
+		for t := SymDecimal; t < NumSymbolTypes; t++ {
 			p := k.tag
 			for syms[t] == "" {
 				p = int(internal.Parent[p])
@@ -215,7 +215,7 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 	m := map[symbols]int{}
 	sb := stringset.NewBuilder()
 
-	symIndex := [][numSymbolTypes]byte{}
+	symIndex := [][NumSymbolTypes]byte{}
 
 	for ns := numberSystem(0); ns < nNumberSystems; ns++ {
 		for _, l := range data.Locales() {
@@ -227,8 +227,8 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 			if _, ok := m[*s]; !ok {
 				m[*s] = len(symIndex)
 				sb.Add(s[:]...)
-				var x [numSymbolTypes]byte
-				for i := symDecimal; i < numSymbolTypes; i++ {
+				var x [NumSymbolTypes]byte
+				for i := SymDecimal; i < NumSymbolTypes; i++ {
 					x[i] = byte(sb.Index((*s)[i]))
 				}
 				symIndex = append(symIndex, x)

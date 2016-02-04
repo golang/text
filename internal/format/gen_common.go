@@ -17,23 +17,24 @@ type numberSystemData struct {
 	zero      [utf8.UTFMax]byte // UTF-8 sequence of zero digit.
 }
 
-type symbolType int
+// A SymbolType identifies a symbol of a specific kind.
+type SymbolType int
 
 const (
-	symDecimal symbolType = iota
-	symGroup
-	symList
-	symPercentSign
-	symPlusSign
-	symMinusSign
-	symExponential
-	symSuperscriptingExponent
-	symPerMille
-	symInfinity
-	symNan
-	symTimeSeparator
+	SymDecimal SymbolType = iota
+	SymGroup
+	SymList
+	SymPercentSign
+	SymPlusSign
+	SymMinusSign
+	SymExponential
+	SymSuperscriptingExponent
+	SymPerMille
+	SymInfinity
+	SymNan
+	SymTimeSeparator
 
-	numSymbolTypes
+	NumSymbolTypes
 )
 
 type altSymData struct {

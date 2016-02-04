@@ -9,9 +9,7 @@ import (
 	"log"
 	"reflect"
 	"testing"
-	"unicode/utf8"
 
-	"golang.org/x/text/internal"
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
@@ -41,14 +39,10 @@ func TestNumberSystems(t *testing.T) {
 		if int(n) >= len(numSysData) {
 			continue
 		}
-		d := numSysData[n]
-		val := byte(0)
+		info := NumberInfoFromLangID(0, ns.Id)
+		val := '0'
 		for _, rWant := range ns.Digits {
-			var x [utf8.UTFMax]byte
-			copy(x[:], d.zero[:d.digitSize])
-			x[d.digitSize-1] += val
-			rGot, _ := utf8.DecodeRune(x[:])
-			if rGot != rWant {
+			if rGot := info.Digit(val); rGot != rWant {
 				t.Errorf("%s:%d: got %U; want %U", ns.Id, val, rGot, rWant)
 			}
 			val++
@@ -94,22 +88,23 @@ func TestSymbols(t *testing.T) {
 			}
 			testCases := []struct {
 				name string
-				st   symbolType
+				st   SymbolType
 				x    interface{}
 			}{
-				{"Decimal", symDecimal, sym.Decimal},
-				{"Group", symGroup, sym.Group},
-				{"List", symList, sym.List},
-				{"PercentSign", symPercentSign, sym.PercentSign},
-				{"PlusSign", symPlusSign, sym.PlusSign},
-				{"MinusSign", symMinusSign, sym.MinusSign},
-				{"Exponential", symExponential, sym.Exponential},
-				{"SuperscriptingExponent", symSuperscriptingExponent, sym.SuperscriptingExponent},
-				{"PerMille", symPerMille, sym.PerMille},
-				{"Infinity", symInfinity, sym.Infinity},
-				{"NaN", symNan, sym.Nan},
-				{"TimeSeparator", symTimeSeparator, sym.TimeSeparator},
+				{"Decimal", SymDecimal, sym.Decimal},
+				{"Group", SymGroup, sym.Group},
+				{"List", SymList, sym.List},
+				{"PercentSign", SymPercentSign, sym.PercentSign},
+				{"PlusSign", SymPlusSign, sym.PlusSign},
+				{"MinusSign", SymMinusSign, sym.MinusSign},
+				{"Exponential", SymExponential, sym.Exponential},
+				{"SuperscriptingExponent", SymSuperscriptingExponent, sym.SuperscriptingExponent},
+				{"PerMille", SymPerMille, sym.PerMille},
+				{"Infinity", SymInfinity, sym.Infinity},
+				{"NaN", SymNan, sym.Nan},
+				{"TimeSeparator", SymTimeSeparator, sym.TimeSeparator},
 			}
+			info := NumberInfoFromLangID(langIndex, sym.NumberSystem)
 			for _, tc := range testCases {
 				// Extract the wanted value.
 				v := reflect.ValueOf(tc.x)
@@ -120,36 +115,7 @@ func TestSymbols(t *testing.T) {
 					t.Fatalf("Multiple values of %q within single symbol not supported.", tc.name)
 				}
 				want := v.Index(0).MethodByName("Data").Call(nil)[0].String()
-
-				// Extract the value from the table.
-				ns := numberSystemMap[sym.NumberSystem]
-				strIndex := -1
-				for strIndex == -1 {
-					index := langToDefaults[langIndex]
-					if index&0x80 == 0 && ns == 0 {
-						// The index directly points to the symbol data.
-						strIndex = int(symIndex[index][tc.st])
-						continue
-					}
-					// The index points to a list of symbol data indexes.
-					for _, e := range langToAlt[index&^0x80:] {
-						if int(e.compactTag) != langIndex {
-							if langIndex == 0 {
-								// Fall back to Latin.
-								ns = 0
-							} else {
-								// Fall back to parent.
-								langIndex = int(internal.Parent[langIndex])
-							}
-							break
-						}
-						if e.numberSystem == ns {
-							strIndex = int(symIndex[e.symIndex][tc.st])
-							break
-						}
-					}
-				}
-				got := symData.Elem(strIndex)
+				got := info.Symbol(tc.st)
 				if got != want {
 					t.Errorf("%s:%s:%s: got %q; want %q", lang, sym.NumberSystem, tc.name, got, want)
 				}
