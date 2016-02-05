@@ -79,7 +79,7 @@ func (b *Builder) Add(ss ...string) {
 		b.set.Data += s
 		x := len(b.set.Data)
 		if x > 0xFFFF {
-			panic("Index too > 0xFFFFF")
+			panic("Index too > 0xFFFF")
 		}
 		b.set.Index = append(b.set.Index, uint16(x))
 	}
