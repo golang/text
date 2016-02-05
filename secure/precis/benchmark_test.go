@@ -8,8 +8,26 @@ import (
 	"testing"
 )
 
-func BenchmarkEnforce(b *testing.B) {
+func BenchmarkUsernameCaseMapped(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		UsernameCaseMapped.String("Malvolio")
+	}
+}
+
+func BenchmarkUsernameCasePreserved(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		UsernameCasePreserved.String("Malvolio")
+	}
+}
+
+func BenchmarkOpaqueString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		OpaqueString.String("Malvolio")
+	}
+}
+
+func BenchmarkNickname(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Nickname.String("Malvolio")
 	}
 }
