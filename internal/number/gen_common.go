@@ -8,11 +8,11 @@ package main
 
 import "unicode/utf8"
 
-// A numberSystem identifies a CLDR numbering system.
-type numberSystem byte
+// A system identifies a CLDR numbering system.
+type system byte
 
-type numberSystemData struct {
-	id        numberSystem
+type systemData struct {
+	id        system
 	digitSize byte              // number of UTF-8 bytes per digit
 	zero      [utf8.UTFMax]byte // UTF-8 sequence of zero digit.
 }
@@ -38,7 +38,7 @@ const (
 )
 
 type altSymData struct {
-	compactTag   uint16
-	numberSystem numberSystem
-	symIndex     byte
+	compactTag uint16
+	system     system
+	symIndex   byte
 }

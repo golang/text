@@ -34,7 +34,7 @@ var (
 func main() {
 	gen.Init()
 
-	const pkg = "format"
+	const pkg = "number"
 
 	gen.Repackage("gen_common.go", "common.go", pkg)
 	// Read the CLDR zip file.
@@ -60,10 +60,10 @@ func main() {
 	genSymbols(w, data)
 }
 
-var numberSystemMap = map[string]numberSystem{"latn": 0}
+var systemMap = map[string]system{"latn": 0}
 
-func getNumberSystem(str string) numberSystem {
-	ns, ok := numberSystemMap[str]
+func getNumberSystem(str string) system {
+	ns, ok := systemMap[str]
 	if !ok {
 		log.Fatalf("No index for numbering system %q", str)
 	}
@@ -71,7 +71,7 @@ func getNumberSystem(str string) numberSystem {
 }
 
 func genNumSystem(w *gen.CodeWriter, data *cldr.CLDR) {
-	numSysData := []numberSystemData{
+	numSysData := []systemData{
 		{digitSize: 1, zero: [4]byte{'0'}},
 	}
 
@@ -105,9 +105,9 @@ func genNumSystem(w *gen.CodeWriter, data *cldr.CLDR) {
 		}
 		var x [utf8.UTFMax]byte
 		utf8.EncodeRune(x[:], zero)
-		id := numberSystem(len(numSysData))
-		numberSystemMap[ns.Id] = id
-		numSysData = append(numSysData, numberSystemData{
+		id := system(len(numSysData))
+		systemMap[ns.Id] = id
+		numSysData = append(numSysData, systemData{
 			id:        id,
 			digitSize: byte(sz),
 			zero:      x,
@@ -115,13 +115,13 @@ func genNumSystem(w *gen.CodeWriter, data *cldr.CLDR) {
 	}
 	w.WriteVar("numSysData", numSysData)
 
-	algoID := numberSystem(len(numSysData))
+	algoID := system(len(numSysData))
 	fmt.Fprintln(w, "const (")
 	for _, ns := range data.Supplemental().NumberingSystems.NumberingSystem {
-		id, ok := numberSystemMap[ns.Id]
+		id, ok := systemMap[ns.Id]
 		if !ok {
 			id = algoID
-			numberSystemMap[ns.Id] = id
+			systemMap[ns.Id] = id
 			algoID++
 		}
 		fmt.Fprintf(w, "num%s = %#x\n", strings.Title(ns.Id), id)
@@ -129,7 +129,7 @@ func genNumSystem(w *gen.CodeWriter, data *cldr.CLDR) {
 	fmt.Fprintln(w, "numNumberSystems")
 	fmt.Fprintln(w, ")")
 
-	fmt.Fprintln(w, "var numberSystemMap = map[string]numberSystem{")
+	fmt.Fprintln(w, "var systemMap = map[string]system{")
 	for _, ns := range data.Supplemental().NumberingSystems.NumberingSystem {
 		fmt.Fprintf(w, "%q: num%s,\n", ns.Id, strings.Title(ns.Id))
 		w.Size += len(ns.Id) + 16 + 1 // very coarse approximation
@@ -143,17 +143,17 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 		log.Fatalf("invalid draft level: %v", err)
 	}
 
-	nNumberSystems := numberSystem(len(numberSystemMap))
+	nNumberSystems := system(len(systemMap))
 
 	type symbols [NumSymbolTypes]string
 
 	type key struct {
-		tag          int // from language.CompactIndex
-		numberSystem numberSystem
+		tag    int // from language.CompactIndex
+		system system
 	}
 	symbolMap := map[key]*symbols{}
 
-	defaults := map[int]numberSystem{}
+	defaults := map[int]system{}
 
 	for _, lang := range data.Locales() {
 		ldml := data.RawLDML(lang)
@@ -199,7 +199,7 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 			p := k.tag
 			for syms[t] == "" {
 				p = int(internal.Parent[p])
-				if pSyms, ok := symbolMap[key{p, k.numberSystem}]; ok && (*pSyms)[t] != "" {
+				if pSyms, ok := symbolMap[key{p, k.system}]; ok && (*pSyms)[t] != "" {
 					syms[t] = (*pSyms)[t]
 					break
 				}
@@ -217,7 +217,7 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 
 	symIndex := [][NumSymbolTypes]byte{}
 
-	for ns := numberSystem(0); ns < nNumberSystems; ns++ {
+	for ns := system(0); ns < nNumberSystems; ns++ {
 		for _, l := range data.Locales() {
 			langIndex, _ := language.CompactIndex(language.MustParse(l))
 			s := symbolMap[key{langIndex, ns}]
@@ -240,7 +240,7 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 
 	// resolveSymbolIndex gets the index from the closest matching locale,
 	// including the locale itself.
-	resolveSymbolIndex := func(langIndex int, ns numberSystem) byte {
+	resolveSymbolIndex := func(langIndex int, ns system) byte {
 		for {
 			if sym := symbolMap[key{langIndex, ns}]; sym != nil {
 				return byte(m[*sym])
@@ -269,7 +269,7 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 		if syms == nil {
 			continue
 		}
-		for ns := numberSystem(0); ns < nNumberSystems; ns++ {
+		for ns := system(0); ns < nNumberSystems; ns++ {
 			if ns == def {
 				continue
 			}
@@ -291,20 +291,20 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 		// Create the entry for the default value.
 		def := defaults[langIndex]
 		langToAlt = append(langToAlt, altSymData{
-			compactTag:   uint16(langIndex),
-			numberSystem: def,
-			symIndex:     resolveSymbolIndex(langIndex, def),
+			compactTag: uint16(langIndex),
+			system:     def,
+			symIndex:   resolveSymbolIndex(langIndex, def),
 		})
 
-		for ns := numberSystem(0); ns < nNumberSystems; ns++ {
+		for ns := system(0); ns < nNumberSystems; ns++ {
 			if def == ns {
 				continue
 			}
 			if sym := symbolMap[key{langIndex, ns}]; sym != nil {
 				langToAlt = append(langToAlt, altSymData{
-					compactTag:   uint16(langIndex),
-					numberSystem: ns,
-					symIndex:     resolveSymbolIndex(langIndex, ns),
+					compactTag: uint16(langIndex),
+					system:     ns,
+					symIndex:   resolveSymbolIndex(langIndex, ns),
 				})
 			}
 		}

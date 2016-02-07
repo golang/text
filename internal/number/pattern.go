@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package format
+package number
 
 import (
 	"errors"
@@ -31,14 +31,14 @@ import (
 
 // TODO: replace special characters in affixes (-, +, ¤) with control codes.
 
-// NumberFormat holds information for formatting numbers. It is designed to
-// hold information from CLDR number patterns.
+// Format holds information for formatting numbers. It is designed to hold
+// information from CLDR number patterns.
 //
 // This pattern is precompiled  for all patterns for all languages. Even though
 // the number of patterns is not very large, we want to keep this small.
 //
 // This type is only intended for internal use.
-type NumberFormat struct {
+type Format struct {
 	// TODO: this struct can be packed a lot better than it is now. Should be
 	// possible to make it 32 bytes.
 
@@ -53,7 +53,7 @@ type NumberFormat struct {
 	FormatWidth uint16
 
 	GroupingSize [2]uint8
-	Flags        NumberFormatFlag
+	Flags        FormatFlag
 
 	// Number of digits.
 	MinIntegerDigits     uint8
@@ -65,11 +65,11 @@ type NumberFormat struct {
 	MinExponentDigits    uint8
 }
 
-// A NumberFormatFlag is a bit mask for the flag field of a NumberFormat.
-type NumberFormatFlag uint8
+// A FormatFlag is a bit mask for the flag field of a Format.
+type FormatFlag uint8
 
 const (
-	AlwaysSign NumberFormatFlag = 1 << iota
+	AlwaysSign FormatFlag = 1 << iota
 	AlwaysExpSign
 	AlwaysDecimalSeparator
 	ParenthesisForNegative // Common pattern. Saves space.
@@ -85,7 +85,7 @@ const (
 )
 
 type parser struct {
-	*NumberFormat
+	*Format
 
 	leadingSharps int
 
@@ -123,12 +123,11 @@ var (
 	errUnexpectedEnd         = errors.New("format: unexpected end of pattern")
 )
 
-// ParseNumberPattern extracts formatting information from a CLDR number
-// pattern.
+// ParsePattern extracts formatting information from a CLDR number pattern.
 //
 // See http://unicode.org/reports/tr35/tr35-numbers.html#Number_Format_Patterns.
-func ParseNumberPattern(s string) (f *NumberFormat, err error) {
-	p := parser{NumberFormat: &NumberFormat{}}
+func ParsePattern(s string) (f *Format, err error) {
+	p := parser{Format: &Format{}}
 
 	s = p.parseSubPattern(s)
 
@@ -138,7 +137,7 @@ func ParseNumberPattern(s string) (f *NumberFormat, err error) {
 			p.setError(errors.New("format: error parsing first sub pattern"))
 			return nil, p.err
 		}
-		neg := parser{NumberFormat: &NumberFormat{}} // just for extracting the affixes.
+		neg := parser{Format: &Format{}} // just for extracting the affixes.
 		s = neg.parseSubPattern(s[len(";"):])
 		p.NegOffset = uint16(len(p.buf))
 		p.buf = append(p.buf, neg.buf...)
@@ -155,7 +154,7 @@ func ParseNumberPattern(s string) (f *NumberFormat, err error) {
 	} else {
 		p.Affix = affix
 	}
-	return p.NumberFormat, nil
+	return p.Format, nil
 }
 
 func (p *parser) parseSubPattern(s string) string {
@@ -171,7 +170,7 @@ func (p *parser) parseSubPattern(s string) string {
 	return s
 }
 
-func (p *parser) parsePad(s string, f NumberFormatFlag) (tail string) {
+func (p *parser) parsePad(s string, f FormatFlag) (tail string) {
 	if len(s) >= 2 && s[0] == '*' {
 		r, sz := utf8.DecodeRuneInString(s[1:])
 		if p.PadRune != 0 {

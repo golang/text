@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package format
+package number
 
 import (
 	"flag"
@@ -35,11 +35,11 @@ func TestNumberSystems(t *testing.T) {
 	}
 
 	for _, ns := range data.Supplemental().NumberingSystems.NumberingSystem {
-		n := numberSystemMap[ns.Id]
+		n := systemMap[ns.Id]
 		if int(n) >= len(numSysData) {
 			continue
 		}
-		info := NumberInfoFromLangID(0, ns.Id)
+		info := InfoFromLangID(0, ns.Id)
 		val := '0'
 		for _, rWant := range ns.Digits {
 			if rGot := info.Digit(val); rGot != rWant {
@@ -104,7 +104,7 @@ func TestSymbols(t *testing.T) {
 				{"NaN", SymNan, sym.Nan},
 				{"TimeSeparator", SymTimeSeparator, sym.TimeSeparator},
 			}
-			info := NumberInfoFromLangID(langIndex, sym.NumberSystem)
+			info := InfoFromLangID(langIndex, sym.NumberSystem)
 			for _, tc := range testCases {
 				// Extract the wanted value.
 				v := reflect.ValueOf(tc.x)

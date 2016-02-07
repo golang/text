@@ -1,4 +1,8 @@
-package format
+// Copyright 2016 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package number
 
 import (
 	"testing"
@@ -6,7 +10,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-func TestNumberInfo(t *testing.T) {
+func TestInfo(t *testing.T) {
 	testCases := []struct {
 		lang     string
 		sym      SymbolType
@@ -46,7 +50,7 @@ func TestNumberInfo(t *testing.T) {
 		{"en-u-nu-roman", SymPlusSign, "+", '9'},
 	}
 	for _, tc := range testCases {
-		info := NumberInfoFromTag(language.MustParse(tc.lang))
+		info := InfoFromTag(language.MustParse(tc.lang))
 		if got := info.Symbol(tc.sym); got != tc.wantSym {
 			t.Errorf("%s:%v:sym: got %q; want %q", tc.lang, tc.sym, got, tc.wantSym)
 		}

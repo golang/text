@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package format
+//go:generate go run gen.go gen_common.go
+
+// Package number contains tools and data for formatting numbers.
+package number
 
 import (
 	"unicode/utf8"
@@ -11,20 +14,20 @@ import (
 	"golang.org/x/text/language"
 )
 
-// NumberInfo holds number formatting configuration data.
-type NumberInfo struct {
-	system   numberSystemData // numbering system information
-	symIndex byte             // index to symbols
+// Info holds number formatting configuration data.
+type Info struct {
+	system   systemData // numbering system information
+	symIndex byte       // index to symbols
 }
 
-// NumberInfoFromLangID returns a NumberInfo for the given compact language
-// identifier and numbering system identifier. If numberSystem is the empty
-// string, the default numbering system will be taken for that language.
-func NumberInfoFromLangID(compactIndex int, numberSystem string) NumberInfo {
+// InfoFromLangID returns a Info for the given compact language identifier and
+// numbering system identifier. If system is the empty string, the default
+// numbering system will be taken for that language.
+func InfoFromLangID(compactIndex int, numberSystem string) Info {
 	p := langToDefaults[compactIndex]
 	// Lookup the entry for the language.
 	pSymIndex := byte(0) // Default: Latin, default symbols
-	system, ok := numberSystemMap[numberSystem]
+	system, ok := systemMap[numberSystem]
 	if !ok {
 		// Take the value for the default numbering system. This is by far the
 		// most common case as an alternative numbering system is hardly used.
@@ -34,7 +37,7 @@ func NumberInfoFromLangID(compactIndex int, numberSystem string) NumberInfo {
 			// Take the first entry from the alternatives list.
 			data := langToAlt[p&^0x80]
 			pSymIndex = data.symIndex
-			system = data.numberSystem
+			system = data.system
 		}
 	} else {
 		langIndex := compactIndex
@@ -70,7 +73,7 @@ func NumberInfoFromLangID(compactIndex int, numberSystem string) NumberInfo {
 					}
 					break
 				}
-				if e.numberSystem == ns {
+				if e.system == ns {
 					pSymIndex = e.symIndex
 					break outerLoop
 				}
@@ -82,22 +85,22 @@ func NumberInfoFromLangID(compactIndex int, numberSystem string) NumberInfo {
 		// WriteDigit or Digit on it.
 		d := numSysData[0]
 		d.id = system
-		return NumberInfo{
+		return Info{
 			system:   d,
 			symIndex: pSymIndex,
 		}
 	}
-	return NumberInfo{
+	return Info{
 		system:   numSysData[system],
 		symIndex: pSymIndex,
 	}
 }
 
-// NumberInfoFromTag returns a NumberInfo for the given language tag.
-func NumberInfoFromTag(t language.Tag) NumberInfo {
+// InfoFromTag returns a Info for the given language tag.
+func InfoFromTag(t language.Tag) Info {
 	for {
 		if index, ok := language.CompactIndex(t); ok {
-			return NumberInfoFromLangID(index, t.TypeForKey("nu"))
+			return InfoFromLangID(index, t.TypeForKey("nu"))
 		}
 		t = t.Parent()
 	}
@@ -105,14 +108,14 @@ func NumberInfoFromTag(t language.Tag) NumberInfo {
 
 // IsDecimal reports if the numbering system can convert decimal to native
 // symbols one-to-one.
-func (n NumberInfo) IsDecimal() bool {
+func (n Info) IsDecimal() bool {
 	return int(n.system.id) < len(numSysData)
 }
 
 // WriteDigit writes the UTF-8 sequence for n corresponding to the given ASCII
 // digit to dst and reports the number of bytes written. dst must be large
 // enough to hold the rune (can be up to utf8.UTFMax bytes).
-func (n NumberInfo) WriteDigit(dst []byte, asciiDigit rune) int {
+func (n Info) WriteDigit(dst []byte, asciiDigit rune) int {
 	copy(dst, n.system.zero[:n.system.digitSize])
 	dst[n.system.digitSize-1] += byte(asciiDigit - '0')
 	return int(n.system.digitSize)
@@ -121,7 +124,7 @@ func (n NumberInfo) WriteDigit(dst []byte, asciiDigit rune) int {
 // Digit returns the digit for the numbering system for the corresponding ASCII
 // value. For example, ni.Digit('3') could return '三'. Note that the argument
 // is the rune constant '3', which equals 51, not the integer constant 3.
-func (n NumberInfo) Digit(asciiDigit rune) rune {
+func (n Info) Digit(asciiDigit rune) rune {
 	var x [utf8.UTFMax]byte
 	n.WriteDigit(x[:], asciiDigit)
 	r, _ := utf8.DecodeRune(x[:])
@@ -129,6 +132,6 @@ func (n NumberInfo) Digit(asciiDigit rune) rune {
 }
 
 // Symbol returns the string for the given symbol type.
-func (n NumberInfo) Symbol(t SymbolType) string {
+func (n Info) Symbol(t SymbolType) string {
 	return symData.Elem(int(symIndex[n.symIndex][t]))
 }
