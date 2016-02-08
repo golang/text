@@ -24,7 +24,8 @@ import (
 var (
 	test = flag.Bool("test", false,
 		"test existing tables; can be used to compare web data with package data.")
-	outputFile = flag.String("output", "tables.go", "output file")
+	outputFile     = flag.String("output", "tables.go", "output file")
+	outputTestFile = flag.String("testoutput", "data_test.go", "output file")
 
 	draft = flag.String("draft",
 		"contributed",
@@ -43,7 +44,7 @@ func main() {
 
 	d := &cldr.Decoder{}
 	d.SetDirFilter("supplemental", "main")
-	d.SetSectionFilter("numbers", "numberingSystem")
+	d.SetSectionFilter("numbers", "numberingSystem", "plurals")
 	data, err := d.DecodeZip(r)
 	if err != nil {
 		log.Fatalf("DecodeZip: %v", err)
@@ -58,6 +59,14 @@ func main() {
 
 	genNumSystem(w, data)
 	genSymbols(w, data)
+	genPlurals(w, data)
+
+	w = gen.NewCodeWriter()
+	defer w.WriteGoFile(*outputTestFile, pkg)
+
+	fmt.Fprintln(w, `import "golang.org/x/text/internal/format/plural"`)
+
+	genPluralsTests(w, data)
 }
 
 var systemMap = map[string]system{"latn": 0}
