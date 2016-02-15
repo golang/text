@@ -30,7 +30,7 @@ var (
 
 // See gen_plural.go for an explanation of the algorithm.
 
-func matchPlural(p *pluralRules, index int, n, f int, v int) plural.Form {
+func matchPlural(p *pluralRules, index int, n, f, v int) plural.Form {
 	nMask := p.inclusionMasks[n%maxMod]
 	// Compute the fMask inline in the rules below, as it is relatively rare.
 	// fMask := p.inclusionMasks[f%maxMod]
@@ -91,6 +91,18 @@ func matchPlural(p *pluralRules, index int, n, f int, v int) plural.Form {
 
 		case opW | opNotEqual: // w != 0
 			skip = f == 0
+
+		// Hard-wired rules that cannot be handled by our algorithm.
+
+		case opBretonM:
+			skip = f != 0 || n == 0 || n%1000000 != 0
+
+		case opAzerbaijan00s:
+			// 100,200,300,400,500,600,700,800,900
+			skip = n == 0 || n >= 1000 || n%100 != 0
+
+		case opItalian800:
+			skip = (f != 0 || n >= numN || nMask&setBit == 0) && n != 800
 		}
 		if skip {
 			// advance over AND entries.

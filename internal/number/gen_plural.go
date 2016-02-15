@@ -255,19 +255,17 @@ func genPlurals(w *gen.CodeWriter, data *cldr.CLDR) {
 type orCondition struct {
 	original string // for debugging
 
-	form     plural.Form
-	hasLarge bool // has number >= numN, this case needs to be hard-wired in code
-	used     [32]bool
-	set      [32][numN]bool
+	form plural.Form
+	used [32]bool
+	set  [32][numN]bool
 }
 
-func (o *orCondition) add(op opID, mod int, v []int) {
-	o.used[op] = true
+func (o *orCondition) add(op opID, mod int, v []int) (ok bool) {
+	ok = true
 	for _, x := range v {
-		if x >= numN {
-			// Should be rare, namely only Breton and Italian ordinals.
-			log.Printf("Detected large number: %d", x)
-			o.hasLarge = true
+		if x >= maxMod {
+			ok = false
+			break
 		}
 	}
 	for i := 0; i < numN; i++ {
@@ -279,6 +277,10 @@ func (o *orCondition) add(op opID, mod int, v []int) {
 			o.set[op][i] = false
 		}
 	}
+	if ok {
+		o.used[op] = true
+	}
+	return ok
 }
 
 func intIn(x int, a []int) bool {
@@ -345,12 +347,19 @@ func parsePluralCondition(conds []orCondition, s string, f plural.Form) []orCond
 					case 10, 100:
 						mod = v
 					case 1000:
-						// TODO: allow, but add third digit to set of 100 and
-						// require that the values checked against are multiples
-						// of 100.
-						cond.hasLarge = true
+						// A more general solution would be to allow checking
+						// against multiples of 100 and include entries for the
+						// numbers 100..900 in the inclusion masks. At the
+						// moment this would only help Azerbaijan and Italian.
+
+						// Italian doesn't use '%', so this must be Azerbaijan.
+						cond.used[opAzerbaijan00s] = true
+						return append(conds, cond)
+
 					case 1000000:
-						cond.hasLarge = true
+						cond.used[opBretonM] = true
+						return append(conds, cond)
+
 					default:
 						log.Fatalf("Modulo value not supported %d", v)
 					}
@@ -385,7 +394,12 @@ func parsePluralCondition(conds []orCondition, s string, f plural.Form) []orCond
 					v = scanUint(scan)
 					token = scanToken(scan)
 				}
-				cond.add(opCode, mod, a)
+				if !cond.add(opCode, mod, a) {
+					// Detected large numbers. As we ruled out Azerbaijan, this
+					// must be the many rule for Italian ordinals.
+					cond.set[opItalian800] = cond.set[opN]
+					cond.used[opItalian800] = true
+				}
 
 			case "@integer", "@decimal": // "other" entry: tests only.
 				return conds

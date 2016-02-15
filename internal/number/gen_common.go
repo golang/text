@@ -69,13 +69,16 @@ type pluralCheck struct {
 type opID byte
 
 const (
-	opMod      opID = 0x1    // is '%' used?
-	opNotEqual opID = 0x2    // using "!=" to compare
-	opI        opID = 0 << 2 // integers after taking the absolute value
-	opN        opID = 1 << 2 // full number (must be integer)
-	opF        opID = 2 << 2 // fraction
-	opV        opID = 3 << 2 // number of visible digits
-	opW        opID = 4 << 2 // number of visible digits without trailing zeros
+	opMod           opID = 0x1    // is '%' used?
+	opNotEqual      opID = 0x2    // using "!=" to compare
+	opI             opID = 0 << 2 // integers after taking the absolute value
+	opN             opID = 1 << 2 // full number (must be integer)
+	opF             opID = 2 << 2 // fraction
+	opV             opID = 3 << 2 // number of visible digits
+	opW             opID = 4 << 2 // number of visible digits without trailing zeros
+	opBretonM       opID = 5 << 2 // hard-wired rule for Breton
+	opItalian800    opID = 6 << 2 // hard-wired rule for Italian
+	opAzerbaijan00s opID = 7 << 2 // hard-wired rule for Azerbaijan
 )
 const (
 	// Use this plural form to indicate the next rule needs to match as well.

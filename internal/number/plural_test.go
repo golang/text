@@ -23,12 +23,6 @@ func TestCardinal(t *testing.T) {
 func testPlurals(t *testing.T, p *pluralRules, testCases []pluralTest) {
 	for _, tc := range testCases {
 		for _, loc := range strings.Split(tc.locales, " ") {
-			switch loc {
-			// TODO: these languages need to be hard-wired. Skip them in the
-			// tests for now.
-			case "br", "it", "az":
-				continue
-			}
 			langIndex, _ := language.CompactIndex(language.MustParse(loc))
 			// Test integers
 			for _, s := range tc.integer {
