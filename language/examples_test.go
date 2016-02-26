@@ -375,25 +375,6 @@ func ExampleComprehends() {
 	// No
 }
 
-func ExampleParseAcceptLanguage() {
-	// Tags are reordered based on their q rating. A missing q value means 1.0.
-	fmt.Println(language.ParseAcceptLanguage(" nn;q=0.3, en-gb;q=0.8, en,"))
-
-	m := language.NewMatcher([]language.Tag{language.Norwegian, language.Make("en-AU")})
-
-	t, _, _ := language.ParseAcceptLanguage("da, en-gb;q=0.8, en;q=0.7")
-	fmt.Println(m.Match(t...))
-
-	// Danish is pretty close to Norwegian.
-	t, _, _ = language.ParseAcceptLanguage(" da, nl")
-	fmt.Println(m.Match(t...))
-
-	// Output:
-	// [en en-GB nn] [1 0.8 0.3] <nil>
-	// en-AU 1 High
-	// no 0 High
-}
-
 func ExampleTag_values() {
 	us := language.MustParseRegion("US")
 	en := language.MustParseBase("en")
