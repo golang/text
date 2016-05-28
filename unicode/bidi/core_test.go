@@ -118,7 +118,6 @@ func TestBidiCharacters(t *testing.T) {
 			// Spec says to ignore unknown parts.
 		}
 
-		trie := newBidiTrie(0)
 		runes := p.Runes(0)
 
 		for _, r := range runes {
@@ -126,22 +125,21 @@ func TestBidiCharacters(t *testing.T) {
 			if d := norm.NFKD.PropertiesString(string(r)).Decomposition(); d != nil {
 				r = []rune(string(d))[0]
 			}
-			e, _ := trie.lookupString(string(r))
-			entry := entry(e)
+			p, _ := LookupRune(r)
 
 			// Assign the class for this rune.
-			types = append(types, entry.class(r))
+			types = append(types, p.Class())
 
 			switch {
-			case !entry.isBracket():
+			case !p.IsBracket():
 				pairTypes = append(pairTypes, bpNone)
 				pairValues = append(pairValues, 0)
-			case entry.isOpen():
+			case p.IsOpeningBracket():
 				pairTypes = append(pairTypes, bpOpen)
 				pairValues = append(pairValues, r)
 			default:
 				pairTypes = append(pairTypes, bpClose)
-				pairValues = append(pairValues, entry.reverseBracket(r))
+				pairValues = append(pairValues, p.reverseBracket(r))
 			}
 		}
 		par := newParagraph(types, pairTypes, pairValues, parLevel)

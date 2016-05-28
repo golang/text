@@ -57,20 +57,8 @@ var controlToClass = map[rune]Class{
 // 7..5  XOR mask for brackets
 // 4     1: Bracket open, 0: Bracket close
 // 3..0  Class type
-type entry uint8
 
 const (
 	openMask     = 0x10
 	xorMaskShift = 5
 )
-
-func (e entry) isBracket() bool            { return e&0xF0 != 0 }
-func (e entry) isOpen() bool               { return e&openMask != 0 }
-func (e entry) reverseBracket(r rune) rune { return xorMasks[e>>xorMaskShift] ^ r }
-func (e entry) class(r rune) Class {
-	c := Class(e & 0x0F)
-	if c == Control {
-		return controlToClass[r]
-	}
-	return c
-}
