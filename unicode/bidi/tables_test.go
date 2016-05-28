@@ -13,30 +13,30 @@ import (
 )
 
 var labels = []string{
-	_AL:  "AL",
-	_AN:  "AN",
-	_B:   "B",
-	_BN:  "BN",
-	_CS:  "CS",
-	_EN:  "EN",
-	_ES:  "ES",
-	_ET:  "ET",
-	_L:   "L",
-	_NSM: "NSM",
-	_ON:  "ON",
-	_R:   "R",
-	_S:   "S",
-	_WS:  "WS",
+	AL:  "AL",
+	AN:  "AN",
+	B:   "B",
+	BN:  "BN",
+	CS:  "CS",
+	EN:  "EN",
+	ES:  "ES",
+	ET:  "ET",
+	L:   "L",
+	NSM: "NSM",
+	ON:  "ON",
+	R:   "R",
+	S:   "S",
+	WS:  "WS",
 
-	_LRO: "LRO",
-	_RLO: "RLO",
-	_LRE: "LRE",
-	_RLE: "RLE",
-	_PDF: "PDF",
-	_LRI: "LRI",
-	_RLI: "RLI",
-	_FSI: "FSI",
-	_PDI: "PDI",
+	LRO: "LRO",
+	RLO: "RLO",
+	LRE: "LRE",
+	RLE: "RLE",
+	PDF: "PDF",
+	LRI: "LRI",
+	RLI: "RLI",
+	FSI: "FSI",
+	PDI: "PDI",
 }
 
 func TestTables(t *testing.T) {
@@ -68,7 +68,7 @@ func TestTables(t *testing.T) {
 		r := p.Rune(0)
 		test("derived", r, p.String(1))
 	})
-	visitDefaults(func(r rune, c class) {
+	visitDefaults(func(r rune, c Class) {
 		if !done[r] {
 			test("default", r, labels[c])
 		}

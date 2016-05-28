@@ -42,7 +42,7 @@ func TestBidiCore(t *testing.T) {
 	}))
 
 	for p.Next() {
-		types := []class{}
+		types := []Class{}
 		for _, s := range p.Strings(0) {
 			types = append(types, bidiClass[s])
 		}
@@ -83,13 +83,13 @@ func TestBidiCore(t *testing.T) {
 	}
 }
 
-var removeClasses = map[class]bool{
-	_LRO: true,
-	_RLO: true,
-	_RLE: true,
-	_LRE: true,
-	_PDF: true,
-	_BN:  true,
+var removeClasses = map[Class]bool{
+	LRO: true,
+	RLO: true,
+	RLE: true,
+	LRE: true,
+	PDF: true,
+	BN:  true,
 }
 
 // TestBidiCharacters performs the tests in BidiCharacterTest.txt.
@@ -99,7 +99,7 @@ func TestBidiCharacters(t *testing.T) {
 
 	ucd.Parse(gen.OpenUCDFile("BidiCharacterTest.txt"), func(p *ucd.Parser) {
 		var (
-			types      []class
+			types      []Class
 			pairTypes  []bracketType
 			pairValues []rune
 			parLevel   level
@@ -166,7 +166,7 @@ func TestBidiCharacters(t *testing.T) {
 	})
 }
 
-func getLevelStrings(cl []class, levels []level) []string {
+func getLevelStrings(cl []Class, levels []level) []string {
 	var results []string
 	for i, l := range levels {
 		if !removeClasses[cl[i]] {
@@ -178,7 +178,7 @@ func getLevelStrings(cl []class, levels []level) []string {
 	return results
 }
 
-func filterOrder(cl []class, order []int) []int {
+func filterOrder(cl []Class, order []int) []int {
 	no := []int{}
 	for _, o := range order {
 		if !removeClasses[cl[o]] {
@@ -198,29 +198,29 @@ func reorder(r []rune, order []int) string {
 
 // bidiClass names and codes taken from class "bc" in
 // http://www.unicode.org/Public/8.0.0/ucd/PropertyValueAliases.txt
-var bidiClass = map[string]class{
-	"AL":  _AL,  // classArabicLetter,
-	"AN":  _AN,  // classArabicNumber,
-	"B":   _B,   // classParagraphSeparator,
-	"BN":  _BN,  // classBoundaryNeutral,
-	"CS":  _CS,  // classCommonSeparator,
-	"EN":  _EN,  // classEuropeanNumber,
-	"ES":  _ES,  // classEuropeanSeparator,
-	"ET":  _ET,  // classEuropeanTerminator,
-	"L":   _L,   // classLeftToRight,
-	"NSM": _NSM, // classNonspacingMark,
-	"ON":  _ON,  // classOtherNeutral,
-	"R":   _R,   // classRightToLeft,
-	"S":   _S,   // classSegmentSeparator,
-	"WS":  _WS,  // classWhiteSpace,
+var bidiClass = map[string]Class{
+	"AL":  AL,  // classArabicLetter,
+	"AN":  AN,  // classArabicNumber,
+	"B":   B,   // classParagraphSeparator,
+	"BN":  BN,  // classBoundaryNeutral,
+	"CS":  CS,  // classCommonSeparator,
+	"EN":  EN,  // classEuropeanNumber,
+	"ES":  ES,  // classEuropeanSeparator,
+	"ET":  ET,  // classEuropeanTerminator,
+	"L":   L,   // classLeftToRight,
+	"NSM": NSM, // classNonspacingMark,
+	"ON":  ON,  // classOtherNeutral,
+	"R":   R,   // classRightToLeft,
+	"S":   S,   // classSegmentSeparator,
+	"WS":  WS,  // classWhiteSpace,
 
-	"LRO": _LRO, // classLeftToRightOverride,
-	"RLO": _RLO, // classRightToLeftOverride,
-	"LRE": _LRE, // classLeftToRightEmbedding,
-	"RLE": _RLE, // classRightToLeftEmbedding,
-	"PDF": _PDF, // classPopDirectionalFormat,
-	"LRI": _LRI, // classLeftToRightIsolate,
-	"RLI": _RLI, // classRightToLeftIsolate,
-	"FSI": _FSI, // classFirstStrongIsolate,
-	"PDI": _PDI, // classPopDirectionalIsolate,
+	"LRO": LRO, // classLeftToRightOverride,
+	"RLO": RLO, // classRightToLeftOverride,
+	"LRE": LRE, // classLeftToRightEmbedding,
+	"RLE": RLE, // classRightToLeftEmbedding,
+	"PDF": PDF, // classPopDirectionalFormat,
+	"LRI": LRI, // classLeftToRightIsolate,
+	"RLI": RLI, // classRightToLeftIsolate,
+	"FSI": FSI, // classFirstStrongIsolate,
+	"PDI": PDI, // classPopDirectionalIsolate,
 }
