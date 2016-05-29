@@ -35,13 +35,13 @@ var (
 		AllowWide,
 		FoldCase(),
 		Norm(norm.NFC),
-		// TODO: BIDI rule
+		BidiRule,
 	)
 	usernamenocasemap = NewIdentifier(
 		AllowWide,
 		Norm(norm.NFC),
-		Width(width.Fold), // TODO: Is this correct?
-		// TODO: BIDI rule
+		Width(width.Fold),
+		BidiRule,
 	)
 	opaquestring = NewFreeform(
 		AdditionalMapping(func() transform.Transformer {

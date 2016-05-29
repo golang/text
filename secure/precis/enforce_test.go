@@ -58,6 +58,7 @@ var testCases = []struct {
 		{"a׳b", "", true},
 		// TODO: Requires context rule to work.
 		// {OpaqueString, "ש׳", "ש", false},  // U+05e9 U+05f3
+		{"שa", "שa", false}, // no bidi rule
 
 		// Katakana Middle Dot
 		{"abc・def", "", true},
@@ -121,10 +122,13 @@ var testCases = []struct {
 
 		// Full width should be mapped to the canonical decomposition.
 		{"ＡＢ", "ab", false},
+		{"שc", "שc", true}, // bidi rule
+
 	}},
 	{"UsernameCasePreserved", UsernameCasePreserved, []testCase{
 		{"ABC", "ABC", false},
 		{"ＡＢ", "AB", false},
+		{"שc", "שc", true}, // bidi rule
 		{"\uFB00", "", true},
 		{"\u212B", "\u00c5", false}, // Angstrom sign, NFC -> U+00E5
 		{"ẛ", "", true},             // LATIN SMALL LETTER LONG S WITH DOT ABOVE

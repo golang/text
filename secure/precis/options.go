@@ -26,6 +26,7 @@ type options struct {
 	additional    []func() transform.Transformer
 	width         *width.Transformer
 	disallowEmpty bool
+	bidiRule      bool
 
 	// Comparison options
 	ignorecase bool
@@ -52,6 +53,10 @@ var (
 	// The DisallowEmpty option causes the enforcement step to return an error if
 	// the resulting string would be empty.
 	DisallowEmpty Option = disallowEmpty
+
+	// The BidiRule option causes the Bidi Rule defined in RFC 5893 to be
+	// applied.
+	BidiRule Option = bidiRule
 )
 
 var (
@@ -63,6 +68,9 @@ var (
 	}
 	disallowEmpty = func(o *options) {
 		o.disallowEmpty = true
+	}
+	bidiRule = func(o *options) {
+		o.bidiRule = true
 	}
 )
 
@@ -103,12 +111,3 @@ func Disallow(set runes.Set) Option {
 		o.disallow = set
 	}
 }
-
-// TODO: Pending finalization of the unicode/bidi API
-// // The Dir option defines a Profile's directionality mapping rule. Generally
-// // profiles based on the Identifier string class will want to use the "Bidi
-// // Rule" defined in RFC5893, and profiles based on the Freeform string class
-// // will want to use the Unicode bidirectional algorithm defined in UAX9.
-// func Dir() Option {
-// 	panic("unimplemented")
-// }

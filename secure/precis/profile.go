@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/text/runes"
+	"golang.org/x/text/secure/bidirule"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/width"
 )
@@ -70,7 +71,9 @@ func (p *Profile) NewTransformer() *Transformer {
 
 	ts = append(ts, p.options.norm)
 
-	// TODO: Apply directionality rule (blocking on the Bidi package)
+	if p.options.bidiRule {
+		ts = append(ts, bidirule.New())
+	}
 
 	ts = append(ts, checker{p: p, allowed: p.Allowed()})
 
