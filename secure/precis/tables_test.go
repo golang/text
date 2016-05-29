@@ -38,7 +38,7 @@ func (tt *tableTest) run(t *testing.T) {
 		trieval, _ := dpTrie.lookup(b[:n])
 		p := property(trieval)
 		if p != tt.prop && !exceptions.Contains(r) {
-			t.Fail()
+			t.Errorf("%U: got %v; want %v", r, tt.prop, p)
 		}
 	})
 }
@@ -54,7 +54,7 @@ func TestTable(t *testing.T) {
 				unicode.So,             // Symbols
 				unicode.Pi, unicode.Pf, // Punctuation
 			),
-			freePVal | idDis,
+			idDisOrFreePVal,
 		},
 		tableTest{
 			rangetable.New(0x30000, 0x30101, 0xDFFFF),

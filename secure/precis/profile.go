@@ -56,11 +56,7 @@ func (p *Profile) NewTransformer() *Transformer {
 
 	if p.options.allowwidechars {
 		ts = append(ts, width.Fold)
-	}
-
-	ts = append(ts, checker{p: p, allowed: p.Allowed()})
-
-	if p.options.width != nil {
+	} else if p.options.width != nil {
 		ts = append(ts, width.Fold)
 	}
 
@@ -75,6 +71,9 @@ func (p *Profile) NewTransformer() *Transformer {
 	ts = append(ts, p.options.norm)
 
 	// TODO: Apply directionality rule (blocking on the Bidi package)
+
+	ts = append(ts, checker{p: p, allowed: p.Allowed()})
+
 	// TODO: Add the disallow empty rule with a dummy transformer?
 
 	return &Transformer{transform.Chain(ts...)}

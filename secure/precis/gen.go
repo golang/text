@@ -22,6 +22,8 @@ import (
 	"golang.org/x/text/unicode/rangetable"
 )
 
+var outputFile = flag.String("output", "tables.go", "output file for generated tables; default tables.go")
+
 var assigned, disallowedRunes *unicode.RangeTable
 
 func main() {
@@ -29,13 +31,22 @@ func main() {
 
 	// Load data
 	runes := []rune{}
+	// PrecisIgnorableProperties: https://tools.ietf.org/html/rfc7564#section-9.13
 	ucd.Parse(gen.OpenUCDFile("DerivedCoreProperties.txt"), func(p *ucd.Parser) {
 		if p.String(1) == "Default_Ignorable_Code_Point" {
 			runes = append(runes, p.Rune(0))
 		}
 	})
+	ucd.Parse(gen.OpenUCDFile("PropList.txt"), func(p *ucd.Parser) {
+		switch p.String(1) {
+		case "Noncharacter_Code_Point":
+			runes = append(runes, p.Rune(0))
+		}
+	})
+	// OldHangulJamo: https://tools.ietf.org/html/rfc5892#section-2.9
 	ucd.Parse(gen.OpenUCDFile("HangulSyllableType.txt"), func(p *ucd.Parser) {
-		if p.String(1) == "LVT" {
+		switch p.String(1) {
+		case "L", "V", "T":
 			runes = append(runes, p.Rune(0))
 		}
 	})
@@ -47,9 +58,8 @@ func main() {
 	gen.Repackage("gen_trieval.go", "trieval.go", "precis")
 }
 
-var outputFile = flag.String("output", "tables.go", "output file for generated tables; default tables.go")
-
 // The Exceptions class as defined in RFC 5892
+// https://tools.ietf.org/html/rfc5892#section-2.6
 var exceptions = map[uint32]property{
 	0x00DF: pValid,
 	0x03C2: pValid,
@@ -94,6 +104,8 @@ var exceptions = map[uint32]property{
 	0x303B: disallowed,
 }
 
+// LetterDigits: https://tools.ietf.org/html/rfc5892#section-2.1
+// r in {Ll, Lu, Lo, Nd, Lm, Mn, Mc}.
 func isLetterDigits(r rune) bool {
 	return unicode.In(r,
 		unicode.Ll, unicode.Lu, unicode.Lm, unicode.Lo, // Letters
@@ -104,18 +116,48 @@ func isLetterDigits(r rune) bool {
 
 func isIdDisAndFreePVal(r rune) bool {
 	return unicode.In(r,
+		// OtherLetterDigits: https://tools.ietf.org/html/rfc7564#section-9.18
+		// r in in {Lt, Nl, No, Me}
 		unicode.Lt, unicode.Nl, unicode.No, // Other letters / numbers
-		unicode.Me,                                     // Modifiers
-		unicode.Zs,                                     // Spaces
-		unicode.Sm, unicode.Sc, unicode.Sk, unicode.So, // Symbols
+		unicode.Me, // Modifiers
+
+		// Spaces: https://tools.ietf.org/html/rfc7564#section-9.14
+		// r in in {Zs}
+		unicode.Zs,
+
+		// Symbols: https://tools.ietf.org/html/rfc7564#section-9.15
+		// r in {Sm, Sc, Sk, So}
+		unicode.Sm, unicode.Sc, unicode.Sk, unicode.So,
+
+		// Punctuation: https://tools.ietf.org/html/rfc7564#section-9.16
+		// r in {Pc, Pd, Ps, Pe, Pi, Pf, Po}
 		unicode.Pc, unicode.Pd, unicode.Ps, unicode.Pe,
-		unicode.Pi, unicode.Pf, unicode.Po, // Punctuation
+		unicode.Pi, unicode.Pf, unicode.Po,
 	)
 }
 
-func isHasCompat(r rune) bool {
+// HasCompat: https://tools.ietf.org/html/rfc7564#section-9.17
+func hasCompat(r rune) bool {
 	return !norm.NFKC.IsNormalString(string(r))
 }
+
+// From https://tools.ietf.org/html/rfc5892:
+//
+// If .cp. .in. Exceptions Then Exceptions(cp);
+//   Else If .cp. .in. BackwardCompatible Then BackwardCompatible(cp);
+//   Else If .cp. .in. Unassigned Then UNASSIGNED;
+//   Else If .cp. .in. ASCII7 Then PVALID;
+//   Else If .cp. .in. JoinControl Then CONTEXTJ;
+//   Else If .cp. .in. OldHangulJamo Then DISALLOWED;
+//   Else If .cp. .in. PrecisIgnorableProperties Then DISALLOWED;
+//   Else If .cp. .in. Controls Then DISALLOWED;
+//   Else If .cp. .in. HasCompat Then ID_DIS or FREE_PVAL;
+//   Else If .cp. .in. LetterDigits Then PVALID;
+//   Else If .cp. .in. OtherLetterDigits Then ID_DIS or FREE_PVAL;
+//   Else If .cp. .in. Spaces Then ID_DIS or FREE_PVAL;
+//   Else If .cp. .in. Symbols Then ID_DIS or FREE_PVAL;
+//   Else If .cp. .in. Punctuation Then ID_DIS or FREE_PVAL;
+//   Else DISALLOWED;
 
 func writeTables() {
 	propTrie := triegen.NewTrie("derivedProperties")
@@ -136,18 +178,18 @@ func writeTables() {
 		case ok:
 		case !unicode.In(r, assigned):
 			p = unassigned
-		case r >= 33 && r <= 126: // Is ASCII 7
+		case r >= 0x0021 && r <= 0x007e: // Is ASCII 7
 			p = pValid
 		case r == 0x200C || r == 0x200D: // Is join control
 			p = contextJ
 		case unicode.In(r, disallowedRunes, unicode.Cc):
 			p = disallowed
-		case isHasCompat(r):
-			p = idDis | freePVal
+		case hasCompat(r):
+			p = idDisOrFreePVal
 		case isLetterDigits(r):
 			p = pValid
 		case isIdDisAndFreePVal(r):
-			p = idDis | freePVal
+			p = idDisOrFreePVal
 		default:
 			p = disallowed
 		}

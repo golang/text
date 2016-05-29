@@ -4,9 +4,7 @@
 
 package precis
 
-import (
-	"testing"
-)
+import "testing"
 
 type testCase struct {
 	input, output string
@@ -34,6 +32,9 @@ var testCases = []struct {
 		{"\u265A", "♚", false},
 		{"Richard \u2163", "Richard IV", false},
 		{"\u212B", "Å", false},
+		{"\uFB00", "ff", false}, // because of NFKC
+		{"שa", "שa", false},     // no bidi rule
+		{"동일조건변경허락", "동일조건변경허락", false},
 	}},
 	{"OpaqueString", OpaqueString, []testCase{
 		{"  Swan  of   Avon   ", "  Swan  of   Avon   ", false},
@@ -96,15 +97,14 @@ var testCases = []struct {
 		{"\n", "", true},
 		{"\u26D6", "", true},
 		{"\u26FF", "", true},
-		{"\uFB00", "", true},
+		{"\uFB00", "ff", false}, // Side effect of case folding.
 		{"\u1680", "", true},
 		{" ", "", true},
 		{"  ", "", true},
 		{"\u01C5", "", true},
-		{"\u16EE", "", true}, // Nl RUNIC ARLAUG SYMBOL
-		{"\u0488", "", true}, // Me COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
-		// TODO: Should this be allowed and/or case mapped?
-		{"\u212B", "", true},         // angstrom sign
+		{"\u16EE", "", true},         // Nl RUNIC ARLAUG SYMBOL
+		{"\u0488", "", true},         // Me COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
+		{"\u212B", "\u00e5", false},  // Angstrom sign, NFC -> U+00E5
 		{"A\u030A", "å", false},      // A + ring
 		{"\u00C5", "å", false},       // A with ring
 		{"\u00E7", "ç", false},       // c cedille
@@ -113,8 +113,8 @@ var testCases = []struct {
 		{"\u0052\u030C", "ř", false},
 
 		{"\u1E61", "\u1E61", false}, // LATIN SMALL LETTER S WITH DOT ABOVE
-		// NFKC("ẛ"") != "ẛ" -> disallow for identifiers.
-		{"ẛ", "\u1E61", true}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
+		// U+1e9B: case folded.
+		{"ẛ", "\u1E61", false}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
 
 		// Confusable characters ARE allowed and should NOT be mapped.
 		{"\u0410", "\u0430", false}, // CYRILLIC CAPITAL LETTER A
@@ -125,6 +125,9 @@ var testCases = []struct {
 	{"UsernameCasePreserved", UsernameCasePreserved, []testCase{
 		{"ABC", "ABC", false},
 		{"ＡＢ", "AB", false},
+		{"\uFB00", "", true},
+		{"\u212B", "\u00c5", false}, // Angstrom sign, NFC -> U+00E5
+		{"ẛ", "", true},             // LATIN SMALL LETTER LONG S WITH DOT ABOVE
 	}},
 }
 
@@ -132,7 +135,7 @@ func TestEnforce(t *testing.T) {
 	doTests(t, func(t *testing.T, p *Profile, tc testCase) {
 		if e, err := p.String(tc.input); (tc.isErr && err == nil) ||
 			!tc.isErr && (err != nil || e != tc.output) {
-			t.Errorf("got %+q; want %+q (err: %v)", e, tc.output, err)
+			t.Errorf("got %+q (err: %v); want %+q (ok: %v)", e, err, tc.output, !tc.isErr)
 		}
 	})
 }

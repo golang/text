@@ -8,12 +8,13 @@ package main
 
 type property int
 
+// The order of these constants matter. A Profile may consider runes to be
+// allowed either from pValid or idDisOrFreePVal.
 const (
-	pValid property = 1 << iota
+	unassigned property = iota
+	disallowed
 	contextO
 	contextJ
-	disallowed
-	unassigned
-	freePVal
-	idDis
+	idDisOrFreePVal
+	pValid
 )
