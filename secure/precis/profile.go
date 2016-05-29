@@ -58,7 +58,7 @@ func (p Profile) NewTransformer() *Transformer {
 		ts = append(ts, width.Fold)
 	}
 
-	ts = append(ts, checker{p: p})
+	ts = append(ts, checker{p: p, allowed: p.Allowed()})
 
 	if p.options.width != nil {
 		ts = append(ts, width.Fold)
@@ -138,6 +138,7 @@ func (p Profile) Allowed() runes.Set {
 type checker struct {
 	p Profile
 	transform.NopResetter
+	allowed runes.Set
 }
 
 func (c checker) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
@@ -149,7 +150,7 @@ func (c checker) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err err
 			}
 			size = 1
 		}
-		if c.p.Allowed().Contains(r) {
+		if c.allowed.Contains(r) {
 			if size != copy(dst[nDst:], src[nSrc:nSrc+size]) {
 				return nDst, nSrc, transform.ErrShortDst
 			}
