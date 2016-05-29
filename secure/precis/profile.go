@@ -31,8 +31,8 @@ type Profile struct {
 // class. Profiles created from this class are suitable for use where safety is
 // prioritized over expressiveness like network identifiers, user accounts, chat
 // rooms, and file names.
-func NewIdentifier(opts ...Option) Profile {
-	return Profile{
+func NewIdentifier(opts ...Option) *Profile {
+	return &Profile{
 		options: getOpts(opts...),
 		class:   identifier,
 	}
@@ -42,8 +42,8 @@ func NewIdentifier(opts ...Option) Profile {
 // Profiles created from this class are suitable for use where expressiveness is
 // prioritized over safety like passwords, and display-elements such as
 // nicknames in a chat room.
-func NewFreeform(opts ...Option) Profile {
-	return Profile{
+func NewFreeform(opts ...Option) *Profile {
+	return &Profile{
 		options: getOpts(opts...),
 		class:   freeform,
 	}
@@ -51,7 +51,7 @@ func NewFreeform(opts ...Option) Profile {
 
 // NewTransformer creates a new transform.Transformer that performs the PRECIS
 // preparation and enforcement steps on the given UTF-8 encoded bytes.
-func (p Profile) NewTransformer() *Transformer {
+func (p *Profile) NewTransformer() *Transformer {
 	var ts []transform.Transformer
 
 	if p.options.allowwidechars {
@@ -81,7 +81,7 @@ func (p Profile) NewTransformer() *Transformer {
 }
 
 // Bytes returns a new byte slice with the result of applying the profile to b.
-func (p Profile) Bytes(b []byte) ([]byte, error) {
+func (p *Profile) Bytes(b []byte) ([]byte, error) {
 	b, _, err := transform.Bytes(p.NewTransformer(), b)
 	if err == nil && p.options.disallowEmpty && len(b) == 0 {
 		return b, errors.New("enforce resulted in empty string")
@@ -90,7 +90,7 @@ func (p Profile) Bytes(b []byte) ([]byte, error) {
 }
 
 // String returns a string with the result of applying the profile to s.
-func (p Profile) String(s string) (string, error) {
+func (p *Profile) String(s string) (string, error) {
 	s, _, err := transform.String(p.NewTransformer(), s)
 	if err == nil && p.options.disallowEmpty && len(s) == 0 {
 		return s, errors.New("enforce resulted in empty string")
@@ -101,7 +101,7 @@ func (p Profile) String(s string) (string, error) {
 // Compare enforces both strings, and then compares them for bit-string identity
 // (byte-for-byte equality). If either string cannot be enforced, the comparison
 // is false.
-func (p Profile) Compare(a, b string) bool {
+func (p *Profile) Compare(a, b string) bool {
 	a, err := p.String(a)
 	if err != nil {
 		return false
@@ -125,7 +125,7 @@ func (p Profile) Compare(a, b string) bool {
 // Allowed returns a runes.Set containing every rune that is a member of the
 // underlying profile's string class and not disallowed by any profile specific
 // rules.
-func (p Profile) Allowed() runes.Set {
+func (p *Profile) Allowed() runes.Set {
 	return runes.Predicate(func(r rune) bool {
 		if p.options.disallow != nil {
 			return p.class.Contains(r) && !p.options.disallow.Contains(r)
@@ -136,7 +136,7 @@ func (p Profile) Allowed() runes.Set {
 }
 
 type checker struct {
-	p Profile
+	p *Profile
 	transform.NopResetter
 	allowed runes.Set
 }

@@ -8,126 +8,131 @@ import (
 	"testing"
 )
 
-func TestEnforce(t *testing.T) {
-	var data = []struct {
-		prof          Profile
-		input, output string
-		isErr         bool
-	}{
-		// Nickname profile
-		{Nickname, "  Swan  of   Avon   ", "Swan of Avon", false},
-		{Nickname, "", "", true},
-		{Nickname, " ", "", true},
-		{Nickname, "  ", "", true},
-		{Nickname, "a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", false},
-		{Nickname, "Foo", "Foo", false},
-		{Nickname, "foo", "foo", false},
-		{Nickname, "Foo Bar", "Foo Bar", false},
-		{Nickname, "foo bar", "foo bar", false},
-		{Nickname, "\u03C3", "\u03C3", false},
-		// TODO: Figure out why this is failing.
-		// {Nickname, "\u03C2", "\u03C3", false},
-		{Nickname, "\u265A", "♚", false},
-		{Nickname, "Richard \u2163", "Richard IV", false},
-		{Nickname, "\u212B", "Å", false},
-		// Opaque string profile
-		{OpaqueString, "  Swan  of   Avon   ", "  Swan  of   Avon   ", false},
-		{OpaqueString, "", "", true},
-		{OpaqueString, " ", " ", false},
-		{OpaqueString, "  ", "  ", false},
-		{OpaqueString, "a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", false},
-		{OpaqueString, "Foo", "Foo", false},
-		{OpaqueString, "foo", "foo", false},
-		{OpaqueString, "Foo Bar", "Foo Bar", false},
-		{OpaqueString, "foo bar", "foo bar", false},
-		{OpaqueString, "\u03C3", "\u03C3", false},
-		{OpaqueString, "Richard \u2163", "Richard \u2163", false},
-		{OpaqueString, "\u212B", "Å", false},
-		{OpaqueString, "Jack of \u2666s", "Jack of \u2666s", false},
-		{OpaqueString, "my cat is a \u0009by", "", true},
-		{OpaqueString, "·", "", true}, // Middle dot
-		{OpaqueString, "͵", "", true}, // Keraia
-		{OpaqueString, "׳", "", true},
-		{OpaqueString, "׳ה", "", true},
-		{OpaqueString, "a׳b", "", true},
-		// TOOD: This should be allowed right? Lack of Bidi rule?
-		// {OpaqueString, "ש׳", "", false},
+type testCase struct {
+	input, output string
+	isErr         bool
+}
+
+var testCases = []struct {
+	name  string
+	p     *Profile
+	cases []testCase
+}{
+	{"Nickname", Nickname, []testCase{
+		{"  Swan  of   Avon   ", "Swan of Avon", false},
+		{"", "", true},
+		{" ", "", true},
+		{"  ", "", true},
+		{"a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", false},
+		{"Foo", "Foo", false},
+		{"foo", "foo", false},
+		{"Foo Bar", "Foo Bar", false},
+		{"foo bar", "foo bar", false},
+		{"\u03C3", "\u03C3", false},
+		// Greek final sigma is left as is (do not fold!)
+		{"\u03C2", "\u03C2", false},
+		{"\u265A", "♚", false},
+		{"Richard \u2163", "Richard IV", false},
+		{"\u212B", "Å", false},
+	}},
+	{"OpaqueString", OpaqueString, []testCase{
+		{"  Swan  of   Avon   ", "  Swan  of   Avon   ", false},
+		{"", "", true},
+		{" ", " ", false},
+		{"  ", "  ", false},
+		{"a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", false},
+		{"Foo", "Foo", false},
+		{"foo", "foo", false},
+		{"Foo Bar", "Foo Bar", false},
+		{"foo bar", "foo bar", false},
+		{"\u03C3", "\u03C3", false},
+		{"Richard \u2163", "Richard \u2163", false},
+		{"\u212B", "Å", false},
+		{"Jack of \u2666s", "Jack of \u2666s", false},
+		{"my cat is a \u0009by", "", true},
+		{"·", "", true}, // Middle dot
+		{"͵", "", true}, // Keraia
+		{"׳", "", true},
+		{"׳ה", "", true},
+		{"a׳b", "", true},
+		// TODO: Requires context rule to work.
+		// {OpaqueString, "ש׳", "ש", false},  // U+05e9 U+05f3
 
 		// Katakana Middle Dot
-		{OpaqueString, "abc・def", "", true},
-		// TODO: These should not be disallowed, methinks?
+		{"abc・def", "", true},
+		// TODO: These require context rules to work.
 		// {OpaqueString, "aヅc・def", "", false},
 		// {OpaqueString, "abc・dぶf", "", false},
 		// {OpaqueString, "⺐bc・def", "", false},
 
 		// Arabic Indic Digit
-		// TODO: I think these two should be allowed?
+		// TODO: These require context rules to work.
 		// {OpaqueString, "١٢٣٤٥", "١٢٣٤٥", false},
 		// {OpaqueString, "۱۲۳۴۵", "۱۲۳۴۵", false},
-		{OpaqueString, "١٢٣٤٥۶", "", true},
-		{OpaqueString, "۱۲۳۴۵٦", "", true},
-
-		// UsernameCaseMapped profile
-		{UsernameCaseMapped, "juliet@example.com", "juliet@example.com", false},
-		{UsernameCaseMapped, "fussball", "fussball", false},
-		{UsernameCaseMapped, "fu\u00DFball", "fussball", false},
-		{UsernameCaseMapped, "\u03C0", "\u03C0", false},
-		{UsernameCaseMapped, "\u03A3", "\u03C3", false},
-		{UsernameCaseMapped, "\u03C3", "\u03C3", false},
-		{UsernameCaseMapped, "\u03C2", "\u03C3", false},
-		{UsernameCaseMapped, "\u0049", "\u0069", false},
-		{UsernameCaseMapped, "\u0049", "\u0069", false},
-		// TODO: Should this be disallowed?
-		// {UsernameCaseMapped, "\u03D2", "\u03C5", false},
-		{UsernameCaseMapped, "\u03B0", "\u03B0", false},
-		{UsernameCaseMapped, "foo bar", "", true},
-		{UsernameCaseMapped, "♚", "", true},
-		{UsernameCaseMapped, "\u007E", "\u007E", false},
-		{UsernameCaseMapped, "a", "a", false},
-		{UsernameCaseMapped, "!", "!", false},
-		{UsernameCaseMapped, "²", "", true},
+		{"١٢٣٤٥۶", "", true},
+		{"۱۲۳۴۵٦", "", true},
+	}},
+	{"UsernameCaseMapped", UsernameCaseMapped, []testCase{
 		// TODO: Should this work?
 		// {UsernameCaseMapped, "", "", true},
-		{UsernameCaseMapped, "\t", "", true},
-		{UsernameCaseMapped, "\n", "", true},
-		{UsernameCaseMapped, "\u26D6", "", true},
-		{UsernameCaseMapped, "\u26FF", "", true},
-		{UsernameCaseMapped, "\uFB00", "", true},
-		{UsernameCaseMapped, "\u1680", "", true},
-		{UsernameCaseMapped, " ", "", true},
-		{UsernameCaseMapped, "  ", "", true},
-		{UsernameCaseMapped, "\u01C5", "", true},
-		{UsernameCaseMapped, "\u16EE", "", true}, // Nl RUNIC ARLAUG SYMBOL
-		{UsernameCaseMapped, "\u0488", "", true}, // Me COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
-		// TODO: Should this be disallowed and/or case mapped?
-		// {UsernameCaseMapped, "\u212B", "å", false}, // angstrom sign
-		{UsernameCaseMapped, "A\u030A", "å", false},      // A + ring
-		{UsernameCaseMapped, "\u00C5", "å", false},       // A with ring
-		{UsernameCaseMapped, "\u00E7", "ç", false},       // c cedille
-		{UsernameCaseMapped, "\u0063\u0327", "ç", false}, // c + cedille
-		{UsernameCaseMapped, "\u0158", "ř", false},
-		{UsernameCaseMapped, "\u0052\u030C", "ř", false},
+		{"juliet@example.com", "juliet@example.com", false},
+		{"fussball", "fussball", false},
+		{"fu\u00DFball", "fussball", false},
+		{"\u03C0", "\u03C0", false},
+		{"\u03A3", "\u03C3", false},
+		{"\u03C3", "\u03C3", false},
+		{"\u03C2", "\u03C3", false},
+		{"\u0049", "\u0069", false},
+		{"\u0049", "\u0069", false},
+		{"\u03D2", "\u03C5", true},
+		{"\u03B0", "\u03B0", false},
+		{"foo bar", "", true},
+		{"♚", "", true},
+		{"\u007E", "", true}, // disallowed by bidi rule
+		{"a", "a", false},
+		{"!", "", true}, // disallowed by bidi rule
+		{"²", "", true},
+		{"\t", "", true},
+		{"\n", "", true},
+		{"\u26D6", "", true},
+		{"\u26FF", "", true},
+		{"\uFB00", "", true},
+		{"\u1680", "", true},
+		{" ", "", true},
+		{"  ", "", true},
+		{"\u01C5", "", true},
+		{"\u16EE", "", true}, // Nl RUNIC ARLAUG SYMBOL
+		{"\u0488", "", true}, // Me COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
+		// TODO: Should this be allowed and/or case mapped?
+		{"\u212B", "", true},         // angstrom sign
+		{"A\u030A", "å", false},      // A + ring
+		{"\u00C5", "å", false},       // A with ring
+		{"\u00E7", "ç", false},       // c cedille
+		{"\u0063\u0327", "ç", false}, // c + cedille
+		{"\u0158", "ř", false},
+		{"\u0052\u030C", "ř", false},
 
-		{UsernameCaseMapped, "\u1E61", "\u1E61", false}, // LATIN SMALL LETTER S WITH DOT ABOVE
-		// TODO: Why is this disallowed?
-		// {UsernameCaseMapped, "ẛ", "\u1E61", false}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
+		{"\u1E61", "\u1E61", false}, // LATIN SMALL LETTER S WITH DOT ABOVE
+		// NFKC("ẛ"") != "ẛ" -> disallow for identifiers.
+		{"ẛ", "\u1E61", true}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
 
 		// Confusable characters ARE allowed and should NOT be mapped.
-		{UsernameCaseMapped, "\u0410", "\u0430", false}, // CYRILLIC CAPITAL LETTER A
+		{"\u0410", "\u0430", false}, // CYRILLIC CAPITAL LETTER A
 
-		// Full width should be mapped to the narrow or canonical decomposition… no
-		// idea which, but either way in this case it should be the same:
-		{UsernameCaseMapped, "ＡＢ", "ab", false},
+		// Full width should be mapped to the canonical decomposition.
+		{"ＡＢ", "ab", false},
+	}},
+	{"UsernameCasePreserved", UsernameCasePreserved, []testCase{
+		{"ABC", "ABC", false},
+		{"ＡＢ", "AB", false},
+	}},
+}
 
-		{UsernameCasePreserved, "ABC", "ABC", false},
-		{UsernameCasePreserved, "ＡＢ", "AB", false},
-	}
-
-	for _, d := range data {
-		if e, err := d.prof.String(d.input); (d.isErr && err == nil) ||
-			!d.isErr && (err != nil || e != d.output) {
-			t.Log("Expected '"+d.output+"'", "but got", "'"+e+"'", "with error:", err)
-			t.Fail()
+func TestEnforce(t *testing.T) {
+	doTests(t, func(t *testing.T, p *Profile, tc testCase) {
+		if e, err := p.String(tc.input); (tc.isErr && err == nil) ||
+			!tc.isErr && (err != nil || e != tc.output) {
+			t.Errorf("got %+q; want %+q (err: %v)", e, tc.output, err)
 		}
-	}
+	})
 }
