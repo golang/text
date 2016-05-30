@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	disallowedRune = errors.New("precis: disallowed rune encountered")
+	errDisallowedRune = errors.New("precis: disallowed rune encountered")
 )
 
 var dpTrie = newDerivedPropertiesTrie(0)
@@ -25,7 +25,6 @@ var dpTrie = newDerivedPropertiesTrie(0)
 type Profile struct {
 	options
 	class *class
-	transform.NopResetter
 }
 
 // NewIdentifier creates a new PRECIS profile based on the Identifier string
@@ -84,35 +83,109 @@ func (p *Profile) NewTransformer() *Transformer {
 
 var errEmptyString = errors.New("precis: transformation resulted in empty string")
 
+type buffers struct {
+	src  []byte
+	buf  [2][]byte
+	next int
+}
+
+func (b *buffers) init(n int) {
+	b.buf[0] = make([]byte, 0, n)
+	b.buf[1] = make([]byte, 0, n)
+}
+
+func (b *buffers) apply(t transform.Transformer) (err error) {
+	// TODO: use Span, once available.
+	b.src, _, err = transform.Append(t, b.buf[b.next][:0], b.src)
+	b.buf[b.next] = b.src
+	b.next ^= 1
+	return err
+}
+
+func (b *buffers) enforce(p *Profile, src []byte) ([]byte, error) {
+	b.src = src
+
+	// TODO: allow different width transforms options.
+	if p.options.allowwidechars || p.options.width != nil {
+		// TODO: use Span, once available.
+		if err := b.apply(width.Fold); err != nil {
+			return nil, err
+		}
+	}
+	for _, f := range p.options.additional {
+		if err := b.apply(f()); err != nil {
+			return nil, err
+		}
+	}
+	if p.options.cases != nil {
+		if err := b.apply(p.options.cases); err != nil {
+			return nil, err
+		}
+	}
+	// TODO: use QuickSpan. Using QuickSpan may cause the original buffer to be
+	// returned. Make sure Bytes will handle this correctly.
+	if err := b.apply(p.options.norm); err != nil {
+		return nil, err
+	}
+	if p.options.bidiRule {
+		if err := b.apply(bidirule.New()); err != nil {
+			return nil, err
+		}
+	}
+	c := checker{p: p}
+	if _, err := c.span(b.src, true); err != nil {
+		return nil, err
+	}
+	if p.disallow != nil {
+		for i := 0; i < len(b.src); {
+			r, size := utf8.DecodeRune(b.src[i:])
+			if p.disallow.Contains(r) {
+				return nil, errDisallowedRune
+			}
+			i += size
+		}
+	}
+
+	// TODO: Add the disallow empty rule with a dummy transformer?
+
+	if p.options.disallowEmpty && len(b.src) == 0 {
+		return nil, errEmptyString
+	}
+	return b.src, nil
+}
+
 // Append appends the result of applying p to src writing the result to dst.
 // It returns an error if the input string is invalid.
 func (p *Profile) Append(dst, src []byte) ([]byte, error) {
-	b, _, err := transform.Append(p.NewTransformer(), dst, src)
+	var buf buffers
+	buf.init(8 + len(src) + len(src)>>2)
+	b, err := buf.enforce(p, src)
 	if err != nil {
 		return nil, err
 	}
-	if p.options.disallowEmpty && len(b) == 0 {
-		return b, errEmptyString
-	}
-	return b, err
+	return append(dst, b...), nil
 }
 
 // Bytes returns a new byte slice with the result of applying the profile to b.
 func (p *Profile) Bytes(b []byte) ([]byte, error) {
-	b, _, err := transform.Bytes(p.NewTransformer(), b)
-	if err == nil && p.options.disallowEmpty && len(b) == 0 {
-		return b, errEmptyString
+	var buf buffers
+	buf.init(8 + len(b) + len(b)>>2)
+	b, err := buf.enforce(p, b)
+	if err != nil {
+		return nil, err
 	}
-	return b, err
+	return b, nil
 }
 
 // String returns a string with the result of applying the profile to s.
 func (p *Profile) String(s string) (string, error) {
-	s, _, err := transform.String(p.NewTransformer(), s)
-	if err == nil && p.options.disallowEmpty && len(s) == 0 {
-		return s, errEmptyString
+	var buf buffers
+	buf.init(8 + len(s) + len(s)>>2)
+	b, err := buf.enforce(p, []byte(s))
+	if err != nil {
+		return "", err
 	}
-	return s, err
+	return string(b), nil
 }
 
 // Compare enforces both strings, and then compares them for bit-string identity
@@ -143,13 +216,12 @@ func (p *Profile) Compare(a, b string) bool {
 // underlying profile's string class and not disallowed by any profile specific
 // rules.
 func (p *Profile) Allowed() runes.Set {
-	return runes.Predicate(func(r rune) bool {
-		if p.options.disallow != nil {
+	if p.options.disallow != nil {
+		return runes.Predicate(func(r rune) bool {
 			return p.class.Contains(r) && !p.options.disallow.Contains(r)
-		} else {
-			return p.class.Contains(r)
-		}
-	})
+		})
+	}
+	return p.class
 }
 
 type checker struct {
@@ -158,6 +230,25 @@ type checker struct {
 	allowed runes.Set
 }
 
+func (c *checker) span(src []byte, atEOF bool) (n int, err error) {
+	for n < len(src) {
+		e, sz := dpTrie.lookup(src[n:])
+		switch {
+		case sz == 0:
+			if !atEOF {
+				return n, transform.ErrShortSrc
+			}
+			fallthrough
+		case property(e) < c.p.class.validFrom:
+			return n, errDisallowedRune
+		}
+		n += sz
+	}
+	return n, nil
+}
+
+// TODO: we may get rid of this transform if transform.Chain understands
+// something like a Spanner interface.
 func (c checker) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	for nSrc < len(src) {
 		r, size := utf8.DecodeRune(src[nSrc:])
@@ -173,7 +264,7 @@ func (c checker) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err err
 			}
 			nDst += size
 		} else {
-			return nDst, nSrc, disallowedRune
+			return nDst, nSrc, errDisallowedRune
 		}
 		nSrc += size
 	}
