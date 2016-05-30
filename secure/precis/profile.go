@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	disallowedRune = errors.New("disallowed rune encountered")
+	disallowedRune = errors.New("precis: disallowed rune encountered")
 )
 
 var dpTrie = newDerivedPropertiesTrie(0)
@@ -82,11 +82,26 @@ func (p *Profile) NewTransformer() *Transformer {
 	return &Transformer{transform.Chain(ts...)}
 }
 
+var errEmptyString = errors.New("precis: transformation resulted in empty string")
+
+// Append appends the result of applying p to src writing the result to dst.
+// It returns an error if the input string is invalid.
+func (p *Profile) Append(dst, src []byte) ([]byte, error) {
+	b, _, err := transform.Append(p.NewTransformer(), dst, src)
+	if err != nil {
+		return nil, err
+	}
+	if p.options.disallowEmpty && len(b) == 0 {
+		return b, errEmptyString
+	}
+	return b, err
+}
+
 // Bytes returns a new byte slice with the result of applying the profile to b.
 func (p *Profile) Bytes(b []byte) ([]byte, error) {
 	b, _, err := transform.Bytes(p.NewTransformer(), b)
 	if err == nil && p.options.disallowEmpty && len(b) == 0 {
-		return b, errors.New("enforce resulted in empty string")
+		return b, errEmptyString
 	}
 	return b, err
 }
@@ -95,7 +110,7 @@ func (p *Profile) Bytes(b []byte) ([]byte, error) {
 func (p *Profile) String(s string) (string, error) {
 	s, _, err := transform.String(p.NewTransformer(), s)
 	if err == nil && p.options.disallowEmpty && len(s) == 0 {
-		return s, errors.New("enforce resulted in empty string")
+		return s, errEmptyString
 	}
 	return s, err
 }

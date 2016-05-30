@@ -135,11 +135,29 @@ var testCases = []struct {
 	}},
 }
 
-func TestEnforce(t *testing.T) {
+func TestString(t *testing.T) {
 	doTests(t, func(t *testing.T, p *Profile, tc testCase) {
 		if e, err := p.String(tc.input); (tc.isErr && err == nil) ||
 			!tc.isErr && (err != nil || e != tc.output) {
 			t.Errorf("got %+q (err: %v); want %+q (ok: %v)", e, err, tc.output, !tc.isErr)
+		}
+	})
+}
+
+func TestBytes(t *testing.T) {
+	doTests(t, func(t *testing.T, p *Profile, tc testCase) {
+		if e, err := p.Bytes([]byte(tc.input)); (tc.isErr && err == nil) ||
+			!tc.isErr && (err != nil || string(e) != tc.output) {
+			t.Errorf("got %+q (err: %v); want %+q (ok: %v)", string(e), err, tc.output, !tc.isErr)
+		}
+	})
+}
+
+func TestAppend(t *testing.T) {
+	doTests(t, func(t *testing.T, p *Profile, tc testCase) {
+		if e, err := p.Append(nil, []byte(tc.input)); (tc.isErr && err == nil) ||
+			!tc.isErr && (err != nil || string(e) != tc.output) {
+			t.Errorf("got %+q (err: %v); want %+q (ok: %v)", string(e), err, tc.output, !tc.isErr)
 		}
 	})
 }

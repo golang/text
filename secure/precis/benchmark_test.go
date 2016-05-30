@@ -42,6 +42,17 @@ func BenchmarkBytes(b *testing.B) {
 	})
 }
 
+func BenchmarkAppend(b *testing.B) {
+	doBench(b, func(b *testing.B, p *Profile, s string) {
+		src := []byte(s)
+		dst := make([]byte, 0, 4096)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			p.Append(dst, src)
+		}
+	})
+}
+
 func BenchmarkTransform(b *testing.B) {
 	doBench(b, func(b *testing.B, p *Profile, s string) {
 		src := []byte(s)
