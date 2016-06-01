@@ -4,11 +4,16 @@
 
 package precis
 
-import "testing"
+import (
+	"testing"
+
+	"golang.org/x/text/secure/bidirule"
+)
 
 type testCase struct {
-	input, output string
-	isErr         bool
+	input  string
+	output string
+	err    error
 }
 
 var testCases = []struct {
@@ -17,147 +22,144 @@ var testCases = []struct {
 	cases []testCase
 }{
 	{"Nickname", Nickname, []testCase{
-		{"  Swan  of   Avon   ", "Swan of Avon", false},
-		{"", "", true},
-		{" ", "", true},
-		{"  ", "", true},
-		{"a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", false},
-		{"Foo", "Foo", false},
-		{"foo", "foo", false},
-		{"Foo Bar", "Foo Bar", false},
-		{"foo bar", "foo bar", false},
-		{"\u03C3", "\u03C3", false},
+		{"  Swan  of   Avon   ", "Swan of Avon", nil},
+		{"", "", errEmptyString},
+		{" ", "", errEmptyString},
+		{"  ", "", errEmptyString},
+		{"a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", nil},
+		{"Foo", "Foo", nil},
+		{"foo", "foo", nil},
+		{"Foo Bar", "Foo Bar", nil},
+		{"foo bar", "foo bar", nil},
+		{"\u03C3", "\u03C3", nil},
 		// Greek final sigma is left as is (do not fold!)
-		{"\u03C2", "\u03C2", false},
-		{"\u265A", "♚", false},
-		{"Richard \u2163", "Richard IV", false},
-		{"\u212B", "Å", false},
-		{"\uFB00", "ff", false}, // because of NFKC
-		{"שa", "שa", false},     // no bidi rule
-		{"동일조건변경허락", "동일조건변경허락", false},
+		{"\u03C2", "\u03C2", nil},
+		{"\u265A", "♚", nil},
+		{"Richard \u2163", "Richard IV", nil},
+		{"\u212B", "Å", nil},
+		{"\uFB00", "ff", nil}, // because of NFKC
+		{"שa", "שa", nil},     // no bidi rule
+		{"동일조건변경허락", "동일조건변경허락", nil},
 	}},
 	{"OpaqueString", OpaqueString, []testCase{
-		{"  Swan  of   Avon   ", "  Swan  of   Avon   ", false},
-		{"", "", true},
-		{" ", " ", false},
-		{"  ", "  ", false},
-		{"a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", false},
-		{"Foo", "Foo", false},
-		{"foo", "foo", false},
-		{"Foo Bar", "Foo Bar", false},
-		{"foo bar", "foo bar", false},
-		{"\u03C3", "\u03C3", false},
-		{"Richard \u2163", "Richard \u2163", false},
-		{"\u212B", "Å", false},
-		{"Jack of \u2666s", "Jack of \u2666s", false},
-		{"my cat is a \u0009by", "", true},
-		{"·", "", true}, // Middle dot
-		{"͵", "", true}, // Keraia
-		{"׳", "", true},
-		{"׳ה", "", true},
-		{"a׳b", "", true},
+		{"  Swan  of   Avon   ", "  Swan  of   Avon   ", nil},
+		{"", "", errEmptyString},
+		{" ", " ", nil},
+		{"  ", "  ", nil},
+		{"a\u00A0a\u1680a\u2000a\u2001a\u2002a\u2003a\u2004a\u2005a\u2006a\u2007a\u2008a\u2009a\u200Aa\u202Fa\u205Fa\u3000a", "a a a a a a a a a a a a a a a a a", nil},
+		{"Foo", "Foo", nil},
+		{"foo", "foo", nil},
+		{"Foo Bar", "Foo Bar", nil},
+		{"foo bar", "foo bar", nil},
+		{"\u03C3", "\u03C3", nil},
+		{"Richard \u2163", "Richard \u2163", nil},
+		{"\u212B", "Å", nil},
+		{"Jack of \u2666s", "Jack of \u2666s", nil},
+		{"my cat is a \u0009by", "", errDisallowedRune},
+		{"·", "", errDisallowedRune}, // Middle dot
+		{"͵", "", errDisallowedRune}, // Keraia
+		{"׳", "", errDisallowedRune},
+		{"׳ה", "", errDisallowedRune},
+		{"a׳b", "", errDisallowedRune},
 		// TODO: Requires context rule to work.
-		// {OpaqueString, "ש׳", "ש", false},  // U+05e9 U+05f3
-		{"שa", "שa", false}, // no bidi rule
+		// {OpaqueString, "ש׳", "ש", nil},  // U+05e9 U+05f3
+		{"שa", "שa", nil}, // no bidi rule
 
 		// Katakana Middle Dot
-		{"abc・def", "", true},
+		{"abc・def", "", errDisallowedRune},
 		// TODO: These require context rules to work.
-		// {OpaqueString, "aヅc・def", "", false},
-		// {OpaqueString, "abc・dぶf", "", false},
-		// {OpaqueString, "⺐bc・def", "", false},
+		// {OpaqueString, "aヅc・def", "", nil},
+		// {OpaqueString, "abc・dぶf", "", nil},
+		// {OpaqueString, "⺐bc・def", "", nil},
 
 		// Arabic Indic Digit
 		// TODO: These require context rules to work.
-		// {OpaqueString, "١٢٣٤٥", "١٢٣٤٥", false},
-		// {OpaqueString, "۱۲۳۴۵", "۱۲۳۴۵", false},
-		{"١٢٣٤٥۶", "", true},
-		{"۱۲۳۴۵٦", "", true},
+		// {OpaqueString, "١٢٣٤٥", "١٢٣٤٥", nil},
+		// {OpaqueString, "۱۲۳۴۵", "۱۲۳۴۵", nil},
+		{"١٢٣٤٥۶", "", errDisallowedRune},
+		{"۱۲۳۴۵٦", "", errDisallowedRune},
 	}},
 	{"UsernameCaseMapped", UsernameCaseMapped, []testCase{
 		// TODO: Should this work?
-		// {UsernameCaseMapped, "", "", true},
-		{"juliet@example.com", "juliet@example.com", false},
-		{"fussball", "fussball", false},
-		{"fu\u00DFball", "fussball", false},
-		{"\u03C0", "\u03C0", false},
-		{"\u03A3", "\u03C3", false},
-		{"\u03C3", "\u03C3", false},
-		{"\u03C2", "\u03C3", false},
-		{"\u0049", "\u0069", false},
-		{"\u0049", "\u0069", false},
-		{"\u03D2", "\u03C5", true},
-		{"\u03B0", "\u03B0", false},
-		{"foo bar", "", true},
-		{"♚", "", true},
-		{"\u007E", "", true}, // disallowed by bidi rule
-		{"a", "a", false},
-		{"!", "", true}, // disallowed by bidi rule
-		{"²", "", true},
-		{"\t", "", true},
-		{"\n", "", true},
-		{"\u26D6", "", true},
-		{"\u26FF", "", true},
-		{"\uFB00", "ff", false}, // Side effect of case folding.
-		{"\u1680", "", true},
-		{" ", "", true},
-		{"  ", "", true},
-		{"\u01C5", "", true},
-		{"\u16EE", "", true},         // Nl RUNIC ARLAUG SYMBOL
-		{"\u0488", "", true},         // Me COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
-		{"\u212B", "\u00e5", false},  // Angstrom sign, NFC -> U+00E5
-		{"A\u030A", "å", false},      // A + ring
-		{"\u00C5", "å", false},       // A with ring
-		{"\u00E7", "ç", false},       // c cedille
-		{"\u0063\u0327", "ç", false}, // c + cedille
-		{"\u0158", "ř", false},
-		{"\u0052\u030C", "ř", false},
+		// {UsernameCaseMapped, "", "", errDisallowedRune},
+		{"juliet@example.com", "juliet@example.com", nil},
+		{"fussball", "fussball", nil},
+		{"fu\u00DFball", "fussball", nil},
+		{"\u03C0", "\u03C0", nil},
+		{"\u03A3", "\u03C3", nil},
+		{"\u03C3", "\u03C3", nil},
+		{"\u03C2", "\u03C3", nil},
+		{"\u0049", "\u0069", nil},
+		{"\u0049", "\u0069", nil},
+		{"\u03D2", "", errDisallowedRune},
+		{"\u03B0", "\u03B0", nil},
+		{"foo bar", "", bidirule.ErrInvalid},
+		{"♚", "", bidirule.ErrInvalid},
+		{"\u007E", "", bidirule.ErrInvalid}, // disallowed by bidi rule
+		{"a", "a", nil},
+		{"!", "", bidirule.ErrInvalid}, // disallowed by bidi rule
+		{"²", "", bidirule.ErrInvalid},
+		{"\t", "", bidirule.ErrInvalid},
+		{"\n", "", bidirule.ErrInvalid},
+		{"\u26D6", "", bidirule.ErrInvalid},
+		{"\u26FF", "", bidirule.ErrInvalid},
+		{"\uFB00", "ff", nil}, // Side effect of case folding.
+		{"\u1680", "", bidirule.ErrInvalid},
+		{" ", "", bidirule.ErrInvalid},
+		{"  ", "", bidirule.ErrInvalid},
+		{"\u01C5", "", errDisallowedRune},
+		{"\u16EE", "", errDisallowedRune},   // Nl RUNIC ARLAUG SYMBOL
+		{"\u0488", "", bidirule.ErrInvalid}, // Me COMBINING CYRILLIC HUNDRED THOUSANDS SIGN
+		{"\u212B", "\u00e5", nil},           // Angstrom sign, NFC -> U+00E5
+		{"A\u030A", "å", nil},               // A + ring
+		{"\u00C5", "å", nil},                // A with ring
+		{"\u00E7", "ç", nil},                // c cedille
+		{"\u0063\u0327", "ç", nil},          // c + cedille
+		{"\u0158", "ř", nil},
+		{"\u0052\u030C", "ř", nil},
 
-		{"\u1E61", "\u1E61", false}, // LATIN SMALL LETTER S WITH DOT ABOVE
+		{"\u1E61", "\u1E61", nil}, // LATIN SMALL LETTER S WITH DOT ABOVE
 		// U+1e9B: case folded.
-		{"ẛ", "\u1E61", false}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
+		{"ẛ", "\u1E61", nil}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
 
 		// Confusable characters ARE allowed and should NOT be mapped.
-		{"\u0410", "\u0430", false}, // CYRILLIC CAPITAL LETTER A
+		{"\u0410", "\u0430", nil}, // CYRILLIC CAPITAL LETTER A
 
 		// Full width should be mapped to the canonical decomposition.
-		{"ＡＢ", "ab", false},
-		{"שc", "שc", true}, // bidi rule
+		{"ＡＢ", "ab", nil},
+		{"שc", "", bidirule.ErrInvalid}, // bidi rule
 
 	}},
 	{"UsernameCasePreserved", UsernameCasePreserved, []testCase{
-		{"ABC", "ABC", false},
-		{"ＡＢ", "AB", false},
-		{"שc", "שc", true}, // bidi rule
-		{"\uFB00", "", true},
-		{"\u212B", "\u00c5", false}, // Angstrom sign, NFC -> U+00E5
-		{"ẛ", "", true},             // LATIN SMALL LETTER LONG S WITH DOT ABOVE
+		{"ABC", "ABC", nil},
+		{"ＡＢ", "AB", nil},
+		{"שc", "", bidirule.ErrInvalid}, // bidi rule
+		{"\uFB00", "", errDisallowedRune},
+		{"\u212B", "\u00c5", nil},    // Angstrom sign, NFC -> U+00E5
+		{"ẛ", "", errDisallowedRune}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
 	}},
 }
 
 func TestString(t *testing.T) {
 	doTests(t, func(t *testing.T, p *Profile, tc testCase) {
-		if e, err := p.String(tc.input); (tc.isErr && err == nil) ||
-			!tc.isErr && (err != nil || e != tc.output) {
-			t.Errorf("got %+q (err: %v); want %+q (ok: %v)", e, err, tc.output, !tc.isErr)
+		if e, err := p.String(tc.input); tc.err != err || e != tc.output {
+			t.Errorf("got %+q (err: %v); want %+q (err: %v)", e, err, tc.output, tc.err)
 		}
 	})
 }
 
 func TestBytes(t *testing.T) {
 	doTests(t, func(t *testing.T, p *Profile, tc testCase) {
-		if e, err := p.Bytes([]byte(tc.input)); (tc.isErr && err == nil) ||
-			!tc.isErr && (err != nil || string(e) != tc.output) {
-			t.Errorf("got %+q (err: %v); want %+q (ok: %v)", string(e), err, tc.output, !tc.isErr)
+		if e, err := p.Bytes([]byte(tc.input)); tc.err != err || string(e) != tc.output {
+			t.Errorf("got %+q (err: %v); want %+q (err: %v)", string(e), err, tc.output, tc.err)
 		}
 	})
 }
 
 func TestAppend(t *testing.T) {
 	doTests(t, func(t *testing.T, p *Profile, tc testCase) {
-		if e, err := p.Append(nil, []byte(tc.input)); (tc.isErr && err == nil) ||
-			!tc.isErr && (err != nil || string(e) != tc.output) {
-			t.Errorf("got %+q (err: %v); want %+q (ok: %v)", string(e), err, tc.output, !tc.isErr)
+		if e, err := p.Append(nil, []byte(tc.input)); tc.err != err || string(e) != tc.output {
+			t.Errorf("got %+q (err: %v); want %+q (err: %v)", string(e), err, tc.output, tc.err)
 		}
 	})
 }
