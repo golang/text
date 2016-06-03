@@ -32,6 +32,27 @@ func (lowerCaseASCII) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, er
 	return n, n, err
 }
 
+// lowerCaseASCIILookahead lowercases the string and reports ErrShortSrc as long
+// as the input is not atEOF.
+type lowerCaseASCIILookahead struct{ NopResetter }
+
+func (lowerCaseASCIILookahead) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	n := len(src)
+	if n > len(dst) {
+		n, err = len(dst), ErrShortDst
+	}
+	for i, c := range src[:n] {
+		if 'A' <= c && c <= 'Z' {
+			c += 'a' - 'A'
+		}
+		dst[i] = c
+	}
+	if !atEOF {
+		err = ErrShortSrc
+	}
+	return n, n, err
+}
+
 var errYouMentionedX = errors.New("you mentioned X")
 
 type dontMentionX struct{ NopResetter }
@@ -1069,18 +1090,20 @@ func testString(t *testing.T, f func(Transformer, string) (string, int, error)) 
 			// The result string will be different.
 			continue
 		}
-		got, n, err := f(tt.t, tt.src)
-		if tt.wantErr != err {
-			t.Errorf("%s:error: got %v; want %v", tt.desc, err, tt.wantErr)
-		}
-		// Check that err == nil implies that n == len(tt.src). Note that vice
-		// versa isn't necessarily true.
-		if err == nil && n != len(tt.src) {
-			t.Errorf("%s:err == nil: got %d bytes, want %d", tt.desc, n, err)
-		}
-		if got != tt.wantStr {
-			t.Errorf("%s:string: got %q; want %q", tt.desc, got, tt.wantStr)
-		}
+		run(t, tt.desc, func(t *testing.T) {
+			got, n, err := f(tt.t, tt.src)
+			if tt.wantErr != err {
+				t.Errorf("error: got %v; want %v", err, tt.wantErr)
+			}
+			// Check that err == nil implies that n == len(tt.src). Note that vice
+			// versa isn't necessarily true.
+			if err == nil && n != len(tt.src) {
+				t.Errorf("err == nil: got %d bytes, want %d", n, err)
+			}
+			if got != tt.wantStr {
+				t.Errorf("string: got %q; want %q", got, tt.wantStr)
+			}
+		})
 	}
 }
 
@@ -1111,7 +1134,7 @@ func TestAppend(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	testString(t, String)
+	run(t, "transform", func(t *testing.T) { testString(t, String) })
 
 	// Overrun the internal destination buffer.
 	for i, s := range []string{
@@ -1129,10 +1152,12 @@ func TestString(t *testing.T) {
 		aaa[:1*initialBufSize+0] + "A",
 		aaa[:1*initialBufSize+1] + "A",
 	} {
-		got, _, _ := String(lowerCaseASCII{}, s)
-		if want := strings.ToLower(s); got != want {
-			t.Errorf("%d:dst buffer test: got %s (%d); want %s (%d)", i, got, len(got), want, len(want))
-		}
+		run(t, fmt.Sprint("dst buffer test using lower/", i), func(t *testing.T) {
+			got, _, _ := String(lowerCaseASCII{}, s)
+			if want := strings.ToLower(s); got != want {
+				t.Errorf("got %s (%d); want %s (%d)", got, len(got), want, len(want))
+			}
+		})
 	}
 
 	// Overrun the internal source buffer.
@@ -1144,10 +1169,12 @@ func TestString(t *testing.T) {
 		aaa[:2*initialBufSize+0],
 		aaa[:2*initialBufSize+1],
 	} {
-		got, _, _ := String(rleEncode{}, s)
-		if want := fmt.Sprintf("%da", len(s)); got != want {
-			t.Errorf("%d:src buffer test: got %s (%d); want %s (%d)", i, got, len(got), want, len(want))
-		}
+		run(t, fmt.Sprint("src buffer test using rleEncode/", i), func(t *testing.T) {
+			got, _, _ := String(rleEncode{}, s)
+			if want := fmt.Sprintf("%da", len(s)); got != want {
+				t.Errorf("got %s (%d); want %s (%d)", got, len(got), want, len(want))
+			}
+		})
 	}
 
 	// Test allocations for non-changing strings.
@@ -1160,9 +1187,11 @@ func TestString(t *testing.T) {
 		aaa[:initialBufSize+1],
 		aaa[:10*initialBufSize],
 	} {
-		if n := testing.AllocsPerRun(5, func() { String(&lowerCaseASCII{}, s) }); n > 1 {
-			t.Errorf("%d: #allocs was %f; want 1", i, n)
-		}
+		run(t, fmt.Sprint("alloc/", i), func(t *testing.T) {
+			if n := testing.AllocsPerRun(5, func() { String(&lowerCaseASCIILookahead{}, s) }); n > 1 {
+				t.Errorf("#allocs was %f; want 1", n)
+			}
+		})
 	}
 }
 
@@ -1205,9 +1234,21 @@ func TestStringAllocation(t *testing.T) {
 	}
 }
 
-func BenchmarkStringLower(b *testing.B) {
+func BenchmarkStringLowerEmpty(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		String(&lowerCaseASCII{}, aaa[:4096])
+		String(&lowerCaseASCIILookahead{}, "")
+	}
+}
+
+func BenchmarkStringLowerIdentical(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		String(&lowerCaseASCIILookahead{}, aaa[:4096])
+	}
+}
+
+func BenchmarkStringLowerChanged(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		String(&lowerCaseASCIILookahead{}, AAA[:4096])
 	}
 }
 

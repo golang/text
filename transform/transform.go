@@ -508,6 +508,14 @@ const initialBufSize = 128
 // n <= len(s). If err == nil, n will be len(s). It calls Reset on t.
 func String(t Transformer, s string) (result string, n int, err error) {
 	t.Reset()
+	if s == "" {
+		// Fast path for the common case for empty input. Results in about a
+		// 66% reduction of running time for BenchmarkStringLowerEmpty.
+		var buf [4]byte
+		if nDst, _, err := t.Transform(buf[:], nil, true); nDst == 0 && err == nil {
+			return "", 0, nil
+		}
+	}
 
 	// Allocate only once. Note that both dst and src escape when passed to
 	// Transform.
@@ -538,12 +546,21 @@ func String(t Transformer, s string) (result string, n int, err error) {
 
 		// TODO:  let transformers implement an optional Spanner interface, akin
 		// to norm's QuickSpan. This would even allow us to avoid any allocation.
-		if err != nil || !bytes.Equal(dst[:nDst], src[:nSrc]) {
+		if !bytes.Equal(dst[:nDst], src[:nSrc]) {
 			break
 		}
 		pPrefix = pSrc
-		if pPrefix == len(s) {
-			return s, len(s), nil
+		if err == ErrShortDst {
+			// A buffer can only be short if a transformer modifies its input.
+			break
+		} else if err == ErrShortSrc {
+			if nSrc == 0 {
+				// No progress was made.
+				break
+			}
+			// Equal so far and !atEOF, so continue checking.
+		} else if err != nil || pPrefix == len(s) {
+			return string(s[:pPrefix]), pPrefix, err
 		}
 	}
 	// Post-condition: pDst == pPrefix + nDst && pSrc == pPrefix + nSrc.
