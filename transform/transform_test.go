@@ -346,6 +346,42 @@ var testCases = []testCase{
 	},
 
 	{
+		desc:    "small dst with lookahead",
+		t:       lowerCaseASCIILookahead{},
+		src:     "Hello WORLD.",
+		dstSize: 3,
+		srcSize: 100,
+		wantStr: "hello world.",
+	},
+
+	{
+		desc:    "small src with lookahead",
+		t:       lowerCaseASCIILookahead{},
+		src:     "Hello WORLD.",
+		dstSize: 100,
+		srcSize: 4,
+		wantStr: "hello world.",
+	},
+
+	{
+		desc:    "small buffers with lookahead",
+		t:       lowerCaseASCIILookahead{},
+		src:     "Hello WORLD.",
+		dstSize: 3,
+		srcSize: 4,
+		wantStr: "hello world.",
+	},
+
+	{
+		desc:    "very small buffers with lookahead",
+		t:       lowerCaseASCIILookahead{},
+		src:     "Hello WORLD.",
+		dstSize: 1,
+		srcSize: 2,
+		wantStr: "hello world.",
+	},
+
+	{
 		desc:    "user error",
 		t:       dontMentionX{},
 		src:     "The First Rule of Transform Club: don't mention Mister X, ever.",
@@ -604,16 +640,18 @@ var testCases = []testCase{
 
 func TestReader(t *testing.T) {
 	for _, tc := range testCases {
-		r := NewReader(strings.NewReader(tc.src), tc.t)
-		// Differently sized dst and src buffers are not part of the
-		// exported API. We override them manually.
-		r.dst = make([]byte, tc.dstSize)
-		r.src = make([]byte, tc.srcSize)
-		got, err := ioutil.ReadAll(r)
-		str := string(got)
-		if str != tc.wantStr || err != tc.wantErr {
-			t.Errorf("%s:\ngot  %q, %v\nwant %q, %v", tc, str, err, tc.wantStr, tc.wantErr)
-		}
+		run(t, tc.desc, func(t *testing.T) {
+			r := NewReader(strings.NewReader(tc.src), tc.t)
+			// Differently sized dst and src buffers are not part of the
+			// exported API. We override them manually.
+			r.dst = make([]byte, tc.dstSize)
+			r.src = make([]byte, tc.srcSize)
+			got, err := ioutil.ReadAll(r)
+			str := string(got)
+			if str != tc.wantStr || err != tc.wantErr {
+				t.Errorf("\ngot  %q, %v\nwant %q, %v", str, err, tc.wantStr, tc.wantErr)
+			}
+		})
 	}
 }
 
@@ -625,30 +663,32 @@ func TestWriter(t *testing.T) {
 			sizes = []int{tc.ioSize}
 		}
 		for _, sz := range sizes {
-			bb := &bytes.Buffer{}
-			w := NewWriter(bb, tc.t)
-			// Differently sized dst and src buffers are not part of the
-			// exported API. We override them manually.
-			w.dst = make([]byte, tc.dstSize)
-			w.src = make([]byte, tc.srcSize)
-			src := make([]byte, sz)
-			var err error
-			for b := tc.src; len(b) > 0 && err == nil; {
-				n := copy(src, b)
-				b = b[n:]
-				m := 0
-				m, err = w.Write(src[:n])
-				if m != n && err == nil {
-					t.Errorf("%s:%d: did not consume all bytes %d < %d", tc, sz, m, n)
+			run(t, fmt.Sprintf("%s/%d", tc.desc, sz), func(t *testing.T) {
+				bb := &bytes.Buffer{}
+				w := NewWriter(bb, tc.t)
+				// Differently sized dst and src buffers are not part of the
+				// exported API. We override them manually.
+				w.dst = make([]byte, tc.dstSize)
+				w.src = make([]byte, tc.srcSize)
+				src := make([]byte, sz)
+				var err error
+				for b := tc.src; len(b) > 0 && err == nil; {
+					n := copy(src, b)
+					b = b[n:]
+					m := 0
+					m, err = w.Write(src[:n])
+					if m != n && err == nil {
+						t.Errorf("did not consume all bytes %d < %d", m, n)
+					}
 				}
-			}
-			if err == nil {
-				err = w.Close()
-			}
-			str := bb.String()
-			if str != tc.wantStr || err != tc.wantErr {
-				t.Errorf("%s:%d:\ngot  %q, %v\nwant %q, %v", tc, sz, str, err, tc.wantStr, tc.wantErr)
-			}
+				if err == nil {
+					err = w.Close()
+				}
+				str := bb.String()
+				if str != tc.wantStr || err != tc.wantErr {
+					t.Errorf("\ngot  %q, %v\nwant %q, %v", str, err, tc.wantStr, tc.wantErr)
+				}
+			})
 		}
 	}
 }

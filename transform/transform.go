@@ -207,7 +207,9 @@ func (w *Writer) Write(data []byte) (n int, err error) {
 			return n, werr
 		}
 		src = src[nSrc:]
-		if w.n > 0 && len(src) <= n {
+		if w.n == 0 {
+			n += nSrc
+		} else if len(src) <= n {
 			// Enough bytes from w.src have been consumed. We make src point
 			// to data instead to reduce the copying.
 			w.n = 0
@@ -216,25 +218,38 @@ func (w *Writer) Write(data []byte) (n int, err error) {
 			if n < len(data) && (err == nil || err == ErrShortSrc) {
 				continue
 			}
-		} else {
-			n += nSrc
 		}
-		switch {
-		case err == ErrShortDst && (nDst > 0 || nSrc > 0):
-		case err == ErrShortSrc && len(src) < len(w.src):
-			m := copy(w.src, src)
-			// If w.n > 0, bytes from data were already copied to w.src and n
-			// was already set to the number of bytes consumed.
-			if w.n == 0 {
-				n += m
+		switch err {
+		case ErrShortDst:
+			// This error is okay as long as we are making progress.
+			if nDst > 0 || nSrc > 0 {
+				continue
 			}
-			w.n = m
-			return n, nil
-		case err == nil && w.n > 0:
-			return n, errInconsistentByteCount
-		default:
-			return n, err
+		case ErrShortSrc:
+			if len(src) < len(w.src) {
+				m := copy(w.src, src)
+				// If w.n > 0, bytes from data were already copied to w.src and n
+				// was already set to the number of bytes consumed.
+				if w.n == 0 {
+					n += m
+				}
+				w.n = m
+				err = nil
+			} else if nDst > 0 || nSrc > 0 {
+				// Not enough buffer to store the remainder. Keep processing as
+				// long as there is progress. Without this case, transforms that
+				// require a lookahead larger than the buffer may result in an
+				// error. This is not something one may expect to be common in
+				// practice, but it may occur when buffers are set to small
+				// sizes during testing.
+				continue
+			}
+		case nil:
+			if w.n > 0 {
+				err = errInconsistentByteCount
+			}
 		}
+		return n, err
 	}
 }
 
