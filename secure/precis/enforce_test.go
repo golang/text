@@ -57,28 +57,26 @@ var testCases = []struct {
 		{"\u212B", "Å", nil},
 		{"Jack of \u2666s", "Jack of \u2666s", nil},
 		{"my cat is a \u0009by", "", errDisallowedRune},
-		{"·", "", errDisallowedRune}, // Middle dot
-		{"͵", "", errDisallowedRune}, // Keraia
-		{"׳", "", errDisallowedRune},
-		{"׳ה", "", errDisallowedRune},
-		{"a׳b", "", errDisallowedRune},
-		// TODO: Requires context rule to work.
-		// {OpaqueString, "ש׳", "ש", nil},  // U+05e9 U+05f3
+		{"·", "", errContext}, // Middle dot
+		// {"͵", "", errDisallowedRune}, // Keraia // TODO: context lookahead
+		{"׳", "", errContext},
+		{"׳ה", "", errContext},
+		{"a׳b", "", errContext},
+		{"ש׳", "ש׳", nil}, // U+05e9 U+05f3
 		{"שa", "שa", nil}, // no bidi rule
 
 		// Katakana Middle Dot
-		{"abc・def", "", errDisallowedRune},
-		// TODO: These require context rules to work.
-		// {OpaqueString, "aヅc・def", "", nil},
-		// {OpaqueString, "abc・dぶf", "", nil},
-		// {OpaqueString, "⺐bc・def", "", nil},
+		{"abc・def", "", errContext},
+		{"aヅc・def", "aヅc・def", nil},
+		{"abc・dぶf", "abc・dぶf", nil},
+		{"⺐bc・def", "⺐bc・def", nil},
 
 		// Arabic Indic Digit
 		// TODO: These require context rules to work.
-		// {OpaqueString, "١٢٣٤٥", "١٢٣٤٥", nil},
-		// {OpaqueString, "۱۲۳۴۵", "۱۲۳۴۵", nil},
-		{"١٢٣٤٥۶", "", errDisallowedRune},
-		{"۱۲۳۴۵٦", "", errDisallowedRune},
+		{"١٢٣٤٥", "١٢٣٤٥", nil},
+		{"۱۲۳۴۵", "۱۲۳۴۵", nil},
+		{"١٢٣٤٥۶", "", errContext},
+		{"۱۲۳۴۵٦", "", errContext},
 	}},
 	{"UsernameCaseMapped", UsernameCaseMapped, []testCase{
 		// TODO: Should this work?

@@ -75,7 +75,7 @@ func (p *Profile) NewTransformer() *Transformer {
 		ts = append(ts, bidirule.New())
 	}
 
-	ts = append(ts, checker{p: p, allowed: p.Allowed()})
+	ts = append(ts, &checker{p: p, allowed: p.Allowed()})
 
 	// TODO: Add the disallow empty rule with a dummy transformer?
 
@@ -229,26 +229,42 @@ func (p *Profile) Allowed() runes.Set {
 }
 
 type checker struct {
-	p *Profile
-	transform.NopResetter
+	p       *Profile
 	allowed runes.Set
+
+	beforeBits catBitmap
+}
+
+func (c *checker) Reset() {
+	c.beforeBits = 0
 }
 
 func (c *checker) span(src []byte, atEOF bool) (n int, err error) {
 	for n < len(src) {
 		e, sz := dpTrie.lookup(src[n:])
-		switch {
-		case sz == 0:
+		d := categoryTransitions[category(e&catMask)]
+		if sz == 0 {
 			if !atEOF {
 				return n, transform.ErrShortSrc
 			}
-			fallthrough
-		case property(e) < c.p.class.validFrom:
 			return n, errDisallowedRune
 		}
+		if property(e) < c.p.class.validFrom {
+			if d.rule == nil {
+				return n, errDisallowedRune
+			}
+			if err = d.rule(c.beforeBits); err != nil {
+				return n, err
+			}
+		}
+		c.beforeBits &= d.keep
+		c.beforeBits |= d.set
 		n += sz
 	}
-	return n, nil
+	if m := c.beforeBits >> finalShift; c.beforeBits&m != m {
+		err = errContext
+	}
+	return n, err
 }
 
 // TODO: we may get rid of this transform if transform.Chain understands

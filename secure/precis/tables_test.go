@@ -36,9 +36,9 @@ func (tt *tableTest) run(t *testing.T) {
 		b := make([]byte, 4)
 		n := utf8.EncodeRune(b, r)
 		trieval, _ := dpTrie.lookup(b[:n])
-		p := property(trieval)
+		p := entry(trieval).property()
 		if p != tt.prop && !exceptions.Contains(r) {
-			t.Errorf("%U: got %v; want %v", r, tt.prop, p)
+			t.Errorf("%U: got %+x; want %+x", r, tt.prop, p)
 		}
 	})
 }
