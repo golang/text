@@ -254,23 +254,16 @@ func (c *checker) span(src []byte, atEOF bool) (n int, err error) {
 // TODO: we may get rid of this transform if transform.Chain understands
 // something like a Spanner interface.
 func (c checker) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
-	for nSrc < len(src) {
-		r, size := utf8.DecodeRune(src[nSrc:])
-		if size == 0 { // Incomplete UTF-8 encoding
-			if !atEOF {
-				return nDst, nSrc, transform.ErrShortSrc
-			}
-			size = 1
-		}
-		if c.allowed.Contains(r) {
-			if size != copy(dst[nDst:], src[nSrc:nSrc+size]) {
-				return nDst, nSrc, transform.ErrShortDst
-			}
-			nDst += size
-		} else {
-			return nDst, nSrc, errDisallowedRune
-		}
-		nSrc += size
+	short := false
+	if len(dst) < len(src) {
+		src = src[:len(dst)]
+		atEOF = false
+		short = true
 	}
-	return nDst, nSrc, nil
+	nSrc, err = c.span(src, atEOF)
+	nDst = copy(dst, src[:nSrc])
+	if short && (err == transform.ErrShortSrc || err == nil) {
+		err = transform.ErrShortDst
+	}
+	return nDst, nSrc, err
 }
