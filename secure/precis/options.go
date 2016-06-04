@@ -17,7 +17,7 @@ type Option func(*options)
 
 type options struct {
 	// Preparation options
-	allowwidechars bool
+	foldWidth bool
 
 	// Enforcement options
 	cases         transform.Transformer
@@ -44,11 +44,11 @@ var (
 	// comparison during the PRECIS comparison step.
 	IgnoreCase Option = ignoreCase
 
-	// The AllowWide option causes the profile to allow full-width and half-width
-	// characters by mapping them to their decomposition mappings. This is useful
-	// for profiles that are based on the identifier class which would otherwise
-	// disallow wide characters.
-	AllowWide Option = allowWide
+	// The FoldWidth option causes the profile to map non-canonical wide and
+	// narrow variants to their decomposition mapping. This is useful for
+	// profiles that are based on the identifier class which would otherwise
+	// disallow such characters.
+	FoldWidth Option = foldWidth
 
 	// The DisallowEmpty option causes the enforcement step to return an error if
 	// the resulting string would be empty.
@@ -63,8 +63,8 @@ var (
 	ignoreCase = func(o *options) {
 		o.ignorecase = true
 	}
-	allowWide = func(o *options) {
-		o.allowwidechars = true
+	foldWidth = func(o *options) {
+		o.foldWidth = true
 	}
 	disallowEmpty = func(o *options) {
 		o.disallowEmpty = true
@@ -86,13 +86,6 @@ func AdditionalMapping(t ...func() transform.Transformer) Option {
 func Norm(f norm.Form) Option {
 	return func(o *options) {
 		o.norm = f
-	}
-}
-
-// The Width option defines a Profile's width mapping rule.
-func Width(w width.Transformer) Option {
-	return func(o *options) {
-		o.width = &w
 	}
 }
 

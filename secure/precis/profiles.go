@@ -10,13 +10,12 @@ import (
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
-	"golang.org/x/text/width"
 )
 
 var (
 	Nickname              *Profile = nickname          // Implements the Nickname profile specified in RFC 7700.
-	UsernameCaseMapped    *Profile = usernamecasemap   // Implements the UsernameCaseMapped profile specified in RFC 7613.
-	UsernameCasePreserved *Profile = usernamenocasemap // Implements the UsernameCasePreserved profile specified in RFC 7613.
+	UsernameCaseMapped    *Profile = usernameCaseMap   // Implements the UsernameCaseMapped profile specified in RFC 7613.
+	UsernameCasePreserved *Profile = usernameNoCaseMap // Implements the UsernameCasePreserved profile specified in RFC 7613.
 	OpaqueString          *Profile = opaquestring      // Implements the OpaqueString profile defined in RFC 7613 for passwords and other secure labels.
 )
 
@@ -31,16 +30,15 @@ var (
 		Norm(norm.NFKC),
 		DisallowEmpty,
 	)
-	usernamecasemap = NewIdentifier(
-		AllowWide,
+	usernameCaseMap = NewIdentifier(
+		FoldWidth,
 		FoldCase(),
 		Norm(norm.NFC),
 		BidiRule,
 	)
-	usernamenocasemap = NewIdentifier(
-		AllowWide,
+	usernameNoCaseMap = NewIdentifier(
+		FoldWidth,
 		Norm(norm.NFC),
-		Width(width.Fold),
 		BidiRule,
 	)
 	opaquestring = NewFreeform(

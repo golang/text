@@ -54,9 +54,10 @@ func NewFreeform(opts ...Option) *Profile {
 func (p *Profile) NewTransformer() *Transformer {
 	var ts []transform.Transformer
 
-	if p.options.allowwidechars {
-		ts = append(ts, width.Fold)
-	} else if p.options.width != nil {
+	// These transforms are applied in the order defined in
+	// https://tools.ietf.org/html/rfc7564#section-7
+
+	if p.options.foldWidth {
 		ts = append(ts, width.Fold)
 	}
 
@@ -105,8 +106,11 @@ func (b *buffers) apply(t transform.Transformer) (err error) {
 func (b *buffers) enforce(p *Profile, src []byte) ([]byte, error) {
 	b.src = src
 
+	// These transforms are applied in the order defined in
+	// https://tools.ietf.org/html/rfc7564#section-7
+
 	// TODO: allow different width transforms options.
-	if p.options.allowwidechars || p.options.width != nil {
+	if p.options.foldWidth {
 		// TODO: use Span, once available.
 		if err := b.apply(width.Fold); err != nil {
 			return nil, err
