@@ -25,9 +25,6 @@ import (
 // the introduction of some kind of error type for conveying the erroneous code
 // point.
 
-// TODO:
-// - Define UTF-32?
-
 // UTF8 is the UTF-8 encoding.
 var UTF8 encoding.Encoding = utf8enc
 

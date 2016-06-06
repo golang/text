@@ -19,6 +19,7 @@ import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/encoding/traditionalchinese"
 	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/encoding/unicode/utf32"
 	"golang.org/x/text/transform"
 )
 
@@ -188,7 +189,7 @@ var basicTestCases = []struct {
 
 	// UTF-16 tests.
 	{
-		e:       unicode.UTF16(unicode.BigEndian, unicode.IgnoreBOM),
+		e:       utf16BEIB,
 		encoded: "\x00\x57\x00\xe4\xd8\x35\xdd\x65",
 		utf8:    "\x57\u00e4\U0001d565",
 	},
@@ -199,7 +200,7 @@ var basicTestCases = []struct {
 		utf8:      "\x57\u00e4\U0001d565",
 	},
 	{
-		e:       unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM),
+		e:       utf16LEIB,
 		encoded: "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
 		utf8:    "\x57\u00e4\U0001d565",
 	},
@@ -207,6 +208,30 @@ var basicTestCases = []struct {
 		e:         utf16LEEB,
 		encPrefix: "\xff\xfe",
 		encoded:   "\x57\x00\xe4\x00\x35\xd8\x65\xdd",
+		utf8:      "\x57\u00e4\U0001d565",
+	},
+
+	// UTF-32 tests.
+	{
+		e:       utf32BEIB,
+		encoded: "\x00\x00\x00\x57\x00\x00\x00\xe4\x00\x01\xd5\x65",
+		utf8:    "\x57\u00e4\U0001d565",
+	},
+	{
+		e:         utf32.UTF32(utf32.BigEndian, utf32.ExpectBOM),
+		encPrefix: "\x00\x00\xfe\xff",
+		encoded:   "\x00\x00\x00\x57\x00\x00\x00\xe4\x00\x01\xd5\x65",
+		utf8:      "\x57\u00e4\U0001d565",
+	},
+	{
+		e:       utf32.UTF32(utf32.LittleEndian, utf32.IgnoreBOM),
+		encoded: "\x57\x00\x00\x00\xe4\x00\x00\x00\x65\xd5\x01\x00",
+		utf8:    "\x57\u00e4\U0001d565",
+	},
+	{
+		e:         utf32.UTF32(utf32.LittleEndian, utf32.ExpectBOM),
+		encPrefix: "\xff\xfe\x00\x00",
+		encoded:   "\x57\x00\x00\x00\xe4\x00\x00\x00\x65\xd5\x01\x00",
 		utf8:      "\x57\u00e4\U0001d565",
 	},
 
@@ -982,6 +1007,7 @@ var testdataFiles = []struct {
 	{traditionalchinese.Big5, "sunzi-bingfa-traditional", "big5"},
 	{utf16LEIB, "candide", "utf-16le"},
 	{unicode.UTF8, "candide", "utf-8"},
+	{utf32BEIB, "candide", "utf-32be"},
 
 	// GB18030 is a superset of GBK and is nominally a Simplified Chinese
 	// encoding, but it can also represent the entire Basic Multilingual
@@ -1086,3 +1112,7 @@ func BenchmarkUTF8Decoder(b *testing.B)      { benchmark(b, "Decode", unicode.UT
 func BenchmarkUTF8Encoder(b *testing.B)      { benchmark(b, "Encode", unicode.UTF8) }
 func BenchmarkUTF16Decoder(b *testing.B)     { benchmark(b, "Decode", utf16LEIB) }
 func BenchmarkUTF16Encoder(b *testing.B)     { benchmark(b, "Encode", utf16LEIB) }
+func BenchmarkUTF32Decoder(b *testing.B)     { benchmark(b, "Decode", utf32BEIB) }
+func BenchmarkUTF32Encoder(b *testing.B)     { benchmark(b, "Encode", utf32BEIB) }
+
+var utf32BEIB = utf32.UTF32(utf32.BigEndian, utf32.IgnoreBOM)
