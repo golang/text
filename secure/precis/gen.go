@@ -28,9 +28,19 @@ var assigned, disallowedRunes *unicode.RangeTable
 
 var runeCategory = map[rune]category{}
 
+var overrides = map[category]category{
+	viramaModifier: viramaJoinT,
+	greek:          greekJoinT,
+	hebrew:         hebrewJoinT,
+}
+
 func setCategory(r rune, cat category) {
 	if c, ok := runeCategory[r]; ok {
-		log.Fatalf("%U: multiple categories for rune (%v and %v)", r, c, cat)
+		if override, ok := overrides[c]; cat == joiningT && ok {
+			cat = override
+		} else {
+			log.Fatalf("%U: multiple categories for rune (%v and %v)", r, c, cat)
+		}
 	}
 	runeCategory[r] = cat
 }
@@ -77,18 +87,6 @@ func main() {
 			setCategory(p.Rune(0), viramaModifier)
 		}
 	})
-	cat := map[string]category{
-		"L": joiningL,
-		"D": joiningD,
-		"T": joiningT,
-		"R": joiningR,
-	}
-	ucd.Parse(gen.OpenUCDFile("ArabicShaping.txt"), func(p *ucd.Parser) {
-		switch v := p.String(2); v {
-		case "L", "D", "T", "R":
-			setCategory(p.Rune(0), cat[v])
-		}
-	})
 	ucd.Parse(gen.OpenUCDFile("Scripts.txt"), func(p *ucd.Parser) {
 		switch p.String(1) {
 		case "Greek":
@@ -108,6 +106,19 @@ func main() {
 			runeCategory[r] = e.cat
 		}
 	}
+	cat := map[string]category{
+		"L": joiningL,
+		"D": joiningD,
+		"T": joiningT,
+
+		"R": joiningR,
+	}
+	ucd.Parse(gen.OpenUCDFile("extracted/DerivedJoiningType.txt"), func(p *ucd.Parser) {
+		switch v := p.String(1); v {
+		case "L", "D", "T", "R":
+			setCategory(p.Rune(0), cat[v])
+		}
+	})
 
 	writeTables()
 	gen.Repackage("gen_trieval.go", "trieval.go", "precis")
@@ -284,7 +295,12 @@ func writeTables() {
 		default:
 			p = disallowed
 		}
-		propTrie.Insert(r, uint64(p)|uint64(runeCategory[r]))
+		cat := runeCategory[r]
+		// Don't set category for runes that are disallowed.
+		if p == disallowed {
+			cat = exceptions[r].cat
+		}
+		propTrie.Insert(r, uint64(p)|uint64(cat))
 	}
 	sz, err := propTrie.Gen(w)
 	if err != nil {

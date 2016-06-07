@@ -18,6 +18,7 @@ const (
 
 	// These bits are set on each iteration depending on the current value.
 	bJoinStart
+	bJoinMid
 	bJoinEnd
 	bVirama
 	bLatinSmallL
@@ -31,7 +32,7 @@ const (
 	permanent = bJapanese | bArabicIndicDigit | bExtendedArabicIndicDigit | bMustHaveJapn
 )
 
-const finalShift = 9
+const finalShift = 10
 
 var errContext = errors.New("precis: contextual rule violated")
 
@@ -53,12 +54,15 @@ var categoryTransitions = []struct {
 }{
 	joiningL:          {set: bJoinStart},
 	joiningD:          {set: bJoinStart | bJoinEnd},
-	joiningT:          {keep: bJoinStart},
+	joiningT:          {keep: bJoinStart, set: bJoinMid},
 	joiningR:          {set: bJoinEnd},
 	viramaModifier:    {set: bVirama},
+	viramaJoinT:       {set: bVirama | bJoinMid},
 	latinSmallL:       {set: bLatinSmallL},
 	greek:             {set: bGreek},
+	greekJoinT:        {set: bGreek | bJoinMid},
 	hebrew:            {set: bHebrew},
+	hebrewJoinT:       {set: bHebrew | bJoinMid},
 	japanese:          {set: bJapanese},
 	katakanaMiddleDot: {set: bMustHaveJapn},
 

@@ -39,9 +39,12 @@ const (
 	joiningT
 	joiningR
 	viramaModifier
+	viramaJoinT // Virama + JoiningT
 	latinSmallL // U+006c
 	greek
+	greekJoinT // Greek + JoiningT
 	hebrew
+	hebrewJoinT // Hebrew + JoiningT
 	japanese    // hirigana, katakana, han
 
 	// Special rune types associated with contextual rules defined in
