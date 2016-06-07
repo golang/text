@@ -5,6 +5,7 @@
 package precis
 
 import (
+	"reflect"
 	"testing"
 
 	"golang.org/x/text/secure/bidirule"
@@ -154,6 +155,13 @@ func TestBytes(t *testing.T) {
 			t.Errorf("got %+q (err: %v); want %+q (err: %v)", string(e), err, tc.output, tc.err)
 		}
 	})
+	// Test that calling Bytes with something that doesn't transform returns a
+	// copy.
+	orig := []byte("hello")
+	b, _ := NewFreeform().Bytes(orig)
+	if reflect.ValueOf(b).Pointer() == reflect.ValueOf(orig).Pointer() {
+		t.Error("original and result are the same slice; should be a copy")
+	}
 }
 
 func TestAppend(t *testing.T) {
