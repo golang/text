@@ -39,8 +39,9 @@ var errContext = errors.New("precis: contextual rule violated")
 func init() {
 	// Programmatically set these required bits as, manually setting them seems
 	// too error prone.
-	for i := range categoryTransitions {
+	for i, ct := range categoryTransitions {
 		categoryTransitions[i].keep |= permanent
+		categoryTransitions[i].accept |= ct.term
 	}
 }
 
@@ -48,9 +49,14 @@ var categoryTransitions = []struct {
 	keep catBitmap // mask selecting which bits to keep from the previous state
 	set  catBitmap // mask for which bits to set for this transition
 
+	// These bitmaps are used for rules that require lookahead.
+	// term&accept == term must be true, which is enforced programmatically.
+	term   catBitmap // bits accepted as termination condition
+	accept catBitmap // bits that pass, but not sufficient as termination
+
 	// The rule function cannot take a *context as an argument, as it would
 	// cause the context to escape, adding significant overhead.
-	rule func(beforeBits catBitmap) error
+	rule func(beforeBits catBitmap) (doLookahead bool, err error)
 }{
 	joiningL:          {set: bJoinStart},
 	joiningD:          {set: bJoinStart | bJoinEnd},
@@ -67,66 +73,67 @@ var categoryTransitions = []struct {
 	katakanaMiddleDot: {set: bMustHaveJapn},
 
 	zeroWidthNonJoiner: {
-		rule: func(before catBitmap) error {
+		term:   bJoinEnd,
+		accept: bJoinMid,
+		rule: func(before catBitmap) (doLookAhead bool, err error) {
 			if before&bVirama != 0 {
-				return nil
+				return false, nil
 			}
 			if before&bJoinStart == 0 {
-				return errContext
+				return false, errContext
 			}
-			// TODO: check future.
-			return nil
+			return true, nil
 		},
 	},
 	zeroWidthJoiner: {
-		rule: func(before catBitmap) error {
+		rule: func(before catBitmap) (doLookAhead bool, err error) {
 			if before&bVirama == 0 {
-				return errContext
+				err = errContext
 			}
-			return nil
+			return false, err
 		},
 	},
 	middleDot: {
-		rule: func(before catBitmap) error {
+		term: bLatinSmallL,
+		rule: func(before catBitmap) (doLookAhead bool, err error) {
 			if before&bLatinSmallL == 0 {
-				return errContext
+				return false, errContext
 			}
-			// TODO: check future.
-			return nil
+			return true, nil
 		},
 	},
 	greekLowerNumeralSign: {
-		set: bGreek,
-		rule: func(before catBitmap) error {
-			// TODO: check future.
-			return nil
+		set:  bGreek,
+		term: bGreek,
+		rule: func(before catBitmap) (doLookAhead bool, err error) {
+			return true, nil
 		},
 	},
 	hebrewPreceding: {
 		set: bHebrew,
-		rule: func(before catBitmap) error {
+		rule: func(before catBitmap) (doLookAhead bool, err error) {
 			if before&bHebrew == 0 {
-				return errContext
+				err = errContext
 			}
-			return nil
+			return false, err
 		},
 	},
 	arabicIndicDigit: {
 		set: bArabicIndicDigit,
-		rule: func(before catBitmap) error {
+		rule: func(before catBitmap) (doLookAhead bool, err error) {
 			if before&bExtendedArabicIndicDigit != 0 {
-				return errContext
+				err = errContext
 			}
-			return nil
+			return false, err
 		},
 	},
 	extendedArabicIndicDigit: {
 		set: bExtendedArabicIndicDigit,
-		rule: func(before catBitmap) error {
+		rule: func(before catBitmap) (doLookAhead bool, err error) {
 			if before&bArabicIndicDigit != 0 {
-				return errContext
+				err = errContext
 			}
-			return nil
+			return false, err
 		},
 	},
 }

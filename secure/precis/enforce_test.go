@@ -22,6 +22,130 @@ var testCases = []struct {
 	p     *Profile
 	cases []testCase
 }{
+	{"Context Rule 1", NewFreeform(), []testCase{
+		// Rule 1: zero-width non-joiner (U+200C)
+		// From RFC:
+		//   False
+		//   If Canonical_Combining_Class(Before(cp)) .eq.  Virama Then True;
+		//   If RegExpMatch((Joining_Type:{L,D})(Joining_Type:T)*\u200C
+		//          (Joining_Type:T)*(Joining_Type:{R,D})) Then True;
+		//
+		// Example runes for different joining types:
+		// Join L: U+A872; PHAGS-PA SUPERFIXED LETTER RA
+		// Join D: U+062C; HAH WITH DOT BELOW
+		// Join T: U+0610; ARABIC SIGN SALLALLAHOU ALAYHE WASSALLAM
+		// Join R: U+0627; ALEF
+		// Virama: U+0A4D; GURMUKHI SIGN VIRAMA
+		// Virama and Join T: U+0ACD; GUJARATI SIGN VIRAMA
+		{"\u200c", "", errContext},
+		{"\u200ca", "", errContext},
+		{"a\u200c", "", errContext},
+		{"\u200c\u0627", "", errContext},             // missing JoinStart
+		{"\u062c\u200c", "", errContext},             // missing JoinEnd
+		{"\u0610\u200c\u0610\u0627", "", errContext}, // missing JoinStart
+		{"\u062c\u0610\u200c\u0610", "", errContext}, // missing JoinEnd
+
+		// Variants of: D T* U+200c T* R
+		{"\u062c\u200c\u0627", "\u062c\u200c\u0627", nil},
+		{"\u062c\u0610\u200c\u0610\u0627", "\u062c\u0610\u200c\u0610\u0627", nil},
+		{"\u062c\u0610\u0610\u200c\u0610\u0610\u0627", "\u062c\u0610\u0610\u200c\u0610\u0610\u0627", nil},
+		{"\u062c\u0610\u200c\u0627", "\u062c\u0610\u200c\u0627", nil},
+		{"\u062c\u200c\u0610\u0627", "\u062c\u200c\u0610\u0627", nil},
+
+		// Variants of: L T* U+200c T* D
+		{"\ua872\u200c\u062c", "\ua872\u200c\u062c", nil},
+		{"\ua872\u0610\u200c\u0610\u062c", "\ua872\u0610\u200c\u0610\u062c", nil},
+		{"\ua872\u0610\u0610\u200c\u0610\u0610\u062c", "\ua872\u0610\u0610\u200c\u0610\u0610\u062c", nil},
+		{"\ua872\u0610\u200c\u062c", "\ua872\u0610\u200c\u062c", nil},
+		{"\ua872\u200c\u0610\u062c", "\ua872\u200c\u0610\u062c", nil},
+
+		// Virama
+		{"\u0a4d\u200c", "\u0a4d\u200c", nil},
+		{"\ua872\u0a4d\u200c", "\ua872\u0a4d\u200c", nil},
+		{"\ua872\u0a4d\u0610\u200c", "", errContext},
+		{"\ua872\u0a4d\u0610\u200c", "", errContext},
+
+		{"\u0acd\u200c", "\u0acd\u200c", nil},
+		{"\ua872\u0acd\u200c", "\ua872\u0acd\u200c", nil},
+		{"\ua872\u0acd\u0610\u200c", "", errContext},
+		{"\ua872\u0acd\u0610\u200c", "", errContext},
+
+		// Using Virama as join T
+		{"\ua872\u0acd\u200c\u062c", "\ua872\u0acd\u200c\u062c", nil},
+		{"\ua872\u200c\u0acd\u062c", "\ua872\u200c\u0acd\u062c", nil},
+	}},
+
+	{"Context Rule 2", NewFreeform(), []testCase{
+		// Rule 2: zero-width joiner (U+200D)
+		{"\u200d", "", errContext},
+		{"\u200da", "", errContext},
+		{"a\u200d", "", errContext},
+
+		{"\u0a4d\u200d", "\u0a4d\u200d", nil},
+		{"\ua872\u0a4d\u200d", "\ua872\u0a4d\u200d", nil},
+		{"\u0a4da\u200d", "", errContext},
+	}},
+
+	{"Context Rule 3", NewFreeform(), []testCase{
+		// Rule 3: middle dot
+		{"·", "", errContext},
+		{"l·", "", errContext},
+		{"·l", "", errContext},
+		{"a·", "", errContext},
+		{"l·a", "", errContext},
+		{"a·a", "", errContext},
+		{"l·l", "l·l", nil},
+		{"al·la", "al·la", nil},
+	}},
+
+	{"Context Rule 4", NewFreeform(), []testCase{
+		// Rule 4: Greek lower numeral U+0375
+		{"͵", "", errContext},
+		{"͵a", "", errContext},
+		{"α͵", "", errContext},
+		{"͵α", "͵α", nil},
+		{"α͵α", "α͵α", nil},
+		{"͵͵α", "͵͵α", nil}, // The numeric sign is itself Greek.
+		{"α͵͵α", "α͵͵α", nil},
+	}},
+
+	{"Context Rule 5+6", NewFreeform(), []testCase{
+		// Rule 5+6: Hebrew preceding
+		// U+05f3: Geresh
+		{"׳", "", errContext},
+		{"׳ה", "", errContext},
+		{"a׳b", "", errContext},
+		{"ש׳", "ש׳", nil},     // U+05e9 U+05f3
+		{"ש׳׳׳", "ש׳׳׳", nil}, // U+05e9 U+05f3
+
+		// U+05f4: Gershayim
+		{"״", "", errContext},
+		{"״ה", "", errContext},
+		{"a״b", "", errContext},
+		{"ש״", "ש״", nil},       // U+05e9 U+05f4
+		{"ש״״״", "ש״״״", nil},   // U+05e9 U+05f4
+		{"aש״״״", "aש״״״", nil}, // U+05e9 U+05f4
+	}},
+
+	{"Context Rule 7", NewFreeform(), []testCase{
+		// Rule 7: Katakana middle Dot
+		{"・", "", errContext},
+		{"abc・", "", errContext},
+		{"・def", "", errContext},
+		{"abc・def", "", errContext},
+		{"aヅc・def", "aヅc・def", nil},
+		{"abc・dぶf", "abc・dぶf", nil},
+		{"⺐bc・def", "⺐bc・def", nil},
+	}},
+
+	{"Context Rule 8+9", NewFreeform(), []testCase{
+		// Rule 8+9: Arabic Indic Digit
+		{"١٢٣٤٥۶", "", errContext},
+		{"۱۲۳۴۵٦", "", errContext},
+		{"١٢٣٤٥", "١٢٣٤٥", nil},
+		{"۱۲۳۴۵", "۱۲۳۴۵", nil},
+	}},
+
 	{"Nickname", Nickname, []testCase{
 		{"  Swan  of   Avon   ", "Swan of Avon", nil},
 		{"", "", errEmptyString},
@@ -57,26 +181,7 @@ var testCases = []struct {
 		{"\u212B", "Å", nil},
 		{"Jack of \u2666s", "Jack of \u2666s", nil},
 		{"my cat is a \u0009by", "", errDisallowedRune},
-		{"·", "", errContext}, // Middle dot
-		// {"͵", "", errDisallowedRune}, // Keraia // TODO: context lookahead
-		{"׳", "", errContext},
-		{"׳ה", "", errContext},
-		{"a׳b", "", errContext},
-		{"ש׳", "ש׳", nil}, // U+05e9 U+05f3
 		{"שa", "שa", nil}, // no bidi rule
-
-		// Katakana Middle Dot
-		{"abc・def", "", errContext},
-		{"aヅc・def", "aヅc・def", nil},
-		{"abc・dぶf", "abc・dぶf", nil},
-		{"⺐bc・def", "⺐bc・def", nil},
-
-		// Arabic Indic Digit
-		// TODO: These require context rules to work.
-		{"١٢٣٤٥", "١٢٣٤٥", nil},
-		{"۱۲۳۴۵", "۱۲۳۴۵", nil},
-		{"١٢٣٤٥۶", "", errContext},
-		{"۱۲۳۴۵٦", "", errContext},
 	}},
 	{"UsernameCaseMapped", UsernameCaseMapped, []testCase{
 		// TODO: Should this work?

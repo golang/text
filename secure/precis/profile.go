@@ -233,10 +233,14 @@ type checker struct {
 	allowed runes.Set
 
 	beforeBits catBitmap
+	termBits   catBitmap
+	acceptBits catBitmap
 }
 
 func (c *checker) Reset() {
 	c.beforeBits = 0
+	c.termBits = 0
+	c.acceptBits = 0
 }
 
 func (c *checker) span(src []byte, atEOF bool) (n int, err error) {
@@ -253,18 +257,48 @@ func (c *checker) span(src []byte, atEOF bool) (n int, err error) {
 			if d.rule == nil {
 				return n, errDisallowedRune
 			}
-			if err = d.rule(c.beforeBits); err != nil {
+			doLookAhead, err := d.rule(c.beforeBits)
+			if err != nil {
 				return n, err
+			}
+			if doLookAhead {
+				c.beforeBits &= d.keep
+				c.beforeBits |= d.set
+				// We may still have a lookahead rule which we will require to
+				// complete (by checking termBits == 0) before setting the new
+				// bits.
+				if c.termBits != 0 && (!c.checkLookahead() || c.termBits == 0) {
+					return n, err
+				}
+				c.termBits = d.term
+				c.acceptBits = d.accept
+				n += sz
+				continue
 			}
 		}
 		c.beforeBits &= d.keep
 		c.beforeBits |= d.set
+		if c.termBits != 0 && !c.checkLookahead() {
+			return n, errContext
+		}
 		n += sz
 	}
-	if m := c.beforeBits >> finalShift; c.beforeBits&m != m {
+	if m := c.beforeBits >> finalShift; c.beforeBits&m != m || c.termBits != 0 {
 		err = errContext
 	}
 	return n, err
+}
+
+func (c *checker) checkLookahead() bool {
+	switch {
+	case c.beforeBits&c.termBits != 0:
+		c.termBits = 0
+		c.acceptBits = 0
+	case c.beforeBits&c.acceptBits != 0:
+	default:
+		return false
+	}
+	return true
 }
 
 // TODO: we may get rid of this transform if transform.Chain understands
