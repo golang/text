@@ -22,6 +22,10 @@ var testCases = []struct {
 	p     *Profile
 	cases []testCase
 }{
+	{"Basic", NewFreeform(), []testCase{
+		{"e\u0301\u031f", "\u00e9\u031f", nil}, // normalize
+	}},
+
 	{"Context Rule 1", NewFreeform(), []testCase{
 		// Rule 1: zero-width non-joiner (U+200C)
 		// From RFC:

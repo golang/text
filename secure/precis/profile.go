@@ -97,13 +97,14 @@ func (b *buffers) init(n int) {
 
 func (b *buffers) apply(t transform.Transformer) (err error) {
 	// TODO: use Span, once available.
-	b.src, _, err = transform.Append(t, b.buf[b.next][:0], b.src)
-	b.buf[b.next] = b.src
-	b.next ^= 1
+	x := b.next & 1
+	b.src, _, err = transform.Append(t, b.buf[x][:0], b.src)
+	b.buf[x] = b.src
+	b.next++
 	return err
 }
 
-func (b *buffers) enforce(p *Profile, src []byte) ([]byte, error) {
+func (b *buffers) enforce(p *Profile, src []byte) (str []byte, err error) {
 	b.src = src
 
 	// These transforms are applied in the order defined in
@@ -112,24 +113,29 @@ func (b *buffers) enforce(p *Profile, src []byte) ([]byte, error) {
 	// TODO: allow different width transforms options.
 	if p.options.foldWidth {
 		// TODO: use Span, once available.
-		if err := b.apply(width.Fold); err != nil {
+		if err = b.apply(width.Fold); err != nil {
 			return nil, err
 		}
 	}
 	for _, f := range p.options.additional {
-		if err := b.apply(f()); err != nil {
+		if err = b.apply(f()); err != nil {
 			return nil, err
 		}
 	}
 	if p.options.cases != nil {
-		if err := b.apply(p.options.cases); err != nil {
+		if err = b.apply(p.options.cases); err != nil {
 			return nil, err
 		}
 	}
-	// TODO: use QuickSpan. Using QuickSpan may cause the original buffer to be
-	// returned. Make sure Bytes will handle this correctly.
-	if err := b.apply(p.options.norm); err != nil {
-		return nil, err
+	if n := p.norm.QuickSpan(b.src); n < len(b.src) {
+		x := b.next & 1
+		n = copy(b.buf[x], b.src[:n])
+		b.src, _, err = transform.Append(p.norm, b.buf[x][:n], b.src[n:])
+		b.buf[x] = b.src
+		b.next++
+		if err != nil {
+			return nil, err
+		}
 	}
 	if p.options.bidiRule {
 		if err := b.apply(bidirule.New()); err != nil {
@@ -177,6 +183,11 @@ func (p *Profile) Bytes(b []byte) ([]byte, error) {
 	b, err := buf.enforce(p, b)
 	if err != nil {
 		return nil, err
+	}
+	if buf.next == 0 {
+		c := make([]byte, len(b))
+		copy(c, b)
+		return c, nil
 	}
 	return b, nil
 }

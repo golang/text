@@ -10,15 +10,27 @@ import "testing"
 
 var benchData = []struct{ name, str string }{
 	{"ASCII", "Malvolio"},
+	{"NotNormalized", "abcdefg\u0301\u031f"},
 	{"Arabic", "دبي"},
 	{"Hangul", "동일조건변경허락"},
 }
 
+var benchProfiles = []struct {
+	name string
+	p    *Profile
+}{
+	{"FreeForm", NewFreeform()},
+	{"Nickname", Nickname},
+	{"OpaqueString", OpaqueString},
+	{"UsernameCaseMapped", UsernameCaseMapped},
+	{"UsernameCasePreserved", UsernameCasePreserved},
+}
+
 func doBench(b *testing.B, f func(b *testing.B, p *Profile, s string)) {
-	for _, tc := range testCases {
+	for _, bp := range benchProfiles {
 		for _, d := range benchData {
-			b.Run(tc.name+"/"+d.name, func(b *testing.B) {
-				f(b, tc.p, d.str)
+			b.Run(bp.name+"/"+d.name, func(b *testing.B) {
+				f(b, bp.p, d.str)
 			})
 		}
 	}
