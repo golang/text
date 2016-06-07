@@ -510,9 +510,8 @@ func String(t Transformer, s string) (result string, n int, err error) {
 	t.Reset()
 	if s == "" {
 		// Fast path for the common case for empty input. Results in about a
-		// 66% reduction of running time for BenchmarkStringLowerEmpty.
-		var buf [4]byte
-		if nDst, _, err := t.Transform(buf[:], nil, true); nDst == 0 && err == nil {
+		// 86% reduction of running time for BenchmarkStringLowerEmpty.
+		if _, _, err := t.Transform(nil, nil, true); err == nil {
 			return "", 0, nil
 		}
 	}

@@ -86,17 +86,24 @@ func (errorAtEnd) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err er
 	return n, n, nil
 }
 
-type replaceWithSingleX struct{ NopResetter }
+type replaceWithConstant struct {
+	replacement string
+	written     int
+}
 
-func (replaceWithSingleX) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
-	if !atEOF {
-		return 0, len(src), nil
+func (t *replaceWithConstant) Reset() {
+	t.written = 0
+}
+
+func (t *replaceWithConstant) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	if atEOF {
+		nDst = copy(dst, t.replacement[t.written:])
+		t.written += nDst
+		if t.written < len(t.replacement) {
+			err = ErrShortDst
+		}
 	}
-	if len(dst) == 0 {
-		return 0, len(src), ErrShortDst
-	}
-	dst[0] = 'X'
-	return 1, len(src), nil
+	return nDst, len(src), err
 }
 
 type addAnXAtTheEnd struct{ NopResetter }
@@ -232,6 +239,7 @@ type delayedTrickler []byte
 func (t *delayedTrickler) Reset() {
 	*t = nil
 }
+
 func (t *delayedTrickler) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	if len(*t) > 0 && len(dst) > 0 {
 		dst[0] = (*t)[0]
@@ -368,8 +376,17 @@ var testCases = []testCase{
 	},
 
 	{
-		desc:    "replace entire empty string with single character",
-		t:       replaceWithSingleX{},
+		desc:    "replace entire non-empty string with one byte",
+		t:       &replaceWithConstant{replacement: "X"},
+		src:     "none of this will be copied",
+		dstSize: 1,
+		srcSize: 10,
+		wantStr: "X",
+	},
+
+	{
+		desc:    "replace entire empty string with one byte",
+		t:       &replaceWithConstant{replacement: "X"},
 		src:     "",
 		dstSize: 1,
 		srcSize: 10,
@@ -377,12 +394,12 @@ var testCases = []testCase{
 	},
 
 	{
-		desc:    "replace entire non-empty string with single character",
-		t:       replaceWithSingleX{},
-		src:     "none of this will be copied",
-		dstSize: 1,
+		desc:    "replace entire empty string with seven bytes",
+		t:       &replaceWithConstant{replacement: "ABCDEFG"},
+		src:     "",
+		dstSize: 3,
 		srcSize: 10,
-		wantStr: "X",
+		wantStr: "ABCDEFG",
 	},
 
 	{
