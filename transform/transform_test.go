@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 	"unicode/utf8"
+
+	"golang.org/x/text/internal/testtext"
 )
 
 type lowerCaseASCII struct{ NopResetter }
@@ -640,7 +642,7 @@ var testCases = []testCase{
 
 func TestReader(t *testing.T) {
 	for _, tc := range testCases {
-		run(t, tc.desc, func(t *testing.T) {
+		testtext.Run(t, tc.desc, func(t *testing.T) {
 			r := NewReader(strings.NewReader(tc.src), tc.t)
 			// Differently sized dst and src buffers are not part of the
 			// exported API. We override them manually.
@@ -663,7 +665,7 @@ func TestWriter(t *testing.T) {
 			sizes = []int{tc.ioSize}
 		}
 		for _, sz := range sizes {
-			run(t, fmt.Sprintf("%s/%d", tc.desc, sz), func(t *testing.T) {
+			testtext.Run(t, fmt.Sprintf("%s/%d", tc.desc, sz), func(t *testing.T) {
 				bb := &bytes.Buffer{}
 				w := NewWriter(bb, tc.t)
 				// Differently sized dst and src buffers are not part of the
@@ -1147,7 +1149,7 @@ func testString(t *testing.T, f func(Transformer, string) (string, int, error)) 
 			// The result string will be different.
 			continue
 		}
-		run(t, tt.desc, func(t *testing.T) {
+		testtext.Run(t, tt.desc, func(t *testing.T) {
 			got, n, err := f(tt.t, tt.src)
 			if tt.wantErr != err {
 				t.Errorf("error: got %v; want %v", err, tt.wantErr)
@@ -1191,7 +1193,7 @@ func TestAppend(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	run(t, "transform", func(t *testing.T) { testString(t, String) })
+	testtext.Run(t, "transform", func(t *testing.T) { testString(t, String) })
 
 	// Overrun the internal destination buffer.
 	for i, s := range []string{
@@ -1209,7 +1211,7 @@ func TestString(t *testing.T) {
 		aaa[:1*initialBufSize+0] + "A",
 		aaa[:1*initialBufSize+1] + "A",
 	} {
-		run(t, fmt.Sprint("dst buffer test using lower/", i), func(t *testing.T) {
+		testtext.Run(t, fmt.Sprint("dst buffer test using lower/", i), func(t *testing.T) {
 			got, _, _ := String(lowerCaseASCII{}, s)
 			if want := strings.ToLower(s); got != want {
 				t.Errorf("got %s (%d); want %s (%d)", got, len(got), want, len(want))
@@ -1226,7 +1228,7 @@ func TestString(t *testing.T) {
 		aaa[:2*initialBufSize+0],
 		aaa[:2*initialBufSize+1],
 	} {
-		run(t, fmt.Sprint("src buffer test using rleEncode/", i), func(t *testing.T) {
+		testtext.Run(t, fmt.Sprint("src buffer test using rleEncode/", i), func(t *testing.T) {
 			got, _, _ := String(rleEncode{}, s)
 			if want := fmt.Sprintf("%da", len(s)); got != want {
 				t.Errorf("got %s (%d); want %s (%d)", got, len(got), want, len(want))
@@ -1244,7 +1246,7 @@ func TestString(t *testing.T) {
 		aaa[:initialBufSize+1],
 		aaa[:10*initialBufSize],
 	} {
-		run(t, fmt.Sprint("alloc/", i), func(t *testing.T) {
+		testtext.Run(t, fmt.Sprint("alloc/", i), func(t *testing.T) {
 			if n := testing.AllocsPerRun(5, func() { String(&lowerCaseASCIILookahead{}, s) }); n > 1 {
 				t.Errorf("#allocs was %f; want 1", n)
 			}

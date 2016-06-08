@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build go1.7
+// +build !go1.7
 
-package transform
+package testtext
 
 import "testing"
 
-func run(t *testing.T, name string, fn func(t *testing.T)) { t.Run(name, fn) }
+func Run(t *testing.T, name string, fn func(t *testing.T)) {
+	t.Logf("Running %s...", name)
+	fn(t)
+}
