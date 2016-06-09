@@ -662,6 +662,16 @@ func TestUTF16(t *testing.T) {
 		err     error
 		t       transform.Transformer
 	}{{
+		desc: "utf-16 IgnoreBOM dec: empty string",
+		t:    utf16BEIB.NewDecoder(),
+	}, {
+		desc: "utf-16 UseBOM dec: empty string",
+		t:    utf16BEUB.NewDecoder(),
+	}, {
+		desc: "utf-16 ExpectBOM dec: empty string",
+		err:  unicode.ErrMissingBOM,
+		t:    utf16BEEB.NewDecoder(),
+	}, {
 		desc:    "utf-16 dec: BOM determines encoding BE (RFC 2781:3.3)",
 		src:     "\xFE\xFF\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
 		sizeDst: 100,

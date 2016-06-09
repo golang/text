@@ -287,6 +287,12 @@ func (u *utf16Decoder) Reset() {
 }
 
 func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	if len(src) == 0 {
+		if atEOF && u.current.bomPolicy&requireBOM != 0 {
+			return 0, 0, ErrMissingBOM
+		}
+		return 0, 0, nil
+	}
 	if u.current.bomPolicy&acceptBOM != 0 {
 		if len(src) < 2 {
 			return 0, 0, transform.ErrShortSrc

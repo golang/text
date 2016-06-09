@@ -30,6 +30,16 @@ func TestUTF32(t *testing.T) {
 		err     error
 		t       transform.Transformer
 	}{{
+		desc: "utf-32 IgnoreBOM dec: empty string",
+		t:    utf32BEIB.NewDecoder(),
+	}, {
+		desc: "utf-32 UseBOM dec: empty string",
+		t:    utf32BEUB.NewDecoder(),
+	}, {
+		desc: "utf-32 ExpectBOM dec: empty string",
+		err:  ErrMissingBOM,
+		t:    utf32BEEB.NewDecoder(),
+	}, {
 		desc:    "utf-32be dec: Doesn't interpret U+FEFF as BOM",
 		src:     "\x00\x00\xFE\xFF\x00\x01\x23\x45\x00\x00\x00\x3D\x00\x00\x00\x52\x00\x00\x00\x61",
 		sizeDst: 100,
