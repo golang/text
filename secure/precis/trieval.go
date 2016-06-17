@@ -7,8 +7,6 @@ package precis
 // 5..0   category
 type entry uint8
 
-// The order of these constants matter. A Profile may consider runes to be
-// allowed either from pValid or idDisOrFreePVal.
 const (
 	propShift = 6
 	propMask  = 0xc0
@@ -20,6 +18,8 @@ func (e entry) category() category { return category(e & catMask) }
 
 type property uint8
 
+// The order of these constants matter. A Profile may consider runes to be
+// allowed either from pValid or idDisOrFreePVal.
 const (
 	unassigned property = iota << propShift
 	disallowed
