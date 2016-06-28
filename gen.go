@@ -63,7 +63,7 @@ func main() {
 
 	if gen.UnicodeVersion() != unicode.Version {
 		fmt.Printf("Requested Unicode version %s; core unicode version is %s.\n",
-			gen.UnicodeVersion,
+			gen.UnicodeVersion(),
 			unicode.Version)
 		// TODO: use collate to compare. Simple comparison will work, though,
 		// until Unicode reaches version 10. To avoid circular dependencies, we
