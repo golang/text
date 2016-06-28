@@ -1247,7 +1247,7 @@ func TestString(t *testing.T) {
 		aaa[:10*initialBufSize],
 	} {
 		testtext.Run(t, fmt.Sprint("alloc/", i), func(t *testing.T) {
-			if n := testing.AllocsPerRun(5, func() { String(&lowerCaseASCIILookahead{}, s) }); n > 1 {
+			if n := testtext.AllocsPerRun(5, func() { String(&lowerCaseASCIILookahead{}, s) }); n > 1 {
 				t.Errorf("#allocs was %f; want 1", n)
 			}
 		})

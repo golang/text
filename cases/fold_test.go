@@ -4,7 +4,11 @@
 
 package cases
 
-import "testing"
+import (
+	"testing"
+
+	"golang.org/x/text/internal/testtext"
+)
 
 func TestFold(t *testing.T) {
 	testCases := []string{
@@ -25,7 +29,7 @@ func TestFold(t *testing.T) {
 			}
 			dst := make([]byte, 256) // big enough to hold any result
 			src := []byte(tc)
-			v := testing.AllocsPerRun(20, func() {
+			v := testtext.AllocsPerRun(20, func() {
 				c.Transform(dst, src, true)
 			})
 			if v > 0 {

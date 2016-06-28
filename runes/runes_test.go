@@ -9,6 +9,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/transform"
 )
 
@@ -504,7 +505,7 @@ func TestReplaceIllFormed(t *testing.T) {
 }
 
 func TestMapAlloc(t *testing.T) {
-	if n := testing.AllocsPerRun(3, func() {
+	if n := testtext.AllocsPerRun(3, func() {
 		Map(idem).Transform(nil, nil, false)
 	}); n > 0 {
 		t.Errorf("got %f; want 0", n)
@@ -514,7 +515,7 @@ func TestMapAlloc(t *testing.T) {
 func rmNop(r rune) bool { return false }
 
 func TestRemoveAlloc(t *testing.T) {
-	if n := testing.AllocsPerRun(3, func() {
+	if n := testtext.AllocsPerRun(3, func() {
 		Remove(Predicate(rmNop)).Transform(nil, nil, false)
 	}); n > 0 {
 		t.Errorf("got %f; want 0", n)
@@ -522,7 +523,7 @@ func TestRemoveAlloc(t *testing.T) {
 }
 
 func TestReplaceIllFormedAlloc(t *testing.T) {
-	if n := testing.AllocsPerRun(3, func() {
+	if n := testtext.AllocsPerRun(3, func() {
 		ReplaceIllFormed().Transform(nil, nil, false)
 	}); n > 0 {
 		t.Errorf("got %f; want 0", n)

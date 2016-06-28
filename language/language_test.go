@@ -7,6 +7,8 @@ package language
 import (
 	"reflect"
 	"testing"
+
+	"golang.org/x/text/internal/testtext"
 )
 
 func TestTagSize(t *testing.T) {
@@ -69,7 +71,7 @@ func TestMakeString(t *testing.T) {
 		// The bytes to string conversion as used in remakeString
 		// occasionally measures as more than one alloc, breaking this test.
 		// To alleviate this we set the number of runs to more than 1.
-		if n := testing.AllocsPerRun(8, id.remakeString); n > 1 {
+		if n := testtext.AllocsPerRun(8, id.remakeString); n > 1 {
 			t.Errorf("%d: # allocs got %.1f; want <= 1", i, n)
 		}
 	}

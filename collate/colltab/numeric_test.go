@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"golang.org/x/text/internal/testtext"
 )
 
 const (
@@ -149,8 +151,8 @@ func TestNumericWeighterAlloc(t *testing.T) {
 	w := NewNumericWeighter(numWeighter)
 	s := "1234567890a"
 
-	nNormal := testing.AllocsPerRun(3, func() { numWeighter.AppendNextString(buf, s) })
-	nNumeric := testing.AllocsPerRun(3, func() { w.AppendNextString(buf, s) })
+	nNormal := testtext.AllocsPerRun(3, func() { numWeighter.AppendNextString(buf, s) })
+	nNumeric := testtext.AllocsPerRun(3, func() { w.AppendNextString(buf, s) })
 	if n := nNumeric - nNormal; n > 0 {
 		t.Errorf("got %f; want 0", n)
 	}

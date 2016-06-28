@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -178,7 +179,7 @@ func TestCaseMappings(t *testing.T) {
 				}
 				dst := make([]byte, 256) // big enough to hold any result
 				src := []byte(strings.Join(src, " "))
-				v := testing.AllocsPerRun(20, func() {
+				v := testtext.AllocsPerRun(20, func() {
 					c.Transform(dst, src, true)
 				})
 				if v > 1.1 {
@@ -203,7 +204,7 @@ func TestAlloc(t *testing.T) {
 		func() Caser { return Title(language.Und) },
 	} {
 		var c Caser
-		v := testing.AllocsPerRun(2, func() {
+		v := testtext.AllocsPerRun(2, func() {
 			c = f()
 		})
 		if v > 1 {
@@ -211,7 +212,7 @@ func TestAlloc(t *testing.T) {
 			// and Title as well to have less allocations for the root locale.
 			t.Skipf("%d:init: number of allocs was %f; want 0", i, v)
 		}
-		v = testing.AllocsPerRun(2, func() {
+		v = testtext.AllocsPerRun(2, func() {
 			c.Transform(dst, src, true)
 		})
 		if v > 0 {
