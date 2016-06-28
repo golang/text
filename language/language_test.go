@@ -174,7 +174,7 @@ func TestScript(t *testing.T) {
 		{"cmn", "Hans", Low},
 		{"ru", "Cyrl", High},
 		{"ru-RU", "Cyrl", High},
-		{"yue", "Zzzz", No},
+		{"yue", "Hant", Low},
 		{"x-abc", "Zzzz", Low},
 		{"und-zyyy", "Zyyy", Exact},
 	}
@@ -228,17 +228,17 @@ func TestRegion(t *testing.T) {
 		{"en-US", "US", Exact},
 		{"cmn", "CN", Low},
 		{"ru", "RU", Low},
-		{"yue", "ZZ", No},
+		{"yue", "HK", Low},
 		{"x-abc", "ZZ", Low},
 	}
 	for i, tt := range tests {
 		loc, _ := Raw.Parse(tt.loc)
 		reg, conf := loc.Region()
 		if reg.String() != tt.reg {
-			t.Errorf("%d: region was %s; want %s", i, reg, tt.reg)
+			t.Errorf("%d:%s: region was %s; want %s", i, tt.loc, reg, tt.reg)
 		}
 		if conf != tt.conf {
-			t.Errorf("%d: confidence was %d; want %d", i, conf, tt.conf)
+			t.Errorf("%d:%s: confidence was %d; want %d", i, tt.loc, conf, tt.conf)
 		}
 	}
 }

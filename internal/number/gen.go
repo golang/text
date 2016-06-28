@@ -180,24 +180,36 @@ func genSymbols(w *gen.CodeWriter, data *cldr.CLDR) {
 		syms := cldr.MakeSlice(&ldml.Numbers.Symbols)
 		syms.SelectDraft(d)
 
+		getFirst := func(name string, x interface{}) string {
+			v := reflect.ValueOf(x)
+			slice := cldr.MakeSlice(x)
+			slice.SelectAnyOf("alt", "", "alt")
+			if reflect.Indirect(v).Len() == 0 {
+				return ""
+			} else if reflect.Indirect(v).Len() > 1 {
+				log.Fatalf("%s: multiple values of %q within single symbol not supported.", lang, name)
+			}
+			return reflect.Indirect(v).Index(0).MethodByName("Data").Call(nil)[0].String()
+		}
+
 		for _, sym := range ldml.Numbers.Symbols {
 			if sym.NumberSystem == "" {
 				// This is just linking the default of root to "latn".
 				continue
 			}
 			symbolMap[key{langIndex, getNumberSystem(sym.NumberSystem)}] = &symbols{
-				SymDecimal:                getFirst("decimal", sym.Decimal),
-				SymGroup:                  getFirst("group", sym.Group),
-				SymList:                   getFirst("list", sym.List),
-				SymPercentSign:            getFirst("percentSign", sym.PercentSign),
-				SymPlusSign:               getFirst("plusSign", sym.PlusSign),
-				SymMinusSign:              getFirst("minusSign", sym.MinusSign),
-				SymExponential:            getFirst("exponential", sym.Exponential),
-				SymSuperscriptingExponent: getFirst("superscriptingExponent", sym.SuperscriptingExponent),
-				SymPerMille:               getFirst("perMille", sym.PerMille),
-				SymInfinity:               getFirst("infinity", sym.Infinity),
-				SymNan:                    getFirst("nan", sym.Nan),
-				SymTimeSeparator:          getFirst("timeSeparator", sym.TimeSeparator),
+				SymDecimal:                getFirst("decimal", &sym.Decimal),
+				SymGroup:                  getFirst("group", &sym.Group),
+				SymList:                   getFirst("list", &sym.List),
+				SymPercentSign:            getFirst("percentSign", &sym.PercentSign),
+				SymPlusSign:               getFirst("plusSign", &sym.PlusSign),
+				SymMinusSign:              getFirst("minusSign", &sym.MinusSign),
+				SymExponential:            getFirst("exponential", &sym.Exponential),
+				SymSuperscriptingExponent: getFirst("superscriptingExponent", &sym.SuperscriptingExponent),
+				SymPerMille:               getFirst("perMille", &sym.PerMille),
+				SymInfinity:               getFirst("infinity", &sym.Infinity),
+				SymNan:                    getFirst("nan", &sym.Nan),
+				SymTimeSeparator:          getFirst("timeSeparator", &sym.TimeSeparator),
 			}
 		}
 	}
@@ -334,14 +346,4 @@ and default symbol set`)
 langToAlt is a list of numbering system and symbol set pairs, sorted and
 marked by compact language index.`)
 	w.WriteVar("langToAlt", langToAlt)
-}
-
-func getFirst(name string, x interface{}) string {
-	v := reflect.ValueOf(x)
-	if v.Len() == 0 {
-		return ""
-	} else if v.Len() > 1 {
-		log.Fatalf("Multiple values of %q within single symbol not supported.", name)
-	}
-	return v.Index(0).MethodByName("Data").Call(nil)[0].String()
 }
