@@ -63,13 +63,13 @@ func contextFromRune(r rune) *context {
 }
 
 func TestCaseProperties(t *testing.T) {
-	assigned := rangetable.Assigned(UnicodeVersion)
-	coreVersion := rangetable.Assigned(unicode.Version)
-	if coreVersion == nil {
+	if unicode.Version != UnicodeVersion {
 		// Properties of existing code points may change by Unicode version, so
 		// we need to skip.
-		t.Skipf("Skipping as core Unicode version %s is ahead of %s", unicode.Version, UnicodeVersion)
+		t.Skipf("Skipping as core Unicode version %s different than %s", unicode.Version, UnicodeVersion)
 	}
+	assigned := rangetable.Assigned(UnicodeVersion)
+	coreVersion := rangetable.Assigned(unicode.Version)
 	for r := rune(0); r <= lastRuneForTesting; r++ {
 		if !unicode.In(r, assigned) || !unicode.In(r, coreVersion) {
 			continue
