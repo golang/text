@@ -65,6 +65,11 @@ func contextFromRune(r rune) *context {
 func TestCaseProperties(t *testing.T) {
 	assigned := rangetable.Assigned(UnicodeVersion)
 	coreVersion := rangetable.Assigned(unicode.Version)
+	if coreVersion == nil {
+		// Properties of existing code points may change by Unicode version, so
+		// we need to skip.
+		t.Skipf("Skipping as core Unicode version %s is ahead of %s", unicode.Version, UnicodeVersion)
+	}
 	for r := rune(0); r <= lastRuneForTesting; r++ {
 		if !unicode.In(r, assigned) || !unicode.In(r, coreVersion) {
 			continue
@@ -97,6 +102,9 @@ func TestCaseProperties(t *testing.T) {
 func TestMapping(t *testing.T) {
 	assigned := rangetable.Assigned(UnicodeVersion)
 	coreVersion := rangetable.Assigned(unicode.Version)
+	if coreVersion == nil {
+		coreVersion = assigned
+	}
 	apply := func(r rune, f func(c *context) bool) string {
 		c := contextFromRune(r)
 		f(c)
@@ -159,6 +167,9 @@ func runeFoldData(r rune) (x struct{ simple, full, special string }) {
 func TestFoldData(t *testing.T) {
 	assigned := rangetable.Assigned(UnicodeVersion)
 	coreVersion := rangetable.Assigned(unicode.Version)
+	if coreVersion == nil {
+		coreVersion = assigned
+	}
 	apply := func(r rune, f func(c *context) bool) (string, info) {
 		c := contextFromRune(r)
 		f(c)
