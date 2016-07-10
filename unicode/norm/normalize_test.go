@@ -186,6 +186,58 @@ func TestFirstBoundary(t *testing.T) {
 	runPosTests(t, "TestFirstBoundaryInString", NFC, firstBoundaryStringF, firstBoundaryTests)
 }
 
+func TestNextBoundary(t *testing.T) {
+	testCases := []struct {
+		input string
+		atEOF bool
+		want  int
+	}{
+		// no boundary
+		{"", true, 0},
+		{"", false, -1},
+		{"\u0300", true, 2},
+		{"\u0300", false, -1},
+		{"\x80\x80", true, 1},
+		{"\x80\x80", false, 1},
+		// illegal runes
+		{"\xff", false, 1},
+		{"\u0300\xff", false, 2},
+		{"\u0300\xc0\x80\x80", false, 2},
+		{"\xc2\x80\x80", false, 2},
+		{"\xc2", false, -1},
+		{"\xc2", true, 1},
+		{"a\u0300\xc2", false, -1},
+		{"a\u0300\xc2", true, 3},
+		// boundaries
+		{"a", true, 1},
+		{"a", false, -1},
+		{"aa", false, 1},
+		{"\u0300", true, 2},
+		{"\u0300", false, -1},
+		{"\u0300a", false, 2},
+		// Hangul
+		{"\u1103\u1161", true, 6},
+		{"\u1103\u1161", false, -1},
+		{"\u110B\u1173\u11B7", false, -1},
+		{"\u110B\u1173\u11B7\u110B\u1173\u11B7", false, 9},
+		{"\u1161\u110B\u1173\u11B7", false, 3},
+		{"\u1173\u11B7\u1103\u1161", false, 6},
+		// too many combining characters.
+		{grave(maxNonStarters - 1), false, -1},
+		{grave(maxNonStarters), false, 60},
+		{grave(maxNonStarters + 1), false, 60},
+	}
+
+	for _, tc := range testCases {
+		if got := NFC.NextBoundary([]byte(tc.input), tc.atEOF); got != tc.want {
+			t.Errorf("NextBoundary(%+q, %v) = %d; want %d", tc.input, tc.atEOF, got, tc.want)
+		}
+		if got := NFC.NextBoundaryInString(tc.input, tc.atEOF); got != tc.want {
+			t.Errorf("NextBoundaryInString(%+q, %v) = %d; want %d", tc.input, tc.atEOF, got, tc.want)
+		}
+	}
+}
+
 var decomposeToLastTests = []PositionTest{
 	// ends with inert character
 	{"Hello!", 6, ""},
