@@ -66,6 +66,14 @@ var encodings = []struct {
 		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM855-2.1.2.ucm",
 	},
 	{
+		"IBM Code Page 860",
+		"IBM860",
+		"",
+		"CodePage860",
+		encoding.ASCIISub,
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM860-2.1.2.ucm",
+	},
+	{
 		"Windows Code Page 858", // PC latin1 with Euro
 		"IBM00858",
 		"",
@@ -80,6 +88,22 @@ var encodings = []struct {
 		"CodePage862",
 		encoding.ASCIISub,
 		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM862-2.1.2.ucm",
+	},
+	{
+		"IBM Code Page 863",
+		"IBM863",
+		"",
+		"CodePage863",
+		encoding.ASCIISub,
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM863-2.1.2.ucm",
+	},
+	{
+		"IBM Code Page 865",
+		"IBM865",
+		"",
+		"CodePage865",
+		encoding.ASCIISub,
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM865-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 866",
