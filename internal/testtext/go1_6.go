@@ -8,7 +8,8 @@ package testtext
 
 import "testing"
 
-func Run(t *testing.T, name string, fn func(t *testing.T)) {
+func Run(t *testing.T, name string, fn func(t *testing.T)) bool {
 	t.Logf("Running %s...", name)
 	fn(t)
+	return t.Failed()
 }
