@@ -17,7 +17,7 @@ type lookupStrings struct {
 type LookupTest struct {
 	lookup []lookupStrings
 	n      int
-	tries  contractTrieSet
+	tries  ContractTrieSet
 }
 
 var lookupTests = []LookupTest{
@@ -29,7 +29,7 @@ var lookupTests = []LookupTest{
 		{"d", 0, 0},
 	},
 		1,
-		contractTrieSet{
+		ContractTrieSet{
 			{'a', 0, 1, 0xFF},
 			{'b', 0, 1, 0xFF},
 			{'c', 'c', 0, 1},
@@ -45,7 +45,7 @@ var lookupTests = []LookupTest{
 		{"f", 0, 0},
 	},
 		1,
-		contractTrieSet{
+		ContractTrieSet{
 			{'a', 0, 1, 0xFF},
 			{'b', 0, 1, 0xFF},
 			{'c', 'e', 0, 1},
@@ -59,7 +59,7 @@ var lookupTests = []LookupTest{
 		{"abe", 2, 2},
 	},
 		1,
-		contractTrieSet{
+		ContractTrieSet{
 			{'a', 0, 1, 3},
 			{'b', 0, 1, 2},
 			{'c', 'c', 0, 1},
@@ -75,7 +75,7 @@ var lookupTests = []LookupTest{
 		{"ba", 6, 1},
 	},
 		2,
-		contractTrieSet{
+		ContractTrieSet{
 			{'b', 'b', 0, 6},
 			{'a', 0, 2, 5},
 			{'c', 'c', 0, 4},
@@ -93,7 +93,7 @@ var lookupTests = []LookupTest{
 		{"bcdf", 3, 4},
 	},
 		2,
-		contractTrieSet{
+		ContractTrieSet{
 			{'b', 3, 1, 0xFF},
 			{'a', 0, 1, 0xFF},
 			{'b', 0, 1, 6},
@@ -106,7 +106,7 @@ var lookupTests = []LookupTest{
 	},
 }
 
-func lookup(c *contractTrieSet, nnode int, s []uint8) (i, n int) {
+func lookup(c *ContractTrieSet, nnode int, s []uint8) (i, n int) {
 	scan := c.scanner(0, nnode, s)
 	scan.scan(0)
 	return scan.result()
@@ -114,7 +114,7 @@ func lookup(c *contractTrieSet, nnode int, s []uint8) (i, n int) {
 
 func TestLookupContraction(t *testing.T) {
 	for i, tt := range lookupTests {
-		cts := contractTrieSet(tt.tries)
+		cts := ContractTrieSet(tt.tries)
 		for j, lu := range tt.lookup {
 			str := lu.str
 			for _, s := range []string{str, str + "X"} {

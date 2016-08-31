@@ -76,7 +76,7 @@ func init() {
 // New returns a new Matcher for the given language and options.
 func New(t language.Tag, opts ...Option) *Matcher {
 	m := &Matcher{
-		w: colltab.Init(locales[newcolltab.MatchLang(t, tags)]),
+		w: getTable(locales[newcolltab.MatchLang(t, tags)]),
 	}
 	for _, f := range opts {
 		f(m)

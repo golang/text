@@ -57,7 +57,7 @@ var tags []language.Tag
 // New returns a new Collator initialized for the given locale.
 func New(t language.Tag, o ...Option) *Collator {
 	index := newcolltab.MatchLang(t, tags)
-	c := newCollator(colltab.Init(locales[index]))
+	c := newCollator(getTable(locales[index]))
 
 	// Set options from the user-supplied tag.
 	c.setFromTag(t)

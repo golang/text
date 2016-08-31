@@ -14,7 +14,7 @@ import (
 
 var (
 	defaultIgnore = ignore(colltab.Tertiary)
-	defaultTable  = colltab.Init(locales[0])
+	defaultTable  = getTable(locales[0])
 )
 
 func TestOptions(t *testing.T) {

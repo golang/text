@@ -103,4 +103,4 @@ var testLookup = [640]uint16{
 	0x270: 0x04, 0x274: 0x06,
 }
 
-var testTrie = trie{testLookup[6*blockSize:], testValues[:], testLookup[:], testValues[:]}
+var testTrie = Trie{testLookup[6*blockSize:], testValues[:], testLookup[:], testValues[:]}
