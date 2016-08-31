@@ -15,8 +15,7 @@ import (
 	"bytes"
 	"strings"
 
-	"golang.org/x/text/collate/colltab"
-	newcolltab "golang.org/x/text/internal/colltab"
+	"golang.org/x/text/internal/colltab"
 	"golang.org/x/text/language"
 )
 
@@ -56,7 +55,7 @@ var tags []language.Tag
 
 // New returns a new Collator initialized for the given locale.
 func New(t language.Tag, o ...Option) *Collator {
-	index := newcolltab.MatchLang(t, tags)
+	index := colltab.MatchLang(t, tags)
 	c := newCollator(getTable(locales[index]))
 
 	// Set options from the user-supplied tag.
@@ -236,7 +235,7 @@ func (c *Collator) getColElemsString(str string) []colltab.Elem {
 type iter struct {
 	wa [512]colltab.Elem
 
-	newcolltab.Iter
+	colltab.Iter
 	pce int
 }
 

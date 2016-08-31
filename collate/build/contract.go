@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/text/collate/colltab"
+	"golang.org/x/text/internal/colltab"
 )
 
 // This file contains code for detecting contractions and generating
