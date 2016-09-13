@@ -228,10 +228,10 @@ func (t *titleCaser) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 			t.rewrite(c)
 		}
 
-		wasMid := p.isCaseIgnorableAndNonBreakStarter()
+		wasMid := p.isMid()
 		// Break out of this loop on failure to ensure we do not modify the
 		// state incorrectly.
-		if p.isCased() && !p.isCaseIgnorableAndNotCased() {
+		if p.isCased() {
 			if !c.isMidWord {
 				if !t.title(c) {
 					break
@@ -242,22 +242,21 @@ func (t *titleCaser) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 			}
 		} else if !c.copy() {
 			break
-		}
-
-		// TODO: make this an "else if" if we can prove that no rune that does
-		// not match the first condition of the if statement can be a break.
-		if p.isBreak() {
+		} else if p.isBreak() {
 			c.isMidWord = false
 		}
 
 		// As we save the state of the transformer, it is safe to call
 		// checkpoint after any successful write.
-		c.checkpoint()
+		if !(c.isMidWord && wasMid) {
+			c.checkpoint()
+		}
 
 		if !c.next() {
 			break
 		}
-		if wasMid && c.info.isCaseIgnorableAndNonBreakStarter() {
+
+		if wasMid && c.info.isMid() {
 			c.isMidWord = false
 		}
 	}
@@ -285,8 +284,13 @@ func finalSigma(f mapFunc) mapFunc {
 		// We need to do one more iteration after maxIgnorable, as a cased
 		// letter is not an ignorable and may modify the result.
 		for i := 0; i < maxIgnorable+1; i++ {
+			wasMid := c.info.isMid()
 			if !c.next() {
 				return false
+			}
+			if wasMid && c.info.isMid() && !c.info.isCased() {
+				// For title case.
+				c.isMidWord = false
 			}
 			if !c.info.isCaseIgnorable() {
 				if c.info.isCased() {

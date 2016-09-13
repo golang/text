@@ -232,7 +232,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		dstSize, srcSize int
 		t                transform.Transformer
 	}{{
-		desc:     "und upper: short dst",
+		desc:     "und/upper/short dst",
 		src:      "abcdefg",
 		want:     "ABCDEFG",
 		firstErr: transform.ErrShortDst,
@@ -240,7 +240,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Upper(language.Und),
 	}, {
-		desc:     "und upper: short src",
+		desc:     "und/upper/short src",
 		src:      "123é56",
 		want:     "123É56",
 		firstErr: transform.ErrShortSrc,
@@ -248,7 +248,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  4,
 		t:        Upper(language.Und),
 	}, {
-		desc:     "und upper: no error on short",
+		desc:     "und/upper/no error on short",
 		src:      "12",
 		want:     "12",
 		firstErr: nil,
@@ -256,7 +256,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  1,
 		t:        Upper(language.Und),
 	}, {
-		desc:     "und lower: short dst",
+		desc:     "und/lower/short dst",
 		src:      "ABCDEFG",
 		want:     "abcdefg",
 		firstErr: transform.ErrShortDst,
@@ -264,7 +264,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Lower(language.Und),
 	}, {
-		desc:     "und lower: short src",
+		desc:     "und/lower/short src",
 		src:      "123É56",
 		want:     "123é56",
 		firstErr: transform.ErrShortSrc,
@@ -272,7 +272,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  4,
 		t:        Lower(language.Und),
 	}, {
-		desc:     "und lower: no error on short",
+		desc:     "und/lower/no error on short",
 		src:      "12",
 		want:     "12",
 		firstErr: nil,
@@ -280,14 +280,14 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  1,
 		t:        Lower(language.Und),
 	}, {
-		desc:    "final sigma: no error",
+		desc:    "und/title/final sigma: no error",
 		src:     "ΟΣ",
 		want:    "Ος",
 		dstSize: minBufSize,
 		srcSize: minBufSize,
 		t:       Title(language.Und),
 	}, {
-		desc:     "final sigma: short source",
+		desc:     "und/title/final sigma: short source",
 		src:      "ΟΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣ",
 		want:     "Οσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσς",
 		firstErr: transform.ErrShortSrc,
@@ -295,7 +295,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  10,
 		t:        Title(language.Und),
 	}, {
-		desc:     "final sigma: short destination 1",
+		desc:     "und/title/final sigma: short destination 1",
 		src:      "ΟΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣ",
 		want:     "Οσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσς",
 		firstErr: transform.ErrShortDst,
@@ -303,7 +303,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Title(language.Und),
 	}, {
-		desc:     "final sigma: short destination 2",
+		desc:     "und/title/final sigma: short destination 2",
 		src:      "ΟΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣ",
 		want:     "Οσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσς",
 		firstErr: transform.ErrShortDst,
@@ -311,7 +311,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Title(language.Und),
 	}, {
-		desc:     "final sigma: short destination 3",
+		desc:     "und/title/final sigma: short destination 3",
 		src:      "ΟΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣΣ",
 		want:     "Οσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσσς",
 		firstErr: transform.ErrShortDst,
@@ -319,7 +319,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Title(language.Und),
 	}, {
-		desc:     "clipped UTF-8 rune",
+		desc:     "und/title/clipped UTF-8 rune",
 		src:      "σσσσσσσσσσσ",
 		want:     "Σσσσσσσσσσσ",
 		firstErr: transform.ErrShortSrc,
@@ -327,9 +327,9 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  5,
 		t:        Title(language.Und),
 	}, {
-		desc:    "clipped UTF-8 rune atEOF",
-		src:     "σσσ" + string([]byte{0xC0}),
-		want:    "Σσσ" + string([]byte{0xC0}),
+		desc:    "und/title/clipped UTF-8 rune atEOF",
+		src:     "σσσ" + string([]byte{0xCF}),
+		want:    "Σσσ" + string([]byte{0xCF}),
 		dstSize: minBufSize,
 		srcSize: minBufSize,
 		t:       Title(language.Und),
@@ -337,9 +337,9 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		// Note: the choice to change the final sigma at the end in case of
 		// too many case ignorables is arbitrary. The main reason for this
 		// choice is that it results in simpler code.
-		desc:    "final sigma: max ignorables",
+		desc:    "und/title/final sigma: max ignorables",
 		src:     "ΟΣ" + strings.Repeat(".", maxIgnorable) + "a",
-		want:    "Οσ" + strings.Repeat(".", maxIgnorable) + "a",
+		want:    "Οσ" + strings.Repeat(".", maxIgnorable) + "A",
 		dstSize: minBufSize,
 		srcSize: minBufSize,
 		t:       Title(language.Und),
@@ -347,28 +347,38 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		// Note: the choice to change the final sigma at the end in case of
 		// too many case ignorables is arbitrary. The main reason for this
 		// choice is that it results in simpler code.
-		desc:    "final sigma: too many ignorables",
+		desc:    "und/title/long string",
+		src:     "AA" + strings.Repeat(".", maxIgnorable+1) + "a",
+		want:    "Aa" + strings.Repeat(".", maxIgnorable+1) + "A",
+		dstSize: minBufSize,
+		srcSize: len("AA" + strings.Repeat(".", maxIgnorable+1)),
+		t:       Title(language.Und),
+	}, {
+		// Note: the choice to change the final sigma at the end in case of
+		// too many case ignorables is arbitrary. The main reason for this
+		// choice is that it results in simpler code.
+		desc:    "und/title/final sigma: too many ignorables",
 		src:     "ΟΣ" + strings.Repeat(".", maxIgnorable+1) + "a",
-		want:    "Ος" + strings.Repeat(".", maxIgnorable+1) + "a",
+		want:    "Ος" + strings.Repeat(".", maxIgnorable+1) + "A",
 		dstSize: minBufSize,
 		srcSize: len("ΟΣ" + strings.Repeat(".", maxIgnorable+1)),
 		t:       Title(language.Und),
 	}, {
-		desc:    "el upper: max ignorables",
+		desc:    "el/upper/max ignorables",
 		src:     "ο" + strings.Repeat("\u0321", maxIgnorable-1) + "\u0313",
 		want:    "Ο" + strings.Repeat("\u0321", maxIgnorable-1),
 		dstSize: minBufSize,
 		srcSize: minBufSize,
 		t:       Upper(language.Greek),
 	}, {
-		desc:    "el upper: too many ignorables",
+		desc:    "el/upper/too many ignorables",
 		src:     "ο" + strings.Repeat("\u0321", maxIgnorable) + "\u0313",
 		want:    "Ο" + strings.Repeat("\u0321", maxIgnorable) + "\u0313",
 		dstSize: minBufSize,
 		srcSize: len("ο" + strings.Repeat("\u0321", maxIgnorable)),
 		t:       Upper(language.Greek),
 	}, {
-		desc:     "el upper: short dst",
+		desc:     "el/upper/short dst",
 		src:      "123ο",
 		want:     "123Ο",
 		firstErr: transform.ErrShortDst,
@@ -376,21 +386,21 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Upper(language.Greek),
 	}, {
-		desc:    "lt lower: max ignorables",
+		desc:    "lt/lower/max ignorables",
 		src:     "I" + strings.Repeat("\u0321", maxIgnorable-1) + "\u0300",
 		want:    "i" + strings.Repeat("\u0321", maxIgnorable-1) + "\u0307\u0300",
 		dstSize: minBufSize,
 		srcSize: minBufSize,
 		t:       Lower(language.Lithuanian),
 	}, {
-		desc:    "lt lower: too many ignorables",
+		desc:    "lt/lower/too many ignorables",
 		src:     "I" + strings.Repeat("\u0321", maxIgnorable) + "\u0300",
 		want:    "i" + strings.Repeat("\u0321", maxIgnorable) + "\u0300",
 		dstSize: minBufSize,
 		srcSize: len("I" + strings.Repeat("\u0321", maxIgnorable)),
 		t:       Lower(language.Lithuanian),
 	}, {
-		desc:     "lt lower: decomposition with short dst buffer 1",
+		desc:     "lt/lower/decomposition with short dst buffer 1",
 		src:      "aaaaa\u00cc", // U+00CC LATIN CAPITAL LETTER I GRAVE
 		firstErr: transform.ErrShortDst,
 		want:     "aaaaai\u0307\u0300",
@@ -398,7 +408,7 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Lower(language.Lithuanian),
 	}, {
-		desc:     "lt lower: decomposition with short dst buffer 2",
+		desc:     "lt/lower/decomposition with short dst buffer 2",
 		src:      "aaaa\u00cc", // U+00CC LATIN CAPITAL LETTER I GRAVE
 		firstErr: transform.ErrShortDst,
 		want:     "aaaai\u0307\u0300",
@@ -406,21 +416,21 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Lower(language.Lithuanian),
 	}, {
-		desc:    "lt upper: max ignorables",
+		desc:    "lt/upper/max ignorables",
 		src:     "i" + strings.Repeat("\u0321", maxIgnorable-1) + "\u0307\u0300",
 		want:    "I" + strings.Repeat("\u0321", maxIgnorable-1) + "\u0300",
 		dstSize: minBufSize,
 		srcSize: minBufSize,
 		t:       Upper(language.Lithuanian),
 	}, {
-		desc:    "lt upper: too many ignorables",
+		desc:    "lt/upper/too many ignorables",
 		src:     "i" + strings.Repeat("\u0321", maxIgnorable) + "\u0307\u0300",
 		want:    "I" + strings.Repeat("\u0321", maxIgnorable) + "\u0307\u0300",
 		dstSize: minBufSize,
 		srcSize: len("i" + strings.Repeat("\u0321", maxIgnorable)),
 		t:       Upper(language.Lithuanian),
 	}, {
-		desc:     "lt upper: short dst",
+		desc:     "lt/upper/short dst",
 		src:      "12i\u0307\u0300",
 		want:     "12\u00cc",
 		firstErr: transform.ErrShortDst,
@@ -428,21 +438,21 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Upper(language.Lithuanian),
 	}, {
-		desc:    "aztr lower: max ignorables",
+		desc:    "aztr/lower/max ignorables",
 		src:     "I" + strings.Repeat("\u0321", maxIgnorable-1) + "\u0307\u0300",
 		want:    "i" + strings.Repeat("\u0321", maxIgnorable-1) + "\u0300",
 		dstSize: minBufSize,
 		srcSize: minBufSize,
 		t:       Lower(language.Turkish),
 	}, {
-		desc:    "aztr lower: too many ignorables",
+		desc:    "aztr/lower/too many ignorables",
 		src:     "I" + strings.Repeat("\u0321", maxIgnorable) + "\u0307\u0300",
 		want:    "\u0131" + strings.Repeat("\u0321", maxIgnorable) + "\u0307\u0300",
 		dstSize: minBufSize,
 		srcSize: len("I" + strings.Repeat("\u0321", maxIgnorable)),
 		t:       Lower(language.Turkish),
 	}, {
-		desc:     "nl title: pre-IJ cutoff",
+		desc:     "nl/title/pre-IJ cutoff",
 		src:      "  ij",
 		want:     "  IJ",
 		firstErr: transform.ErrShortDst,
@@ -450,34 +460,44 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		srcSize:  minBufSize,
 		t:        Title(language.Dutch),
 	}, {
-		desc:     "nl title: mid-IJ cutoff",
+		desc:     "nl/title/mid-IJ cutoff",
 		src:      "  ij",
 		want:     "  IJ",
 		firstErr: transform.ErrShortDst,
 		dstSize:  3,
 		srcSize:  minBufSize,
 		t:        Title(language.Dutch),
+	}, {
+		desc:     "af/title/apostrophe",
+		src:      "'n bietje",
+		want:     "'n Bietje",
+		firstErr: transform.ErrShortDst,
+		dstSize:  3,
+		srcSize:  minBufSize,
+		t:        Title(language.Afrikaans),
 	}} {
-		buf := make([]byte, tt.dstSize)
-		got := []byte{}
-		var nSrc, nDst int
-		var err error
-		for p := 0; p < len(tt.src); p += nSrc {
-			q := p + tt.srcSize
-			if q > len(tt.src) {
-				q = len(tt.src)
-			}
-			nDst, nSrc, err = tt.t.Transform(buf, []byte(tt.src[p:q]), q == len(tt.src))
-			got = append(got, buf[:nDst]...)
+		testtext.Run(t, tt.desc, func(t *testing.T) {
+			buf := make([]byte, tt.dstSize)
+			got := []byte{}
+			var nSrc, nDst int
+			var err error
+			for p := 0; p < len(tt.src); p += nSrc {
+				q := p + tt.srcSize
+				if q > len(tt.src) {
+					q = len(tt.src)
+				}
+				nDst, nSrc, err = tt.t.Transform(buf, []byte(tt.src[p:q]), q == len(tt.src))
+				got = append(got, buf[:nDst]...)
 
-			if p == 0 && err != tt.firstErr {
-				t.Errorf("%d:%s:\n error was %v; want %v", i, tt.desc, err, tt.firstErr)
-				break
+				if p == 0 && err != tt.firstErr {
+					t.Errorf("%d:%s:\n error was %v; want %v", i, tt.desc, err, tt.firstErr)
+					break
+				}
 			}
-		}
-		if string(got) != tt.want {
-			t.Errorf("%d:%s:\ngot  %+q;\nwant %+q", i, tt.desc, got, tt.want)
-		}
+			if string(got) != tt.want {
+				t.Errorf("%d:%s:\ngot  %+q;\nwant %+q", i, tt.desc, got, tt.want)
+			}
+		})
 	}
 }
 
