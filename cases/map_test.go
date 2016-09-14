@@ -316,17 +316,21 @@ func TestHandover(t *testing.T) {
 	}
 }
 
-func TestShortBuffersAndOverflow(t *testing.T) {
-	// minBufSize is the size of the buffer by which the casing operation in
-	// this package are guaranteed to make progress.
-	const minBufSize = norm.MaxSegmentSize
+// minBufSize is the size of the buffer by which the casing operation in
+// this package are guaranteed to make progress.
+const minBufSize = norm.MaxSegmentSize
 
-	for i, tt := range []struct {
-		desc, src, want  string
-		firstErr         error
-		dstSize, srcSize int
-		t                transform.SpanningTransformer
-	}{{
+type bufferTest struct {
+	desc, src, want  string
+	firstErr         error
+	dstSize, srcSize int
+	t                transform.SpanningTransformer
+}
+
+var bufferTests []bufferTest
+
+func init() {
+	bufferTests = []bufferTest{{
 		desc:     "und/upper/short dst",
 		src:      "abcdefg",
 		want:     "ABCDEFG",
@@ -591,7 +595,11 @@ func TestShortBuffersAndOverflow(t *testing.T) {
 		dstSize:  3,
 		srcSize:  minBufSize,
 		t:        Title(language.Afrikaans),
-	}} {
+	}}
+}
+
+func TestShortBuffersAndOverflow(t *testing.T) {
+	for i, tt := range bufferTests {
 		testtext.Run(t, tt.desc, func(t *testing.T) {
 			buf := make([]byte, tt.dstSize)
 			got := []byte{}
