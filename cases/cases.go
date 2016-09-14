@@ -35,7 +35,7 @@ import (
 // A Caser may be stateful and should therefore not be shared between
 // goroutines.
 type Caser struct {
-	t transform.Transformer
+	t transform.SpanningTransformer
 }
 
 // Bytes returns a new byte slice with the result of converting b to the case
@@ -56,10 +56,15 @@ func (c Caser) String(s string) string {
 // Transform.
 func (c Caser) Reset() { c.t.Reset() }
 
-// Transform implements the Transformer interface and transforms the given input
-// to the case form implemented by c.
+// Transform implements the transform.Transformer interface and transforms the
+// given input to the case form implemented by c.
 func (c Caser) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
 	return c.t.Transform(dst, src, atEOF)
+}
+
+// Span implements the transform.SpanningTransformer interface.
+func (c Caser) Span(src []byte, atEOF bool) (n int, err error) {
+	return c.t.Span(src, atEOF)
 }
 
 // Upper returns a Caser for language-specific uppercasing.

@@ -48,6 +48,3 @@ func TestFold(t *testing.T) {
 		// })
 	}
 }
-
-func BenchmarkFullFold(b *testing.B)      { benchTransformer(b, Fold(), txtNonASCII) }
-func BenchmarkFullFoldASCII(b *testing.B) { benchTransformer(b, Fold(), txtASCII) }

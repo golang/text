@@ -43,7 +43,8 @@ func (c info) cccType() info {
 //
 // 2) Mid:
 //    MidLetter, MidNumLet, Single_Quote.
-//    (Cf. case-ignorable: MidLetter, MidNumLet or cat is Mn, Me, Cf, Lm or Sk).
+//    (Cf. case-ignorable: MidLetter, MidNumLet, Single_Quote or cat is Mn,
+//    Me, Cf, Lm or Sk).
 //    Rule: Don't break between Letter and Mid, but break between two Mids.
 //
 // 3) Break:

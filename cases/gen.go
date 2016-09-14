@@ -164,6 +164,11 @@ func parseUCD() []runeInfo {
 		switch p.String(1) { // TODO: officially we need to canonicalize.
 		case "MidLetter", "MidNumLet", "Single_Quote":
 			ri.BreakCat = breakMid
+			if !ri.CaseIgnorable {
+				// finalSigma relies on the fact that all breakMid runes are
+				// also a Case_Ignorable. Revisit this code when this changes.
+				log.Fatalf("Rune %U, which has a break category mid, is not a case ignorable", ri)
+			}
 		case "ALetter", "Hebrew_Letter", "Numeric", "Extend", "ExtendNumLet", "Format", "ZWJ":
 			ri.BreakCat = breakLetter
 		}
