@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
 )
 
@@ -81,7 +82,7 @@ func TestICUConformance(t *testing.T) {
 				if exclude(tag, s) {
 					continue
 				}
-				t.Run(path.Join(c, tag, s), func(t *testing.T) {
+				testtext.Run(path.Join(c, tag, s), func(t *testing.T) {
 					want := doICU(tag, c, s)
 					got := doGo(tag, c, s)
 					if got != want {

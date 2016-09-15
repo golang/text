@@ -233,7 +233,7 @@ func testHandover(t *testing.T, c Caser, src string) {
 
 	// Test handover for each substring of the prefix.
 	for i := 0; i < pSrc; i++ {
-		t.Run(fmt.Sprint("interleave/", i), func(t *testing.T) {
+		testtext.Run(t, fmt.Sprint("interleave/", i), func(t *testing.T) {
 			dst := make([]byte, 4*len(src))
 			c.Reset()
 			nSpan, _ := c.Span([]byte(src[:i]), false)
@@ -298,7 +298,7 @@ func TestHandover(t *testing.T) {
 		"'", "n bietje",
 	}}
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		testtext.Run(t, tc.desc, func(t *testing.T) {
 			src := tc.first + tc.second
 			want := tc.t.String(src)
 			tc.t.Reset()
