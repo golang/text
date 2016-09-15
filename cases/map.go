@@ -504,10 +504,10 @@ func ltLower(c *context) bool {
 	// ::NFD();
 	// I } [^[:ccc=Not_Reordered:][:ccc=Above:]]* [:ccc=Above:] → i \u0307;
 	// J } [^[:ccc=Not_Reordered:][:ccc=Above:]]* [:ccc=Above:] → j \u0307;
-	// Į } [^[:ccc=Not_Reordered:][:ccc=Above:]]* [:ccc=Above:] → į \u0307;
-	// Ì → i \u0307 \u0300;
-	// Í → i \u0307 \u0301;
-	// Ĩ → i \u0307 \u0303;
+	// I \u0328 (Į) } [^[:ccc=Not_Reordered:][:ccc=Above:]]* [:ccc=Above:] → i \u0328 \u0307;
+	// I \u0300 (Ì) → i \u0307 \u0300;
+	// I \u0301 (Í) → i \u0307 \u0301;
+	// I \u0303 (Ĩ) → i \u0307 \u0303;
 	// ::Any-Lower();
 	// ::NFC();
 
@@ -563,7 +563,12 @@ func ltLower(c *context) bool {
 
 func ltUpper(f mapFunc) mapFunc {
 	return func(c *context) bool {
+		// Unicode:
+		// 0307; 0307; ; ; lt After_Soft_Dotted; # COMBINING DOT ABOVE
+		//
 		// From CLDR:
+		// # Remove \u0307 following soft-dotteds (i, j, and the like), with possible
+		// # intervening non-230 marks.
 		// ::NFD();
 		// [:Soft_Dotted:] [^[:ccc=Not_Reordered:][:ccc=Above:]]* { \u0307 → ;
 		// ::Any-Upper();

@@ -13,6 +13,7 @@ import (
 
 	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
+	"golang.org/x/text/unicode/norm"
 )
 
 func TestICUConformance(t *testing.T) {
@@ -79,13 +80,13 @@ func TestICUConformance(t *testing.T) {
 			"und", "af", "az", "el", "lt", "nl", "tr",
 		} {
 			for _, s := range input {
-				if exclude(tag, s) {
+				if exclude(c, tag, s) {
 					continue
 				}
 				testtext.Run(t, path.Join(c, tag, s), func(t *testing.T) {
 					want := doICU(tag, c, s)
 					got := doGo(tag, c, s)
-					if got != want {
+					if norm.NFC.String(got) != norm.NFC.String(want) {
 						t.Errorf("\n    in %[3]q (%+[3]q)\n   got %[1]q (%+[1]q)\n  want %[2]q (%+[2]q)", got, want, s)
 					}
 				})
@@ -95,52 +96,93 @@ func TestICUConformance(t *testing.T) {
 }
 
 // exclude indicates if a string should be excluded from testing.
-func exclude(tag, s string) bool {
-	list := []struct{ tags, pattern string }{
-		// ICU does not handle leading apostrophe for Dutch and
-		// Afrikaans correctly.
-		{"af nl", "'n"},
-		{"af nl", "'N"},
-
-		// Go terminates the final sigma check after a fixed number of
-		// ignorables have been found. This ensures that the algorithm can make
-		// progress in a streaming scenario.
-		{"", "\u039f\u03a3...............................a"},
-		// This also applies to upper in Greek.
-		{"el", "\u03bf" + strings.Repeat("\u0321", 29) + "\u0313"},
-
+func exclude(cm, tag, s string) bool {
+	list := []struct{ cm, tags, pattern string }{
 		// TODO: Go does not handle certain esoteric breaks correctly. This will be
 		// fixed once we have a real word break iterator. Alternatively, it
 		// seems like we're not too far off from making it work, so we could
 		// fix these last steps. But first verify that using a separate word
 		// breaker does not hurt performance.
-		{"af nl", "a''a"},
-		{"", "א'a"},
+		{"title", "af nl", "a''a"},
+		{"", "", "א'a"},
 
-		// TODO: fix az and tr title.
-		{"az tr", ""},
+		// All the exclusions below seem to be issues with the ICU
+		// implementation (at version 57) and thus are not marked as TODO.
 
-		// TODO: fix lt upper and lower.
-		{"lt", ""},
+		// ICU does not handle leading apostrophe for Dutch and
+		// Afrikaans correctly. See http://unicode.org/cldr/trac/ticket/7078.
+		{"title", "af nl", "'n"},
+		{"title", "af nl", "'N"},
 
-		// TODO: handle Tonos for these letters, which apparently is a thing.
-		{"el", "\u0386"}, // GREEK CAPITAL LETTER ALPHA WITH TONOS
-		{"el", "\u0389"}, // GREEK CAPITAL LETTER ETA WITH TONOS
-		{"el", "\u038A"}, // GREEK CAPITAL LETTER IOTA WITH TONOS
+		// Go terminates the final sigma check after a fixed number of
+		// ignorables have been found. This ensures that the algorithm can make
+		// progress in a streaming scenario.
+		{"lower title", "", "\u039f\u03a3...............................a"},
+		// This also applies to upper in Greek.
+		// NOTE: we could fix the following two cases by adding state to elUpper
+		// and aztrLower. However, considering a modifier to not belong to the
+		// preceding letter after the maximum modifiers count is reached is
+		// consistent with the behavior of unicode/norm.
+		{"upper", "el", "\u03bf" + strings.Repeat("\u0321", 29) + "\u0313"},
+		{"lower", "az tr lt", "I" + strings.Repeat("\u0321", 30) + "\u0307\u0300"},
+		{"upper", "lt", "i" + strings.Repeat("\u0321", 30) + "\u0307\u0300"},
+		{"lower", "lt", "I" + strings.Repeat("\u0321", 30) + "\u0300"},
 
-		{"el", "\u0391"}, // GREEK CAPITAL LETTER ALPHA
-		{"el", "\u0397"}, // GREEK CAPITAL LETTER ETA
-		{"el", "\u0399"}, // GREEK CAPITAL LETTER IOTA
+		// ICU title case seems to erroneously removes \u0307 from an upper case
+		// I unconditionally, instead of only when lowercasing. The ICU
+		// transform algorithm transforms these cases consistently with our
+		// implementation.
+		{"title", "az tr", "\u0307"},
 
-		{"el", "\u03AC"}, // GREEK SMALL LETTER ALPHA WITH TONOS
-		{"el", "\u03AE"}, // GREEK SMALL LETTER ALPHA WITH ETA
-		{"el", "\u03AF"}, // GREEK SMALL LETTER ALPHA WITH IOTA
+		// The spec says to remove \u0307 after Soft-Dotted characters. ICU
+		// transforms conform but ucasemap_utf8ToUpper does not.
+		{"upper title", "lt", "i\u0307"},
+		{"upper title", "lt", "i" + strings.Repeat("\u0321", 29) + "\u0307\u0300"},
 
-		{"el", "\u03B1"}, // GREEK SMALL LETTER ALPHA
-		{"el", "\u03B7"}, // GREEK SMALL LETTER ETA
-		{"el", "\u03B9"}, // GREEK SMALL LETTER IOTA
+		// Both Unicode and CLDR prescribe an extra explicit dot above after a
+		// Soft_Dotted character if there are other modifiers.
+		// ucasemap_utf8ToUpper does not do this; ICU transforms do.
+		// The issue with ucasemap_utf8ToUpper seems to be that it does not
+		// consider the modifiers that are part of composition in the evaluation
+		// of More_Above. For instance, according to the More_Above rule for lt,
+		// a dotted capital I (U+0130) becomes i\u0307\u0307 (an small i with
+		// two additional dots). This seems odd, but is correct. ICU is
+		// definitely not correct as it produces different results for different
+		// normal forms. For instance, for an İ:
+		//    \u0130  (NFC) -> i\u0307         (incorrect)
+		//    I\u0307 (NFD) -> i\u0307\u0307   (correct)
+		// We could argue that we should not add a \u0307 if there already is
+		// one, but this may be hard to get correct and is not conform the
+		// standard.
+		{"lower title", "lt", "\u0130"},
+		{"lower title", "lt", "\u00cf"},
+
+		// We are conform ICU ucasemap_utf8ToUpper if we remove support for
+		// elUpper. However, this is clearly not conform the spec. Moreover, the
+		// ICU transforms _do_ implement this transform and produces results
+		// consistent with our implementation. Note that we still prefer to use
+		// ucasemap_utf8ToUpper instead of transforms as the latter have
+		// inconsistencies in the word breaking algorithm.
+		{"upper", "el", "\u0386"}, // GREEK CAPITAL LETTER ALPHA WITH TONOS
+		{"upper", "el", "\u0389"}, // GREEK CAPITAL LETTER ETA WITH TONOS
+		{"upper", "el", "\u038A"}, // GREEK CAPITAL LETTER IOTA WITH TONOS
+
+		{"upper", "el", "\u0391"}, // GREEK CAPITAL LETTER ALPHA
+		{"upper", "el", "\u0397"}, // GREEK CAPITAL LETTER ETA
+		{"upper", "el", "\u0399"}, // GREEK CAPITAL LETTER IOTA
+
+		{"upper", "el", "\u03AC"}, // GREEK SMALL LETTER ALPHA WITH TONOS
+		{"upper", "el", "\u03AE"}, // GREEK SMALL LETTER ALPHA WITH ETA
+		{"upper", "el", "\u03AF"}, // GREEK SMALL LETTER ALPHA WITH IOTA
+
+		{"upper", "el", "\u03B1"}, // GREEK SMALL LETTER ALPHA
+		{"upper", "el", "\u03B7"}, // GREEK SMALL LETTER ETA
+		{"upper", "el", "\u03B9"}, // GREEK SMALL LETTER IOTA
 	}
 	for _, x := range list {
+		if x.cm != "" && strings.Index(x.cm, cm) == -1 {
+			continue
+		}
 		if x.tags != "" && strings.Index(x.tags, tag) == -1 {
 			continue
 		}
