@@ -108,7 +108,7 @@ func makeUpper(t language.Tag, o options) transform.SpanningTransformer {
 func makeLower(t language.Tag, o options) transform.SpanningTransformer {
 	_, i, _ := matcher.Match(t)
 	f := lowerFunc[i]
-	if o.noFinalSigma {
+	if o.ignoreFinalSigma {
 		return &simpleCaser{f: f, span: isLower}
 	}
 	return &lowerCaser{
@@ -123,7 +123,7 @@ func makeTitle(t language.Tag, o options) transform.SpanningTransformer {
 	lower := x.lower
 	if o.noLower {
 		lower = (*context).copy
-	} else if !o.noFinalSigma {
+	} else if !o.ignoreFinalSigma {
 		lower = finalSigma(lower)
 	}
 	return &titleCaser{

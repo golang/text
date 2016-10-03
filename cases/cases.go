@@ -97,6 +97,12 @@ func Fold(opts ...Option) Caser {
 // An Option is used to modify the behavior of a Caser.
 type Option func(o *options)
 
+// TODO: consider these options to take a boolean as well, like FinalSigma.
+// The advantage of using this approach is that other providers of a lower-case
+// algorithm could set different defaults by prefixing a user-provided slice
+// of options with their own. This is handy, for instance, for the precis
+// package which would override the default to not handle the Greek final sigma.
+
 var (
 	// NoLower disables the lowercasing of non-leading letters for a title
 	// caser.
@@ -115,7 +121,7 @@ type options struct {
 
 	// TODO: segmenter, max ignorable, alternative versions, etc.
 
-	noFinalSigma bool // Only used for testing.
+	ignoreFinalSigma bool
 }
 
 func getOpts(o ...Option) (res options) {
@@ -125,10 +131,12 @@ func getOpts(o ...Option) (res options) {
 	return
 }
 
-func noLower(o *options) {
-	o.noLower = true
-}
+func noLower(o *options) { o.noLower = true }
+func compact(o *options) { o.simple = true }
 
-func compact(o *options) {
-	o.simple = true
+// HandleFinalSigma specifies whether the special handling of Greek final sigma
+// should be enabled. Unicode prescribes handling the Greek final sigma for all
+// locales, but standards like IDNA and PRECIS override this default.
+func HandleFinalSigma(enable bool) Option {
+	return func(o *options) { o.ignoreFinalSigma = !enable }
 }
