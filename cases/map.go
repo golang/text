@@ -13,6 +13,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"golang.org/x/text/internal"
 	"golang.org/x/text/language"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -41,12 +42,12 @@ func init() {
 	for _, s := range strings.Split(supported, " ") {
 		tags = append(tags, language.MustParse(s))
 	}
-	matcher = language.NewMatcher(tags)
+	matcher = internal.NewInheritanceMatcher(tags)
 	Supported = language.NewCoverage(tags)
 }
 
 var (
-	matcher language.Matcher
+	matcher *internal.InheritanceMatcher
 
 	Supported language.Coverage
 
@@ -68,15 +69,16 @@ var (
 		{aztrUpper(upper), isUpper}, // tr
 	}
 
-	undUpper transform.SpanningTransformer = &undUpperCaser{}
+	undUpper            transform.SpanningTransformer = &undUpperCaser{}
+	undLowerIgnoreSigma transform.SpanningTransformer = &undLowerIgnoreSigmaCaser{}
 
 	lowerFunc = []mapFunc{
-		lower,     // und
-		lower,     // af
+		nil,       // und
+		nil,       // af
 		aztrLower, // az
-		lower,     // el
+		nil,       // el
 		ltLower,   // lt
-		lower,     // nl
+		nil,       // nl
 		aztrLower, // tr
 	}
 
@@ -108,6 +110,12 @@ func makeUpper(t language.Tag, o options) transform.SpanningTransformer {
 func makeLower(t language.Tag, o options) transform.SpanningTransformer {
 	_, i, _ := matcher.Match(t)
 	f := lowerFunc[i]
+	if f == nil {
+		if o.ignoreFinalSigma {
+			return undLowerIgnoreSigma
+		}
+		f = lower
+	}
 	if o.ignoreFinalSigma {
 		return &simpleCaser{f: f, span: isLower}
 	}
@@ -165,6 +173,29 @@ func (t *undUpperCaser) Span(src []byte, atEOF bool) (n int, err error) {
 	return c.retSpan()
 }
 
+// undLowerIgnoreSigmaCaser implements the Transformer interface for doing
+// a lower case mapping for the root locale (und) ignoring final sigma
+// handling. This casing algorithm is used in some performance-critical packages
+// like secure/precis and x/net/http/idna, which warrants its special-casing.
+type undLowerIgnoreSigmaCaser struct{ transform.NopResetter }
+
+func (t *undLowerIgnoreSigmaCaser) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	c := context{dst: dst, src: src, atEOF: atEOF}
+	for c.next() && lower(&c) {
+		c.checkpoint()
+	}
+	return c.ret()
+
+}
+
+func (t *undLowerIgnoreSigmaCaser) Span(src []byte, atEOF bool) (n int, err error) {
+	c := context{src: src, atEOF: atEOF}
+	for c.next() && isLower(&c) {
+		c.checkpoint()
+	}
+	return c.retSpan()
+}
+
 type simpleCaser struct {
 	context
 	f    mapFunc
@@ -174,18 +205,16 @@ type simpleCaser struct {
 // simpleCaser implements the Transformer interface for doing a case operation
 // on a rune-by-rune basis.
 func (t *simpleCaser) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
-	t.context = context{dst: dst, src: src, atEOF: atEOF}
-	c := &t.context
-	for c.next() && t.f(c) {
+	c := context{dst: dst, src: src, atEOF: atEOF}
+	for c.next() && t.f(&c) {
 		c.checkpoint()
 	}
 	return c.ret()
 }
 
 func (t *simpleCaser) Span(src []byte, atEOF bool) (n int, err error) {
-	t.context = context{src: src, atEOF: atEOF}
-	c := &t.context
-	for c.next() && t.span(c) {
+	c := context{src: src, atEOF: atEOF}
+	for c.next() && t.span(&c) {
 		c.checkpoint()
 	}
 	return c.retSpan()

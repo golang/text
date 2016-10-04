@@ -198,24 +198,30 @@ func TestAlloc(t *testing.T) {
 
 	for i, f := range []func() Caser{
 		func() Caser { return Upper(language.Und) },
-		func() Caser { return Lower(language.Und) },
-		func() Caser { return Title(language.Und) },
+		func() Caser { return Lower(language.Und, HandleFinalSigma(false)) },
+		// TODO: use a shared copy for these casers as well, in order of
+		// importance, starting with the most important:
+		// func() Caser { return Lower(language.Und) },
+		// func() Caser { return Title(language.Und) },
+		// func() Caser { return Title(language.Und, HandleFinalSigma(false)) },
 	} {
-		var c Caser
-		v := testtext.AllocsPerRun(2, func() {
-			c = f()
+		testtext.Run(t, "", func(t *testing.T) {
+			var c Caser
+			v := testtext.AllocsPerRun(10, func() {
+				c = f()
+			})
+			if v > 0 {
+				// TODO: Right now only Upper has 1 allocation. Special-case Lower
+				// and Title as well to have less allocations for the root locale.
+				t.Errorf("%d:init: number of allocs was %f; want 0", i, v)
+			}
+			v = testtext.AllocsPerRun(2, func() {
+				c.Transform(dst, src, true)
+			})
+			if v > 0 {
+				t.Errorf("%d:transform: number of allocs was %f; want 0", i, v)
+			}
 		})
-		if v > 1 {
-			// TODO: Right now only Upper has 1 allocation. Special-case Lower
-			// and Title as well to have less allocations for the root locale.
-			t.Skipf("%d:init: number of allocs was %f; want 0", i, v)
-		}
-		v = testtext.AllocsPerRun(2, func() {
-			c.Transform(dst, src, true)
-		})
-		if v > 0 {
-			t.Errorf("%d:transform: number of allocs was %f; want 0", i, v)
-		}
 	}
 }
 

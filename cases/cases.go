@@ -95,7 +95,7 @@ func Fold(opts ...Option) Caser {
 }
 
 // An Option is used to modify the behavior of a Caser.
-type Option func(o *options)
+type Option func(o options) options
 
 // TODO: consider these options to take a boolean as well, like FinalSigma.
 // The advantage of using this approach is that other providers of a lower-case
@@ -126,17 +126,37 @@ type options struct {
 
 func getOpts(o ...Option) (res options) {
 	for _, f := range o {
-		f(&res)
+		res = f(res)
 	}
 	return
 }
 
-func noLower(o *options) { o.noLower = true }
-func compact(o *options) { o.simple = true }
+func noLower(o options) options {
+	o.noLower = true
+	return o
+}
+
+func compact(o options) options {
+	o.simple = true
+	return o
+}
 
 // HandleFinalSigma specifies whether the special handling of Greek final sigma
 // should be enabled. Unicode prescribes handling the Greek final sigma for all
 // locales, but standards like IDNA and PRECIS override this default.
 func HandleFinalSigma(enable bool) Option {
-	return func(o *options) { o.ignoreFinalSigma = !enable }
+	if enable {
+		return handleFinalSigma
+	}
+	return ignoreFinalSigma
+}
+
+func ignoreFinalSigma(o options) options {
+	o.ignoreFinalSigma = true
+	return o
+}
+
+func handleFinalSigma(o options) options {
+	o.ignoreFinalSigma = false
+	return o
 }
