@@ -5,9 +5,11 @@
 package precis
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/secure/bidirule"
 )
 
@@ -17,7 +19,7 @@ type testCase struct {
 	err    error
 }
 
-var testCases = []struct {
+var enforceTestCases = []struct {
 	name  string
 	p     *Profile
 	cases []testCase
@@ -246,6 +248,17 @@ var testCases = []struct {
 		{"\u212B", "\u00c5", nil},    // Angstrom sign, NFC -> U+00E5
 		{"ẛ", "", errDisallowedRune}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
 	}},
+}
+
+func doTests(t *testing.T, fn func(t *testing.T, p *Profile, tc testCase)) {
+	for _, g := range enforceTestCases {
+		for i, tc := range g.cases {
+			name := fmt.Sprintf("%s:%d:%+q", g.name, i, tc.input)
+			testtext.Run(t, name, func(t *testing.T) {
+				fn(t, g.p, tc)
+			})
+		}
+	}
 }
 
 func TestString(t *testing.T) {
