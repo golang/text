@@ -162,6 +162,7 @@ var enforceTestCases = []struct {
 		{"foo", "foo", nil},
 		{"Foo Bar", "Foo Bar", nil},
 		{"foo bar", "foo bar", nil},
+		{"\u03A3", "\u03A3", nil},
 		{"\u03C3", "\u03C3", nil},
 		// Greek final sigma is left as is (do not fold!)
 		{"\u03C2", "\u03C2", nil},
@@ -194,11 +195,12 @@ var enforceTestCases = []struct {
 		// {UsernameCaseMapped, "", "", errDisallowedRune},
 		{"juliet@example.com", "juliet@example.com", nil},
 		{"fussball", "fussball", nil},
-		{"fu\u00DFball", "fussball", nil},
+		{"fu\u00DFball", "fu\u00DFball", nil},
 		{"\u03C0", "\u03C0", nil},
 		{"\u03A3", "\u03C3", nil},
 		{"\u03C3", "\u03C3", nil},
-		{"\u03C2", "\u03C3", nil},
+		// Greek final sigma is left as is (do not fold!)
+		{"\u03C2", "\u03C2", nil},
 		{"\u0049", "\u0069", nil},
 		{"\u0049", "\u0069", nil},
 		{"\u03D2", "", errDisallowedRune},
@@ -213,7 +215,7 @@ var enforceTestCases = []struct {
 		{"\n", "", bidirule.ErrInvalid},
 		{"\u26D6", "", bidirule.ErrInvalid},
 		{"\u26FF", "", bidirule.ErrInvalid},
-		{"\uFB00", "ff", nil}, // Side effect of case folding.
+		{"\uFB00", "", errDisallowedRune},
 		{"\u1680", "", bidirule.ErrInvalid},
 		{" ", "", bidirule.ErrInvalid},
 		{"  ", "", bidirule.ErrInvalid},
@@ -229,8 +231,6 @@ var enforceTestCases = []struct {
 		{"\u0052\u030C", "ř", nil},
 
 		{"\u1E61", "\u1E61", nil}, // LATIN SMALL LETTER S WITH DOT ABOVE
-		// U+1e9B: case folded.
-		{"ẛ", "\u1E61", nil}, // LATIN SMALL LETTER LONG S WITH DOT ABOVE
 
 		// Confusable characters ARE allowed and should NOT be mapped.
 		{"\u0410", "\u0430", nil}, // CYRILLIC CAPITAL LETTER A

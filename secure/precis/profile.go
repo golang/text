@@ -8,6 +8,8 @@ import (
 	"errors"
 	"unicode/utf8"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/secure/bidirule"
 	"golang.org/x/text/transform"
@@ -222,6 +224,10 @@ func (p *Profile) Compare(a, b string) bool {
 	if p.options.ignorecase {
 		a = width.Fold.String(a)
 		b = width.Fold.String(a)
+
+		caser := cases.Lower(language.Und, cases.HandleFinalSigma(false))
+		a = caser.String(a)
+		b = caser.String(b)
 	}
 
 	return a == b
