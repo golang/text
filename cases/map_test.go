@@ -198,10 +198,10 @@ func TestAlloc(t *testing.T) {
 
 	for i, f := range []func() Caser{
 		func() Caser { return Upper(language.Und) },
+		func() Caser { return Lower(language.Und) },
 		func() Caser { return Lower(language.Und, HandleFinalSigma(false)) },
 		// TODO: use a shared copy for these casers as well, in order of
 		// importance, starting with the most important:
-		// func() Caser { return Lower(language.Und) },
 		// func() Caser { return Title(language.Und) },
 		// func() Caser { return Title(language.Und, HandleFinalSigma(false)) },
 	} {
