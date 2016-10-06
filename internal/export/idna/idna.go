@@ -19,9 +19,12 @@ package idna // import "golang.org/x/text/internal/export/idna"
 
 import (
 	"errors"
+	"fmt"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
+	"golang.org/x/text/secure/bidirule"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -29,6 +32,7 @@ import (
 type Profile struct {
 	Transitional    bool
 	IgnoreSTD3Rules bool
+	IgnoreDNSLength bool
 	// ErrHandler      func(error)
 }
 
@@ -38,8 +42,9 @@ func (p *Profile) String() string {
 	s := ""
 	if p.Transitional {
 		s = "Transitional"
+	} else {
+		s = "NonTraditional"
 	}
-	s = "NonTraditional"
 	if p.IgnoreSTD3Rules {
 		s += ":NoSTD3Rules"
 	}
@@ -68,9 +73,14 @@ var (
 	// Registrar: recommended for approving domain names.
 )
 
+// TODO: rethink error strategy
+
 var (
-	// ErrDisallowed indicates a domain name contains a disallowed rune.
-	ErrDisallowed = errors.New("idna: disallowed rune")
+	// errDisallowed indicates a domain name contains a disallowed rune.
+	errDisallowed = errors.New("idna: disallowed rune")
+
+	// errEmptyLabel indicates a label was empty.
+	errEmptyLabel = errors.New("idna: empty label")
 )
 
 // process implements the algorithm described in section 4 of UTS #46,
@@ -91,7 +101,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 			continue
 		case disallowed:
 			if err == nil {
-				err = ErrDisallowed
+				err = errDisallowed
 			}
 			continue
 		case mapped, deviation:
@@ -123,36 +133,68 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 	for len(labels) > 0 && labels[0] == "" {
 		labels = labels[1:]
 	}
-	for i, label := range labels {
-		transitional := p.Transitional
-		if strings.HasPrefix(label, acePrefix) {
-			u, err := decode(label[len(acePrefix):])
-			if err != nil {
-				// TODO: really return here? Probably not!
-				return "", err
-			}
-			labels[i] = u
-			transitional = false
-		}
-		if err == nil {
-			err = validate(labels[i], transitional)
-		}
+	if len(labels) == 0 {
+		return "", errors.New("idna: there are no labels")
 	}
-	// TODO(perf): do quick check for ascii
-	if toASCII {
-		for i, label := range labels {
-			if ascii(label) {
+	// Find the position of the root label.
+	root := len(labels) - 1
+	if labels[root] == "" {
+		root--
+	}
+	for i, label := range labels {
+		// Empty labels are not okay, unless it is the last.
+		if label == "" {
+			if i <= root && err == nil {
+				err = errEmptyLabel
+			}
+			continue
+		}
+		if strings.HasPrefix(label, acePrefix) {
+			u, err2 := decode(label[len(acePrefix):])
+			if err2 != nil {
+				if err == nil {
+					err = err2
+				}
+				// Spec says keep the old label.
 				continue
 			}
-			a, err := encode(acePrefix, label)
-			if err != nil {
-				// TODO: really return here? Probably not!
-				return "", err
+			labels[i] = u
+			if err == nil {
+				err = p.validateFromPunycode(u)
 			}
-			labels[i] = a
+			if err == nil {
+				err = NonTransitional.validate(u)
+			}
+		} else if err == nil {
+			err = p.validate(labels[i])
 		}
 	}
-	return strings.Join(labels, "."), err
+	if toASCII {
+		for i, label := range labels {
+			if !ascii(label) {
+				a, err2 := encode(acePrefix, label)
+				if err == nil {
+					err = err2
+				}
+				labels[i] = a
+			}
+			n := len(labels[i])
+			if !p.IgnoreDNSLength && err == nil && (n == 0 || n > 63) {
+				if n != 0 || i != len(labels)-1 {
+					err = fmt.Errorf("idna: label with invalid length %d", n)
+				}
+			}
+		}
+	}
+	s = strings.Join(labels, ".")
+	if toASCII && !p.IgnoreDNSLength && err == nil {
+		// Compute the length of the domain name minus the root label and its dot.
+		n := len(s) - 1 - len(labels[len(labels)-1])
+		if len(s) < 1 || n > 253 {
+			err = fmt.Errorf("idna: doman name with invalid length %d", n)
+		}
+	}
+	return s, err
 }
 
 // acePrefix is the ASCII Compatible Encoding prefix.
@@ -183,7 +225,37 @@ func (p *Profile) simplify(cat category) category {
 	return cat
 }
 
-func validate(s string, transitional bool) error {
+func (p *Profile) validateFromPunycode(s string) error {
+	if !norm.NFC.IsNormalString(s) {
+		return errors.New("idna: punycode is not normalized")
+	}
+	for i := 0; i < len(s); {
+		v, sz := trie.lookupString(s[i:])
+		if c := p.simplify(info(v).category()); c != valid && c != deviation {
+			return fmt.Errorf("idna: invalid character %+q in expanded punycode", s[i:i+sz])
+		}
+		i += sz
+	}
+	return nil
+}
+
+// validate validates the criteria from Section 4.1. Item 1, 4, and 6 are
+// already implicitly satisfied by the overall implementation.
+func (p *Profile) validate(s string) error {
+	if len(s) > 4 && s[2] == '-' && s[3] == '-' {
+		return errors.New("idna: label starts with ??--")
+	}
+	if s[0] == '-' || s[len(s)-1] == '-' {
+		return errors.New("idna: label may not start or end with '-'")
+	}
+	// TODO: merge the use of this in the trie.
+	r, _ := utf8.DecodeRuneInString(s)
+	if unicode.Is(unicode.M, r) {
+		return fmt.Errorf("idna: label starts with modifier %U", r)
+	}
+	if !bidirule.ValidString(s) {
+		return fmt.Errorf("idna: label violates Bidi Rule", r)
+	}
 	return nil
 }
 

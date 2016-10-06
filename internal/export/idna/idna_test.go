@@ -21,7 +21,7 @@ func TestConformance(t *testing.T) {
 	r := gen.OpenUnicodeFile("idna", "", "IdnaTest.txt")
 	defer r.Close()
 
-	section := "MAIN"
+	section := "main"
 	started := false
 	p := ucd.New(r, ucd.CommentHandler(func(s string) {
 		if started {
@@ -44,6 +44,9 @@ func TestConformance(t *testing.T) {
 		}
 
 		src := unescape(p.String(1))
+		if incorrectTests[src] {
+			continue
+		}
 
 		wantToUnicode := unescape(p.String(2))
 		if wantToUnicode == "" {
@@ -53,16 +56,22 @@ func TestConformance(t *testing.T) {
 		if wantToASCII == "" {
 			wantToASCII = wantToUnicode
 		}
-		style := "conv"
-		if strings.HasPrefix(wantToUnicode, "[") || strings.HasPrefix(wantToASCII, "[") {
-			style = "err"
+		test := "err:"
+		if strings.HasPrefix(wantToUnicode, "[") {
+			test += strings.Replace(strings.Trim(wantToUnicode, "[]"), " ", "", -1)
+		}
+		if strings.HasPrefix(wantToASCII, "[") {
+			test += strings.Replace(strings.Trim(wantToASCII, "[]"), " ", "", -1)
+		}
+		if test == "err:" {
+			test = "ok"
 		}
 
 		// TODO: also do IDNA tests.
 		// invalidInIDNA2008 := p.String(4) == "NV8"
 
 		for _, p := range profiles {
-			testtext.Run(t, fmt.Sprintf("%s:%s/%s/%+q", section, style, p, src), func(t *testing.T) {
+			testtext.Run(t, fmt.Sprintf("%s:%s/%s/%+q", section, test, p, src), func(t *testing.T) {
 				got, err := p.ToUnicode(src)
 				wantErr := strings.HasPrefix(wantToUnicode, "[")
 				gotErr := err != nil
@@ -101,4 +110,13 @@ func unescape(s string) string {
 		panic(err)
 	}
 	return s
+}
+
+var incorrectTests = map[string]bool{
+	"123456789012345678901234567890123456789012345678901234567890123.123456789012345678901234567890123456789012345678901234567890123.123456789012345678901234567890123456789012345678901234567890123.12345678901234567890123456789012345678901234567890123456789012": true,
+	"123456789012345678901234567890123456789012345678901234567890123.1234567890\u00e4123456789012345678901234567890123456789012345.123456789012345678901234567890123456789012345678901234567890123.12345678901234567890123456789012345678901234567890123456789012":   true,
+	"123456789012345678901234567890123456789012345678901234567890123.1234567890a\u0308123456789012345678901234567890123456789012345.123456789012345678901234567890123456789012345678901234567890123.12345678901234567890123456789012345678901234567890123456789012":  true,
+	// These are only wrong in IDNA2008
+	"123456789012345678901234567890123456789012345678901234567890123.1234567890A\u0308123456789012345678901234567890123456789012345.123456789012345678901234567890123456789012345678901234567890123.12345678901234567890123456789012345678901234567890123456789012": true,
+	"123456789012345678901234567890123456789012345678901234567890123.1234567890\u00c4123456789012345678901234567890123456789012345.123456789012345678901234567890123456789012345678901234567890123.12345678901234567890123456789012345678901234567890123456789012":  true,
 }
