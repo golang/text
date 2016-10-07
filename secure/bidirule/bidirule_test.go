@@ -5,8 +5,10 @@
 package bidirule
 
 import (
+	"fmt"
 	"testing"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/bidi"
 )
@@ -598,6 +600,17 @@ func init() {
 			if tc.err == nil {
 				testCases[rule][i].n = len(tc.in)
 			}
+		}
+	}
+}
+
+func doTests(t *testing.T, fn func(t *testing.T, tc ruleTest)) {
+	for rule, cases := range testCases {
+		for i, tc := range cases {
+			name := fmt.Sprintf("%d/%d:%+q:%s", rule, i, tc.in, tc.in)
+			testtext.Run(t, name, func(t *testing.T) {
+				fn(t, tc)
+			})
 		}
 	}
 }

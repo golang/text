@@ -2,25 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build go1.7
-
 package bidirule
 
 import (
-	"fmt"
 	"testing"
-)
 
-func doTests(t *testing.T, fn func(t *testing.T, tc ruleTest)) {
-	for rule, cases := range testCases {
-		for i, tc := range cases {
-			name := fmt.Sprintf("%d/%d:%+q:%s", rule, i, tc.in, tc.in)
-			t.Run(name, func(t *testing.T) {
-				fn(t, tc)
-			})
-		}
-	}
-}
+	"golang.org/x/text/internal/testtext"
+)
 
 var benchData = []struct{ name, data string }{
 	{"ascii", "Scheveningen"},
@@ -30,7 +18,7 @@ var benchData = []struct{ name, data string }{
 
 func doBench(b *testing.B, fn func(b *testing.B, data string)) {
 	for _, d := range benchData {
-		b.Run(d.name, func(b *testing.B) { fn(b, d.data) })
+		testtext.Bench(b, d.name, func(b *testing.B) { fn(b, d.data) })
 	}
 }
 
