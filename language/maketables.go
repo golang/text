@@ -782,6 +782,7 @@ func (b *builder) writeLanguage() {
 	lang.updateLater("tw", "twi")
 	lang.updateLater("nb", "nob")
 	lang.updateLater("ak", "aka")
+	lang.updateLater("bh", "bih")
 
 	// Ensure that each 2-letter code is matched with a 3-letter code.
 	for _, v := range lang.s[1:] {
