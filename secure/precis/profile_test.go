@@ -5,10 +5,12 @@
 package precis
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 	"unicode"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/transform"
 )
 
@@ -71,4 +73,70 @@ func TestBuffers(t *testing.T) {
 	if got := string(b.src); got != want {
 		t.Errorf("got %q; want %q", got, want)
 	}
+}
+
+type compareTestCase struct {
+	a      string
+	b      string
+	result bool
+}
+
+var compareTestCases = []struct {
+	name  string
+	p     *Profile
+	cases []compareTestCase
+}{
+	{"Nickname", Nickname, []compareTestCase{
+		{"a", "b", false},
+		{"  Swan  of   Avon   ", "swan of avon", true},
+		{"Foo", "foo", true},
+		{"foo", "foo", true},
+		{"Foo Bar", "foo bar", true},
+		{"foo bar", "foo bar", true},
+		{"\u03A3", "\u03C3", true},
+		{"\u03A3", "\u03C2", false},
+		{"\u03C3", "\u03C2", false},
+		{"Richard \u2163", "richard iv", true},
+		{"Å", "å", true},
+		{"ﬀ", "ff", true}, // because of NFKC
+		{"ß", "sS", false},
+	}},
+}
+
+func doCompareTests(t *testing.T, fn func(t *testing.T, p *Profile, tc compareTestCase)) {
+	for _, g := range compareTestCases {
+		for i, tc := range g.cases {
+			name := fmt.Sprintf("%s:%d:%+q", g.name, i, tc.a)
+			testtext.Run(t, name, func(t *testing.T) {
+				fn(t, g.p, tc)
+			})
+		}
+	}
+}
+
+func TestCompare(t *testing.T) {
+	doCompareTests(t, func(t *testing.T, p *Profile, tc compareTestCase) {
+		if result := p.Compare(tc.a, tc.b); result != tc.result {
+			t.Errorf("got %v; want %v", result, tc.result)
+		}
+	})
+}
+
+func TestCompareString(t *testing.T) {
+	doCompareTests(t, func(t *testing.T, p *Profile, tc compareTestCase) {
+		a, err := p.CompareKey(tc.a)
+		if err != nil {
+			t.Errorf("Unexpected error when creating key: %v", err)
+			return
+		}
+		b, err := p.CompareKey(tc.b)
+		if err != nil {
+			t.Errorf("Unexpected error when creating key: %v", err)
+			return
+		}
+
+		if result := (a == b); result != tc.result {
+			t.Errorf("got %v; want %v", result, tc.result)
+		}
+	})
 }
