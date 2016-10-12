@@ -188,11 +188,13 @@ func TestRegionDistance(t *testing.T) {
 		{"ZZ", "QQ", 2},
 	}
 	for i, tt := range tests {
-		ra, _ := getRegionID([]byte(tt.a))
-		rb, _ := getRegionID([]byte(tt.b))
-		if d := regionDistance(ra, rb); d != tt.d {
-			t.Errorf("%d: d(%s, %s) = %v; want %v", i, tt.a, tt.b, d, tt.d)
-		}
+		testtext.Run(t, tt.a+"/"+tt.b, func(t *testing.T) {
+			ra, _ := getRegionID([]byte(tt.a))
+			rb, _ := getRegionID([]byte(tt.b))
+			if d := regionDistance(ra, rb); d != tt.d {
+				t.Errorf("%d: d(%s, %s) = %v; want %v", i, tt.a, tt.b, d, tt.d)
+			}
+		})
 	}
 }
 

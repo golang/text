@@ -678,6 +678,8 @@ func (b *builder) parseIndices() {
 	b.locale.parse(meta.DefaultContent.Locales)
 }
 
+// TODO: region inclusion data will probably not be use used in future matchers.
+
 func (b *builder) computeRegionGroups() {
 	b.groups = make(map[int]index)
 
@@ -686,6 +688,11 @@ func (b *builder) computeRegionGroups() {
 		b.groups[i] = index(len(b.groups))
 	}
 	for _, g := range b.supp.TerritoryContainment.Group {
+		// Skip UN and EURO zone as they are flattening the containment
+		// relationship.
+		if g.Type == "EZ" || g.Type == "UN" {
+			continue
+		}
 		group := b.region.index(g.Type)
 		if _, ok := b.groups[group]; !ok {
 			b.groups[group] = index(len(b.groups))
@@ -1483,6 +1490,11 @@ func (b *builder) writeRegionInclusionData() {
 		containment = make(map[index][]index)
 	)
 	for _, g := range b.supp.TerritoryContainment.Group {
+		// Skip UN and EURO zone as they are flattening the containment
+		// relationship.
+		if g.Type == "EZ" || g.Type == "UN" {
+			continue
+		}
 		group := b.region.index(g.Type)
 		groupIdx := b.groups[group]
 		for _, mem := range strings.Split(g.Contains, " ") {
