@@ -291,3 +291,30 @@ func TestAppend(t *testing.T) {
 		}
 	})
 }
+
+func TestStringMallocs(t *testing.T) {
+	if n := testtext.AllocsPerRun(100, func() { UsernameCaseMapped.String("helloworld") }); n > 0 {
+		// TODO: reduce this to 0.
+		t.Skipf("got %f allocs, want 0", n)
+	}
+}
+
+func TestAppendMallocs(t *testing.T) {
+	str := []byte("helloworld")
+	out := make([]byte, 0, len(str))
+	if n := testtext.AllocsPerRun(100, func() { UsernameCaseMapped.Append(out, str) }); n > 0 {
+		t.Errorf("got %f allocs, want 0", n)
+	}
+}
+
+func TestTransformMallocs(t *testing.T) {
+	str := []byte("helloworld")
+	out := make([]byte, 0, len(str))
+	tr := UsernameCaseMapped.NewTransformer()
+	if n := testtext.AllocsPerRun(100, func() {
+		tr.Reset()
+		tr.Transform(out, str, true)
+	}); n > 0 {
+		t.Errorf("got %f allocs, want 0", n)
+	}
+}
