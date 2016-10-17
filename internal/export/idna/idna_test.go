@@ -77,8 +77,7 @@ func TestConformance(t *testing.T) {
 				gotErr := err != nil
 				if wantErr {
 					if gotErr != wantErr {
-						// TODO: fix and make Errorf.
-						t.Skipf(`ToUnicode:err got %v; want %v (%s)`,
+						t.Errorf(`ToUnicode:err got %v; want %v (%s)`,
 							gotErr, wantErr, wantToUnicode)
 					}
 				} else if got != wantToUnicode || gotErr != wantErr {
@@ -91,8 +90,7 @@ func TestConformance(t *testing.T) {
 				gotErr = err != nil
 				if wantErr {
 					if gotErr != wantErr {
-						// TODO: fix and make Errorf.
-						t.Skipf(`ToASCII:err got %v; want %v (%s)`,
+						t.Errorf(`ToASCII:err got %v; want %v (%s)`,
 							gotErr, wantErr, wantToASCII)
 					}
 				} else if got != wantToASCII || gotErr != wantErr {

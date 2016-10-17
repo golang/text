@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	"golang.org/x/text/secure/bidirule"
@@ -239,6 +238,68 @@ func (p *Profile) validateFromPunycode(s string) error {
 	return nil
 }
 
+const (
+	zwnj = "\u200c"
+	zwj  = "\u200d"
+)
+
+type joinState int8
+
+const (
+	stateStart joinState = iota
+	stateVirama
+	stateBefore
+	stateBeforeVirama
+	stateAfter
+	stateFAIL
+)
+
+var joinStates = [][numJoinTypes]joinState{
+	stateStart: {
+		joiningL:   stateBefore,
+		joiningD:   stateBefore,
+		joinZWNJ:   stateFAIL,
+		joinZWJ:    stateFAIL,
+		joinVirama: stateVirama,
+	},
+	stateVirama: {
+		joiningL: stateBefore,
+		joiningD: stateBefore,
+	},
+	stateBefore: {
+		joiningL:   stateBefore,
+		joiningD:   stateBefore,
+		joiningT:   stateBefore,
+		joinZWNJ:   stateAfter,
+		joinZWJ:    stateFAIL,
+		joinVirama: stateBeforeVirama,
+	},
+	stateBeforeVirama: {
+		joiningL: stateBefore,
+		joiningD: stateBefore,
+		joiningT: stateBefore,
+	},
+	stateAfter: {
+		joiningL:   stateFAIL,
+		joiningD:   stateBefore,
+		joiningT:   stateAfter,
+		joiningR:   stateStart,
+		joinZWNJ:   stateFAIL,
+		joinZWJ:    stateFAIL,
+		joinVirama: stateAfter, // no-op as we can't accept joiners here
+	},
+	stateFAIL: {
+		0:          stateFAIL,
+		joiningL:   stateFAIL,
+		joiningD:   stateFAIL,
+		joiningT:   stateFAIL,
+		joiningR:   stateFAIL,
+		joinZWNJ:   stateFAIL,
+		joinZWJ:    stateFAIL,
+		joinVirama: stateFAIL,
+	},
+}
+
 // validate validates the criteria from Section 4.1. Item 1, 4, and 6 are
 // already implicitly satisfied by the overall implementation.
 func (p *Profile) validate(s string) error {
@@ -249,12 +310,38 @@ func (p *Profile) validate(s string) error {
 		return errors.New("idna: label may not start or end with '-'")
 	}
 	// TODO: merge the use of this in the trie.
-	r, _ := utf8.DecodeRuneInString(s)
-	if unicode.Is(unicode.M, r) {
-		return fmt.Errorf("idna: label starts with modifier %U", r)
+	v, sz := trie.lookupString(s)
+	x := info(v)
+	if x.isModifier() {
+		return fmt.Errorf("idna: label starts with modifier %U", []rune(s[:sz])[0])
 	}
 	if !bidirule.ValidString(s) {
-		return fmt.Errorf("idna: label violates Bidi Rule", r)
+		return errors.New("idna: label violates Bidi Rule")
+	}
+	// Quickly return in the absence of zero-width (non) joiners.
+	if strings.Index(s, zwj) == -1 && strings.Index(s, zwnj) == -1 {
+		return nil
+	}
+	st := stateStart
+	for i := 0; ; {
+		jt := x.joinType()
+		if s[i:i+sz] == zwj {
+			jt = joinZWJ
+		} else if s[i:i+sz] == zwnj {
+			jt = joinZWNJ
+		}
+		st = joinStates[st][jt]
+		if x.isViramaModifier() {
+			st = joinStates[st][joinVirama]
+		}
+		if i += sz; i == len(s) {
+			break
+		}
+		v, sz = trie.lookupString(s[i:])
+		x = info(v)
+	}
+	if st == stateFAIL || st == stateAfter {
+		return errors.New("idna: label violates Context J rule")
 	}
 	return nil
 }

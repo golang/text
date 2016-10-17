@@ -6,6 +6,7 @@ package idna
 
 import (
 	"testing"
+	"unicode"
 
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/internal/testtext"
@@ -15,11 +16,14 @@ import (
 func TestTables(t *testing.T) {
 	testtext.SkipIfNotLong(t)
 
+	lookup := func(r rune) info {
+		v, _ := trie.lookupString(string(r))
+		return info(v)
+	}
+
 	ucd.Parse(gen.OpenUnicodeFile("idna", "", "IdnaMappingTable.txt"), func(p *ucd.Parser) {
 		r := p.Rune(0)
-		v, _ := trie.lookupString(string(r))
-		x := info(v)
-
+		x := lookup(r)
 		if got, want := x.category(), catFromEntry(p); got != want {
 			t.Errorf("%U:category: got %x; want %x", r, got, want)
 		}
@@ -39,6 +43,40 @@ func TestTables(t *testing.T) {
 		got := string(x.appendMapping(nil, string(r)))
 		if got != want {
 			t.Errorf("%U:mapping: got %+q; want %+q", r, got, want)
+		}
+
+		if x.isMapped() {
+			return
+		}
+		wantMark := unicode.In(r, unicode.Mark)
+		gotMark := x.isModifier()
+		if gotMark != wantMark {
+			t.Errorf("IsMark(%U) = %v; want %v", r, gotMark, wantMark)
+		}
+	})
+
+	ucd.Parse(gen.OpenUCDFile("UnicodeData.txt"), func(p *ucd.Parser) {
+		r := p.Rune(0)
+		x := lookup(r)
+		got := x.isViramaModifier()
+
+		const cccVirama = 9
+		want := p.Int(ucd.CanonicalCombiningClass) == cccVirama
+		if got != want {
+			t.Errorf("IsVirama(%U) = %v; want %v", r, got, want)
+		}
+	})
+
+	ucd.Parse(gen.OpenUCDFile("extracted/DerivedJoiningType.txt"), func(p *ucd.Parser) {
+		r := p.Rune(0)
+		x := lookup(r)
+		if x.isMapped() {
+			return
+		}
+		got := x.joinType()
+		want := joinType[p.String(1)]
+		if got != want {
+			t.Errorf("JoinType(%U) = %x; want %x", r, got, want)
 		}
 	})
 }
