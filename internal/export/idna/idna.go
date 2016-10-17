@@ -159,27 +159,22 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 		if norm.NFC.QuickSpan(b) != len(b) {
 			b = norm.NFC.Bytes(b)
 		}
-		// TODO: the punycode converters requires strings as input.
+		// TODO: the punycode converters require strings as input.
 		s = string(b)
 	}
-	// TODO(perf): don't split.
-	labels := strings.Split(s, ".")
 	// Remove leading empty labels
-	for len(labels) > 0 && labels[0] == "" {
-		labels = labels[1:]
+	for ; len(s) > 0 && s[0] == '.'; s = s[1:] {
 	}
-	if len(labels) == 0 {
+	if s == "" {
 		return "", errors.New("idna: there are no labels")
 	}
-	// Find the position of the root label.
-	root := len(labels) - 1
-	if labels[root] == "" {
-		root--
-	}
-	for i, label := range labels {
-		// Empty labels are not okay, unless it is the last.
+	labels := labelIter{orig: s}
+	for ; !labels.done(); labels.next() {
+		label := labels.label()
 		if label == "" {
-			if i <= root && err == nil {
+			// Empty labels are not okay. The label iterator skips the last
+			// label if it is empty.
+			if err == nil {
 				err = errEmptyLabel
 			}
 			continue
@@ -193,7 +188,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				// Spec says keep the old label.
 				continue
 			}
-			labels[i] = u
+			labels.set(u)
 			if err == nil {
 				err = p.validateFromPunycode(u)
 			}
@@ -201,35 +196,98 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				err = NonTransitional.validate(u)
 			}
 		} else if err == nil {
-			err = p.validate(labels[i])
+			err = p.validate(label)
 		}
 	}
 	if toASCII {
-		for i, label := range labels {
+		for labels.reset(); !labels.done(); labels.next() {
+			label := labels.label()
 			if !ascii(label) {
 				a, err2 := encode(acePrefix, label)
 				if err == nil {
 					err = err2
 				}
-				labels[i] = a
+				label = a
+				labels.set(a)
 			}
-			n := len(labels[i])
+			n := len(label)
 			if !p.IgnoreDNSLength && err == nil && (n == 0 || n > 63) {
-				if n != 0 || i != len(labels)-1 {
-					err = fmt.Errorf("idna: label with invalid length %d", n)
-				}
+				err = fmt.Errorf("idna: label with invalid length %d", n)
 			}
 		}
 	}
-	s = strings.Join(labels, ".")
+	s = labels.result()
 	if toASCII && !p.IgnoreDNSLength && err == nil {
 		// Compute the length of the domain name minus the root label and its dot.
-		n := len(s) - 1 - len(labels[len(labels)-1])
+		n := len(s)
+		if n > 0 && s[n-1] == '.' {
+			n--
+		}
 		if len(s) < 1 || n > 253 {
 			err = fmt.Errorf("idna: doman name with invalid length %d", n)
 		}
 	}
 	return s, err
+}
+
+// A labelIter allows iterating over domain name labels.
+type labelIter struct {
+	orig     string
+	slice    []string
+	curStart int
+	curEnd   int
+	i        int
+}
+
+func (l *labelIter) reset() {
+	l.curStart = 0
+	l.curEnd = 0
+	l.i = 0
+}
+
+func (l *labelIter) done() bool {
+	return l.curStart >= len(l.orig)
+}
+
+func (l *labelIter) result() string {
+	if l.slice != nil {
+		return strings.Join(l.slice, ".")
+	}
+	return l.orig
+}
+
+func (l *labelIter) label() string {
+	if l.slice != nil {
+		return l.slice[l.i]
+	}
+	p := strings.IndexByte(l.orig[l.curStart:], '.')
+	l.curEnd = l.curStart + p
+	if p == -1 {
+		l.curEnd = len(l.orig)
+	}
+	return l.orig[l.curStart:l.curEnd]
+}
+
+// next sets the value to the next label. It skips the last label if it is empty.
+func (l *labelIter) next() {
+	l.i++
+	if l.slice != nil {
+		if l.i >= len(l.slice) || l.i == len(l.slice)-1 && l.slice[l.i] == "" {
+			l.curStart = len(l.orig)
+		}
+	} else {
+		l.curStart = l.curEnd + 1
+		if l.curStart == len(l.orig)-1 && l.orig[l.curStart] == '.' {
+			l.curStart = len(l.orig)
+		}
+	}
+}
+
+func (l *labelIter) set(s string) {
+	if l.slice == nil {
+		l.slice = strings.Split(l.orig, ".")
+	}
+	l.slice[l.i] = s
 }
 
 // acePrefix is the ASCII Compatible Encoding prefix.
