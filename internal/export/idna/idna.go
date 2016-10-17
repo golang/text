@@ -27,12 +27,42 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+// ToASCII converts a domain or domain label to its ASCII form. For example,
+// ToASCII("bücher.example.com") is "xn--bcher-kva.example.com", and
+// ToASCII("golang") is "golang".
+func ToASCII(s string) (string, error) {
+	return Resolve.process(s, true)
+}
+
+// ToUnicode converts a domain or domain label to its Unicode form. For example,
+// ToUnicode("xn--bcher-kva.example.com") is "bücher.example.com", and
+// ToUnicode("golang") is "golang".
+func ToUnicode(s string) (string, error) {
+	return NonTransitional.process(s, false)
+}
+
 // A Profile defines the configuration of a IDNA mapper.
 type Profile struct {
 	Transitional    bool
 	IgnoreSTD3Rules bool
 	IgnoreDNSLength bool
 	// ErrHandler      func(error)
+}
+
+// ToASCII converts a domain or domain label to its ASCII form. For example,
+// ToASCII("bücher.example.com") is "xn--bcher-kva.example.com", and
+// ToASCII("golang") is "golang".
+func (p *Profile) ToASCII(s string) (string, error) {
+	return p.process(s, true)
+}
+
+// ToUnicode converts a domain or domain label to its Unicode form. For example,
+// ToUnicode("xn--bcher-kva.example.com") is "bücher.example.com", and
+// ToUnicode("golang") is "golang".
+func (p *Profile) ToUnicode(s string) (string, error) {
+	pp := *p
+	pp.Transitional = false
+	return pp.process(s, false)
 }
 
 // String reports a string with a description of the profile for debugging
@@ -55,6 +85,10 @@ var (
 	// The configuration of this profile may change over time.
 	Resolve = resolve
 
+	// Display is the recommended profile for displaying domain names.
+	// The configuration of this profile may change over time.
+	Display = display
+
 	// Transitional defines a profile that implements the Transitional mapping
 	// as defined in UTS #46 with no additional constraints.
 	Transitional = transitional
@@ -64,12 +98,14 @@ var (
 	NonTransitional = nonTransitional
 
 	resolve         = &Profile{Transitional: true}
+	display         = &Profile{}
 	transitional    = &Profile{Transitional: true}
 	nonTransitional = &Profile{}
 
 	// TODO: profiles
 	// V2008: strict IDNA2008
-	// Registrar: recommended for approving domain names.
+	// Register: recommended for approving domain names: nontransitional, but
+	// bundle or block deviation characters.
 )
 
 // TODO: rethink error strategy
@@ -344,14 +380,6 @@ func (p *Profile) validate(s string) error {
 		return errors.New("idna: label violates Context J rule")
 	}
 	return nil
-}
-
-func (p *Profile) ToASCII(s string) (string, error) {
-	return p.process(s, true)
-}
-
-func (p *Profile) ToUnicode(s string) (string, error) {
-	return NonTransitional.process(s, false)
 }
 
 func ascii(s string) bool {
