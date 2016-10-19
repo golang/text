@@ -33,6 +33,125 @@ func TestAllocToASCII(t *testing.T) {
 	}
 }
 
+// doTest performs a single test f(input) and verifies that the output matches
+// out and that the returned error is expected. The errors string contains
+// all allowed error codes as categorized in
+// http://www.unicode.org/Public/idna/9.0.0/IdnaTest.txt:
+// P: Processing
+// V: Validity
+// A: to ASCII
+// B: Bidi
+// C: Context J
+func doTest(t *testing.T, f func(string) (string, error), name, input, want, errors string) {
+	errors = strings.Trim(errors, "[]")
+	test := "ok"
+	if errors != "" {
+		test = "err:" + errors
+	}
+	// Replace some of the escape sequences to make it easier to single out
+	// tests on the command name.
+	in := strings.Trim(strconv.QuoteToASCII(input), `"`)
+	in = strings.Replace(in, `\u`, "#", -1)
+	in = strings.Replace(in, `\U`, "#", -1)
+	name = fmt.Sprintf("%s/%s/%s", name, in, test)
+
+	testtext.Run(t, name, func(t *testing.T) {
+		got, err := f(input)
+
+		if err != nil {
+			code := err.(interface {
+				code() string
+			}).code()
+			if strings.Index(errors, code) == -1 {
+				t.Errorf("error %q not in set of expected errors {%v}", code, errors)
+			}
+		} else if errors != "" {
+			t.Errorf("no errors; want error in {%v}", errors)
+		}
+
+		if want != "" && got != want {
+			t.Errorf(`string: got %+q; want %+q`, got, want)
+		}
+	})
+}
+
+// TestLabelErrors tests strings returned in case of error. All results should
+// be identical to the reference implementation and can be verified at
+// http://unicode.org/cldr/utility/idna.jsp. The reference implementation,
+// however, seems to not display Bidi and ContextJ errors.
+//
+// In some cases the behavior of browsers is added as a comment. In all cases,
+// whenever a resolve search returns an error here, Chrome will treat the input
+// string as a search string (including those for Bidi and Context J errors),
+// unless noted otherwise.
+func TestLabelErrors(t *testing.T) {
+	encode := func(s string) string { s, _ = encode(acePrefix, s); return s }
+	type kind struct {
+		name string
+		f    func(string) (string, error)
+	}
+	resolve := kind{"ToASCII", Resolve.ToASCII}
+	display := kind{"ToUnicode", Display.ToUnicode}
+	testCases := []struct {
+		kind
+		input   string
+		want    string
+		wantErr string
+	}{
+		// Don't map U+2490 (DIGIT NINE FULL STOP). This is the behavior of
+		// Chrome, Safari, and IE. Firefox will first map ⒐ to 9. and return
+		// lab9.be.
+		{resolve, "lab⒐be", "xn--labbe-zh9b", "P1"}, // encode("lab⒐be")
+		{display, "lab⒐be", "lab⒐be", "P1"},
+
+		{resolve, "plan⒐faß.de", "xn--planfass-c31e.de", "P1"}, // encode("plan⒐fass") + ".de"
+		{display, "plan⒐faß.de", "plan⒐faß.de", "P1"},
+
+		// Chrome 54.0 recognizes the error and treats this input verbatim as a
+		// search string.
+		// Safari 10.0 (non-conform spec) decomposes "⒈" and computes the
+		// punycode on the result using transitional mapping.
+		// Firefox 49.0.1 goes haywire on this string and prints a bunch of what
+		// seems to be nested punycode encodings.
+		{resolve, "日本⒈co.ßßß.de", "xn--co-wuw5954azlb.ssssss.de", "P1"},
+		{display, "日本⒈co.ßßß.de", "日本⒈co.ßßß.de", "P1"},
+
+		{resolve, "a\u200Cb", "ab", ""},
+		{display, "a\u200Cb", "a\u200Cb", "C"},
+
+		{resolve, encode("a\u200Cb"), encode("a\u200Cb"), "C"},
+		{display, "a\u200Cb", "a\u200Cb", "C"},
+
+		{resolve, "grﻋﺮﺑﻲ.de", "xn--gr-gtd9a1b0g.de", "B"},
+		{
+			// Notice how the string gets transformed, even with an error.
+			// Chrome will use the original string if it finds an error, so not
+			// the transformed one.
+			display,
+			"gr\ufecb\ufeae\ufe91\ufef2.de",
+			"gr\u0639\u0631\u0628\u064a.de",
+			"B",
+		},
+
+		{resolve, "\u0671.\u03c3\u07dc", "xn--qib.xn--4xa21s", "B"}, // ٱ.σߜ
+		{display, "\u0671.\u03c3\u07dc", "\u0671.\u03c3\u07dc", "B"},
+
+		// normalize input
+		{resolve, "a\u0323\u0322", "xn--jta191l", ""}, // ạ̢
+		{display, "a\u0323\u0322", "\u1ea1\u0322", ""},
+
+		// Non-normalized strings are not normalized when they originate from
+		// punycode. Despite the error, Chrome, Safari and Firefox will attempt
+		// to look up the input punycode.
+		{resolve, encode("a\u0323\u0322") + ".com", "xn--a-tdbc.com", "V1"},
+		{display, encode("a\u0323\u0322") + ".com", "a\u0323\u0322.com", "V1"},
+	}
+
+	for _, tc := range testCases {
+		doTest(t, tc.f, tc.name, tc.input, tc.want, tc.wantErr)
+	}
+}
+
 func TestConformance(t *testing.T) {
 	testtext.SkipIfNotLong(t)
 
@@ -46,6 +165,13 @@ func TestConformance(t *testing.T) {
 			section = strings.ToLower(strings.Split(s, " ")[0])
 		}
 	}))
+	transitional := &Profile{
+		Transitional:    true,
+		VerifyDNSLength: true,
+	}
+	nonTransitional := &Profile{
+		VerifyDNSLength: true,
+	}
 	for p.Next() {
 		started = true
 
@@ -53,12 +179,12 @@ func TestConformance(t *testing.T) {
 		profiles := []*Profile{}
 		switch p.String(0) {
 		case "T":
-			profiles = append(profiles, Transitional)
+			profiles = append(profiles, transitional)
 		case "N":
-			profiles = append(profiles, NonTransitional)
+			profiles = append(profiles, nonTransitional)
 		case "B":
-			profiles = append(profiles, Transitional)
-			profiles = append(profiles, NonTransitional)
+			profiles = append(profiles, transitional)
+			profiles = append(profiles, nonTransitional)
 		}
 
 		src := unescape(p.String(1))
@@ -71,48 +197,24 @@ func TestConformance(t *testing.T) {
 		if wantToASCII == "" {
 			wantToASCII = wantToUnicode
 		}
-		test := "err:"
+		wantErrToUnicode := ""
 		if strings.HasPrefix(wantToUnicode, "[") {
-			test += strings.Replace(strings.Trim(wantToUnicode, "[]"), " ", "", -1)
+			wantErrToUnicode = wantToUnicode
+			wantToUnicode = ""
 		}
+		wantErrToASCII := ""
 		if strings.HasPrefix(wantToASCII, "[") {
-			test += strings.Replace(strings.Trim(wantToASCII, "[]"), " ", "", -1)
-		}
-		if test == "err:" {
-			test = "ok"
+			wantErrToASCII = wantToASCII
+			wantToASCII = ""
 		}
 
 		// TODO: also do IDNA tests.
 		// invalidInIDNA2008 := p.String(4) == "NV8"
 
 		for _, p := range profiles {
-			testtext.Run(t, fmt.Sprintf("%s:%s/%s/%+q", section, test, p, src), func(t *testing.T) {
-				got, err := p.ToUnicode(src)
-				wantErr := strings.HasPrefix(wantToUnicode, "[")
-				gotErr := err != nil
-				if wantErr {
-					if gotErr != wantErr {
-						t.Errorf(`ToUnicode:err got %v; want %v (%s)`,
-							gotErr, wantErr, wantToUnicode)
-					}
-				} else if got != wantToUnicode || gotErr != wantErr {
-					t.Errorf(`ToUnicode: got %+q, %v (%v); want %+q, %v`,
-						got, gotErr, err, wantToUnicode, wantErr)
-				}
-
-				got, err = p.ToASCII(src)
-				wantErr = strings.HasPrefix(wantToASCII, "[")
-				gotErr = err != nil
-				if wantErr {
-					if gotErr != wantErr {
-						t.Errorf(`ToASCII:err got %v; want %v (%s)`,
-							gotErr, wantErr, wantToASCII)
-					}
-				} else if got != wantToASCII || gotErr != wantErr {
-					t.Errorf(`ToASCII: got %+q, %v (%v); want %+q, %v`,
-						got, gotErr, err, wantToASCII, wantErr)
-				}
-			})
+			name := fmt.Sprintf("%s:%s", section, p)
+			doTest(t, p.ToUnicode, name+":ToUnicode", src, wantToUnicode, wantErrToUnicode)
+			doTest(t, p.ToASCII, name+":ToASCII", src, wantToASCII, wantErrToASCII)
 		}
 	}
 }
