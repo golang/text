@@ -165,13 +165,8 @@ func TestConformance(t *testing.T) {
 			section = strings.ToLower(strings.Split(s, " ")[0])
 		}
 	}))
-	transitional := &Profile{
-		Transitional:    true,
-		VerifyDNSLength: true,
-	}
-	nonTransitional := &Profile{
-		VerifyDNSLength: true,
-	}
+	transitional := New(Transitional(true), VerifyDNSLength(true))
+	nonTransitional := New(VerifyDNSLength(true))
 	for p.Next() {
 		started = true
 
