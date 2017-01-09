@@ -178,6 +178,14 @@ var encodings = []struct {
 		"http://encoding.spec.whatwg.org/index-iso-8859-8.txt",
 	},
 	{
+		"ISO 8859-9",
+		"ISOLatin5",
+		"",
+		"ISO8859_9",
+		encoding.ASCIISub,
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/iso-8859_9-1999.ucm",
+	},
+	{
 		"ISO 8859-10",
 		"ISOLatin6",
 		"",

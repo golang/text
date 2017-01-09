@@ -87,6 +87,11 @@ var basicTestCases = []struct {
 		utf8:    "Helץם",
 	},
 	{
+		e:       charmap.ISO8859_9,
+		encoded: "\xdeayet",
+		utf8:    "Şayet",
+	},
+	{
 		e:       charmap.ISO8859_10,
 		encoded: "H\xea\xbfo",
 		utf8:    "Hęŋo",
