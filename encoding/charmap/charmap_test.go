@@ -15,8 +15,11 @@ import (
 func dec(e encoding.Encoding) (dir string, t transform.Transformer, err error) {
 	return "Decode", e.NewDecoder(), nil
 }
-func enc(e encoding.Encoding) (dir string, t transform.Transformer, err error) {
+func encASCIISuperset(e encoding.Encoding) (dir string, t transform.Transformer, err error) {
 	return "Encode", e.NewEncoder(), internal.ErrASCIIReplacement
+}
+func encEBCDIC(e encoding.Encoding) (dir string, t transform.Transformer, err error) {
+	return "Encode", e.NewEncoder(), internal.RepertoireError(0x3f)
 }
 
 func TestNonRepertoire(t *testing.T) {
@@ -27,9 +30,15 @@ func TestNonRepertoire(t *testing.T) {
 	}{
 		{dec, Windows1252, "\x81", "\ufffd"},
 
-		{enc, Windows1252, "갂", ""},
-		{enc, Windows1252, "a갂", "a"},
-		{enc, Windows1252, "\u00E9갂", "\xE9"},
+		{encEBCDIC, CodePage1047, "갂", ""},
+		{encEBCDIC, CodePage1047, "a¤갂", "\x81\x9F"},
+
+		{encEBCDIC, CodePage1140, "갂", ""},
+		{encEBCDIC, CodePage1140, "a€갂", "\x81\x9F"},
+
+		{encASCIISuperset, Windows1252, "갂", ""},
+		{encASCIISuperset, Windows1252, "a갂", "a"},
+		{encASCIISuperset, Windows1252, "\u00E9갂", "\xE9"},
 	}
 	for _, tc := range testCases {
 		dir, tr, wantErr := tc.init(tc.e)

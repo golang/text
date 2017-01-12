@@ -114,6 +114,22 @@ var encodings = []struct {
 		"http://encoding.spec.whatwg.org/index-ibm866.txt",
 	},
 	{
+		"IBM Code Page 1047",
+		"IBM1047",
+		"",
+		"CodePage1047",
+		0x3f,
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM1047-2.1.2.ucm",
+	},
+	{
+		"IBM Code Page 1140",
+		"IBM01140",
+		"",
+		"CodePage1140",
+		0x3f,
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/ibm-1140_P100-1997.ucm",
+	},
+	{
 		"ISO 8859-1",
 		"ISOLatin1",
 		"",
