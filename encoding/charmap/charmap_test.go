@@ -30,6 +30,8 @@ func TestNonRepertoire(t *testing.T) {
 	}{
 		{dec, Windows1252, "\x81", "\ufffd"},
 
+		{encEBCDIC, CodePage037, "갂", ""},
+
 		{encEBCDIC, CodePage1047, "갂", ""},
 		{encEBCDIC, CodePage1047, "a¤갂", "\x81\x9F"},
 

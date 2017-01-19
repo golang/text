@@ -42,6 +42,11 @@ var basicTestCases = []struct {
 
 	// Charmap tests.
 	{
+		e:       charmap.CodePage037,
+		encoded: "\xc8\x51\xba\x93\xcf",
+		utf8:    "Hé[lõ",
+	},
+	{
 		e:       charmap.CodePage437,
 		encoded: "H\x82ll\x93 \x9d\xa7\xf4\x9c\xbe",
 		utf8:    "Héllô ¥º⌠£╛",

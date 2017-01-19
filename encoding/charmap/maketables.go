@@ -34,6 +34,14 @@ var encodings = []struct {
 	mapping     string
 }{
 	{
+		"IBM Code Page 037",
+		"IBM037",
+		"",
+		"CodePage037",
+		0x3f,
+		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM037-2.1.2.ucm",
+	},
+	{
 		"IBM Code Page 437",
 		"PC8CodePage437",
 		"",
