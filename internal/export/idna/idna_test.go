@@ -92,12 +92,39 @@ func TestLabelErrors(t *testing.T) {
 	}
 	resolve := kind{"ToASCII", Resolve.ToASCII}
 	display := kind{"ToUnicode", Display.ToUnicode}
+	lengthU := kind{"CheckLengthU", New(VerifyDNSLength(true)).ToUnicode}
+	lengthA := kind{"CheckLengthA", New(VerifyDNSLength(true)).ToASCII}
 	testCases := []struct {
 		kind
 		input   string
 		want    string
 		wantErr string
 	}{
+		{lengthU, "", "", "A4"}, // From UTS 46 conformance test.
+		{lengthA, "", "", "A4"},
+
+		{lengthU, "xn--", "", "A4"},
+		{lengthU, "foo.xn--", "foo.", "A4"}, // TODO: is dropping xn-- correct?
+		{lengthU, "xn--.foo", ".foo", "A4"},
+		{lengthU, "foo.xn--.bar", "foo..bar", "A4"},
+
+		{display, "xn--", "", ""},
+		{display, "foo.xn--", "foo.", ""}, // TODO: is dropping xn-- correct?
+		{display, "xn--.foo", ".foo", ""},
+		{display, "foo.xn--.bar", "foo..bar", ""},
+
+		{lengthA, "a..b", "a..b", "A4"},
+		// Stripping leading empty labels here but not for "empty" punycode
+		// above seems inconsistent, but seems to be applied by both the
+		// conformance test and Chrome. Different interpretations would be
+		// possible, though.
+		{lengthA, "..b", "b", ""},
+		{lengthA, "b..", "b..", ""}, // TODO: remove trailing dots?
+
+		{resolve, "a..b", "a..b", ""},
+		{resolve, "..b", "b", ""},
+		{resolve, "b..", "b..", ""}, // TODO: remove trailing dots?
+
 		// Don't map U+2490 (DIGIT NINE FULL STOP). This is the behavior of
 		// Chrome, Safari, and IE. Firefox will first map ⒐ to 9. and return
 		// lab9.be.

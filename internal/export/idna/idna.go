@@ -220,11 +220,13 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 		// TODO: the punycode converters require strings as input.
 		s = string(b)
 	}
-	// Remove leading empty labels
+	// Remove leading empty labels.
 	for ; len(s) > 0 && s[0] == '.'; s = s[1:] {
 	}
-	if s == "" {
-		return "", &labelError{s, "A4"}
+	// It seems like we should only create this error on ToASCII, but the
+	// UTS 46 conformance tests suggests we should always check this.
+	if p.verifyDNSLength && s == "" {
+		err = &labelError{s, "A4"}
 	}
 	labels := labelIter{orig: s}
 	for ; !labels.done(); labels.next() {
@@ -232,7 +234,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 		if label == "" {
 			// Empty labels are not okay. The label iterator skips the last
 			// label if it is empty.
-			if err == nil {
+			if err == nil && p.verifyDNSLength {
 				err = &labelError{s, "A4"}
 			}
 			continue
@@ -251,7 +253,10 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				err = p.validateFromPunycode(u)
 			}
 			if err == nil {
-				err = NonTransitional.validate(u)
+				// This should be called on NonTransitional, according to the
+				// spec, but that currently does not have any effect. Use the
+				// original profile to preserve options.
+				err = p.validate(u)
 			}
 		} else if err == nil {
 			err = p.validate(label)
@@ -455,6 +460,12 @@ var joinStates = [][numJoinTypes]joinState{
 // validate validates the criteria from Section 4.1. Item 1, 4, and 6 are
 // already implicitly satisfied by the overall implementation.
 func (p *Profile) validate(s string) error {
+	if s == "" {
+		if p.verifyDNSLength {
+			return &labelError{s, "A4"}
+		}
+		return nil
+	}
 	if len(s) > 4 && s[2] == '-' && s[3] == '-' {
 		return &labelError{s, "V2"}
 	}
