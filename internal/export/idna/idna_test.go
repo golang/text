@@ -122,7 +122,7 @@ func TestLabelErrors(t *testing.T) {
 	p := New(VerifyDNSLength(true), MapForLookup(), BidiRule())
 	lengthU := kind{"CheckLengthU", p.ToUnicode}
 	lengthA := kind{"CheckLengthA", p.ToASCII}
-	p = New(MapForLookup(), UseSTD3Rules(false))
+	p = New(MapForLookup(), StrictDomainName(false))
 	std3 := kind{"STD3", p.ToASCII}
 
 	testCases := []struct {

@@ -39,19 +39,12 @@ import (
 //    error in the future.
 // I think Option 1 is best, but it is quite opinionated.
 
-// ToASCII is a wrapper for Punycode.ToASCII. It converts a domain or domain
-// label to its ASCII form. For example, ToASCII("bücher.example.com") is
-// "xn--bcher-kva.example.com", and ToASCII("golang") is "golang". If an error
-// is encountered it will return an error and a (partially) processed result.
+// ToASCII is a wrapper for Punycode.ToASCII.
 func ToASCII(s string) (string, error) {
 	return Punycode.process(s, true)
 }
 
-// ToUnicode is a wrapper for Punycode.ToUnicode. It converts a domain or domain
-// label to its Unicode form. For example,
-// ToUnicode("xn--bcher-kva.example.com") is "bücher.example.com", and
-// ToUnicode("golang") is "golang". If an error is encountered it will return an
-// error and a (partially) processed result.
+// ToUnicode is a wrapper for Punycode.ToUnicode.
 func ToUnicode(s string) (string, error) {
 	return Punycode.process(s, false)
 }
@@ -59,9 +52,11 @@ func ToUnicode(s string) (string, error) {
 // An Option configures a Profile at creation time.
 type Option func(*options)
 
-// Transitional sets a Profile to use the Transitional mapping as defined
-// in UTS #46. This will cause, for example, "ß" to be mapped to "ss".
-// This option is only useful if combined with MapForLookup.
+// Transitional sets a Profile to use the Transitional mapping as defined in UTS
+// #46. This will cause, for example, "ß" to be mapped to "ss". Using the
+// transitional mapping provides a compromise between IDNA2003 and IDNA2008
+// compatibility. It is used by most browsers when resolving domain names. This
+// option is only meaningful if combined with MapForLookup.
 func Transitional(transitional bool) Option {
 	return func(o *options) { o.transitional = true }
 }
@@ -88,13 +83,15 @@ func ValidateLabels(enable bool) Option {
 	}
 }
 
-// UseSTD3Rules sets whether ASCII characters outside the A-Z, a-z, 0-9 and the
-// hyphen should be disallowed. Disallowing these characters is required by
-// IDNA2008 and is the default for ValidateForRegistration and MapForLookup.
-// However, IDNA2003 and UTS #46 allow this to be overridden to support browsers
-// that allow characters outside this range, for example a '_' (U+005F LOW
-// LINE). See http://www.rfc-editor.org/std/std3.txt for more details.
-func UseSTD3Rules(use bool) Option {
+// StrictDomainName limits the set of permissable ASCII characters to those
+// allowed in domain names as defined in RFC 1034 (A-Z, a-z, 0-9 and the
+// hyphen). This is set by default for MapForLookup and ValidateForRegistration.
+//
+// This option is useful, for instance, for browsers that allow characters
+// outside this range, for example a '_' (U+005F LOW LINE). See
+// http://www.rfc-editor.org/std/std3.txt for more details This option
+// corresponds to the UseSTD3ASCIIRules option in UTS #46.
+func StrictDomainName(use bool) Option {
 	return func(o *options) {
 		o.trie = trie
 		o.useSTD3Rules = use
@@ -116,7 +113,7 @@ func BidiRule() Option {
 func ValidateForRegistration() Option {
 	return func(o *options) {
 		o.mapping = validateRegistration
-		UseSTD3Rules(true)(o)
+		StrictDomainName(true)(o)
 		ValidateLabels(true)(o)
 		VerifyDNSLength(true)(o)
 		BidiRule()(o)
@@ -134,7 +131,7 @@ func ValidateForRegistration() Option {
 func MapForLookup() Option {
 	return func(o *options) {
 		o.mapping = validateAndMap
-		UseSTD3Rules(true)(o)
+		StrictDomainName(true)(o)
 		ValidateLabels(true)(o)
 	}
 }
