@@ -9,6 +9,7 @@ import (
 
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/internal"
+	"golang.org/x/text/encoding/internal/enctest"
 	"golang.org/x/text/transform"
 )
 
@@ -45,3 +46,35 @@ func TestNonRepertoire(t *testing.T) {
 		}
 	}
 }
+
+func TestBasics(t *testing.T) {
+	// The encoded forms can be verified by the iconv program:
+	// $ echo 月日は百代 | iconv -f UTF-8 -t SHIFT-JIS | xxd
+	testCases := []struct {
+		e       encoding.Encoding
+		encoded string
+		utf8    string
+	}{{
+		// Korean tests.
+		//
+		// "A\uac02\uac35\uac56\ud401B\ud408\ud620\ud624C\u4f3d\u8a70D" is a
+		// nonsense string that contains ASCII, Hangul and CJK ideographs.
+		//
+		// "세계야, 안녕" translates as "Hello, world".
+		e:       EUCKR,
+		encoded: "A\x81\x41\x81\x61\x81\x81\xc6\xfeB\xc7\xa1\xc7\xfe\xc8\xa1C\xca\xa1\xfd\xfeD",
+		utf8:    "A\uac02\uac35\uac56\ud401B\ud408\ud620\ud624C\u4f3d\u8a70D",
+	}, {
+		e:       EUCKR,
+		encoded: "\xbc\xbc\xb0\xe8\xbe\xdf\x2c\x20\xbe\xc8\xb3\xe7",
+		utf8:    "세계야, 안녕",
+	}}
+
+	for _, tc := range testCases {
+		enctest.TestEncoding(t, tc.e, tc.encoded, tc.utf8, "", "")
+	}
+}
+
+func TestFiles(t *testing.T) { enctest.TestFile(t, EUCKR) }
+
+func BenchmarkEncoding(b *testing.B) { enctest.Benchmark(b, EUCKR) }
