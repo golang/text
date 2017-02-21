@@ -64,6 +64,22 @@ func TestNonRepertoire(t *testing.T) {
 		{dec, EUCJP, strings.Repeat("\x8f\xa0", n), strings.Repeat("\ufffd", 2*n)},
 		{dec, EUCJP, "a" + strings.Repeat("\x8f\xa1", n), "a" + strings.Repeat("\ufffd", n)},
 		{dec, EUCJP, "a" + strings.Repeat("\x8f\xa1\xff", n), "a" + strings.Repeat("\ufffd", 2*n)},
+
+		// Continue correctly after errors
+		{dec, ShiftJIS, "\x80", "\u0080"}, // It's what the spec says.
+		{dec, ShiftJIS, "\x81", "\ufffd"},
+		{dec, ShiftJIS, "\xe0", "\ufffd"},
+		{dec, ShiftJIS, "\xe0\x39", "\ufffd\u0039"},
+		{dec, ShiftJIS, "\x81\x7f", "\ufffd\u007f"},
+		{dec, ShiftJIS, "\xe0\xfd", "\ufffd"},
+		{dec, ShiftJIS, "\xe0\x9f", "燹"},
+		{dec, ShiftJIS, "\xfc\xfc", "\ufffd"},
+		{dec, ShiftJIS, "\xfc\xfd", "\ufffd"},
+		{dec, ShiftJIS, "\xfdaa", "\ufffdaa"},
+
+		{dec, ShiftJIS, strings.Repeat("\x81\x81", n), strings.Repeat("＝", n)},
+		{dec, ShiftJIS, strings.Repeat("\xe0\xfd", n), strings.Repeat("\ufffd", n)},
+		{dec, ShiftJIS, "a" + strings.Repeat("\xe0\xfd", n), "a" + strings.Repeat("\ufffd", n)},
 	}
 	for _, tc := range testCases {
 		dir, tr, wantErr := tc.init(tc.e)
