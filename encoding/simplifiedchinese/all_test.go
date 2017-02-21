@@ -5,6 +5,7 @@
 package simplifiedchinese
 
 import (
+	"strings"
 	"testing"
 
 	"golang.org/x/text/encoding"
@@ -21,6 +22,8 @@ func enc(e encoding.Encoding) (dir string, t transform.Transformer, err error) {
 }
 
 func TestNonRepertoire(t *testing.T) {
+	// Pick n large enough to overflow the destination buffer of transform.String.
+	const n = 10000
 	testCases := []struct {
 		init      func(e encoding.Encoding) (string, transform.Transformer, error)
 		e         encoding.Encoding
@@ -36,6 +39,18 @@ func TestNonRepertoire(t *testing.T) {
 		{enc, HZGB2312, "갂", ""},
 		{enc, HZGB2312, "a갂", "a"},
 		{enc, HZGB2312, "\u6cf5갂", "~{1C~}"},
+
+		{dec, GB18030, "\x80", "€"},
+		{dec, GB18030, "\x81", "\ufffd"},
+		{dec, GB18030, "\x81\x20", "\ufffd "},
+		{dec, GB18030, "\xfe\xfe", "\ufffd"},
+		{dec, GB18030, "\xfe\xff", "\ufffd\ufffd"},
+		{dec, GB18030, "\xfe\x30", "\ufffd0"},
+		{dec, GB18030, "\xfe\x30\x30 ", "\ufffd00 "},
+		{dec, GB18030, "\xfe\x30\xff ", "\ufffd0\ufffd "},
+		{dec, GB18030, "\xfe\x30\x81\x21", "\ufffd0\ufffd!"},
+
+		{dec, GB18030, strings.Repeat("\xfe\x30", n), strings.Repeat("\ufffd0", n)},
 	}
 	for _, tc := range testCases {
 		dir, tr, wantErr := tc.init(tc.e)
