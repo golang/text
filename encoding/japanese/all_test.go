@@ -5,6 +5,7 @@
 package japanese_test
 
 import (
+	"strings"
 	"testing"
 
 	"golang.org/x/text/encoding"
@@ -22,6 +23,8 @@ func enc(e encoding.Encoding) (dir string, t transform.Transformer, err error) {
 }
 
 func TestNonRepertoire(t *testing.T) {
+	// Pick n to cause the destination buffer in transform.String to overflow.
+	const n = 10000
 	testCases := []struct {
 		init      func(e encoding.Encoding) (string, transform.Transformer, error)
 		e         encoding.Encoding
@@ -42,6 +45,26 @@ func TestNonRepertoire(t *testing.T) {
 		{enc, japanese.ShiftJIS, "갂", ""},
 		{enc, japanese.ShiftJIS, "a갂", "a"},
 		{enc, japanese.ShiftJIS, "\u2190갂", "\x81\xa9"},
+
+		// Continue correctly after errors
+		{dec, japanese.EUCJP, "\x8e\xa0", "\ufffd\ufffd"},
+		{dec, japanese.EUCJP, "\x8e\xe0", "\ufffd"},
+		{dec, japanese.EUCJP, "\x8e\xff", "\ufffd\ufffd"},
+		{dec, japanese.EUCJP, "\x8ea", "\ufffda"},
+		{dec, japanese.EUCJP, "\x8f\xa0", "\ufffd\ufffd"},
+		{dec, japanese.EUCJP, "\x8f\xa1a", "\ufffda"},
+		{dec, japanese.EUCJP, "\x8f\xa1a", "\ufffda"},
+		{dec, japanese.EUCJP, "\x8f\xa1\xa0", "\ufffd\ufffd"},
+		{dec, japanese.EUCJP, "\x8f\xa1a", "\ufffda"},
+		{dec, japanese.EUCJP, "\x8f\xa2\xa2", "\ufffd"},
+		{dec, japanese.EUCJP, "\xfe", "\ufffd"},
+		{dec, japanese.EUCJP, "\xfe\xff", "\ufffd\ufffd"},
+		// Correct handling of end of source
+		{dec, japanese.EUCJP, strings.Repeat("\x8e", n), strings.Repeat("\ufffd", n)},
+		{dec, japanese.EUCJP, strings.Repeat("\x8f", n), strings.Repeat("\ufffd", n)},
+		{dec, japanese.EUCJP, strings.Repeat("\x8f\xa0", n), strings.Repeat("\ufffd", 2*n)},
+		{dec, japanese.EUCJP, "a" + strings.Repeat("\x8f\xa1", n), "a" + strings.Repeat("\ufffd", n)},
+		{dec, japanese.EUCJP, "a" + strings.Repeat("\x8f\xa1\xff", n), "a" + strings.Repeat("\ufffd", 2*n)},
 	}
 	for _, tc := range testCases {
 		dir, tr, wantErr := tc.init(tc.e)
