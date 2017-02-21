@@ -5,6 +5,7 @@
 package korean
 
 import (
+	"strings"
 	"testing"
 
 	"golang.org/x/text/encoding"
@@ -21,6 +22,9 @@ func enc(e encoding.Encoding) (dir string, t transform.Transformer, err error) {
 }
 
 func TestNonRepertoire(t *testing.T) {
+	// Pick n large enough to cause an overflow in the destination buffer of
+	// transform.String.
+	const n = 10000
 	testCases := []struct {
 		init      func(e encoding.Encoding) (string, transform.Transformer, error)
 		e         encoding.Encoding
@@ -33,6 +37,16 @@ func TestNonRepertoire(t *testing.T) {
 		{enc, EUCKR, "aא", "a"},
 		{enc, EUCKR, "\uac00א", "\xb0\xa1"},
 		// TODO: should we also handle Jamo?
+
+		{dec, EUCKR, "\x80", "\ufffd"},
+		{dec, EUCKR, "\xff", "\ufffd"},
+		{dec, EUCKR, "\x81", "\ufffd"},
+		{dec, EUCKR, "\xb0\x40", "\ufffd@"},
+		{dec, EUCKR, "\xb0\xff", "\ufffd"},
+		{dec, EUCKR, "\xd0\x20", "\ufffd "},
+		{dec, EUCKR, "\xd0\xff", "\ufffd"},
+
+		{dec, EUCKR, strings.Repeat("\x81", n), strings.Repeat("걖", n/2)},
 	}
 	for _, tc := range testCases {
 		dir, tr, wantErr := tc.init(tc.e)
