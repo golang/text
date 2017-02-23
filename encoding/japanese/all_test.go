@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package japanese_test
+package japanese
 
 import (
 	"strings"
@@ -11,7 +11,6 @@ import (
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/internal"
 	"golang.org/x/text/encoding/internal/enctest"
-	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 )
 
@@ -30,41 +29,41 @@ func TestNonRepertoire(t *testing.T) {
 		e         encoding.Encoding
 		src, want string
 	}{
-		{dec, japanese.EUCJP, "\xfe\xfc", "\ufffd"},
-		{dec, japanese.ISO2022JP, "\x1b$B\x7e\x7e", "\ufffd"},
-		{dec, japanese.ShiftJIS, "\xef\xfc", "\ufffd"},
+		{dec, EUCJP, "\xfe\xfc", "\ufffd"},
+		{dec, ISO2022JP, "\x1b$B\x7e\x7e", "\ufffd"},
+		{dec, ShiftJIS, "\xef\xfc", "\ufffd"},
 
-		{enc, japanese.EUCJP, "갂", ""},
-		{enc, japanese.EUCJP, "a갂", "a"},
-		{enc, japanese.EUCJP, "丌갂", "\x8f\xb0\xa4"},
+		{enc, EUCJP, "갂", ""},
+		{enc, EUCJP, "a갂", "a"},
+		{enc, EUCJP, "丌갂", "\x8f\xb0\xa4"},
 
-		{enc, japanese.ISO2022JP, "갂", ""},
-		{enc, japanese.ISO2022JP, "a갂", "a"},
-		{enc, japanese.ISO2022JP, "朗갂", "\x1b$BzF\x1b(B"}, // switch back to ASCII mode at end
+		{enc, ISO2022JP, "갂", ""},
+		{enc, ISO2022JP, "a갂", "a"},
+		{enc, ISO2022JP, "朗갂", "\x1b$BzF\x1b(B"}, // switch back to ASCII mode at end
 
-		{enc, japanese.ShiftJIS, "갂", ""},
-		{enc, japanese.ShiftJIS, "a갂", "a"},
-		{enc, japanese.ShiftJIS, "\u2190갂", "\x81\xa9"},
+		{enc, ShiftJIS, "갂", ""},
+		{enc, ShiftJIS, "a갂", "a"},
+		{enc, ShiftJIS, "\u2190갂", "\x81\xa9"},
 
 		// Continue correctly after errors
-		{dec, japanese.EUCJP, "\x8e\xa0", "\ufffd\ufffd"},
-		{dec, japanese.EUCJP, "\x8e\xe0", "\ufffd"},
-		{dec, japanese.EUCJP, "\x8e\xff", "\ufffd\ufffd"},
-		{dec, japanese.EUCJP, "\x8ea", "\ufffda"},
-		{dec, japanese.EUCJP, "\x8f\xa0", "\ufffd\ufffd"},
-		{dec, japanese.EUCJP, "\x8f\xa1a", "\ufffda"},
-		{dec, japanese.EUCJP, "\x8f\xa1a", "\ufffda"},
-		{dec, japanese.EUCJP, "\x8f\xa1\xa0", "\ufffd\ufffd"},
-		{dec, japanese.EUCJP, "\x8f\xa1a", "\ufffda"},
-		{dec, japanese.EUCJP, "\x8f\xa2\xa2", "\ufffd"},
-		{dec, japanese.EUCJP, "\xfe", "\ufffd"},
-		{dec, japanese.EUCJP, "\xfe\xff", "\ufffd\ufffd"},
+		{dec, EUCJP, "\x8e\xa0", "\ufffd\ufffd"},
+		{dec, EUCJP, "\x8e\xe0", "\ufffd"},
+		{dec, EUCJP, "\x8e\xff", "\ufffd\ufffd"},
+		{dec, EUCJP, "\x8ea", "\ufffda"},
+		{dec, EUCJP, "\x8f\xa0", "\ufffd\ufffd"},
+		{dec, EUCJP, "\x8f\xa1a", "\ufffda"},
+		{dec, EUCJP, "\x8f\xa1a", "\ufffda"},
+		{dec, EUCJP, "\x8f\xa1\xa0", "\ufffd\ufffd"},
+		{dec, EUCJP, "\x8f\xa1a", "\ufffda"},
+		{dec, EUCJP, "\x8f\xa2\xa2", "\ufffd"},
+		{dec, EUCJP, "\xfe", "\ufffd"},
+		{dec, EUCJP, "\xfe\xff", "\ufffd\ufffd"},
 		// Correct handling of end of source
-		{dec, japanese.EUCJP, strings.Repeat("\x8e", n), strings.Repeat("\ufffd", n)},
-		{dec, japanese.EUCJP, strings.Repeat("\x8f", n), strings.Repeat("\ufffd", n)},
-		{dec, japanese.EUCJP, strings.Repeat("\x8f\xa0", n), strings.Repeat("\ufffd", 2*n)},
-		{dec, japanese.EUCJP, "a" + strings.Repeat("\x8f\xa1", n), "a" + strings.Repeat("\ufffd", n)},
-		{dec, japanese.EUCJP, "a" + strings.Repeat("\x8f\xa1\xff", n), "a" + strings.Repeat("\ufffd", 2*n)},
+		{dec, EUCJP, strings.Repeat("\x8e", n), strings.Repeat("\ufffd", n)},
+		{dec, EUCJP, strings.Repeat("\x8f", n), strings.Repeat("\ufffd", n)},
+		{dec, EUCJP, strings.Repeat("\x8f\xa0", n), strings.Repeat("\ufffd", 2*n)},
+		{dec, EUCJP, "a" + strings.Repeat("\x8f\xa1", n), "a" + strings.Repeat("\ufffd", n)},
+		{dec, EUCJP, "a" + strings.Repeat("\x8f\xa1\xff", n), "a" + strings.Repeat("\ufffd", 2*n)},
 	}
 	for _, tc := range testCases {
 		dir, tr, wantErr := tc.init(tc.e)
@@ -85,11 +84,11 @@ func TestCorrect(t *testing.T) {
 		e         encoding.Encoding
 		src, want string
 	}{
-		{dec, japanese.ShiftJIS, "\x9f\xfc", "滌"},
-		{dec, japanese.ShiftJIS, "\xfb\xfc", "髙"},
-		{dec, japanese.ShiftJIS, "\xfa\xb1", "﨑"},
-		{enc, japanese.ShiftJIS, "滌", "\x9f\xfc"},
-		{enc, japanese.ShiftJIS, "﨑", "\xed\x95"},
+		{dec, ShiftJIS, "\x9f\xfc", "滌"},
+		{dec, ShiftJIS, "\xfb\xfc", "髙"},
+		{dec, ShiftJIS, "\xfa\xb1", "﨑"},
+		{enc, ShiftJIS, "滌", "\x9f\xfc"},
+		{enc, ShiftJIS, "﨑", "\xed\x95"},
 	}
 	for _, tc := range testCases {
 		dir, tr, _ := tc.init(tc.e)
@@ -120,7 +119,7 @@ func TestBasics(t *testing.T) {
 		//
 		// "月日は百代の過客にして、行かふ年も又旅人也。" is from the 17th century poem
 		// "Oku no Hosomichi" and contains both hiragana and kanji.
-		e: japanese.EUCJP,
+		e: EUCJP,
 		encoded: "A\x8e\xa1\x8e\xb6\x8e\xdf " +
 			"0208: \xa1\xa1\xa1\xa2\xa1\xdf\xa1\xe0\xa1\xfd\xa1\xfe\xa2\xa1\xa2\xa2\xf4\xa6 " +
 			"0212: \x8f\xa2\xaf\x8f\xed\xe3",
@@ -128,20 +127,20 @@ func TestBasics(t *testing.T) {
 			"0208: \u3000\u3001\u00d7\u00f7\u25ce\u25c7\u25c6\u25a1\u7199 " +
 			"0212: \u02d8\u9fa5",
 	}, {
-		e: japanese.EUCJP,
+		e: EUCJP,
 		encoded: "\xb7\xee\xc6\xfc\xa4\xcf\xc9\xb4\xc2\xe5\xa4\xce\xb2\xe1\xb5\xd2" +
 			"\xa4\xcb\xa4\xb7\xa4\xc6\xa1\xa2\xb9\xd4\xa4\xab\xa4\xd5\xc7\xaf" +
 			"\xa4\xe2\xcb\xf4\xce\xb9\xbf\xcd\xcc\xe9\xa1\xa3",
 		utf8: "月日は百代の過客にして、行かふ年も又旅人也。",
 	}, {
-		e:         japanese.ISO2022JP,
+		e:         ISO2022JP,
 		encSuffix: "\x1b\x28\x42",
 		encoded: "\x1b\x28\x49\x21\x36\x5f\x1b\x28\x42 " +
 			"0208: \x1b\x24\x42\x21\x21\x21\x22\x21\x5f\x21\x60\x21\x7d\x21\x7e\x22\x21\x22\x22\x74\x26",
 		utf8: "｡ｶﾟ " +
 			"0208: \u3000\u3001\u00d7\u00f7\u25ce\u25c7\u25c6\u25a1\u7199",
 	}, {
-		e:         japanese.ISO2022JP,
+		e:         ISO2022JP,
 		encPrefix: "\x1b\x24\x42",
 		encSuffix: "\x1b\x28\x42",
 		encoded: "\x37\x6e\x46\x7c\x24\x4f\x49\x34\x42\x65\x24\x4e\x32\x61\x35\x52" +
@@ -149,13 +148,13 @@ func TestBasics(t *testing.T) {
 			"\x24\x62\x4b\x74\x4e\x39\x3f\x4d\x4c\x69\x21\x23",
 		utf8: "月日は百代の過客にして、行かふ年も又旅人也。",
 	}, {
-		e: japanese.ShiftJIS,
+		e: ShiftJIS,
 		encoded: "A\xa1\xb6\xdf " +
 			"0208: \x81\x40\x81\x41\x81\x7e\x81\x80\x81\x9d\x81\x9e\x81\x9f\x81\xa0\xea\xa4",
 		utf8: "A｡ｶﾟ " +
 			"0208: \u3000\u3001\u00d7\u00f7\u25ce\u25c7\u25c6\u25a1\u7199",
 	}, {
-		e: japanese.ShiftJIS,
+		e: ShiftJIS,
 		encoded: "\x8c\x8e\x93\xfa\x82\xcd\x95\x53\x91\xe3\x82\xcc\x89\xdf\x8b\x71" +
 			"\x82\xc9\x82\xb5\x82\xc4\x81\x41\x8d\x73\x82\xa9\x82\xd3\x94\x4e" +
 			"\x82\xe0\x96\x94\x97\xb7\x90\x6c\x96\xe7\x81\x42",
@@ -168,13 +167,13 @@ func TestBasics(t *testing.T) {
 }
 
 func TestFiles(t *testing.T) {
-	enctest.TestFile(t, japanese.EUCJP)
-	enctest.TestFile(t, japanese.ISO2022JP)
-	enctest.TestFile(t, japanese.ShiftJIS)
+	enctest.TestFile(t, EUCJP)
+	enctest.TestFile(t, ISO2022JP)
+	enctest.TestFile(t, ShiftJIS)
 }
 
 func BenchmarkEncoding(b *testing.B) {
-	enctest.Benchmark(b, japanese.EUCJP)
-	enctest.Benchmark(b, japanese.ISO2022JP)
-	enctest.Benchmark(b, japanese.ShiftJIS)
+	enctest.Benchmark(b, EUCJP)
+	enctest.Benchmark(b, ISO2022JP)
+	enctest.Benchmark(b, ShiftJIS)
 }
