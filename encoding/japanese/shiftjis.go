@@ -45,8 +45,8 @@ loop:
 			c0 = 2*c0 - 0x21
 
 			if nSrc+1 >= len(src) {
-				err = transform.ErrShortSrc
 				if !atEOF {
+					err = transform.ErrShortSrc
 					break loop
 				}
 				r, size = '\ufffd', 1
