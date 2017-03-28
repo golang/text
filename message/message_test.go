@@ -10,8 +10,10 @@ import (
 	"io"
 	"testing"
 
+	"golang.org/x/text/internal"
 	"golang.org/x/text/internal/format"
 	"golang.org/x/text/language"
+	"golang.org/x/text/message/catalog"
 )
 
 type formatFunc func(s fmt.State, v rune)
@@ -130,7 +132,11 @@ func TestFormatSelection(t *testing.T) {
 		cat, _ := initCat(tc.cat)
 
 		for i, pt := range tc.test {
-			p := cat.Printer(language.MustParse(pt.tag))
+			tag := language.MustParse(pt.tag)
+			p := Printer{printer{
+				tag: tag,
+			}}
+			p.printer.catContext = cat.Context(tag, &p.printer)
 
 			if got := p.Sprintf(pt.key, pt.args...); got != pt.want {
 				t.Errorf("%s:%d:Sprintf(%s, %v) = %s; want %s",
@@ -146,4 +152,17 @@ func TestFormatSelection(t *testing.T) {
 			}
 		}
 	}
+}
+
+type entry struct{ tag, key, msg string }
+
+func initCat(entries []entry) (*catalog.Catalog, []language.Tag) {
+	tags := []language.Tag{}
+	cat := catalog.New()
+	for _, e := range entries {
+		tag := language.MustParse(e.tag)
+		tags = append(tags, tag)
+		cat.SetString(tag, e.key, e.msg)
+	}
+	return cat, internal.UniqueTags(tags)
 }
