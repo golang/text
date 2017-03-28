@@ -57,6 +57,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"log"
 	"strconv"
@@ -68,6 +69,50 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/unicode/cldr"
 )
+
+var (
+	test = flag.Bool("test", false,
+		"test existing tables; can be used to compare web data with package data.")
+	outputFile     = flag.String("output", "tables.go", "output file")
+	outputTestFile = flag.String("testoutput", "data_test.go", "output file")
+
+	draft = flag.String("draft",
+		"contributed",
+		`Minimal draft requirements (approved, contributed, provisional, unconfirmed).`)
+)
+
+func main() {
+	gen.Init()
+
+	const pkg = "plural"
+
+	gen.Repackage("gen_common.go", "common.go", pkg)
+	// Read the CLDR zip file.
+	r := gen.OpenCLDRCoreZip()
+	defer r.Close()
+
+	d := &cldr.Decoder{}
+	d.SetDirFilter("supplemental", "main")
+	d.SetSectionFilter("numbers", "plurals")
+	data, err := d.DecodeZip(r)
+	if err != nil {
+		log.Fatalf("DecodeZip: %v", err)
+	}
+
+	w := gen.NewCodeWriter()
+	defer w.WriteGoFile(*outputFile, pkg)
+
+	gen.WriteCLDRVersion(w)
+
+	genPlurals(w, data)
+
+	w = gen.NewCodeWriter()
+	defer w.WriteGoFile(*outputTestFile, pkg)
+
+	fmt.Fprintln(w, `import "golang.org/x/text/internal/format/plural"`)
+
+	genPluralsTests(w, data)
+}
 
 type pluralTest struct {
 	locales string // space-separated list of locales for this test

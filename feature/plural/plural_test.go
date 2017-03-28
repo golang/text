@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package number
+package plural
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"testing"
@@ -12,18 +13,70 @@ import (
 	"golang.org/x/text/language"
 )
 
+func TestGetIntApprox(t *testing.T) {
+	const big = 1234567890
+	testCases := []struct {
+		digits string
+		start  int
+		end    int
+		nMod   int
+		want   int
+	}{
+		{"123", 0, 1, 1, 1},
+		{"123", 0, 2, 1, big},
+		{"123", 0, 2, 2, 12},
+		{"123", 3, 4, 2, 0},
+		{"12345", 3, 4, 2, 4},
+
+		{"123", 0, 5, 2, big},
+		{"123", 0, 5, 3, big},
+		{"123", 0, 5, 4, big},
+		{"123", 0, 5, 5, 12300},
+		{"123", 0, 5, 6, 12300},
+		{"123", 0, 5, 7, 12300},
+
+		// Translation of examples in MatchDigits.
+		// Integer parts
+		{"123", 0, 3, 3, 123},  // 123
+		{"1234", 0, 3, 3, 123}, // 123.4
+		{"1", 0, 6, 8, 100000}, // 100000
+
+		// Fraction parts
+		{"123", 3, 3, 3, 0},   // 123
+		{"1234", 3, 4, 3, 4},  // 123.4
+		{"1234", 3, 5, 3, 40}, // 123.40
+		{"1", 6, 8, 8, 0},     // 100000.00
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s:%d:%d/%d", tc.digits, tc.start, tc.end, tc.nMod), func(t *testing.T) {
+			got := getIntApprox(mkDigits(tc.digits), tc.start, tc.end, tc.nMod, big)
+			if got != tc.want {
+				t.Errorf("got %d; want %d", got, tc.want)
+			}
+		})
+	}
+}
+
+func mkDigits(s string) []byte {
+	b := []byte(s)
+	for i := range b {
+		b[i] -= '0'
+	}
+	return b
+}
+
 func TestOrdinal(t *testing.T) {
-	testPlurals(t, &ordinalData, ordinalTests)
+	testPlurals(t, Ordinal, ordinalTests)
 }
 
 func TestCardinal(t *testing.T) {
-	testPlurals(t, &cardinalData, cardinalTests)
+	testPlurals(t, Cardinal, cardinalTests)
 }
 
-func testPlurals(t *testing.T, p *pluralRules, testCases []pluralTest) {
+func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 	for _, tc := range testCases {
 		for _, loc := range strings.Split(tc.locales, " ") {
-			langIndex, _ := language.CompactIndex(language.MustParse(loc))
+			tag := language.MustParse(loc)
 			// Test integers
 			for _, s := range tc.integer {
 				a := strings.Split(s, "~")
@@ -33,9 +86,18 @@ func testPlurals(t *testing.T, p *pluralRules, testCases []pluralTest) {
 					to = parseUint(t, a[1])
 				}
 				for n := from; n <= to; n++ {
-					if f := matchPlural(p, langIndex, n, 0, 0); f != tc.form {
-						t.Errorf("%s:int(%d) = %v; want %v", loc, n, f, tc.form)
-					}
+					t.Run(fmt.Sprintf("%s/int(%d)", loc, n), func(t *testing.T) {
+						if f := p.matchComponents(tag, n, 0, 0); f != tc.form {
+							t.Errorf("matchComponents: got %v; want %v", f, tc.form)
+						}
+						digits := []byte(fmt.Sprint(n))
+						for i := range digits {
+							digits[i] -= '0'
+						}
+						if f := p.MatchDigits(tag, digits, 0, 0); f != tc.form {
+							t.Errorf("MatchDigits: got %v; want %v", f, tc.form)
+						}
+					})
 				}
 			}
 			// Test decimals
@@ -54,9 +116,20 @@ func testPlurals(t *testing.T, p *pluralRules, testCases []pluralTest) {
 					m *= 10
 				}
 				for n := from; n <= to; n++ {
-					if f := matchPlural(p, langIndex, n/m, n%m, scale); f != tc.form {
-						t.Errorf("%[1]s:dec(%[2]d.%0[4]*[3]d) = %[5]v; want %[6]v", loc, n/m, n%m, scale, f, tc.form)
-					}
+					num := fmt.Sprintf("%[1]d.%0[3]*[2]d", n/m, n%m, scale)
+					name := fmt.Sprintf("%s:dec(%s)", loc, num)
+					t.Run(name, func(t *testing.T) {
+						if f := p.matchComponents(tag, n/m, n%m, scale); f != tc.form {
+							t.Errorf("matchComponents: got %v; want %v", f, tc.form)
+						}
+						digits := []byte(strings.Replace(num, ".", "", 1))
+						for i := range digits {
+							digits[i] -= '0'
+						}
+						if f := p.MatchDigits(tag, digits, -scale, scale); f != tc.form {
+							t.Errorf("MatchDigits: got %v; want %v", f, tc.form)
+						}
+					})
 				}
 			}
 		}
@@ -82,7 +155,7 @@ func parseFixedPoint(t *testing.T, s string) (val, scale int) {
 }
 
 func BenchmarkPluralSimpleCases(b *testing.B) {
-	p := &cardinalData
+	p := Cardinal
 	en, _ := language.CompactIndex(language.English)
 	zh, _ := language.CompactIndex(language.Chinese)
 	for i := 0; i < b.N; i++ {
@@ -96,7 +169,7 @@ func BenchmarkPluralSimpleCases(b *testing.B) {
 }
 
 func BenchmarkPluralComplexCases(b *testing.B) {
-	p := &cardinalData
+	p := Cardinal
 	ar, _ := language.CompactIndex(language.Arabic)
 	lv, _ := language.CompactIndex(language.Latvian)
 	for i := 0; i < b.N; i++ {
