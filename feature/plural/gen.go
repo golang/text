@@ -64,7 +64,6 @@ import (
 	"strings"
 
 	"golang.org/x/text/internal"
-	"golang.org/x/text/internal/format/plural"
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/language"
 	"golang.org/x/text/unicode/cldr"
@@ -109,14 +108,12 @@ func main() {
 	w = gen.NewCodeWriter()
 	defer w.WriteGoFile(*outputTestFile, pkg)
 
-	fmt.Fprintln(w, `import "golang.org/x/text/internal/format/plural"`)
-
 	genPluralsTests(w, data)
 }
 
 type pluralTest struct {
-	locales string // space-separated list of locales for this test
-	form    plural.Form
+	locales string   // space-separated list of locales for this test
+	form    int      // Use int instead of Form to simplify generation.
 	integer []string // Entries of the form \d+ or \d+~\d+
 	decimal []string // Entries of the form \f+ or \f+ +~\f+, where f is \d+\.\d+
 }
@@ -135,7 +132,7 @@ func genPluralsTests(w *gen.CodeWriter, data *cldr.CLDR) {
 			for _, rule := range pRules.PluralRule {
 				test := pluralTest{
 					locales: pRules.Locales,
-					form:    countMap[rule.Count],
+					form:    int(countMap[rule.Count]),
 				}
 				scan := bufio.NewScanner(strings.NewReader(rule.Data()))
 				scan.Split(splitTokens)
@@ -300,7 +297,7 @@ func genPlurals(w *gen.CodeWriter, data *cldr.CLDR) {
 type orCondition struct {
 	original string // for debugging
 
-	form plural.Form
+	form Form
 	used [32]bool
 	set  [32][numN]bool
 }
@@ -361,7 +358,7 @@ var operandIndex = map[string]opID{
 //
 // @integer and @decimal are followed by examples and are not relevant for the
 // rule itself. The are used here to signal the termination of the rule.
-func parsePluralCondition(conds []orCondition, s string, f plural.Form) []orCondition {
+func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 	scan := bufio.NewScanner(strings.NewReader(s))
 	scan.Split(splitTokens)
 	for {

@@ -5,10 +5,14 @@
 //go:generate go run gen.go gen_common.go
 
 // Package plural provides utilities for handling linguistic plurals in text.
+//
+// The definitions in this package are based on the plural rule handling defined
+// in CLDR. See
+// http://unicode.org/reports/tr35/tr35-numbers.html#Language_Plural_Rules for
+// details.
 package plural
 
 import (
-	"golang.org/x/text/internal/format/plural"
 	"golang.org/x/text/language"
 )
 
@@ -107,7 +111,7 @@ func getIntApprox(digits []byte, start, end, nMod, big int) (n int) {
 //      123.40     []byte{1, 2, 3, 4}  3      2
 //      100000     []byte{1}           6......0
 //      100000.00  []byte{1}           6......3
-func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) plural.Form {
+func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) Form {
 	index, _ := language.CompactIndex(t)
 	endN := len(digits) + exp
 
@@ -120,12 +124,12 @@ func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) plura
 	return matchPlural(p, index, n, f, scale)
 }
 
-func (p *Rules) matchComponents(t language.Tag, n, f, scale int) plural.Form {
+func (p *Rules) matchComponents(t language.Tag, n, f, scale int) Form {
 	index, _ := language.CompactIndex(t)
 	return matchPlural(p, index, n, f, scale)
 }
 
-func matchPlural(p *Rules, index int, n, f, v int) plural.Form {
+func matchPlural(p *Rules, index int, n, f, v int) Form {
 	nMask := p.inclusionMasks[n%maxMod]
 	// Compute the fMask inline in the rules below, as it is relatively rare.
 	// fMask := p.inclusionMasks[f%maxMod]
@@ -207,8 +211,8 @@ func matchPlural(p *Rules, index int, n, f, v int) plural.Form {
 		}
 		// return if we have a final entry.
 		if cat := rule.cat & formMask; cat != andNext {
-			return plural.Form(cat)
+			return Form(cat)
 		}
 	}
-	return plural.Other
+	return Other
 }

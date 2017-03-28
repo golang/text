@@ -2,15 +2,32 @@
 
 package plural
 
-import "golang.org/x/text/internal/format/plural"
+// Form defines a plural form.
+//
+// Not all languages support all forms. Also, the meaning of each form varies
+// per language. It is important to note that the name of a form does not
+// necessarily correspond one-to-one with the set of numbers. For instance,
+// for Croation, One matches not only 1, but also 11, 21, etc.
+//
+// Each language must at least support the form "other".
+type Form byte
 
-var countMap = map[string]plural.Form{
-	"other": plural.Other,
-	"zero":  plural.Zero,
-	"one":   plural.One,
-	"two":   plural.Two,
-	"few":   plural.Few,
-	"many":  plural.Many,
+const (
+	Other Form = iota
+	Zero
+	One
+	Two
+	Few
+	Many
+)
+
+var countMap = map[string]Form{
+	"other": Other,
+	"zero":  Zero,
+	"one":   One,
+	"two":   Two,
+	"few":   Few,
+	"many":  Many,
 }
 
 type pluralCheck struct {
