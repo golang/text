@@ -6,6 +6,7 @@ package plural
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -63,6 +64,25 @@ func mkDigits(s string) []byte {
 		b[i] -= '0'
 	}
 	return b
+}
+
+func TestValidForms(t *testing.T) {
+	testCases := []struct {
+		tag  language.Tag
+		want []Form
+	}{
+		{language.AmericanEnglish, []Form{Other, One}},
+		{language.Portuguese, []Form{Other, One}},
+		{language.Latvian, []Form{Other, Zero, One}},
+		{language.Arabic, []Form{Other, Zero, One, Two, Few, Many}},
+		{language.Russian, []Form{Other, One, Few, Many}},
+	}
+	for _, tc := range testCases {
+		got := validForms(cardinal, tc.tag)
+		if !reflect.DeepEqual(got, tc.want) {
+			t.Errorf("validForms(%v): got %v; want %v", tc.tag, got, tc.want)
+		}
+	}
 }
 
 func TestOrdinal(t *testing.T) {

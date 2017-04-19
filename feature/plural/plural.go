@@ -124,6 +124,22 @@ func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) Form 
 	return matchPlural(p, index, n, f, scale)
 }
 
+func validForms(p *Rules, t language.Tag) (forms []Form) {
+	index, _ := language.CompactIndex(t)
+	offset := p.langToIndex[index]
+	rules := p.rules[p.index[offset]:p.index[offset+1]]
+
+	forms = append(forms, Other)
+	last := Other
+	for _, r := range rules {
+		if cat := Form(r.cat & formMask); cat != andNext && last != cat {
+			forms = append(forms, cat)
+			last = cat
+		}
+	}
+	return forms
+}
+
 func (p *Rules) matchComponents(t language.Tag, n, f, scale int) Form {
 	index, _ := language.CompactIndex(t)
 	return matchPlural(p, index, n, f, scale)
