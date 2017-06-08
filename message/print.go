@@ -1,17 +1,18 @@
-// +build ignore
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2017 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package fmt
+package message
 
 import (
-	"errors"
-	"io"
-	"os"
+	"bytes"
+	// TODO: consider copying interfaces from package fmt to avoid dependency.
+	"fmt"
 	"reflect"
-	"sync"
 	"unicode/utf8"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/message/catalog"
 )
 
 // Strings for use with buffer.WriteString.
@@ -30,90 +31,32 @@ const (
 	badWidthString    = "%!(BADWIDTH)"
 	badPrecString     = "%!(BADPREC)"
 	noVerbString      = "%!(NOVERB)"
-	invReflectString  = "<invalid reflect.Value>"
+
+	invReflectString = "<invalid reflect.Value>"
 )
 
-// State represents the printer state passed to custom formatters.
-// It provides access to the io.Writer interface plus information about
-// the flags and options for the operand's format specifier.
-type State interface {
-	// Write is the function to call to emit formatted output to be printed.
-	Write(b []byte) (n int, err error)
-	// Width returns the value of the width option and whether it has been set.
-	Width() (wid int, ok bool)
-	// Precision returns the value of the precision option and whether it has been set.
-	Precision() (prec int, ok bool)
+// printer is used to store a printer's state.
+// It implements "golang.org/x/text/internal/format".State.
+type printer struct {
+	// the context for looking up message translations
+	catContext *catalog.Context
+	// the language
+	tag language.Tag
 
-	// Flag reports whether the flag c, a character, has been set.
-	Flag(c int) bool
-}
+	// buffer for accumulating output.
+	bytes.Buffer
 
-// Formatter is the interface implemented by values with a custom formatter.
-// The implementation of Format may call Sprint(f) or Fprint(f) etc.
-// to generate its output.
-type Formatter interface {
-	Format(f State, c rune)
-}
-
-// Stringer is implemented by any value that has a String method,
-// which defines the ``native'' format for that value.
-// The String method is used to print values passed as an operand
-// to any format that accepts a string or to an unformatted printer
-// such as Print.
-type Stringer interface {
-	String() string
-}
-
-// GoStringer is implemented by any value that has a GoString method,
-// which defines the Go syntax for that value.
-// The GoString method is used to print values passed as an operand
-// to a %#v format.
-type GoStringer interface {
-	GoString() string
-}
-
-// Use simple []byte instead of bytes.Buffer to avoid large dependency.
-type buffer []byte
-
-func (b *buffer) Write(p []byte) {
-	*b = append(*b, p...)
-}
-
-func (b *buffer) WriteString(s string) {
-	*b = append(*b, s...)
-}
-
-func (b *buffer) WriteByte(c byte) {
-	*b = append(*b, c)
-}
-
-func (bp *buffer) WriteRune(r rune) {
-	if r < utf8.RuneSelf {
-		*bp = append(*bp, byte(r))
-		return
-	}
-
-	b := *bp
-	n := len(b)
-	for n+utf8.UTFMax > cap(b) {
-		b = append(b, 0)
-	}
-	w := utf8.EncodeRune(b[n:n+utf8.UTFMax], r)
-	*bp = b[:n+w]
-}
-
-// pp is used to store a printer's state and is reused with sync.Pool to avoid allocations.
-type pp struct {
-	buf buffer
-
+	// retain arguments across calls.
+	args []interface{}
+	// retain current argument number across calls
+	argNum int
 	// arg holds the current item, as an interface{}.
 	arg interface{}
-
 	// value is used instead of arg for reflect values.
 	value reflect.Value
 
 	// fmt is used to format basic items such as integers or strings.
-	fmt fmt
+	fmt formatInfo
 
 	// reordered records whether the format string used argument reordering.
 	reordered bool
@@ -125,32 +68,23 @@ type pp struct {
 	erroring bool
 }
 
-var ppFree = sync.Pool{
-	New: func() interface{} { return new(pp) },
-}
-
-// newPrinter allocates a new pp struct or grabs a cached one.
-func newPrinter() *pp {
-	p := ppFree.Get().(*pp)
+func (p *printer) reset() {
+	p.Buffer.Reset()
+	p.argNum = 0
+	p.reordered = false
 	p.panicking = false
 	p.erroring = false
-	p.fmt.init(&p.buf)
-	return p
+	p.fmt.init(&p.Buffer)
 }
 
-// free saves used pp structs in ppFree; avoids an allocation per invocation.
-func (p *pp) free() {
-	p.buf = p.buf[:0]
-	p.arg = nil
-	p.value = reflect.Value{}
-	ppFree.Put(p)
-}
+// Language implements "golang.org/x/text/internal/format".State.
+func (p *printer) Language() language.Tag { return p.tag }
 
-func (p *pp) Width() (wid int, ok bool) { return p.fmt.wid, p.fmt.widPresent }
+func (p *printer) Width() (wid int, ok bool) { return p.fmt.wid, p.fmt.widPresent }
 
-func (p *pp) Precision() (prec int, ok bool) { return p.fmt.prec, p.fmt.precPresent }
+func (p *printer) Precision() (prec int, ok bool) { return p.fmt.prec, p.fmt.precPresent }
 
-func (p *pp) Flag(b int) bool {
+func (p *printer) Flag(b int) bool {
 	switch b {
 	case '-':
 		return p.fmt.minus
@@ -164,108 +98,6 @@ func (p *pp) Flag(b int) bool {
 		return p.fmt.zero
 	}
 	return false
-}
-
-// Implement Write so we can call Fprintf on a pp (through State), for
-// recursive use in custom verbs.
-func (p *pp) Write(b []byte) (ret int, err error) {
-	p.buf.Write(b)
-	return len(b), nil
-}
-
-// These routines end in 'f' and take a format string.
-
-// Fprintf formats according to a format specifier and writes to w.
-// It returns the number of bytes written and any write error encountered.
-func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
-	p := newPrinter()
-	p.doPrintf(format, a)
-	n, err = w.Write(p.buf)
-	p.free()
-	return
-}
-
-// Printf formats according to a format specifier and writes to standard output.
-// It returns the number of bytes written and any write error encountered.
-func Printf(format string, a ...interface{}) (n int, err error) {
-	return Fprintf(os.Stdout, format, a...)
-}
-
-// Sprintf formats according to a format specifier and returns the resulting string.
-func Sprintf(format string, a ...interface{}) string {
-	p := newPrinter()
-	p.doPrintf(format, a)
-	s := string(p.buf)
-	p.free()
-	return s
-}
-
-// Errorf formats according to a format specifier and returns the string
-// as a value that satisfies error.
-func Errorf(format string, a ...interface{}) error {
-	return errors.New(Sprintf(format, a...))
-}
-
-// These routines do not take a format string
-
-// Fprint formats using the default formats for its operands and writes to w.
-// Spaces are added between operands when neither is a string.
-// It returns the number of bytes written and any write error encountered.
-func Fprint(w io.Writer, a ...interface{}) (n int, err error) {
-	p := newPrinter()
-	p.doPrint(a)
-	n, err = w.Write(p.buf)
-	p.free()
-	return
-}
-
-// Print formats using the default formats for its operands and writes to standard output.
-// Spaces are added between operands when neither is a string.
-// It returns the number of bytes written and any write error encountered.
-func Print(a ...interface{}) (n int, err error) {
-	return Fprint(os.Stdout, a...)
-}
-
-// Sprint formats using the default formats for its operands and returns the resulting string.
-// Spaces are added between operands when neither is a string.
-func Sprint(a ...interface{}) string {
-	p := newPrinter()
-	p.doPrint(a)
-	s := string(p.buf)
-	p.free()
-	return s
-}
-
-// These routines end in 'ln', do not take a format string,
-// always add spaces between operands, and add a newline
-// after the last operand.
-
-// Fprintln formats using the default formats for its operands and writes to w.
-// Spaces are always added between operands and a newline is appended.
-// It returns the number of bytes written and any write error encountered.
-func Fprintln(w io.Writer, a ...interface{}) (n int, err error) {
-	p := newPrinter()
-	p.doPrintln(a)
-	n, err = w.Write(p.buf)
-	p.free()
-	return
-}
-
-// Println formats using the default formats for its operands and writes to standard output.
-// Spaces are always added between operands and a newline is appended.
-// It returns the number of bytes written and any write error encountered.
-func Println(a ...interface{}) (n int, err error) {
-	return Fprintln(os.Stdout, a...)
-}
-
-// Sprintln formats using the default formats for its operands and returns the resulting string.
-// Spaces are always added between operands and a newline is appended.
-func Sprintln(a ...interface{}) string {
-	p := newPrinter()
-	p.doPrintln(a)
-	s := string(p.buf)
-	p.free()
-	return s
 }
 
 // getField gets the i'th field of the struct value.
@@ -301,38 +133,38 @@ func parsenum(s string, start, end int) (num int, isnum bool, newi int) {
 	return
 }
 
-func (p *pp) unknownType(v reflect.Value) {
+func (p *printer) unknownType(v reflect.Value) {
 	if !v.IsValid() {
-		p.buf.WriteString(nilAngleString)
+		p.WriteString(nilAngleString)
 		return
 	}
-	p.buf.WriteByte('?')
-	p.buf.WriteString(v.Type().String())
-	p.buf.WriteByte('?')
+	p.WriteByte('?')
+	p.WriteString(v.Type().String())
+	p.WriteByte('?')
 }
 
-func (p *pp) badVerb(verb rune) {
+func (p *printer) badVerb(verb rune) {
 	p.erroring = true
-	p.buf.WriteString(percentBangString)
-	p.buf.WriteRune(verb)
-	p.buf.WriteByte('(')
+	p.WriteString(percentBangString)
+	p.WriteRune(verb)
+	p.WriteByte('(')
 	switch {
 	case p.arg != nil:
-		p.buf.WriteString(reflect.TypeOf(p.arg).String())
-		p.buf.WriteByte('=')
+		p.WriteString(reflect.TypeOf(p.arg).String())
+		p.WriteByte('=')
 		p.printArg(p.arg, 'v')
 	case p.value.IsValid():
-		p.buf.WriteString(p.value.Type().String())
-		p.buf.WriteByte('=')
+		p.WriteString(p.value.Type().String())
+		p.WriteByte('=')
 		p.printValue(p.value, 'v', 0)
 	default:
-		p.buf.WriteString(nilAngleString)
+		p.WriteString(nilAngleString)
 	}
-	p.buf.WriteByte(')')
+	p.WriteByte(')')
 	p.erroring = false
 }
 
-func (p *pp) fmtBool(v bool, verb rune) {
+func (p *printer) fmtBool(v bool, verb rune) {
 	switch verb {
 	case 't', 'v':
 		p.fmt.fmt_boolean(v)
@@ -343,7 +175,7 @@ func (p *pp) fmtBool(v bool, verb rune) {
 
 // fmt0x64 formats a uint64 in hexadecimal and prefixes it with 0x or
 // not, as requested, by temporarily setting the sharp flag.
-func (p *pp) fmt0x64(v uint64, leading0x bool) {
+func (p *printer) fmt0x64(v uint64, leading0x bool) {
 	sharp := p.fmt.sharp
 	p.fmt.sharp = leading0x
 	p.fmt.fmt_integer(v, 16, unsigned, ldigits)
@@ -351,7 +183,7 @@ func (p *pp) fmt0x64(v uint64, leading0x bool) {
 }
 
 // fmtInteger formats a signed or unsigned integer.
-func (p *pp) fmtInteger(v uint64, isSigned bool, verb rune) {
+func (p *printer) fmtInteger(v uint64, isSigned bool, verb rune) {
 	switch verb {
 	case 'v':
 		if p.fmt.sharpV && !isSigned {
@@ -386,7 +218,7 @@ func (p *pp) fmtInteger(v uint64, isSigned bool, verb rune) {
 
 // fmtFloat formats a float. The default precision for each verb
 // is specified as last argument in the call to fmt_float.
-func (p *pp) fmtFloat(v float64, size int, verb rune) {
+func (p *printer) fmtFloat(v float64, size int, verb rune) {
 	switch verb {
 	case 'v':
 		p.fmt.fmt_float(v, size, 'g', -1)
@@ -404,25 +236,25 @@ func (p *pp) fmtFloat(v float64, size int, verb rune) {
 // fmtComplex formats a complex number v with
 // r = real(v) and j = imag(v) as (r+ji) using
 // fmtFloat for r and j formatting.
-func (p *pp) fmtComplex(v complex128, size int, verb rune) {
+func (p *printer) fmtComplex(v complex128, size int, verb rune) {
 	// Make sure any unsupported verbs are found before the
 	// calls to fmtFloat to not generate an incorrect error string.
 	switch verb {
 	case 'v', 'b', 'g', 'G', 'f', 'F', 'e', 'E':
 		oldPlus := p.fmt.plus
-		p.buf.WriteByte('(')
+		p.WriteByte('(')
 		p.fmtFloat(real(v), size/2, verb)
 		// Imaginary part always has a sign.
 		p.fmt.plus = true
 		p.fmtFloat(imag(v), size/2, verb)
-		p.buf.WriteString("i)")
+		p.WriteString("i)")
 		p.fmt.plus = oldPlus
 	default:
 		p.badVerb(verb)
 	}
 }
 
-func (p *pp) fmtString(v string, verb rune) {
+func (p *printer) fmtString(v string, verb rune) {
 	switch verb {
 	case 'v':
 		if p.fmt.sharpV {
@@ -443,32 +275,32 @@ func (p *pp) fmtString(v string, verb rune) {
 	}
 }
 
-func (p *pp) fmtBytes(v []byte, verb rune, typeString string) {
+func (p *printer) fmtBytes(v []byte, verb rune, typeString string) {
 	switch verb {
 	case 'v', 'd':
 		if p.fmt.sharpV {
-			p.buf.WriteString(typeString)
+			p.WriteString(typeString)
 			if v == nil {
-				p.buf.WriteString(nilParenString)
+				p.WriteString(nilParenString)
 				return
 			}
-			p.buf.WriteByte('{')
+			p.WriteByte('{')
 			for i, c := range v {
 				if i > 0 {
-					p.buf.WriteString(commaSpaceString)
+					p.WriteString(commaSpaceString)
 				}
 				p.fmt0x64(uint64(c), true)
 			}
-			p.buf.WriteByte('}')
+			p.WriteByte('}')
 		} else {
-			p.buf.WriteByte('[')
+			p.WriteByte('[')
 			for i, c := range v {
 				if i > 0 {
-					p.buf.WriteByte(' ')
+					p.WriteByte(' ')
 				}
 				p.fmt.fmt_integer(uint64(c), 10, unsigned, ldigits)
 			}
-			p.buf.WriteByte(']')
+			p.WriteByte(']')
 		}
 	case 's':
 		p.fmt.fmt_s(string(v))
@@ -483,7 +315,7 @@ func (p *pp) fmtBytes(v []byte, verb rune, typeString string) {
 	}
 }
 
-func (p *pp) fmtPointer(value reflect.Value, verb rune) {
+func (p *printer) fmtPointer(value reflect.Value, verb rune) {
 	var u uintptr
 	switch value.Kind() {
 	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Slice, reflect.UnsafePointer:
@@ -496,15 +328,15 @@ func (p *pp) fmtPointer(value reflect.Value, verb rune) {
 	switch verb {
 	case 'v':
 		if p.fmt.sharpV {
-			p.buf.WriteByte('(')
-			p.buf.WriteString(value.Type().String())
-			p.buf.WriteString(")(")
+			p.WriteByte('(')
+			p.WriteString(value.Type().String())
+			p.WriteString(")(")
 			if u == 0 {
-				p.buf.WriteString(nilString)
+				p.WriteString(nilString)
 			} else {
 				p.fmt0x64(uint64(u), true)
 			}
-			p.buf.WriteByte(')')
+			p.WriteByte(')')
 		} else {
 			if u == 0 {
 				p.fmt.padString(nilAngleString)
@@ -521,13 +353,13 @@ func (p *pp) fmtPointer(value reflect.Value, verb rune) {
 	}
 }
 
-func (p *pp) catchPanic(arg interface{}, verb rune) {
+func (p *printer) catchPanic(arg interface{}, verb rune) {
 	if err := recover(); err != nil {
 		// If it's a nil pointer, just say "<nil>". The likeliest causes are a
 		// Stringer that fails to guard against nil or a nil pointer for a
 		// value receiver, and in either case, "<nil>" is a nice result.
 		if v := reflect.ValueOf(arg); v.Kind() == reflect.Ptr && v.IsNil() {
-			p.buf.WriteString(nilAngleString)
+			p.WriteString(nilAngleString)
 			return
 		}
 		// Otherwise print a concise panic message. Most of the time the panic
@@ -541,24 +373,24 @@ func (p *pp) catchPanic(arg interface{}, verb rune) {
 		// For this output we want default behavior.
 		p.fmt.clearflags()
 
-		p.buf.WriteString(percentBangString)
-		p.buf.WriteRune(verb)
-		p.buf.WriteString(panicString)
+		p.WriteString(percentBangString)
+		p.WriteRune(verb)
+		p.WriteString(panicString)
 		p.panicking = true
 		p.printArg(err, 'v')
 		p.panicking = false
-		p.buf.WriteByte(')')
+		p.WriteByte(')')
 
 		p.fmt.fmtFlags = oldFlags
 	}
 }
 
-func (p *pp) handleMethods(verb rune) (handled bool) {
+func (p *printer) handleMethods(verb rune) (handled bool) {
 	if p.erroring {
 		return
 	}
 	// Is it a Formatter?
-	if formatter, ok := p.arg.(Formatter); ok {
+	if formatter, ok := p.arg.(fmt.Formatter); ok {
 		handled = true
 		defer p.catchPanic(p.arg, verb)
 		formatter.Format(p, verb)
@@ -567,7 +399,7 @@ func (p *pp) handleMethods(verb rune) (handled bool) {
 
 	// If we're doing Go syntax and the argument knows how to supply it, take care of it now.
 	if p.fmt.sharpV {
-		if stringer, ok := p.arg.(GoStringer); ok {
+		if stringer, ok := p.arg.(fmt.GoStringer); ok {
 			handled = true
 			defer p.catchPanic(p.arg, verb)
 			// Print the result of GoString unadorned.
@@ -591,7 +423,7 @@ func (p *pp) handleMethods(verb rune) (handled bool) {
 				p.fmtString(v.Error(), verb)
 				return
 
-			case Stringer:
+			case fmt.Stringer:
 				handled = true
 				defer p.catchPanic(p.arg, verb)
 				p.fmtString(v.String(), verb)
@@ -602,7 +434,7 @@ func (p *pp) handleMethods(verb rune) (handled bool) {
 	return false
 }
 
-func (p *pp) printArg(arg interface{}, verb rune) {
+func (p *printer) printArg(arg interface{}, verb rune) {
 	p.arg = arg
 	p.value = reflect.Value{}
 
@@ -687,7 +519,7 @@ func (p *pp) printArg(arg interface{}, verb rune) {
 
 // printValue is similar to printArg but starts with a reflect value, not an interface{} value.
 // It does not handle 'p' and 'T' verbs because these should have been already handled by printArg.
-func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
+func (p *printer) printValue(value reflect.Value, verb rune, depth int) {
 	// Handle values with special methods if not already handled by printArg (depth == 0).
 	if depth > 0 && value.IsValid() && value.CanInterface() {
 		p.arg = value.Interface()
@@ -701,11 +533,11 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 	switch f := value; value.Kind() {
 	case reflect.Invalid:
 		if depth == 0 {
-			p.buf.WriteString(invReflectString)
+			p.WriteString(invReflectString)
 		} else {
 			switch verb {
 			case 'v':
-				p.buf.WriteString(nilAngleString)
+				p.WriteString(nilAngleString)
 			default:
 				p.badVerb(verb)
 			}
@@ -728,63 +560,63 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 		p.fmtString(f.String(), verb)
 	case reflect.Map:
 		if p.fmt.sharpV {
-			p.buf.WriteString(f.Type().String())
+			p.WriteString(f.Type().String())
 			if f.IsNil() {
-				p.buf.WriteString(nilParenString)
+				p.WriteString(nilParenString)
 				return
 			}
-			p.buf.WriteByte('{')
+			p.WriteByte('{')
 		} else {
-			p.buf.WriteString(mapString)
+			p.WriteString(mapString)
 		}
 		keys := f.MapKeys()
 		for i, key := range keys {
 			if i > 0 {
 				if p.fmt.sharpV {
-					p.buf.WriteString(commaSpaceString)
+					p.WriteString(commaSpaceString)
 				} else {
-					p.buf.WriteByte(' ')
+					p.WriteByte(' ')
 				}
 			}
 			p.printValue(key, verb, depth+1)
-			p.buf.WriteByte(':')
+			p.WriteByte(':')
 			p.printValue(f.MapIndex(key), verb, depth+1)
 		}
 		if p.fmt.sharpV {
-			p.buf.WriteByte('}')
+			p.WriteByte('}')
 		} else {
-			p.buf.WriteByte(']')
+			p.WriteByte(']')
 		}
 	case reflect.Struct:
 		if p.fmt.sharpV {
-			p.buf.WriteString(f.Type().String())
+			p.WriteString(f.Type().String())
 		}
-		p.buf.WriteByte('{')
+		p.WriteByte('{')
 		for i := 0; i < f.NumField(); i++ {
 			if i > 0 {
 				if p.fmt.sharpV {
-					p.buf.WriteString(commaSpaceString)
+					p.WriteString(commaSpaceString)
 				} else {
-					p.buf.WriteByte(' ')
+					p.WriteByte(' ')
 				}
 			}
 			if p.fmt.plusV || p.fmt.sharpV {
 				if name := f.Type().Field(i).Name; name != "" {
-					p.buf.WriteString(name)
-					p.buf.WriteByte(':')
+					p.WriteString(name)
+					p.WriteByte(':')
 				}
 			}
 			p.printValue(getField(f, i), verb, depth+1)
 		}
-		p.buf.WriteByte('}')
+		p.WriteByte('}')
 	case reflect.Interface:
 		value := f.Elem()
 		if !value.IsValid() {
 			if p.fmt.sharpV {
-				p.buf.WriteString(f.Type().String())
-				p.buf.WriteString(nilParenString)
+				p.WriteString(f.Type().String())
+				p.WriteString(nilParenString)
 			} else {
-				p.buf.WriteString(nilAngleString)
+				p.WriteString(nilAngleString)
 			}
 		} else {
 			p.printValue(value, verb, depth+1)
@@ -814,28 +646,28 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 			}
 		}
 		if p.fmt.sharpV {
-			p.buf.WriteString(f.Type().String())
+			p.WriteString(f.Type().String())
 			if f.Kind() == reflect.Slice && f.IsNil() {
-				p.buf.WriteString(nilParenString)
+				p.WriteString(nilParenString)
 				return
 			}
-			p.buf.WriteByte('{')
+			p.WriteByte('{')
 			for i := 0; i < f.Len(); i++ {
 				if i > 0 {
-					p.buf.WriteString(commaSpaceString)
+					p.WriteString(commaSpaceString)
 				}
 				p.printValue(f.Index(i), verb, depth+1)
 			}
-			p.buf.WriteByte('}')
+			p.WriteByte('}')
 		} else {
-			p.buf.WriteByte('[')
+			p.WriteByte('[')
 			for i := 0; i < f.Len(); i++ {
 				if i > 0 {
-					p.buf.WriteByte(' ')
+					p.WriteByte(' ')
 				}
 				p.printValue(f.Index(i), verb, depth+1)
 			}
-			p.buf.WriteByte(']')
+			p.WriteByte(']')
 		}
 	case reflect.Ptr:
 		// pointer to array or slice or struct?  ok at top level
@@ -843,7 +675,7 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 		if depth == 0 && f.Pointer() != 0 {
 			switch a := f.Elem(); a.Kind() {
 			case reflect.Array, reflect.Slice, reflect.Struct, reflect.Map:
-				p.buf.WriteByte('&')
+				p.WriteByte('&')
 				p.printValue(a, verb, depth+1)
 				return
 			}
@@ -857,13 +689,13 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 }
 
 // intFromArg gets the argNumth element of a. On return, isInt reports whether the argument has integer type.
-func intFromArg(a []interface{}, argNum int) (num int, isInt bool, newArgNum int) {
-	newArgNum = argNum
-	if argNum < len(a) {
-		num, isInt = a[argNum].(int) // Almost always OK.
+func (p *printer) intFromArg() (num int, isInt bool) {
+	if p.argNum < len(p.args) {
+		arg := p.args[p.argNum]
+		num, isInt = arg.(int) // Almost always OK.
 		if !isInt {
 			// Work harder.
-			switch v := reflect.ValueOf(a[argNum]); v.Kind() {
+			switch v := reflect.ValueOf(arg); v.Kind() {
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				n := v.Int()
 				if int64(int(n)) == n {
@@ -880,7 +712,7 @@ func intFromArg(a []interface{}, argNum int) (num int, isInt bool, newArgNum int
 				// Already 0, false.
 			}
 		}
-		newArgNum = argNum + 1
+		p.argNum++
 		if tooLarge(num) {
 			num = 0
 			isInt = false
@@ -914,39 +746,38 @@ func parseArgNumber(format string) (index int, wid int, ok bool) {
 	return 0, 1, false
 }
 
-// argNumber returns the next argument to evaluate, which is either the value of the passed-in
+// updateArgNumber returns the next argument to evaluate, which is either the value of the passed-in
 // argNum or the value of the bracketed integer that begins format[i:]. It also returns
 // the new value of i, that is, the index of the next byte of the format to process.
-func (p *pp) argNumber(argNum int, format string, i int, numArgs int) (newArgNum, newi int, found bool) {
+func (p *printer) updateArgNumber(format string, i int) (newi int, found bool) {
 	if len(format) <= i || format[i] != '[' {
-		return argNum, i, false
+		return i, false
 	}
 	p.reordered = true
 	index, wid, ok := parseArgNumber(format[i:])
-	if ok && 0 <= index && index < numArgs {
-		return index, i + wid, true
+	if ok && 0 <= index && index < len(p.args) {
+		p.argNum = index
+		return i + wid, true
 	}
 	p.goodArgNum = false
-	return argNum, i + wid, ok
+	return i + wid, ok
 }
 
-func (p *pp) badArgNum(verb rune) {
-	p.buf.WriteString(percentBangString)
-	p.buf.WriteRune(verb)
-	p.buf.WriteString(badIndexString)
+func (p *printer) badArgNum(verb rune) {
+	p.WriteString(percentBangString)
+	p.WriteRune(verb)
+	p.WriteString(badIndexString)
 }
 
-func (p *pp) missingArg(verb rune) {
-	p.buf.WriteString(percentBangString)
-	p.buf.WriteRune(verb)
-	p.buf.WriteString(missingString)
+func (p *printer) missingArg(verb rune) {
+	p.WriteString(percentBangString)
+	p.WriteRune(verb)
+	p.WriteString(missingString)
 }
 
-func (p *pp) doPrintf(format string, a []interface{}) {
+func (p *printer) doPrintf(format string) {
 	end := len(format)
-	argNum := 0         // we process one argument per non-trivial format
 	afterIndex := false // previous item in format was an index like [3].
-	p.reordered = false
 formatLoop:
 	for i := 0; i < end; {
 		p.goodArgNum = true
@@ -955,7 +786,7 @@ formatLoop:
 			i++
 		}
 		if i > lasti {
-			p.buf.WriteString(format[lasti:i])
+			p.WriteString(format[lasti:i])
 		}
 		if i >= end {
 			// done processing format string
@@ -985,7 +816,7 @@ formatLoop:
 			default:
 				// Fast path for common case of ascii lower case simple verbs
 				// without precision or width or argument indices.
-				if 'a' <= c && c <= 'z' && argNum < len(a) {
+				if 'a' <= c && c <= 'z' && p.argNum < len(p.args) {
 					if c == 'v' {
 						// Go syntax
 						p.fmt.sharpV = p.fmt.sharp
@@ -994,8 +825,8 @@ formatLoop:
 						p.fmt.plusV = p.fmt.plus
 						p.fmt.plus = false
 					}
-					p.printArg(a[argNum], rune(c))
-					argNum++
+					p.printArg(p.Arg(p.argNum), rune(c))
+					p.argNum++
 					i++
 					continue formatLoop
 				}
@@ -1005,15 +836,15 @@ formatLoop:
 		}
 
 		// Do we have an explicit argument index?
-		argNum, i, afterIndex = p.argNumber(argNum, format, i, len(a))
+		i, afterIndex = p.updateArgNumber(format, i)
 
 		// Do we have width?
 		if i < end && format[i] == '*' {
 			i++
-			p.fmt.wid, p.fmt.widPresent, argNum = intFromArg(a, argNum)
+			p.fmt.wid, p.fmt.widPresent = p.intFromArg()
 
 			if !p.fmt.widPresent {
-				p.buf.WriteString(badWidthString)
+				p.WriteString(badWidthString)
 			}
 
 			// We have a negative width, so take its value and ensure
@@ -1037,17 +868,17 @@ formatLoop:
 			if afterIndex { // "%[3].2d"
 				p.goodArgNum = false
 			}
-			argNum, i, afterIndex = p.argNumber(argNum, format, i, len(a))
+			i, afterIndex = p.updateArgNumber(format, i)
 			if i < end && format[i] == '*' {
 				i++
-				p.fmt.prec, p.fmt.precPresent, argNum = intFromArg(a, argNum)
+				p.fmt.prec, p.fmt.precPresent = p.intFromArg()
 				// Negative precision arguments don't make sense
 				if p.fmt.prec < 0 {
 					p.fmt.prec = 0
 					p.fmt.precPresent = false
 				}
 				if !p.fmt.precPresent {
-					p.buf.WriteString(badPrecString)
+					p.WriteString(badPrecString)
 				}
 				afterIndex = false
 			} else {
@@ -1060,11 +891,11 @@ formatLoop:
 		}
 
 		if !afterIndex {
-			argNum, i, afterIndex = p.argNumber(argNum, format, i, len(a))
+			i, afterIndex = p.updateArgNumber(format, i)
 		}
 
 		if i >= end {
-			p.buf.WriteString(noVerbString)
+			p.WriteString(noVerbString)
 			break
 		}
 
@@ -1073,10 +904,10 @@ formatLoop:
 
 		switch {
 		case verb == '%': // Percent does not absorb operands and ignores f.wid and f.prec.
-			p.buf.WriteByte('%')
+			p.WriteByte('%')
 		case !p.goodArgNum:
 			p.badArgNum(verb)
-		case argNum >= len(a): // No argument left over to print for the current verb.
+		case p.argNum >= len(p.args): // No argument left over to print for the current verb.
 			p.missingArg(verb)
 		case verb == 'v':
 			// Go syntax
@@ -1087,40 +918,41 @@ formatLoop:
 			p.fmt.plus = false
 			fallthrough
 		default:
-			p.printArg(a[argNum], verb)
-			argNum++
+			p.printArg(p.args[p.argNum], verb)
+			p.argNum++
 		}
 	}
 
-	// Check for extra arguments unless the call accessed the arguments
-	// out of order, in which case it's too expensive to detect if they've all
-	// been used and arguably OK if they're not.
-	if !p.reordered && argNum < len(a) {
+	// Check for extra arguments, but only if there was at least one ordered
+	// argument. Note that this behavior is necessarily different from fmt:
+	// different variants of messages may opt to drop some or all of the
+	// arguments.
+	if !p.reordered && p.argNum < len(p.args) && p.argNum != 0 {
 		p.fmt.clearflags()
-		p.buf.WriteString(extraString)
-		for i, arg := range a[argNum:] {
+		p.WriteString(extraString)
+		for i, arg := range p.args[p.argNum:] {
 			if i > 0 {
-				p.buf.WriteString(commaSpaceString)
+				p.WriteString(commaSpaceString)
 			}
 			if arg == nil {
-				p.buf.WriteString(nilAngleString)
+				p.WriteString(nilAngleString)
 			} else {
-				p.buf.WriteString(reflect.TypeOf(arg).String())
-				p.buf.WriteByte('=')
+				p.WriteString(reflect.TypeOf(arg).String())
+				p.WriteByte('=')
 				p.printArg(arg, 'v')
 			}
 		}
-		p.buf.WriteByte(')')
+		p.WriteByte(')')
 	}
 }
 
-func (p *pp) doPrint(a []interface{}) {
+func (p *printer) doPrint(a []interface{}) {
 	prevString := false
 	for argNum, arg := range a {
 		isString := arg != nil && reflect.TypeOf(arg).Kind() == reflect.String
 		// Add a space between two non-string arguments.
 		if argNum > 0 && !isString && !prevString {
-			p.buf.WriteByte(' ')
+			p.WriteByte(' ')
 		}
 		p.printArg(arg, 'v')
 		prevString = isString
@@ -1129,12 +961,12 @@ func (p *pp) doPrint(a []interface{}) {
 
 // doPrintln is like doPrint but always adds a space between arguments
 // and a newline after the last argument.
-func (p *pp) doPrintln(a []interface{}) {
+func (p *printer) doPrintln(a []interface{}) {
 	for argNum, arg := range a {
 		if argNum > 0 {
-			p.buf.WriteByte(' ')
+			p.WriteByte(' ')
 		}
 		p.printArg(arg, 'v')
 	}
-	p.buf.WriteByte('\n')
+	p.WriteByte('\n')
 }

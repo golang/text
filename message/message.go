@@ -10,13 +10,9 @@
 package message // import "golang.org/x/text/message"
 
 import (
-	"bytes"
-	"fmt"
 	"io"
 	"os"
-	"strings"
 
-	"golang.org/x/text/internal/format"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message/catalog"
 )
@@ -32,16 +28,6 @@ type Printer struct {
 	// road if it the benefits do not seem to outweigh the disadvantages.
 }
 
-type printer struct {
-	tag language.Tag
-
-	catContext *catalog.Context
-
-	buf bytes.Buffer
-
-	args []interface{}
-}
-
 // NewPrinter returns a Printer that formats messages tailored to language t.
 func NewPrinter(t language.Tag) *Printer {
 	p := &Printer{printer{
@@ -53,55 +39,65 @@ func NewPrinter(t language.Tag) *Printer {
 
 // Sprint is like fmt.Sprint, but using language-specific formatting.
 func (p *Printer) Sprint(a ...interface{}) string {
-	return fmt.Sprint(p.bindArgs(a)...)
+	p.printer.reset()
+	p.printer.doPrint(a)
+	return p.printer.String()
 }
 
 // Fprint is like fmt.Fprint, but using language-specific formatting.
 func (p *Printer) Fprint(w io.Writer, a ...interface{}) (n int, err error) {
-	return fmt.Fprint(w, p.bindArgs(a)...)
+	p.printer.reset()
+	p.printer.doPrint(a)
+	n64, err := io.Copy(w, &p.printer.Buffer)
+	return int(n64), err
 }
 
 // Print is like fmt.Print, but using language-specific formatting.
 func (p *Printer) Print(a ...interface{}) (n int, err error) {
-	return fmt.Print(p.bindArgs(a)...)
+	return p.Fprint(os.Stdout, a...)
 }
 
 // Sprintln is like fmt.Sprintln, but using language-specific formatting.
 func (p *Printer) Sprintln(a ...interface{}) string {
-	return fmt.Sprintln(p.bindArgs(a)...)
+	p.printer.reset()
+	p.printer.doPrintln(a)
+	return p.printer.String()
 }
 
 // Fprintln is like fmt.Fprintln, but using language-specific formatting.
 func (p *Printer) Fprintln(w io.Writer, a ...interface{}) (n int, err error) {
-	return fmt.Fprintln(w, p.bindArgs(a)...)
+	p.printer.reset()
+	p.printer.doPrintln(a)
+	n64, err := io.Copy(w, &p.printer.Buffer)
+	return int(n64), err
 }
 
 // Println is like fmt.Println, but using language-specific formatting.
 func (p *Printer) Println(a ...interface{}) (n int, err error) {
-	return fmt.Println(p.bindArgs(a)...)
+	return p.Fprintln(os.Stdout, a...)
 }
 
 // Sprintf is like fmt.Sprintf, but using language-specific formatting.
 func (p *Printer) Sprintf(key Reference, a ...interface{}) string {
 	lookupAndFormat(p, key, a)
-	return p.printer.buf.String()
+	return p.printer.String()
 }
 
 // Fprintf is like fmt.Fprintf, but using language-specific formatting.
 func (p *Printer) Fprintf(w io.Writer, key Reference, a ...interface{}) (n int, err error) {
 	lookupAndFormat(p, key, a)
-	return w.Write(p.printer.buf.Bytes())
+	return w.Write(p.printer.Bytes())
 }
 
 // Printf is like fmt.Printf, but using language-specific formatting.
 func (p *Printer) Printf(key Reference, a ...interface{}) (n int, err error) {
 	lookupAndFormat(p, key, a)
-	return os.Stdout.Write(p.printer.buf.Bytes())
+	return os.Stdout.Write(p.printer.Bytes())
 }
 
 func lookupAndFormat(p *Printer, r Reference, a []interface{}) {
-	p.printer.buf.Reset()
-	p.printer.args = p.bindArgs(a)
+	p.printer.reset()
+	p.printer.args = a
 	var id, msg string
 	switch v := r.(type) {
 	case string:
@@ -121,7 +117,7 @@ func lookupAndFormat(p *Printer, r Reference, a []interface{}) {
 }
 
 // Arg implements catmsg.Renderer.
-func (p *printer) Arg(i int) interface{} {
+func (p *printer) Arg(i int) interface{} { // TODO, also return "ok" bool
 	if uint(i) < uint(len(p.args)) {
 		return p.args[i]
 	}
@@ -130,31 +126,7 @@ func (p *printer) Arg(i int) interface{} {
 
 // Render implements catmsg.Renderer.
 func (p *printer) Render(msg string) {
-	// fmt does not allow all arguments to be dropped in a format string. It
-	// only allows arguments to be dropped if at least one of the substitutions
-	// uses the positional marker (e.g. %[1]s). This hack works around this.
-	// TODO: This is only an approximation of the parsing of substitution
-	// patterns. Make more precise once we know if we can get by with fmt's
-	// formatting, which may not be the case.
-	var hasSub bool
-	for i := 0; i < len(msg)-1; i++ {
-		if msg[i] == '%' {
-			for i++; i < len(msg); i++ {
-				if strings.IndexByte("[]#+- *01234567890.", msg[i]) < 0 {
-					break
-				}
-			}
-			if i < len(msg) && msg[i] != '%' {
-				hasSub = true
-				break
-			}
-		}
-	}
-	if !hasSub {
-		fmt.Fprintf(&p.buf, msg)
-		return
-	}
-	fmt.Fprintf(&p.buf, msg, p.args...)
+	p.doPrintf(msg)
 }
 
 // A Reference is a string or a message reference.
@@ -170,47 +142,4 @@ func Key(id string, fallback string) Reference {
 
 type key struct {
 	id, fallback string
-}
-
-// bindArgs wraps arguments with implementation of fmt.Formatter, if needed.
-func (p *Printer) bindArgs(a []interface{}) []interface{} {
-	out := make([]interface{}, len(a))
-	for i, x := range a {
-		switch v := x.(type) {
-		case fmt.Formatter:
-			// Wrap the value with a Formatter that augments the State with
-			// language-specific attributes.
-			out[i] = &value{v, p}
-
-			// NOTE: as we use fmt.Formatter, we can't distinguish between
-			// regular and localized formatters, so we always need to wrap it.
-
-			// TODO: handle
-			// - numbers
-			// - lists
-			// - time?
-		default:
-			out[i] = x
-		}
-	}
-	return out
-}
-
-// state implements "golang.org/x/text/internal/format".State.
-type state struct {
-	fmt.State
-	p *Printer
-}
-
-func (s *state) Language() language.Tag { return s.p.printer.tag }
-
-var _ format.State = &state{}
-
-type value struct {
-	x fmt.Formatter
-	p *Printer
-}
-
-func (v *value) Format(s fmt.State, verb rune) {
-	v.x.Format(&state{s, v.p}, verb)
 }

@@ -132,24 +132,26 @@ func TestFormatSelection(t *testing.T) {
 		cat, _ := initCat(tc.cat)
 
 		for i, pt := range tc.test {
-			tag := language.MustParse(pt.tag)
-			p := Printer{printer{
-				tag: tag,
-			}}
-			p.printer.catContext = cat.Context(tag, &p.printer)
+			t.Run(fmt.Sprintf("%s:%d", tc.desc, i), func(t *testing.T) {
+				tag := language.MustParse(pt.tag)
+				p := Printer{printer{
+					tag: tag,
+				}}
+				p.printer.catContext = cat.Context(tag, &p.printer)
 
-			if got := p.Sprintf(pt.key, pt.args...); got != pt.want {
-				t.Errorf("%s:%d:Sprintf(%s, %v) = %s; want %s",
-					tc.desc, i, pt.key, pt.args, got, pt.want)
-				continue // Next error will likely be the same.
-			}
+				if got := p.Sprintf(pt.key, pt.args...); got != pt.want {
+					t.Errorf("Sprintf(%q, %v) = %s; want %s",
+						pt.key, pt.args, got, pt.want)
+					return // Next error will likely be the same.
+				}
 
-			w := &bytes.Buffer{}
-			p.Fprintf(w, pt.key, pt.args...)
-			if got := w.String(); got != pt.want {
-				t.Errorf("%s:%d:Fprintf(%s, %v) = %s; want %s",
-					tc.desc, i, pt.key, pt.args, got, pt.want)
-			}
+				w := &bytes.Buffer{}
+				p.Fprintf(w, pt.key, pt.args...)
+				if got := w.String(); got != pt.want {
+					t.Errorf("Fprintf(%q, %v) = %s; want %s",
+						pt.key, pt.args, got, pt.want)
+				}
+			})
 		}
 	}
 }

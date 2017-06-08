@@ -1,11 +1,11 @@
-// +build ignore
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2017 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package fmt
+package message
 
 import (
+	"bytes"
 	"strconv"
 	"unicode/utf8"
 )
@@ -37,10 +37,10 @@ type fmtFlags struct {
 	sharpV bool
 }
 
-// A fmt is the raw formatter used by Printf etc.
+// A formatInfo is the raw formatter used by Printf etc.
 // It prints into a buffer that must be set up separately.
-type fmt struct {
-	buf *buffer
+type formatInfo struct {
+	buf *bytes.Buffer
 
 	fmtFlags
 
@@ -52,43 +52,34 @@ type fmt struct {
 	intbuf [68]byte
 }
 
-func (f *fmt) clearflags() {
+func (f *formatInfo) clearflags() {
 	f.fmtFlags = fmtFlags{}
 }
 
-func (f *fmt) init(buf *buffer) {
+func (f *formatInfo) init(buf *bytes.Buffer) {
 	f.buf = buf
 	f.clearflags()
 }
 
 // writePadding generates n bytes of padding.
-func (f *fmt) writePadding(n int) {
+func (f *formatInfo) writePadding(n int) {
 	if n <= 0 { // No padding bytes needed.
 		return
 	}
-	buf := *f.buf
-	oldLen := len(buf)
-	newLen := oldLen + n
-	// Make enough room for padding.
-	if newLen > cap(buf) {
-		buf = make(buffer, cap(buf)*2+n)
-		copy(buf, *f.buf)
-	}
+	f.buf.Grow(n)
 	// Decide which byte the padding should be filled with.
 	padByte := byte(' ')
 	if f.zero {
 		padByte = byte('0')
 	}
 	// Fill padding with padByte.
-	padding := buf[oldLen:newLen]
-	for i := range padding {
-		padding[i] = padByte
+	for i := 0; i < n; i++ {
+		f.buf.WriteByte(padByte) // TODO: make more efficient.
 	}
-	*f.buf = buf[:newLen]
 }
 
 // pad appends b to f.buf, padded on left (!f.minus) or right (f.minus).
-func (f *fmt) pad(b []byte) {
+func (f *formatInfo) pad(b []byte) {
 	if !f.widPresent || f.wid == 0 {
 		f.buf.Write(b)
 		return
@@ -106,7 +97,7 @@ func (f *fmt) pad(b []byte) {
 }
 
 // padString appends s to f.buf, padded on left (!f.minus) or right (f.minus).
-func (f *fmt) padString(s string) {
+func (f *formatInfo) padString(s string) {
 	if !f.widPresent || f.wid == 0 {
 		f.buf.WriteString(s)
 		return
@@ -124,7 +115,7 @@ func (f *fmt) padString(s string) {
 }
 
 // fmt_boolean formats a boolean.
-func (f *fmt) fmt_boolean(v bool) {
+func (f *formatInfo) fmt_boolean(v bool) {
 	if v {
 		f.padString("true")
 	} else {
@@ -133,7 +124,7 @@ func (f *fmt) fmt_boolean(v bool) {
 }
 
 // fmt_unicode formats a uint64 as "U+0078" or with f.sharp set as "U+0078 'x'".
-func (f *fmt) fmt_unicode(u uint64) {
+func (f *formatInfo) fmt_unicode(u uint64) {
 	buf := f.intbuf[0:]
 
 	// With default precision set the maximum needed buf length is 18
@@ -192,7 +183,7 @@ func (f *fmt) fmt_unicode(u uint64) {
 }
 
 // fmt_integer formats signed and unsigned integers.
-func (f *fmt) fmt_integer(u uint64, base int, isSigned bool, digits string) {
+func (f *formatInfo) fmt_integer(u uint64, base int, isSigned bool, digits string) {
 	negative := isSigned && int64(u) < 0
 	if negative {
 		u = -u
@@ -310,7 +301,7 @@ func (f *fmt) fmt_integer(u uint64, base int, isSigned bool, digits string) {
 }
 
 // truncate truncates the string to the specified precision, if present.
-func (f *fmt) truncate(s string) string {
+func (f *formatInfo) truncate(s string) string {
 	if f.precPresent {
 		n := f.prec
 		for i := range s {
@@ -324,13 +315,13 @@ func (f *fmt) truncate(s string) string {
 }
 
 // fmt_s formats a string.
-func (f *fmt) fmt_s(s string) {
+func (f *formatInfo) fmt_s(s string) {
 	s = f.truncate(s)
 	f.padString(s)
 }
 
 // fmt_sbx formats a string or byte slice as a hexadecimal encoding of its bytes.
-func (f *fmt) fmt_sbx(s string, b []byte, digits string) {
+func (f *formatInfo) fmt_sbx(s string, b []byte, digits string) {
 	length := len(b)
 	if b == nil {
 		// No byte slice present. Assume string s should be encoded.
@@ -365,19 +356,21 @@ func (f *fmt) fmt_sbx(s string, b []byte, digits string) {
 		f.writePadding(f.wid - width)
 	}
 	// Write the encoding directly into the output buffer.
-	buf := *f.buf
+	buf := f.buf
 	if f.sharp {
 		// Add leading 0x or 0X.
-		buf = append(buf, '0', digits[16])
+		buf.WriteByte('0')
+		buf.WriteByte(digits[16])
 	}
 	var c byte
 	for i := 0; i < length; i++ {
 		if f.space && i > 0 {
 			// Separate elements with a space.
-			buf = append(buf, ' ')
+			buf.WriteByte(' ')
 			if f.sharp {
 				// Add leading 0x or 0X for each element.
-				buf = append(buf, '0', digits[16])
+				buf.WriteByte('0')
+				buf.WriteByte(digits[16])
 			}
 		}
 		if b != nil {
@@ -386,9 +379,9 @@ func (f *fmt) fmt_sbx(s string, b []byte, digits string) {
 			c = s[i] // Take a byte from the input string.
 		}
 		// Encode each byte as two hexadecimal digits.
-		buf = append(buf, digits[c>>4], digits[c&0xF])
+		buf.WriteByte(digits[c>>4])
+		buf.WriteByte(digits[c&0xF])
 	}
-	*f.buf = buf
 	// Handle padding to the right.
 	if f.widPresent && f.wid > width && f.minus {
 		f.writePadding(f.wid - width)
@@ -396,19 +389,19 @@ func (f *fmt) fmt_sbx(s string, b []byte, digits string) {
 }
 
 // fmt_sx formats a string as a hexadecimal encoding of its bytes.
-func (f *fmt) fmt_sx(s, digits string) {
+func (f *formatInfo) fmt_sx(s, digits string) {
 	f.fmt_sbx(s, nil, digits)
 }
 
 // fmt_bx formats a byte slice as a hexadecimal encoding of its bytes.
-func (f *fmt) fmt_bx(b []byte, digits string) {
+func (f *formatInfo) fmt_bx(b []byte, digits string) {
 	f.fmt_sbx("", b, digits)
 }
 
 // fmt_q formats a string as a double-quoted, escaped Go string constant.
 // If f.sharp is set a raw (backquoted) string may be returned instead
 // if the string does not contain any control characters other than tab.
-func (f *fmt) fmt_q(s string) {
+func (f *formatInfo) fmt_q(s string) {
 	s = f.truncate(s)
 	if f.sharp && strconv.CanBackquote(s) {
 		f.padString("`" + s + "`")
@@ -424,7 +417,7 @@ func (f *fmt) fmt_q(s string) {
 
 // fmt_c formats an integer as a Unicode character.
 // If the character is not valid Unicode, it will print '\ufffd'.
-func (f *fmt) fmt_c(c uint64) {
+func (f *formatInfo) fmt_c(c uint64) {
 	r := rune(c)
 	if c > utf8.MaxRune {
 		r = utf8.RuneError
@@ -436,7 +429,7 @@ func (f *fmt) fmt_c(c uint64) {
 
 // fmt_qc formats an integer as a single-quoted, escaped Go character constant.
 // If the character is not valid Unicode, it will print '\ufffd'.
-func (f *fmt) fmt_qc(c uint64) {
+func (f *formatInfo) fmt_qc(c uint64) {
 	r := rune(c)
 	if c > utf8.MaxRune {
 		r = utf8.RuneError
@@ -451,7 +444,7 @@ func (f *fmt) fmt_qc(c uint64) {
 
 // fmt_float formats a float64. It assumes that verb is a valid format specifier
 // for strconv.AppendFloat and therefore fits into a byte.
-func (f *fmt) fmt_float(v float64, size int, verb rune, prec int) {
+func (f *formatInfo) fmt_float(v float64, size int, verb rune, prec int) {
 	// Explicit precision in format specifier overrules default precision.
 	if f.precPresent {
 		prec = f.prec
