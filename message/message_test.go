@@ -133,11 +133,7 @@ func TestFormatSelection(t *testing.T) {
 
 		for i, pt := range tc.test {
 			t.Run(fmt.Sprintf("%s:%d", tc.desc, i), func(t *testing.T) {
-				tag := language.MustParse(pt.tag)
-				p := Printer{printer{
-					tag: tag,
-				}}
-				p.printer.catContext = cat.Context(tag, &p.printer)
+				p := NewPrinter(language.MustParse(pt.tag), Catalog(cat))
 
 				if got := p.Sprintf(pt.key, pt.args...); got != pt.want {
 					t.Errorf("Sprintf(%q, %v) = %s; want %s",
