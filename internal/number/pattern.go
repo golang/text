@@ -65,7 +65,27 @@ type Pattern struct {
 	MinExponentDigits    uint8
 }
 
-// A PatternFlag is a bit mask for the flag field of a Format.
+func (f *Pattern) needsSep(pos int) bool {
+	p := pos - 1
+	size := int(f.GroupingSize[0])
+	if size == 0 || p == 0 {
+		return false
+	}
+	if p == size {
+		return true
+	}
+	if p -= size; p < 0 {
+		return false
+	}
+	// TODO: make second groupingsize the same as first if 0 so that we can
+	// avoid this check.
+	if x := int(f.GroupingSize[1]); x != 0 {
+		size = x
+	}
+	return p%size == 0
+}
+
+// A PatternFlag is a bit mask for the flag field of a Pattern.
 type PatternFlag uint8
 
 const (
