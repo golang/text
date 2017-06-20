@@ -7,7 +7,6 @@ package number
 import (
 	"fmt"
 	"log"
-	"strings"
 	"testing"
 
 	"golang.org/x/text/language"
@@ -287,22 +286,139 @@ func TestAppendDecimal(t *testing.T) {
 			"12345":   "12.34E03",
 			"123.456": "123.4E00",
 		},
+	}, {
+		pattern: "@@E0",
+		test: pairs{
+			"0":    "0.0E0",
+			"99":   "9.9E1",
+			"0.99": "9.9E-1",
+		},
+	}, {
+		pattern: "@###E00",
+		test: pairs{
+			"0":     "0E00",
+			"1":     "1E00",
+			"11":    "1.1E01",
+			"111":   "1.11E02",
+			"1111":  "1.111E03",
+			"11111": "1.111E04",
+			"0.1":   "1E-01",
+			"0.11":  "1.1E-01",
+			"0.001": "1E-03",
+		},
+	}, {
+		pattern: "*x###",
+		test: pairs{
+			"0":    "xx0",
+			"10":   "x10",
+			"100":  "100",
+			"1000": "1000",
+		},
+	}, {
+		pattern: "###*x",
+		test: pairs{
+			"0":    "0xx",
+			"10":   "10x",
+			"100":  "100",
+			"1000": "1000",
+		},
+	}, {
+		pattern: "* ###0.000",
+		test: pairs{
+			"0":        "   0.000",
+			"123":      " 123.000",
+			"123.456":  " 123.456",
+			"1234.567": "1234.567",
+		},
+	}, {
+		pattern: "**0.0##E00",
+		test: pairs{
+			"0":     "**0.0E00",
+			"10":    "**1.0E01",
+			"11":    "**1.1E01",
+			"111":   "*1.11E02",
+			"1111":  "1.111E03",
+			"11111": "1.111E04",
+			"11110": "1.111E04",
+			"11100": "*1.11E04",
+			"11000": "**1.1E04",
+			"10000": "**1.0E04",
+		},
+	}, {
+		pattern: "*xpre#suf",
+		test: pairs{
+			"0":  "pre0suf",
+			"10": "pre10suf",
+		},
+	}, {
+		pattern: "*∞ pre #### suf",
+		test: pairs{
+			"0":    "∞∞∞ pre 0 suf",
+			"10":   "∞∞ pre 10 suf",
+			"100":  "∞ pre 100 suf",
+			"1000": " pre 1000 suf",
+		},
+	}, {
+		pattern: "pre *∞#### suf",
+		test: pairs{
+			"0":    "pre ∞∞∞0 suf",
+			"10":   "pre ∞∞10 suf",
+			"100":  "pre ∞100 suf",
+			"1000": "pre 1000 suf",
+		},
+	}, {
+		pattern: "pre ####*∞ suf",
+		test: pairs{
+			"0":    "pre 0∞∞∞ suf",
+			"10":   "pre 10∞∞ suf",
+			"100":  "pre 100∞ suf",
+			"1000": "pre 1000 suf",
+		},
+	}, {
+		pattern: "pre #### suf *∞",
+		test: pairs{
+			"0":    "pre 0 suf ∞∞∞",
+			"10":   "pre 10 suf ∞∞",
+			"100":  "pre 100 suf ∞",
+			"1000": "pre 1000 suf ",
+		},
+	}, {
+		// Take width of positive pattern.
+		pattern: "**####;**-######x",
+		test: pairs{
+			"0":  "***0",
+			"-1": "*-1x",
+		},
+	}, {
+		pattern: "0.00%",
+		test: pairs{
+			"0.1": "10.00%",
+		},
+	}, {
+		pattern: "0.##%",
+		test: pairs{
+			"0.1":     "10%",
+			"0.11":    "11%",
+			"0.111":   "11.1%",
+			"0.1111":  "11.11%",
+			"0.11111": "11.11%",
+		},
+	}, {
+		pattern: "‰ 0.0#",
+		test: pairs{
+			"0.1":      "‰ 100.0",
+			"0.11":     "‰ 110.0",
+			"0.111":    "‰ 111.0",
+			"0.1111":   "‰ 111.1",
+			"0.11111":  "‰ 111.11",
+			"0.111111": "‰ 111.11",
+		},
 	}}
 
 	// TODO:
-	// 	"@@E0",
-	// 	"@###E00",
-	// 	"0.0%",
-	// 	"0.0‰",
 	// 	"#,##0.00¤",
 	// 	"#,##0.00 ¤;(#,##0.00 ¤)",
-	// 	// padding
-	// 	"*x#",
-	// 	"#*x",
-	// 	"*xpre#suf",
-	// 	"pre*x#suf",
-	// 	"pre#*xsuf",
-	// 	"pre#suf*x",
+
 	for _, tc := range testCases {
 		pat := tc.pat
 		if pat == nil {
@@ -311,15 +427,8 @@ func TestAppendDecimal(t *testing.T) {
 				log.Fatal(err)
 			}
 		}
-		f := &Formatter{
-			pat,
-			InfoFromTag(language.English),
-			RoundingContext{},
-			appendDecimal,
-		}
-		if strings.IndexByte(tc.pattern, 'E') != -1 {
-			f.f = appendScientific
-		}
+		var f Formatter
+		f.InitPattern(language.English, pat)
 		for dec, want := range tc.test {
 			buf := make([]byte, 100)
 			t.Run(tc.pattern+"/"+dec, func(t *testing.T) {
@@ -347,12 +456,36 @@ func TestLocales(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprint(tc.tag, "/", tc.num), func(t *testing.T) {
-			f := &Formatter{
-				lookupFormat(tc.tag, tagToDecimal),
-				InfoFromTag(tc.tag),
-				RoundingContext{},
-				appendDecimal,
+			var f Formatter
+			f.InitDecimal(tc.tag)
+			d := mkdec(tc.num)
+			b := f.Format(nil, &d)
+			if got := string(b); got != tc.want {
+				t.Errorf("got %q; want %q", got, tc.want)
 			}
+		})
+	}
+}
+
+func TestFormatters(t *testing.T) {
+	var f Formatter
+	testCases := []struct {
+		init func(t language.Tag)
+		num  string
+		want string
+	}{
+		{f.InitDecimal, "123456.78", "123,456.78"},
+		{f.InitScientific, "123456.78", "1.23E5"},
+		{f.InitEngineering, "123456.78", "123E3"},
+
+		{f.InitPercent, "0.1234", "12.34%"},
+		{f.InitPerMille, "0.1234", "123.40‰"},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprint(i, "/", tc.num), func(t *testing.T) {
+			tc.init(language.English)
+			f.Pattern.MinFractionDigits = 2
+			f.Pattern.MaxFractionDigits = 2
 			d := mkdec(tc.num)
 			b := f.Format(nil, &d)
 			if got := string(b); got != tc.want {

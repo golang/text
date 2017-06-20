@@ -46,11 +46,11 @@ type Pattern struct {
 	Offset    uint16 // Offset into Affix for prefix and suffix
 	NegOffset uint16 // Offset into Affix for negative prefix and suffix or 0.
 
-	Multiplier     uint32
+	FormatWidth uint16
+
 	RoundIncrement uint32 // Use Min*Digits to determine scale
 	PadRune        rune
-
-	FormatWidth uint16
+	DigitShift     uint8 // Number of decimals to shift. Used for % and ‰.
 
 	GroupingSize [2]uint8
 	Flags        PatternFlag
@@ -247,26 +247,41 @@ func (p *parser) affix(r rune) state {
 		'#', '@', '.', '*', ',', ';':
 		return nil
 	case '\'':
-		return p.escape
+		p.FormatWidth--
+		return p.escapeFirst
 	case '%':
-		if p.Multiplier != 0 {
+		if p.DigitShift != 0 {
 			p.setError(errDuplicatePercentSign)
 		}
-		p.Multiplier = 100
+		p.DigitShift = 2
 	case '\u2030': // ‰ Per mille
-		if p.Multiplier != 0 {
+		if p.DigitShift != 0 {
 			p.setError(errDuplicatePermilleSign)
 		}
-		p.Multiplier = 1000
+		p.DigitShift = 3
 		// TODO: handle currency somehow: ¤, ¤¤, ¤¤¤, ¤¤¤¤
 	}
 	p.buf = append(p.buf, string(r)...)
 	return p.affix
 }
 
+func (p *parser) escapeFirst(r rune) state {
+	switch r {
+	case '\'':
+		p.buf = append(p.buf, "\\'"...)
+		return p.affix
+	default:
+		p.buf = append(p.buf, '\'')
+		p.buf = append(p.buf, string(r)...)
+	}
+	return p.escape
+}
+
 func (p *parser) escape(r rune) state {
 	switch r {
 	case '\'':
+		p.FormatWidth--
+		p.buf = append(p.buf, '\'')
 		return p.affix
 	default:
 		p.buf = append(p.buf, string(r)...)

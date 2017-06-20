@@ -6,41 +6,128 @@ package number
 
 import (
 	"strconv"
+	"unicode/utf8"
 
 	"golang.org/x/text/language"
 )
 
 // TODO:
-// - public (but internal) API for creating formatters
 // - split out the logic that computes the visible digits from the rest of the
 //   formatting code (needed for plural).
 // - grouping of fractions
-// - reuse percent pattern for permille
-// - padding
 
 // Formatter contains all the information needed to render a number.
 type Formatter struct {
-	*Pattern
+	Pattern
 	Info
 	RoundingContext
-	f func(dst []byte, f *Formatter, d *Decimal) []byte
 }
 
-func lookupFormat(t language.Tag, tagToIndex []uint8) *Pattern {
+func (f *Formatter) init(t language.Tag, index []uint8) {
+	f.Info = InfoFromTag(t)
 	for ; ; t = t.Parent() {
 		if ci, ok := language.CompactIndex(t); ok {
-			return &formats[tagToIndex[ci]]
+			f.Pattern = formats[index[ci]]
+			break
 		}
 	}
 }
 
-func (f *Formatter) Format(dst []byte, d *Decimal) []byte {
-	return f.f(dst, f, d)
+// InitPattern initializes a Formatter for the given Pattern.
+func (f *Formatter) InitPattern(t language.Tag, pat *Pattern) {
+	f.Info = InfoFromTag(t)
+	f.Pattern = *pat
 }
 
-func appendDecimal(dst []byte, f *Formatter, d *Decimal) []byte {
+// InitDecimal initializes a Formatter using the default Pattern for the given
+// language.
+func (f *Formatter) InitDecimal(t language.Tag) {
+	f.init(t, tagToDecimal)
+}
+
+// InitScientific initializes a Formatter using the default Pattern for the
+// given language.
+func (f *Formatter) InitScientific(t language.Tag) {
+	f.init(t, tagToScientific)
+}
+
+// InitEngineering initializes a Formatter using the default Pattern for the
+// given language.
+func (f *Formatter) InitEngineering(t language.Tag) {
+	f.init(t, tagToScientific)
+	f.Pattern.MaxIntegerDigits = 3
+	f.Pattern.MinIntegerDigits = 1
+}
+
+// InitPercent initializes a Formatter using the default Pattern for the given
+// language.
+func (f *Formatter) InitPercent(t language.Tag) {
+	f.init(t, tagToPercent)
+}
+
+// InitPerMille initializes a Formatter using the default Pattern for the given
+// language.
+func (f *Formatter) InitPerMille(t language.Tag) {
+	f.init(t, tagToPercent)
+	f.Pattern.DigitShift = 3
+}
+
+func (f *Formatter) Append(dst []byte, x interface{}) []byte {
+	var d Decimal
+	d.Convert(&f.RoundingContext, x)
+	return f.Format(dst, &d)
+}
+
+func (f *Formatter) Format(dst []byte, d *Decimal) []byte {
+	var result []byte
+	var postPrefix, preSuffix int
+	if f.MinExponentDigits > 0 {
+		result, postPrefix, preSuffix = appendScientific(dst, f, d)
+	} else {
+		result, postPrefix, preSuffix = appendDecimal(dst, f, d)
+	}
+	if f.PadRune == 0 {
+		return result
+	}
+	width := int(f.FormatWidth)
+	if count := utf8.RuneCount(result); count < width {
+		insertPos := 0
+		switch f.Flags & PadMask {
+		case PadAfterPrefix:
+			insertPos = postPrefix
+		case PadBeforeSuffix:
+			insertPos = preSuffix
+		case PadAfterSuffix:
+			insertPos = len(result)
+		}
+		num := width - count
+		pad := [utf8.UTFMax]byte{' '}
+		sz := 1
+		if r := f.PadRune; r != 0 {
+			sz = utf8.EncodeRune(pad[:], r)
+		}
+		extra := sz * num
+		if n := len(result) + extra; n < cap(result) {
+			result = result[:n]
+			copy(result[insertPos+extra:], result[insertPos:])
+		} else {
+			buf := make([]byte, n)
+			copy(buf, result[:insertPos])
+			copy(buf[insertPos+extra:], result[insertPos:])
+			result = buf
+		}
+		for ; num > 0; num-- {
+			insertPos += copy(result[insertPos:], pad[:sz])
+		}
+	}
+	return result
+}
+
+// appendDecimal appends a formatted number to dst. It returns two possible
+// insertion points for padding.
+func appendDecimal(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, preSuf int) {
 	if dst, ok := f.renderSpecial(dst, d); ok {
-		return dst
+		return dst, 0, len(dst)
 	}
 	n := d.normalize()
 	if maxSig := int(f.MaxSignificantDigits); maxSig > 0 {
@@ -48,6 +135,7 @@ func appendDecimal(dst []byte, f *Formatter, d *Decimal) []byte {
 	}
 	digits := n.Digits
 	exp := n.Exp
+	exp += int32(f.Pattern.DigitShift)
 
 	// Split in integer and fraction part.
 	var intDigits, fracDigits []byte
@@ -148,12 +236,14 @@ func appendDecimal(dst []byte, f *Formatter, d *Decimal) []byte {
 	if len(dst) == savedLen {
 		dst = f.AppendDigit(dst, 0)
 	}
-	return appendAffix(dst, f, suffix, neg)
+	return appendAffix(dst, f, suffix, neg), savedLen, len(dst)
 }
 
-func appendScientific(dst []byte, f *Formatter, d *Decimal) []byte {
+// appendScientific appends a formatted number to dst. It returns two possible
+// insertion points for padding.
+func appendScientific(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, preSuf int) {
 	if dst, ok := f.renderSpecial(dst, d); ok {
-		return dst
+		return dst, 0, 0
 	}
 	// Significant digits are transformed by parser for scientific notation and
 	// do not need to be handled here.
@@ -244,14 +334,14 @@ func appendScientific(dst []byte, f *Formatter, d *Decimal) []byte {
 		dst = append(dst, f.Symbol(SymPlusSign)...)
 	}
 	buf := [12]byte{}
-	b := strconv.AppendUint(buf[:0], uint64(exp), 10)
+	b = strconv.AppendUint(buf[:0], uint64(exp), 10)
 	for i := len(b); i < int(f.MinExponentDigits); i++ {
 		dst = f.AppendDigit(dst, 0)
 	}
 	for _, c := range b {
 		dst = f.AppendDigit(dst, c-'0')
 	}
-	return appendAffix(dst, f, suffix, neg)
+	return appendAffix(dst, f, suffix, neg), savedLen, len(dst)
 }
 
 func (f *Formatter) getAffixes(neg bool) (affix, suffix string) {
@@ -307,7 +397,15 @@ func appendAffix(dst []byte, f *Formatter, affix string, neg bool) []byte {
 			escaping = true
 		case r == '\'':
 			quoting = !quoting
-		case !quoting && (r == '-' || r == '+'):
+		case quoting:
+			dst = append(dst, string(r)...)
+		case r == '%':
+			if f.DigitShift == 3 {
+				dst = append(dst, f.Symbol(SymPerMille)...)
+			} else {
+				dst = append(dst, f.Symbol(SymPercentSign)...)
+			}
+		case r == '-' || r == '+':
 			if neg {
 				dst = append(dst, f.Symbol(SymMinusSign)...)
 			} else {

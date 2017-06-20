@@ -275,29 +275,29 @@ func (d *Decimal) Convert(r *RoundingContext, number interface{}) {
 		d.clear()
 		f.Convert(d, r)
 	case float32:
-		d.convertFloat64(r, float64(f), 32)
+		d.ConvertFloat(r, float64(f), 32)
 	case float64:
-		d.convertFloat64(r, f, 64)
+		d.ConvertFloat(r, f, 64)
 	case int:
-		d.convertInt(r, signed, uint64(f))
+		d.ConvertInt(r, signed, uint64(f))
 	case int8:
-		d.convertInt(r, signed, uint64(f))
+		d.ConvertInt(r, signed, uint64(f))
 	case int16:
-		d.convertInt(r, signed, uint64(f))
+		d.ConvertInt(r, signed, uint64(f))
 	case int32:
-		d.convertInt(r, signed, uint64(f))
+		d.ConvertInt(r, signed, uint64(f))
 	case int64:
-		d.convertInt(r, signed, uint64(f))
+		d.ConvertInt(r, signed, uint64(f))
 	case uint:
-		d.convertInt(r, unsigned, uint64(f))
+		d.ConvertInt(r, unsigned, uint64(f))
 	case uint8:
-		d.convertInt(r, unsigned, uint64(f))
+		d.ConvertInt(r, unsigned, uint64(f))
 	case uint16:
-		d.convertInt(r, unsigned, uint64(f))
+		d.ConvertInt(r, unsigned, uint64(f))
 	case uint32:
-		d.convertInt(r, unsigned, uint64(f))
+		d.ConvertInt(r, unsigned, uint64(f))
 	case uint64:
-		d.convertInt(r, unsigned, f)
+		d.ConvertInt(r, unsigned, f)
 
 		// TODO:
 		// case string: if produced by strconv, allows for easy arbitrary pos.
@@ -310,13 +310,14 @@ func (d *Decimal) Convert(r *RoundingContext, number interface{}) {
 	}
 }
 
-func (d *Decimal) convertInt(r *RoundingContext, signed bool, x uint64) {
+// ConvertInt converts an integer to decimals.
+func (d *Decimal) ConvertInt(r *RoundingContext, signed bool, x uint64) {
 	if r.Increment > 0 {
 		// TODO: if uint64 is too large, fall back to float64
 		if signed {
-			d.convertFloat64(r, float64(int64(x)), 64)
+			d.ConvertFloat(r, float64(int64(x)), 64)
 		} else {
-			d.convertFloat64(r, float64(x), 64)
+			d.ConvertFloat(r, float64(x), 64)
 		}
 		return
 	}
@@ -329,7 +330,8 @@ func (d *Decimal) convertInt(r *RoundingContext, signed bool, x uint64) {
 	d.Exp = int32(len(d.Digits))
 }
 
-func (d *Decimal) convertFloat64(r *RoundingContext, x float64, size int) {
+// ConvertFloat converts a floating point number to decimals.
+func (d *Decimal) ConvertFloat(r *RoundingContext, x float64, size int) {
 	d.clear()
 	if math.IsNaN(x) {
 		d.NaN = true
