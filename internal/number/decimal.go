@@ -34,6 +34,8 @@ type RoundingContext struct {
 	Scale     int32 // maximum number of decimals after the dot.
 }
 
+const maxIntDigits = 20
+
 // A Decimal represents floating point number represented in digits of the base
 // in which a number is to be displayed. Digits represents a number [0, 1.0),
 // and the absolute value represented by Decimal is Digits * 10^Exp.
@@ -53,7 +55,7 @@ type Decimal struct {
 	Inf    bool // Takes precedence over Digits and Exp.
 	NaN    bool // Takes precedence over Inf.
 
-	buf [10]byte
+	buf [maxIntDigits]byte
 }
 
 // normalize retuns a new Decimal with leading and trailing zeros removed.
@@ -401,11 +403,10 @@ func (d *Decimal) convertFloat64(r *RoundingContext, x float64, size int) {
 }
 
 func (d *Decimal) fillIntDigits(x uint64) {
-	const maxUintDigits = 10
-	if cap(d.Digits) < maxUintDigits {
+	if cap(d.Digits) < maxIntDigits {
 		d.Digits = d.buf[:]
 	} else {
-		d.Digits = d.buf[:maxUintDigits]
+		d.Digits = d.buf[:maxIntDigits]
 	}
 	i := 0
 	for ; x > 0; x /= 10 {
