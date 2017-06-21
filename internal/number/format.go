@@ -12,9 +12,17 @@ import (
 )
 
 // TODO:
-// - split out the logic that computes the visible digits from the rest of the
-//   formatting code (needed for plural).
 // - grouping of fractions
+// - allow user-defined superscript notation (such as <sup>4</sup>)
+// - same for non-breaking spaces, like &nbsp;
+
+// Formatting proceeds along the following lines:
+// 0) Compose rounding information from format and context.
+// 1) Convert a number into a Decimal.
+// 2) Sanitize Decimal by adding trailing zeros, removing leading digits, and
+//    (non-increment) rounding. The Decimal that results from this is suitable
+//    for determining the plural form.
+// 3) Render the Decimal in the localized form.
 
 // Formatter contains all the information needed to render a number.
 type Formatter struct {
@@ -325,24 +333,70 @@ func appendScientific(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, 
 	}
 
 	// exp
-	dst = append(dst, f.Symbol(SymExponential)...)
-	switch {
-	case exp < 0:
-		dst = append(dst, f.Symbol(SymMinusSign)...)
-		exp = -exp
-	case f.Flags&AlwaysExpSign != 0:
-		dst = append(dst, f.Symbol(SymPlusSign)...)
-	}
 	buf := [12]byte{}
-	b = strconv.AppendUint(buf[:0], uint64(exp), 10)
-	for i := len(b); i < int(f.MinExponentDigits); i++ {
+	// TODO: use exponential if superscripting is not available (no Latin
+	// numbers or no tags) and use exponential in all other cases.
+	exponential := f.Symbol(SymExponential)
+	if exponential == "E" {
+		dst = append(dst, "\u202f"...) // NARROW NO-BREAK SPACE
+		dst = append(dst, f.Symbol(SymSuperscriptingExponent)...)
+		dst = append(dst, "\u202f"...) // NARROW NO-BREAK SPACE
+		dst = f.AppendDigit(dst, 1)
 		dst = f.AppendDigit(dst, 0)
-	}
-	for _, c := range b {
-		dst = f.AppendDigit(dst, c-'0')
+		switch {
+		case exp < 0:
+			dst = append(dst, superMinus...)
+			exp = -exp
+		case f.Flags&AlwaysExpSign != 0:
+			dst = append(dst, superPlus...)
+		}
+		b = strconv.AppendUint(buf[:0], uint64(exp), 10)
+		for i := len(b); i < int(f.MinExponentDigits); i++ {
+			dst = append(dst, superDigits[0]...)
+		}
+		for _, c := range b {
+			dst = append(dst, superDigits[c-'0']...)
+		}
+	} else {
+		dst = append(dst, exponential...)
+		switch {
+		case exp < 0:
+			dst = append(dst, f.Symbol(SymMinusSign)...)
+			exp = -exp
+		case f.Flags&AlwaysExpSign != 0:
+			dst = append(dst, f.Symbol(SymPlusSign)...)
+		}
+		b = strconv.AppendUint(buf[:0], uint64(exp), 10)
+		for i := len(b); i < int(f.MinExponentDigits); i++ {
+			dst = f.AppendDigit(dst, 0)
+		}
+		for _, c := range b {
+			dst = f.AppendDigit(dst, c-'0')
+		}
 	}
 	return appendAffix(dst, f, suffix, neg), savedLen, len(dst)
 }
+
+const (
+	superMinus = "\u207B" // SUPERSCRIPT HYPHEN-MINUS
+	superPlus  = "\u207A" // SUPERSCRIPT PLUS SIGN
+)
+
+var (
+	// Note: the digits are not sequential!!!
+	superDigits = []string{
+		"\u2070", // SUPERSCRIPT DIGIT ZERO
+		"\u00B9", // SUPERSCRIPT DIGIT ONE
+		"\u00B2", // SUPERSCRIPT DIGIT TWO
+		"\u00B3", // SUPERSCRIPT DIGIT THREE
+		"\u2074", // SUPERSCRIPT DIGIT FOUR
+		"\u2075", // SUPERSCRIPT DIGIT FIVE
+		"\u2076", // SUPERSCRIPT DIGIT SIX
+		"\u2077", // SUPERSCRIPT DIGIT SEVEN
+		"\u2078", // SUPERSCRIPT DIGIT EIGHT
+		"\u2079", // SUPERSCRIPT DIGIT NINE
+	}
+)
 
 func (f *Formatter) getAffixes(neg bool) (affix, suffix string) {
 	str := f.Affix
