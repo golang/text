@@ -192,9 +192,9 @@ func appendDecimal(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, pre
 		minInt = 1
 	}
 	// add leading zeros
-	for i := numInt; i < minInt; i++ {
+	for i := minInt; i > numInt; i-- {
 		dst = f.AppendDigit(dst, 0)
-		if f.needsSep(minInt - i) {
+		if f.needsSep(i) {
 			dst = append(dst, f.Symbol(SymGroup)...)
 		}
 	}
