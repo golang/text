@@ -238,12 +238,6 @@ func appendDecimal(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, pre
 	for ; trailZero > 0; trailZero-- {
 		dst = f.AppendDigit(dst, 0)
 	}
-	// Ensure that at least one digit is written no matter what. This makes
-	// things more robust, even though a pattern should always require at least
-	// one fraction or integer digit.
-	if len(dst) == savedLen {
-		dst = f.AppendDigit(dst, 0)
-	}
 	return appendAffix(dst, f, suffix, neg), savedLen, len(dst)
 }
 
@@ -323,12 +317,6 @@ func appendScientific(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, 
 		dst = f.AppendDigit(dst, fracDigits[i])
 	}
 	for ; trailZero > 0; trailZero-- {
-		dst = f.AppendDigit(dst, 0)
-	}
-	// Ensure that at least one digit is written no matter what. This makes
-	// things more robust, even though a pattern should always require at least
-	// one fraction or integer digit.
-	if len(dst) == savedLen {
 		dst = f.AppendDigit(dst, 0)
 	}
 
@@ -411,8 +399,11 @@ func (f *Formatter) getAffixes(neg bool) (affix, suffix string) {
 		sufStart := 1 + str[0]
 		affix = str[1:sufStart]
 		suffix = str[sufStart+1:]
-	} else if neg {
-		affix = "-"
+	}
+	// TODO: introduce a NeedNeg sign to indicate if the left pattern already
+	// has a sign marked?
+	if f.NegOffset == 0 && (neg || f.Flags&AlwaysSign != 0) {
+		affix = "-" + affix
 	}
 	return affix, suffix
 }
@@ -432,10 +423,11 @@ func fmtNaN(dst []byte, f *Formatter) []byte {
 }
 
 func fmtInfinite(dst []byte, f *Formatter, d *Decimal) []byte {
-	if d.Neg {
-		dst = append(dst, f.Symbol(SymMinusSign)...)
-	}
-	return append(dst, f.Symbol(SymInfinity)...)
+	affix, suffix := f.getAffixes(d.Neg)
+	dst = appendAffix(dst, f, affix, d.Neg)
+	dst = append(dst, f.Symbol(SymInfinity)...)
+	dst = appendAffix(dst, f, suffix, d.Neg)
+	return dst
 }
 
 func appendAffix(dst []byte, f *Formatter, affix string, neg bool) []byte {

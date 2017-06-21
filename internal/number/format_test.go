@@ -36,7 +36,7 @@ func TestAppendDecimal(t *testing.T) {
 			"-Inf": "-∞",
 		},
 	}, {
-		pattern: "+0",
+		pattern: "+0;+0",
 		test: pairs{
 			"0":    "+0",
 			"1":    "+1",
@@ -47,9 +47,10 @@ func TestAppendDecimal(t *testing.T) {
 			"1.2":  "+1",
 			"NaN":  "NaN",
 			"-Inf": "-∞",
+			"Inf":  "+∞",
 		},
 	}, {
-		pattern: "0 +",
+		pattern: "0 +;0 +",
 		test: pairs{
 			"0":   "0 +",
 			"1":   "1 +",
@@ -59,7 +60,10 @@ func TestAppendDecimal(t *testing.T) {
 	}, {
 		pattern: "0;0-",
 		test: pairs{
-			"-1": "1-",
+			"-1":   "1-",
+			"NaN":  "NaN",
+			"-Inf": "∞-",
+			"Inf":  "∞",
 		},
 	}, {
 		pattern: "0000",
@@ -161,15 +165,15 @@ func TestAppendDecimal(t *testing.T) {
 	}, {
 		pattern: "#",
 		test: pairs{
-			".00": "0",
-			"0":   "0",
+			".00": "", // This is the behavior of fmt.
+			"0":   "", // This is the behavior of fmt.
 			"1":   "1",
 			"10.": "10",
 		},
 	}, {
 		pattern: ".#",
 		test: pairs{
-			"0":      "0",
+			"0":      "", // This is the behavior of fmt.
 			"1":      "1",
 			"1.2":    "1.2",
 			"1.2345": "1.2",
@@ -315,7 +319,7 @@ func TestAppendDecimal(t *testing.T) {
 			"0.001": "1\u202f×\u202f10⁻⁰³",
 		},
 	}, {
-		pattern: "*x###",
+		pattern: "*x##0",
 		test: pairs{
 			"0":    "xx0",
 			"10":   "x10",
@@ -323,7 +327,7 @@ func TestAppendDecimal(t *testing.T) {
 			"1000": "1000",
 		},
 	}, {
-		pattern: "###*x",
+		pattern: "##0*x",
 		test: pairs{
 			"0":    "0xx",
 			"10":   "10x",
@@ -353,13 +357,13 @@ func TestAppendDecimal(t *testing.T) {
 			"10000": "***1.0\u202f×\u202f10⁰⁴",
 		},
 	}, {
-		pattern: "*xpre#suf",
+		pattern: "*xpre0suf",
 		test: pairs{
 			"0":  "pre0suf",
 			"10": "pre10suf",
 		},
 	}, {
-		pattern: "*∞ pre #### suf",
+		pattern: "*∞ pre ###0 suf",
 		test: pairs{
 			"0":    "∞∞∞ pre 0 suf",
 			"10":   "∞∞ pre 10 suf",
@@ -367,7 +371,7 @@ func TestAppendDecimal(t *testing.T) {
 			"1000": " pre 1000 suf",
 		},
 	}, {
-		pattern: "pre *∞#### suf",
+		pattern: "pre *∞###0 suf",
 		test: pairs{
 			"0":    "pre ∞∞∞0 suf",
 			"10":   "pre ∞∞10 suf",
@@ -375,7 +379,7 @@ func TestAppendDecimal(t *testing.T) {
 			"1000": "pre 1000 suf",
 		},
 	}, {
-		pattern: "pre ####*∞ suf",
+		pattern: "pre ###0*∞ suf",
 		test: pairs{
 			"0":    "pre 0∞∞∞ suf",
 			"10":   "pre 10∞∞ suf",
@@ -383,7 +387,7 @@ func TestAppendDecimal(t *testing.T) {
 			"1000": "pre 1000 suf",
 		},
 	}, {
-		pattern: "pre #### suf *∞",
+		pattern: "pre ###0 suf *∞",
 		test: pairs{
 			"0":    "pre 0 suf ∞∞∞",
 			"10":   "pre 10 suf ∞∞",
@@ -392,7 +396,7 @@ func TestAppendDecimal(t *testing.T) {
 		},
 	}, {
 		// Take width of positive pattern.
-		pattern: "**####;**-######x",
+		pattern: "**###0;**-#####0x",
 		test: pairs{
 			"0":  "***0",
 			"-1": "*-1x",
