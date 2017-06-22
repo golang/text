@@ -56,6 +56,7 @@ type Pattern struct {
 	Flags        PatternFlag
 
 	// Number of digits.
+	// TODO: consider using uint32
 	MinIntegerDigits     uint8
 	MaxIntegerDigits     uint8
 	MinFractionDigits    uint8
@@ -90,6 +91,7 @@ type PatternFlag uint8
 
 const (
 	AlwaysSign PatternFlag = 1 << iota
+	ElideSign              // Use space instead of plus sign. AlwaysSign must be true.
 	AlwaysExpSign
 	AlwaysDecimalSeparator
 	ParenthesisForNegative // Common pattern. Saves space.

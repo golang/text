@@ -454,8 +454,10 @@ func appendAffix(dst []byte, f *Formatter, affix string, neg bool) []byte {
 		case r == '-' || r == '+':
 			if neg {
 				dst = append(dst, f.Symbol(SymMinusSign)...)
-			} else {
+			} else if f.Flags&ElideSign == 0 {
 				dst = append(dst, f.Symbol(SymPlusSign)...)
+			} else {
+				dst = append(dst, ' ')
 			}
 		default:
 			dst = append(dst, string(r)...)
