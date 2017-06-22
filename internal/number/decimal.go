@@ -99,10 +99,9 @@ func (x *Decimal) String() string {
 		buf = append(buf, "Inf"...)
 		return string(buf)
 	}
-	if len(x.Digits) == 0 {
-		return "0"
-	}
 	switch {
+	case len(x.Digits) == 0:
+		buf = append(buf, '0')
 	case x.Exp <= 0:
 		// 0.00ddd
 		buf = append(buf, "0."...)

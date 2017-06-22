@@ -190,7 +190,7 @@ func appendDecimal(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, pre
 		}
 	}
 
-	neg := d.Neg && numInt+numFrac > 0
+	neg := d.Neg
 	affix, suffix := f.getAffixes(neg)
 	dst = appendAffix(dst, f, affix, neg)
 	savedLen := len(dst)
@@ -289,7 +289,7 @@ func appendScientific(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, 
 	} else {
 		intDigits = digits
 	}
-	neg := d.Neg && len(digits) > 0
+	neg := d.Neg
 	affix, suffix := f.getAffixes(neg)
 	dst = appendAffix(dst, f, affix, neg)
 	savedLen := len(dst)
