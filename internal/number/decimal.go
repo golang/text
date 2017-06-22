@@ -347,7 +347,7 @@ func (d *Decimal) ConvertFloat(r *RoundingContext, x float64, size int) {
 		return
 	}
 	// Simple case: decimal notation
-	if r.Scale > 0 || r.Increment > 0 && r.Scale == 0 {
+	if r.Scale > 0 || r.Increment > 0 || r.Precision == 0 {
 		if int(r.Scale) > len(scales) {
 			x *= math.Pow(10, float64(r.Scale))
 		} else {
@@ -372,6 +372,7 @@ func (d *Decimal) ConvertFloat(r *RoundingContext, x float64, size int) {
 	// TODO: expose functionality in strconv so we can avoid this hack.
 	//   Something like this would work:
 	//   AppendDigits(dst []byte, x float64, base, size, prec int) (digits []byte, exp, accuracy int)
+	// TODO: This only supports the nearest even rounding mode.
 
 	prec := int(r.Precision)
 	if prec > 0 {
