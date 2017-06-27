@@ -806,10 +806,10 @@ func (b *builder) writeLanguage() {
 		}
 	}
 
-	// Complete canonialized language tags.
+	// Complete canonicalized language tags.
 	lang.freeze()
 	for i, v := range lang.s {
-		// We can avoid these manual entries by using the IANI registry directly.
+		// We can avoid these manual entries by using the IANA registry directly.
 		// Seems easier to update the list manually, as changes are rare.
 		// The panic in this loop will trigger if we miss an entry.
 		add := ""
@@ -916,7 +916,7 @@ func (b *builder) writeRegion() {
 			i := b.region.index(s)
 			for _, d := range e.description {
 				if strings.Contains(d, "Private use") {
-					regionTypes[i] = iso3166UserAssgined
+					regionTypes[i] = iso3166UserAssigned
 				}
 			}
 			regionTypes[i] |= bcp47Region
@@ -1073,7 +1073,7 @@ const (
 )
 
 const (
-	iso3166UserAssgined = 1 << iota
+	iso3166UserAssigned = 1 << iota
 	ccTLD
 	bcp47Region
 )
@@ -1521,7 +1521,6 @@ func (b *builder) writeRegionInclusionData() {
 		for _, v := range l {
 			regionContainment[g] |= 1 << v
 		}
-		// log.Printf("%d: %X", g, regionContainment[g])
 	}
 	b.writeSlice("regionContainment", regionContainment)
 
