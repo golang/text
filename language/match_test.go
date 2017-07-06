@@ -381,7 +381,7 @@ func parseSupported(list string) (out []Tag) {
 func TestBestMatch(t *testing.T) {
 	for _, tt := range matchTests {
 		supported := parseSupported(tt.supported)
-		m := newMatcher(supported)
+		m := newMatcher(supported, nil)
 		if *verbose {
 			fmt.Printf("%s:\n%v\n", tt.comment, m)
 		}
@@ -475,7 +475,7 @@ var benchWant = [][]Tag{
 }
 
 func BenchmarkMatch(b *testing.B) {
-	m := newMatcher(benchHave)
+	m := newMatcher(benchHave, nil)
 	for i := 0; i < b.N; i++ {
 		for _, want := range benchWant {
 			m.getBest(want...)
@@ -485,7 +485,7 @@ func BenchmarkMatch(b *testing.B) {
 
 func BenchmarkMatchExact(b *testing.B) {
 	want := mk("en")
-	m := newMatcher(benchHave)
+	m := newMatcher(benchHave, nil)
 	for i := 0; i < b.N; i++ {
 		m.getBest(want)
 	}
@@ -493,7 +493,7 @@ func BenchmarkMatchExact(b *testing.B) {
 
 func BenchmarkMatchAltLanguagePresent(b *testing.B) {
 	want := mk("hr")
-	m := newMatcher(benchHave)
+	m := newMatcher(benchHave, nil)
 	for i := 0; i < b.N; i++ {
 		m.getBest(want)
 	}
@@ -501,7 +501,7 @@ func BenchmarkMatchAltLanguagePresent(b *testing.B) {
 
 func BenchmarkMatchAltLanguageNotPresent(b *testing.B) {
 	want := mk("nn")
-	m := newMatcher(benchHave)
+	m := newMatcher(benchHave, nil)
 	for i := 0; i < b.N; i++ {
 		m.getBest(want)
 	}
@@ -509,7 +509,7 @@ func BenchmarkMatchAltLanguageNotPresent(b *testing.B) {
 
 func BenchmarkMatchAltScriptPresent(b *testing.B) {
 	want := mk("zh-Hant-CN")
-	m := newMatcher(benchHave)
+	m := newMatcher(benchHave, nil)
 	for i := 0; i < b.N; i++ {
 		m.getBest(want)
 	}
@@ -517,7 +517,7 @@ func BenchmarkMatchAltScriptPresent(b *testing.B) {
 
 func BenchmarkMatchAltScriptNotPresent(b *testing.B) {
 	want := mk("fr-Cyrl")
-	m := newMatcher(benchHave)
+	m := newMatcher(benchHave, nil)
 	for i := 0; i < b.N; i++ {
 		m.getBest(want)
 	}
@@ -525,7 +525,7 @@ func BenchmarkMatchAltScriptNotPresent(b *testing.B) {
 
 func BenchmarkMatchLimitedExact(b *testing.B) {
 	want := []Tag{mk("he-NL"), mk("iw-NL")}
-	m := newMatcher(benchHave)
+	m := newMatcher(benchHave, nil)
 	for i := 0; i < b.N; i++ {
 		m.getBest(want...)
 	}

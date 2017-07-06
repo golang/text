@@ -6,6 +6,16 @@ package language
 
 import "errors"
 
+// A MatchOption configures a Matcher.
+type MatchOption func(*matcher)
+
+// PreferSameScript will, in the absence of a match, result in the first
+// preferred tag with the same script as a supported tag to match this supported
+// tag. The default is currently true, but this may change in the future.
+func PreferSameScript(preferSame bool) MatchOption {
+	return func(m *matcher) { m.preferSameScript = preferSame }
+}
+
 // Matcher is the interface that wraps the Match method.
 //
 // Match returns the best match for any of the given tags, along with
@@ -36,8 +46,8 @@ func Comprehends(speaker, alternative Tag) Confidence {
 // matched tag in t, but is augmented with the Unicode extension ('u')of the
 // corresponding preferred tag. This allows user locale options to be passed
 // transparently.
-func NewMatcher(t []Tag) Matcher {
-	return newMatcher(t)
+func NewMatcher(t []Tag, options ...MatchOption) Matcher {
+	return newMatcher(t, options)
 }
 
 func (m *matcher) Match(want ...Tag) (t Tag, index int, c Confidence) {
@@ -47,18 +57,20 @@ func (m *matcher) Match(want ...Tag) (t Tag, index int, c Confidence) {
 	} else {
 		// TODO: this should be an option
 		t = m.default_.tag
-	outer:
-		for _, w := range want {
-			script, _ := w.Script()
-			if script.scriptID == 0 {
-				// Don't do anything if there is no script, such as with
-				// private subtags.
-				continue
-			}
-			for i, h := range m.supported {
-				if script.scriptID == h.maxScript {
-					t, index = h.tag, i
-					break outer
+		if m.preferSameScript {
+		outer:
+			for _, w := range want {
+				script, _ := w.Script()
+				if script.scriptID == 0 {
+					// Don't do anything if there is no script, such as with
+					// private subtags.
+					continue
+				}
+				for i, h := range m.supported {
+					if script.scriptID == h.maxScript {
+						t, index = h.tag, i
+						break outer
+					}
 				}
 			}
 		}
@@ -407,10 +419,11 @@ func minimizeTags(t Tag) (Tag, error) {
 
 // matcher keeps a set of supported language tags, indexed by language.
 type matcher struct {
-	default_     *haveTag
-	supported    []*haveTag
-	index        map[langID]*matchHeader
-	passSettings bool
+	default_         *haveTag
+	supported        []*haveTag
+	index            map[langID]*matchHeader
+	passSettings     bool
+	preferSameScript bool
 }
 
 // matchHeader has the lists of tags for exact matches and matches based on
@@ -521,9 +534,13 @@ func toConf(d uint8) Confidence {
 // newMatcher builds an index for the given supported tags and returns it as
 // a matcher. It also expands the index by considering various equivalence classes
 // for a given tag.
-func newMatcher(supported []Tag) *matcher {
+func newMatcher(supported []Tag, options []MatchOption) *matcher {
 	m := &matcher{
-		index: make(map[langID]*matchHeader),
+		index:            make(map[langID]*matchHeader),
+		preferSameScript: true,
+	}
+	for _, o := range options {
+		o(m)
 	}
 	if len(supported) == 0 {
 		m.default_ = &haveTag{}
