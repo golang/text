@@ -602,10 +602,6 @@ func newMatcher(supported []Tag, options []MatchOption) *matcher {
 	// (their canonicalization simply substitutes a different language code, but
 	// nothing else), the match confidence is Exact, otherwise it is High.
 	for i, lm := range langAliasMap {
-		if lm.from == _sh {
-			continue
-		}
-
 		// If deprecated codes match and there is no fiddling with the script or
 		// or region, we consider it an exact match.
 		conf := Exact

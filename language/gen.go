@@ -1421,16 +1421,7 @@ func (b *builder) writeMatchData() {
 	b.writeType(scriptIntelligibility{})
 	b.writeType(regionIntelligibility{})
 
-	matchLang := []mutualIntelligibility{{
-		// TODO: remove once CLDR is fixed.
-		want:     uint16(b.langIndex("sr")),
-		have:     uint16(b.langIndex("hr")),
-		distance: uint8(5),
-	}, {
-		want:     uint16(b.langIndex("sr")),
-		have:     uint16(b.langIndex("bs")),
-		distance: uint8(5),
-	}}
+	matchLang := []mutualIntelligibility{}
 	matchScript := []scriptIntelligibility{}
 	matchRegion := []regionIntelligibility{}
 	// Convert the languageMatch entries in lists keyed by desired language.

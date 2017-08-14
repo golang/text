@@ -55,6 +55,13 @@ var matchTests = []matchTest{
 		},
 	},
 	{
+		"don't match hr to sr-Latn",
+		"en, sr-Latn",
+		[]struct{ match, desired string }{
+			{"en", "hr"},
+		},
+	},
+	{
 		"both deprecated and not",
 		"fil, tl, iw, he",
 		[]struct{ match, desired string }{

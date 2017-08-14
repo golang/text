@@ -274,7 +274,7 @@ func ExampleMatcher() {
 
 	fmt.Println("----")
 
-	// Croatian speakers will likely understand Serbian written in Latin script.
+	// Someone specifying sr-Latn is probably fine with getting Croatian.
 	fmt.Println(m.Match(language.Make("sr-Latn")))
 
 	// We match SimplifiedChinese, but with Low confidence.
