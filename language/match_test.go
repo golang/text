@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -19,31 +20,37 @@ import (
 
 var verbose = flag.Bool("verbose", false, "set to true to print the internal tables of matchers")
 
-func TestCLDRCompliance(t *testing.T) {
-	r, err := os.Open("testdata/localeMatcherTest.txt")
-	if err != nil {
-		t.Fatal(err)
-	}
-	ucd.Parse(r, func(p *ucd.Parser) {
-		name := strings.Replace(path.Join(p.String(0), p.String(1)), " ", "", -1)
-		if skip[name] {
-			return
+func TestCompliance(t *testing.T) {
+	filepath.Walk("testdata", func(file string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
 		}
-		t.Run(name, func(t *testing.T) {
-			supported := makeTagList(p.String(0))
-			desired := makeTagList(p.String(1))
-			gotCombined, index, _ := NewMatcher(supported).Match(desired...)
+		r, err := os.Open(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ucd.Parse(r, func(p *ucd.Parser) {
+			name := strings.Replace(path.Join(p.String(0), p.String(1)), " ", "", -1)
+			if skip[name] {
+				return
+			}
+			t.Run(info.Name()+"/"+name, func(t *testing.T) {
+				supported := makeTagList(p.String(0))
+				desired := makeTagList(p.String(1))
+				gotCombined, index, _ := NewMatcher(supported).Match(desired...)
 
-			gotMatch := supported[index]
-			wantMatch := Make(p.String(2))
-			if gotMatch != wantMatch {
-				t.Fatalf("match: got %q; want %q", gotMatch, wantMatch)
-			}
-			wantCombined, err := Parse(p.String(3))
-			if err == nil && gotCombined != wantCombined {
-				t.Errorf("combined: got %q; want %q", gotCombined, wantCombined)
-			}
+				gotMatch := supported[index]
+				wantMatch := mk(p.String(2))
+				if gotMatch != wantMatch {
+					t.Fatalf("match: got %q; want %q", gotMatch, wantMatch)
+				}
+				wantCombined, err := Raw.Parse(p.String(3))
+				if err == nil && gotCombined != wantCombined {
+					t.Errorf("combined: got %q; want %q", gotCombined, wantCombined)
+				}
+			})
 		})
+		return nil
 	})
 }
 
@@ -106,7 +113,7 @@ var skip = map[string]bool{
 
 func makeTagList(s string) (tags []Tag) {
 	for _, s := range strings.Split(s, ",") {
-		tags = append(tags, Make(strings.TrimSpace(s)))
+		tags = append(tags, mk(strings.TrimSpace(s)))
 	}
 	return tags
 }
@@ -370,35 +377,8 @@ func (t haveTag) String() string {
 	return fmt.Sprintf("%v:%d:%v:%v-%v|%v", t.tag, t.index, t.conf, t.maxRegion, t.maxScript, t.altScript)
 }
 
-func parseSupported(list string) (out []Tag) {
-	for _, s := range strings.Split(list, ",") {
-		out = append(out, mk(strings.TrimSpace(s)))
-	}
-	return out
-}
-
-// The test set for TestBestMatch is defined in data_test.go.
-func TestBestMatch(t *testing.T) {
-	for _, tt := range matchTests {
-		supported := parseSupported(tt.supported)
-		m := newMatcher(supported, nil)
-		if *verbose {
-			fmt.Printf("%s:\n%v\n", tt.comment, m)
-		}
-		for _, tm := range tt.test {
-			t.Run(path.Join(tt.comment, tt.supported, tm.desired), func(t *testing.T) {
-				tag, _, conf := m.Match(parseSupported(tm.desired)...)
-				if tag.String() != tm.match {
-					t.Errorf("find %s in %q: have %s; want %s (%v)", tm.desired, tt.supported, tag, tm.match, conf)
-				}
-			})
-
-		}
-	}
-}
-
 func TestBestMatchAlloc(t *testing.T) {
-	m := NewMatcher(parseSupported("en sr nl"))
+	m := NewMatcher(makeTagList("en sr nl"))
 	// Go allocates when creating a list of tags from a single tag!
 	list := []Tag{English}
 	avg := testtext.AllocsPerRun(1, func() {

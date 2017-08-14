@@ -9,7 +9,7 @@ zh-CN, zh-TW, iw ; 	zh-Hant ; 	zh-TW
 zh-CN, zh-TW, iw ; 	zh ; 	zh-CN
 zh-CN, zh-TW, iw ; 	zh-Hans-CN ; 	zh-CN
 zh-CN, zh-TW, iw ; 	zh-Hant-HK ; 	zh-TW
-zh-CN, zh-TW, iw ; 	he-IT ; 	iw
+zh-CN, zh-TW, iw ; 	he-IT ; 	iw ; iw  # should the surface tag be he?
 
 # language-specific script fallbacks 1
 en, sr, nl ; 	sr-Latn ; 	sr
@@ -114,7 +114,7 @@ nl, nl-NL, nl-BE ; 	nl-Latn-NL ; 	nl-NL
 nl, nl-NL, nl-BE ; 	nl-NL ; 	nl-NL
 
 # region may replace matched if matched is enclosing
-es-419,es ; 	es-MX ; 	es-MX
+es-419,es ; 	es-MX ; 	es-419 ; es-MX
 es-419,es ; 	es-SG ; 	es
 
 # more specific region wins over more specific script
@@ -134,7 +134,7 @@ de-AT, de-DE, de-CH ; 	de ; 	de-DE
 
 # en-AU is closer to en-GB than to en (which is en-US)
 en, en-GB, es-ES, es-419 ; 	en-AU ; 	en-GB
-en, en-GB, es-ES, es-419 ; 	es-MX ; 	es-MX
+en, en-GB, es-ES, es-419 ; 	es-MX ; 	es-419 ; es-MX
 en, en-GB, es-ES, es-419 ; 	es-PT ; 	es-ES
 
 # undefined
@@ -187,27 +187,27 @@ en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	en-P
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	en-SG ; 	en-GB
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	en-DE ; 	en-GB
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	en-MT ; 	en-GB
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-AR ; 	es-AR
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-BO ; 	es-BO
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-CL ; 	es-CL
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-CO ; 	es-CO
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-CR ; 	es-CR
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-CU ; 	es-CU
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-DO ; 	es-DO
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-EC ; 	es-EC
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-GT ; 	es-GT
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-HN ; 	es-HN
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-MX ; 	es-MX
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-NI ; 	es-NI
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PA ; 	es-PA
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PE ; 	es-PE
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PR ; 	es-PR
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-AR ; 	es-419 ; es-AR
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-BO ; 	es-419 ; es-BO
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-CL ; 	es-419 ; es-CL
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-CO ; 	es-419 ; es-CO
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-CR ; 	es-419 ; es-CR
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-CU ; 	es-419 ; es-CU
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-DO ; 	es-419 ; es-DO
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-EC ; 	es-419 ; es-EC
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-GT ; 	es-419 ; es-GT
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-HN ; 	es-419 ; es-HN
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-MX ; 	es-419 ; es-MX
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-NI ; 	es-419 ; es-NI
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PA ; 	es-419 ; es-PA
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PE ; 	es-419 ; es-PE
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PR ; 	es-419 ; es-PR
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PT ; 	es
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PY ; 	es-PY
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-SV ; 	es-SV
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-PY ; 	es-419 ; es-PY
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-SV ; 	es-419 ; es-SV
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-US ; 	es-419
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-UY ; 	es-UY
-en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-VE ; 	es-VE
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-UY ; 	es-419 ; es-UY
+en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	es-VE ; 	es-419 ; es-VE
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	pt-AO ; 	pt-PT
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	pt-CV ; 	pt-PT
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	pt-GW ; 	pt-PT
@@ -217,8 +217,8 @@ en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	pt-S
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	pt-TL ; 	pt-PT
 
 # preserve Unicode extension
-en, de, sl-nedis ; 	de-FR-u-co-phonebk ; 	de-u-co-phonebk
-en, de, sl-nedis ; 	sl-nedis-u-cu-eur ; 	sl-nedis-u-cu-eur
-en, de, sl-nedis ; 	sl-u-cu-eur ; 	sl-nedis-u-cu-eur
-en, de, sl-nedis ; 	sl-HR-nedis-u-cu-eur ; 	sl-nedis-u-cu-eur
+en, de, sl-nedis ; 	de-FR-u-co-phonebk ; 	de ; de-u-co-phonebk
+en, de, sl-nedis ; 	sl-nedis-u-cu-eur ; 	sl-nedis ; sl-nedis-u-cu-eur
+en, de, sl-nedis ; 	sl-u-cu-eur ; 	sl-nedis ; sl-nedis-u-cu-eur
+en, de, sl-nedis ; 	sl-HR-nedis-u-cu-eur ; 	sl-nedis ; sl-nedis-u-cu-eur
 
