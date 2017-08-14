@@ -4,6 +4,35 @@
 
 package language
 
+import (
+	"flag"
+	"fmt"
+	"os"
+	"testing"
+)
+
+var outfile = flag.String("genucd", "", "generate UCD file from test data")
+
+func TestGenerate(t *testing.T) {
+	if *outfile == "" {
+		return
+	}
+
+	w, err := os.Create(*outfile)
+	if err != nil {
+		t.Error(err)
+	}
+	defer w.Close()
+
+	for _, tc := range matchTests {
+		fmt.Fprintln(w, "# "+tc.comment)
+		for _, t := range tc.test {
+			fmt.Fprintf(w, "%s ; 	%s ; 	%s\n", tc.supported, t.desired, t.match)
+		}
+		fmt.Fprintln(w)
+	}
+}
+
 type matchTest struct {
 	comment   string
 	supported string
