@@ -698,8 +698,8 @@ func (b *builder) computeRegionGroups() {
 			b.groups[group] = index(len(b.groups))
 		}
 	}
-	if len(b.groups) > 32 {
-		log.Fatalf("only 32 groups supported, found %d", len(b.groups))
+	if len(b.groups) > 64 {
+		log.Fatalf("only 64 groups supported, found %d", len(b.groups))
 	}
 	b.writeConst("nRegionGroups", len(b.groups))
 }
@@ -1550,7 +1550,7 @@ func (b *builder) writeRegionInclusionData() {
 		}
 	}
 
-	regionContainment := make([]uint32, len(b.groups))
+	regionContainment := make([]uint64, len(b.groups))
 	for _, g := range b.groups {
 		l := containment[g]
 
@@ -1568,10 +1568,10 @@ func (b *builder) writeRegionInclusionData() {
 	b.writeSlice("regionContainment", regionContainment)
 
 	regionInclusion := make([]uint8, len(b.region.s))
-	bvs := make(map[uint32]index)
+	bvs := make(map[uint64]index)
 	// Make the first bitvector positions correspond with the groups.
 	for r, i := range b.groups {
-		bv := uint32(1 << i)
+		bv := uint64(1 << i)
 		for _, g := range mm[r] {
 			bv |= 1 << g
 		}
@@ -1580,7 +1580,7 @@ func (b *builder) writeRegionInclusionData() {
 	}
 	for r := 1; r < len(b.region.s); r++ {
 		if _, ok := b.groups[r]; !ok {
-			bv := uint32(0)
+			bv := uint64(0)
 			for _, g := range mm[r] {
 				bv |= 1 << g
 			}
@@ -1595,9 +1595,9 @@ func (b *builder) writeRegionInclusionData() {
 		}
 	}
 	b.writeSlice("regionInclusion", regionInclusion)
-	regionInclusionBits := make([]uint32, len(bvs))
+	regionInclusionBits := make([]uint64, len(bvs))
 	for k, v := range bvs {
-		regionInclusionBits[v] = uint32(k)
+		regionInclusionBits[v] = uint64(k)
 	}
 	// Add bit vectors for increasingly large distances until a fixed point is reached.
 	regionInclusionNext := []uint8{}
