@@ -1417,6 +1417,22 @@ func (b *builder) writeMatchData() {
 	}
 	b.writeSlice("regionToGroups", regionToGroups)
 
+	// maps language id to in- and out-of-group region.
+	paradigmLocales := [][3]uint16{}
+	locales := strings.Split(lm[0].ParadigmLocales[0].Locales, " ")
+	for i := 0; i < len(locales); i += 2 {
+		x := [3]uint16{}
+		for j := 0; j < 2; j++ {
+			pc := strings.SplitN(locales[i+j], "-", 2)
+			x[0] = b.langIndex(pc[0])
+			if len(pc) == 2 {
+				x[1+j] = uint16(b.region.index(pc[1]))
+			}
+		}
+		paradigmLocales = append(paradigmLocales, x)
+	}
+	b.writeSlice("paradigmLocales", paradigmLocales)
+
 	b.writeType(mutualIntelligibility{})
 	b.writeType(scriptIntelligibility{})
 	b.writeType(regionIntelligibility{})

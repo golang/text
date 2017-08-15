@@ -64,15 +64,6 @@ var skip = map[string]bool{
 	// combined: got "en-GB-u-ca-buddhist-nu-arab"; want "en-GB-fonipa-t-m0-iso-i0-pinyin-u-ca-buddhist-nu-arab"
 	"und,en-GB-u-sd-gbsct/en-fonipa-u-nu-Arab-ca-buddhist-t-m0-iso-i0-pinyin": true,
 
-	// Go prefers exact matches over less exact preferred ones.
-	// Preferring desired ones might be better.
-	// NOTE: allow users to distinguish languages is a good solution.
-	//       the remaining cases are due to preferred locale rules.
-	"pt-PT,pt-BR,es,es-419/pt-US,pt-PT": true, // match: got "pt-PT"; want "pt-BR"
-	"pt-PT,pt,es,es-419/pt-US,pt-PT,pt": true, // match: got "pt-PT"; want "pt"
-	// TODO: implement prefer primary locales.
-	"und,en,en-GU,en-IN,en-GB/en-ZA": true, // match: got "en-IN"; want "en-GB"
-
 	// Inconsistencies with Mark Davis' implementation where it is not clear
 	// which is better.
 
@@ -259,6 +250,12 @@ func TestRegionGroups(t *testing.T) {
 	}{
 		{"zh-TW", "zh-HK", 5},
 		{"zh-MO", "zh-HK", 4},
+		{"es-ES", "es-AR", 5},
+		{"es-ES", "es", 4},
+		{"es-419", "es-MX", 4},
+		{"es-AR", "es-MX", 4},
+		{"es-ES", "es-MX", 5},
+		{"es-PT", "es-MX", 5},
 	}
 	for _, tc := range testCases {
 		a := MustParse(tc.a)
@@ -270,33 +267,27 @@ func TestRegionGroups(t *testing.T) {
 			t.Errorf("scripts differ: %q vs %q", aScript, bScript)
 			continue
 		}
-		d := regionGroupDist(a.region, b.region, aScript.scriptID, a.lang)
+		d, _ := regionGroupDist(a.region, b.region, aScript.scriptID, a.lang)
 		if d != tc.distance {
 			t.Errorf("got %q; want %q", d, tc.distance)
 		}
 	}
 }
 
-func TestParentDistance(t *testing.T) {
-	tests := []struct {
-		parent string
-		tag    string
-		d      uint8
-	}{
-		{"en-001", "en-AU", 1},
-		{"pt-PT", "pt-AO", 1},
-		{"pt", "pt-AO", 2},
-		{"en-AU", "en-GB", 255},
-		{"en-NL", "en-AU", 255},
-		// Note that pt-BR and en-US are not automatically minimized.
-		{"pt-BR", "pt-AO", 255},
-		{"en-US", "en-AU", 255},
+func TestIsParadigmLocale(t *testing.T) {
+	testCases := map[string]bool{
+		"en-US":  true,
+		"en-GB":  true,
+		"en-VI":  false,
+		"es-GB":  false,
+		"es-ES":  true,
+		"es-419": true,
 	}
-	for _, tt := range tests {
-		r := Raw.MustParse(tt.parent).region
-		tag := Raw.MustParse(tt.tag)
-		if d := parentDistance(r, tag); d != tt.d {
-			t.Errorf("d(%s, %s) was %d; want %d", r, tag, d, tt.d)
+	for str, want := range testCases {
+		tag := Make(str)
+		got := isParadigmLocale(tag.lang, tag.region)
+		if got != want {
+			t.Errorf("isPL(%q) = %v; want %v", str, got, want)
 		}
 	}
 }

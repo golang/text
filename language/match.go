@@ -559,9 +559,6 @@ func newMatcher(supported []Tag, options []MatchOption) *matcher {
 		}
 	}
 
-	// TODO: include alt script.
-	// - don't replace regions, but allow regions to be made more specific.
-
 	// update is used to add indexes in the map for equivalent languages.
 	// update will only add entries to original indexes, thus not computing any
 	// transitive relations.
@@ -687,16 +684,18 @@ func (m *matcher) getBest(want ...Tag) (got *haveTag, orig Tag, c Confidence) {
 
 // bestMatch accumulates the best match so far.
 type bestMatch struct {
-	have        *haveTag
-	want        Tag
-	conf        Confidence
-	pinLanguage bool
+	have            *haveTag
+	want            Tag
+	conf            Confidence
+	pinnedRegion    regionID
+	pinLanguage     bool
+	sameRegionGroup bool
 	// Cached results from applying tie-breaking rules.
 	origLang     bool
 	origReg      bool
+	paradigmReg  bool
 	regGroupDist uint8
 	origScript   bool
-	parentDist   uint8 // 255 if have is not an ancestor of want tag.
 }
 
 // update updates the existing best match if the new pair is considered to be a
@@ -723,12 +722,20 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 	if m.pinLanguage && tag.lang != m.want.lang {
 		return
 	}
-	if c == Exact && have.tag.script == tag.script {
+	// Pin the region group if we are comparing tags for the same language.
+	if tag.lang == m.want.lang && m.sameRegionGroup {
+		_, sameGroup := regionGroupDist(m.pinnedRegion, have.maxRegion, have.maxScript, m.want.lang)
+		if !sameGroup {
+			return
+		}
+	}
+	if c == Exact && have.maxScript == maxScript {
+		// If there is another language and then another entry of this language,
+		// don't pin anything, otherwise pin the language.
 		m.pinLanguage = pin
 	}
 	if have.tag.equalsRest(tag) {
 	} else if have.maxScript != maxScript {
-		// fmt.Println("FFFFF", maxScript, have.maxScript)
 		// There is usually very little comprehension between different scripts.
 		// In a few cases there may still be Low comprehension. This possibility
 		// is pre-computed and stored in have.altScript.
@@ -737,9 +744,8 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 		}
 		c = Low
 	} else if have.maxRegion != maxRegion {
-		// There is usually a small difference between languages across regions.
-		// We use the region distance (below) to disambiguate between equal matches.
 		if High < c {
+			// There is usually a small difference between languages across regions.
 			c = High
 		}
 	}
@@ -766,7 +772,16 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 		beaten = true
 	}
 
-	regGroupDist := regionGroupDist(have.maxRegion, maxRegion, maxScript, tag.lang)
+	// We prefer if the pre-maximized region was specified and identical.
+	origReg := have.tag.region == tag.region && tag.region != 0
+	if !beaten && m.origReg != origReg {
+		if m.origReg {
+			return
+		}
+		beaten = true
+	}
+
+	regGroupDist, sameGroup := regionGroupDist(have.maxRegion, maxRegion, maxScript, tag.lang)
 	if !beaten && m.regGroupDist != regGroupDist {
 		if regGroupDist > m.regGroupDist {
 			return
@@ -774,10 +789,9 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 		beaten = true
 	}
 
-	// We prefer if the pre-maximized region was specified and identical.
-	origReg := have.tag.region == tag.region && tag.region != 0
-	if !beaten && m.origReg != origReg {
-		if m.origReg {
+	paradigmReg := isParadigmLocale(tag.lang, have.maxRegion)
+	if !beaten && m.paradigmReg != paradigmReg {
+		if !paradigmReg {
 			return
 		}
 		beaten = true
@@ -792,48 +806,35 @@ func (m *bestMatch) update(have *haveTag, tag Tag, maxScript scriptID, maxRegion
 		beaten = true
 	}
 
-	// TODO: remove parent distance once primary locales are implemented.
-	parentDist := parentDistance(have.tag.region, tag)
-	if !beaten && m.parentDist != parentDist {
-		if parentDist > m.parentDist {
-			return
-		}
-		beaten = true
-	}
-
 	// Update m to the newly found best match.
 	if beaten {
 		m.have = have
 		m.want = tag
 		m.conf = c
+		m.pinnedRegion = maxRegion
+		m.sameRegionGroup = sameGroup
 		m.origLang = origLang
 		m.origReg = origReg
+		m.paradigmReg = paradigmReg
 		m.origScript = origScript
 		m.regGroupDist = regGroupDist
-		m.parentDist = parentDist
 	}
 }
 
-// parentDistance returns the number of times Parent must be called before the
-// regions match. It is assumed that it has already been checked that lang and
-// script are identical. If haveRegion does not occur in the ancestor chain of
-// tag, it returns 255.
-func parentDistance(haveRegion regionID, tag Tag) uint8 {
-	p := tag.Parent()
-	d := uint8(1)
-	for haveRegion != p.region {
-		if p.region == 0 {
-			return 255
+func isParadigmLocale(lang langID, r regionID) bool {
+	for _, e := range paradigmLocales {
+		if langID(e[0]) == lang && (r == regionID(e[1]) || r == regionID(e[2])) {
+			return true
 		}
-		p = p.Parent()
-		d++
 	}
-	return d
+	return false
 }
 
 // regionGroupDist computes the distance between two regions based on their
 // CLDR grouping.
-func regionGroupDist(a, b regionID, script scriptID, lang langID) uint8 {
+func regionGroupDist(a, b regionID, script scriptID, lang langID) (dist uint8, same bool) {
+	const defaultDistance = 4
+
 	aGroup := uint(regionToGroups[a]) << 1
 	bGroup := uint(regionToGroups[b]) << 1
 	for _, ri := range matchRegion {
@@ -841,17 +842,16 @@ func regionGroupDist(a, b regionID, script scriptID, lang langID) uint8 {
 			group := uint(1 << (ri.group &^ 0x80))
 			if 0x80&ri.group == 0 {
 				if aGroup&bGroup&group != 0 { // Both regions are in the group.
-					return ri.distance
+					return ri.distance, ri.distance == defaultDistance
 				}
 			} else {
 				if (aGroup|bGroup)&group == 0 { // Both regions are not in the group.
-					return ri.distance
+					return ri.distance, ri.distance == defaultDistance
 				}
 			}
 		}
 	}
-	const defaultDistance = 4
-	return defaultDistance
+	return defaultDistance, true
 }
 
 func (t Tag) variants() string {
@@ -896,6 +896,16 @@ func init() {
 		tag := Tag{lang: langID(lm.from)}
 		if tag, _ = tag.canonicalize(All); tag.script != 0 || tag.region != 0 {
 			notEquivalent = append(notEquivalent, langID(lm.from))
+		}
+	}
+	// Maximize undefined regions of paradigm locales.
+	for i, v := range paradigmLocales {
+		max, _ := addTags(Tag{lang: langID(v[0])})
+		if v[1] == 0 {
+			paradigmLocales[i][1] = uint16(max.region)
+		}
+		if v[2] == 0 {
+			paradigmLocales[i][2] = uint16(max.region)
 		}
 	}
 }

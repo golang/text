@@ -3335,6 +3335,13 @@ var regionToGroups = [358]uint8{
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 }
 
+// Size: 18 bytes, 3 elements
+var paradigmLocales = [3][3]uint16{
+	0: [3]uint16{0x138, 0x0, 0x7b},
+	1: [3]uint16{0x13d, 0x0, 0x1f},
+	2: [3]uint16{0x3be, 0x41, 0xee},
+}
+
 type mutualIntelligibility struct {
 	want     uint16
 	have     uint16
@@ -3665,4 +3672,4 @@ var parents = [5]parentRel{
 	4: {lang: 0x527, script: 0x38, maxScript: 0x38, toRegion: 0x8d, fromRegion: []uint16{0xc6}},
 }
 
-// Total table size 27157 bytes (26KiB); checksum: F21EE307
+// Total table size 27175 bytes (26KiB); checksum: 569649CD
