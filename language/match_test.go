@@ -37,16 +37,16 @@ func TestCompliance(t *testing.T) {
 			t.Run(info.Name()+"/"+name, func(t *testing.T) {
 				supported := makeTagList(p.String(0))
 				desired := makeTagList(p.String(1))
-				gotCombined, index, _ := NewMatcher(supported).Match(desired...)
+				gotCombined, index, conf := NewMatcher(supported).Match(desired...)
 
 				gotMatch := supported[index]
 				wantMatch := mk(p.String(2))
 				if gotMatch != wantMatch {
-					t.Fatalf("match: got %q; want %q", gotMatch, wantMatch)
+					t.Fatalf("match: got %q; want %q (%v)", gotMatch, wantMatch, conf)
 				}
 				wantCombined, err := Raw.Parse(p.String(3))
 				if err == nil && gotCombined != wantCombined {
-					t.Errorf("combined: got %q; want %q", gotCombined, wantCombined)
+					t.Errorf("combined: got %q; want %q (%v)", gotCombined, wantCombined, conf)
 				}
 			})
 		})
@@ -56,9 +56,6 @@ func TestCompliance(t *testing.T) {
 
 var skip = map[string]bool{
 	// TODO: bugs
-	// und-<region> is not expanded to the appropriate language.
-	"en-Hant-TW,und-TW/zh-Hant": true, // match: got "en-Hant-TW"; want "und-TW"
-	"en-Hant-TW,und-TW/zh":      true, // match: got "en-Hant-TW"; want "und-TW"
 	// Honor the wildcard match. This may only be useful to select non-exact
 	// stuff.
 	"mul,af/nl": true, // match: got "af"; want "mul"
@@ -67,17 +64,17 @@ var skip = map[string]bool{
 	// combined: got "en-GB-u-ca-buddhist-nu-arab"; want "en-GB-fonipa-t-m0-iso-i0-pinyin-u-ca-buddhist-nu-arab"
 	"und,en-GB-u-sd-gbsct/en-fonipa-u-nu-Arab-ca-buddhist-t-m0-iso-i0-pinyin": true,
 
-	// Inconsistencies with Mark Davis' implementation where it is not clear
-	// which is better.
-
 	// Go prefers exact matches over less exact preferred ones.
 	// Preferring desired ones might be better.
-	"en,de,fr,ja/de-CH,fr":              true, // match: got "fr"; want "de"
-	"en-GB,en,de,fr,ja/de-CH,fr":        true, // match: got "fr"; want "de"
+	// NOTE: allow users to distinguish languages is a good solution.
+	//       the remaining cases are due to preferred locale rules.
 	"pt-PT,pt-BR,es,es-419/pt-US,pt-PT": true, // match: got "pt-PT"; want "pt-BR"
 	"pt-PT,pt,es,es-419/pt-US,pt-PT,pt": true, // match: got "pt-PT"; want "pt"
-	"en,sv/en-GB,sv":                    true, // match: got "sv"; want "en"
-	"en-NZ,en-IT/en-US":                 true, // match: got "en-IT"; want "en-NZ"
+	// TODO: implement prefer primary locales.
+	"und,en,en-GU,en-IN,en-GB/en-ZA": true, // match: got "en-IN"; want "en-GB"
+
+	// Inconsistencies with Mark Davis' implementation where it is not clear
+	// which is better.
 
 	// Inconsistencies in combined. I think the Go approach is more appropriate.
 	// We could use -u-rg- and -u-va- as alternative.
@@ -87,20 +84,8 @@ var skip = map[string]bool{
 	"und,no/nn-BE-fonipa":              true, // combined: got "no"; want "no-BE-fonipa"
 	"50,und,fr-CA-fonupa/fr-BE-fonipa": true, // combined: got "fr-CA-fonupa"; want "fr-BE-fonipa"
 
-	// Spec says prefer primary locales. But what is the benefit? Shouldn't
-	// the developer just not specify the primary locale first in the list?
-	// TODO: consider adding a SortByPreferredLocale function to ensure tags
-	// are ordered such that the preferred locale rule is observed.
-	// TODO: most of these cases are solved by getting rid of the region
-	// distance tie-breaker rule (see comments there).
-	"und,es,es-MA,es-MX,es-419/es-EA": true, // match: got "es-MA"; want "es"
-	"und,es-MA,es,es-419,es-MX/es-EA": true, // match: got "es-MA"; want "es"
-	"und,en,en-GU,en-IN,en-GB/en-ZA":  true, // match: got "en-IN"; want "en-GB"
-	"und,en,en-GU,en-IN,en-GB/en-VI":  true, // match: got "en-GU"; want "en"
-	"und,en-GU,en,en-GB,en-IN/en-VI":  true, // match: got "en-GU"; want "en"
-
-	// Falling back to the default seems more appropriate than falling back
-	// on a language with the same script.
+	// The initial number is a threshold. As we don't use scoring, we will not
+	// implement this.
 	"50,und,fr-Cyrl-CA-fonupa/fr-BE-fonipa": true,
 	// match: got "und"; want "fr-Cyrl-CA-fonupa"
 	// combined: got "und"; want "fr-Cyrl-BE-fonipa"
@@ -139,6 +124,7 @@ func TestAddLikelySubtags(t *testing.T) {
 		{"und-YT", "fr-Latn-YT"},
 		{"und-Arab", "ar-Arab-EG"},
 		{"und-AM", "hy-Armn-AM"},
+		{"und-TW", "zh-Hant-TW"},
 		{"und-002", "en-Latn-NG"},
 		{"und-Latn-002", "en-Latn-NG"},
 		{"en-Latn-002", "en-Latn-NG"},
@@ -291,40 +277,6 @@ func TestRegionGroups(t *testing.T) {
 	}
 }
 
-func TestRegionDistance(t *testing.T) {
-	tests := []struct {
-		a, b string
-		d    int
-	}{
-		{"NL", "NL", 0},
-		{"NL", "EU", 1},
-		{"EU", "NL", 1},
-		{"005", "005", 0},
-		{"NL", "BE", 2},
-		{"CO", "005", 1},
-		{"005", "CO", 1},
-		{"CO", "419", 2},
-		{"419", "CO", 2},
-		{"005", "419", 1},
-		{"419", "005", 1},
-		{"001", "013", 2},
-		{"013", "001", 2},
-		{"CO", "CW", 4},
-		{"CO", "PW", 6},
-		{"CO", "BV", 6},
-		{"ZZ", "QQ", 2},
-	}
-	for i, tt := range tests {
-		testtext.Run(t, tt.a+"/"+tt.b, func(t *testing.T) {
-			ra, _ := getRegionID([]byte(tt.a))
-			rb, _ := getRegionID([]byte(tt.b))
-			if d := regionDistance(ra, rb); d != tt.d {
-				t.Errorf("%d: d(%s, %s) = %v; want %v", i, tt.a, tt.b, d, tt.d)
-			}
-		})
-	}
-}
-
 func TestParentDistance(t *testing.T) {
 	tests := []struct {
 		parent string
@@ -362,12 +314,8 @@ func (m *matcher) String() string {
 
 func (h *matchHeader) String() string {
 	w := &bytes.Buffer{}
-	fmt.Fprintf(w, "exact: ")
-	for _, h := range h.exact {
-		fmt.Fprintf(w, "%v, ", h)
-	}
-	fmt.Fprint(w, "; max: ")
-	for _, h := range h.max {
+	fmt.Fprint(w, "haveTag: ")
+	for _, h := range h.haveTags {
 		fmt.Fprintf(w, "%v, ", h)
 	}
 	return w.String()

@@ -13,7 +13,7 @@ zh-CN, zh-TW, iw ; 	he-IT ; 	iw ; iw  # should the surface tag be he?
 
 # language-specific script fallbacks 1
 en, sr, nl ; 	sr-Latn ; 	sr
-en, sr, nl ; 	sh ; 	en
+en, sr, nl ; 	sh ; 	sr   # different script, but seems okay and is as CLDR suggests
 en, sr, nl ; 	hr ; 	en
 en, sr, nl ; 	bs ; 	en
 en, sr, nl ; 	nl-Cyrl ; 	sr
@@ -66,7 +66,7 @@ nl, zh, en-GB, no ; 	nb, en-US ; 	no
 # legacy equivalent is closer than same language with other differences
 nl, fil, en-GB ; 	tl, en-US ; 	fil
 
-# exact over equivalent
+# distinguish near equivalents
 en, ro, mo, ro-MD ; 	ro ; 	ro
 en, ro, mo, ro-MD ; 	mo ; 	mo
 en, ro, mo, ro-MD ; 	ro-MD ; 	ro-MD
@@ -87,8 +87,6 @@ fr, en-GB, x-bork, es-ES, es-419 ; 	x-bork ; 	x-bork
 fr, i-klingon, en-Latn-US ; 	en-GB-oed ; 	en-Latn-US
 fr, i-klingon, en-Latn-US ; 	i-klingon ; 	tlh
 
-# exact match
-fr, en-GB, ja, es-ES, es-MX ; 	ja, de ; 	ja
 
 # simple variant match
 fr, en-GB, ja, es-ES, es-MX ; 	de, en-US ; 	en-GB
@@ -126,8 +124,8 @@ nl, nl-Latn, nl-NL, nl-BE ; 	nl-Latn-NL ; 	nl-NL
 # region distance Portuguese
 pt, pt-PT ; 	pt-ES ; 	pt-PT
 
-# region distance French
-en, fr, fr-CA, fr-CH ; 	fr-US ; 	fr-CA
+# if no preferred locale specified, pick top language, not regional
+en, fr, fr-CA, fr-CH ; 	fr-US ; 	fr #TODO: ; fr-u-rg-US
 
 # region distance German
 de-AT, de-DE, de-CH ; 	de ; 	de-DE
@@ -167,8 +165,11 @@ ja, ja-Jpan-US, ja-JP, en, ru ; 	ja-US, ru ; 	ja-Jpan-US
 ja, ja-Jpan, ja-JP, en, ru ; 	ja-Jpan-JP, ru ; 	ja-JP
 ja, ja-Jpan, ja-JP, en, ru ; 	ja-Jpan, ru ; 	ja-Jpan
 
-# no match on maximized
-en, de, fr, ja ; 	de-CH, fr ; 	fr
+# same language over exact, but distinguish when user is explicit
+fr, en-GB, ja, es-ES, es-MX ; 	ja, de ; 	ja
+en, de, fr, ja ; 	de-CH, fr ; 	de # TODO: ; de-u-rg-CH
+en-GB, nl ; 	en, nl ; en-GB
+en-GB, nl ; 	en, nl, en-GB ; nl
 
 # parent relation preserved
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	en-150 ; 	en-GB

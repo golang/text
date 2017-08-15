@@ -331,11 +331,13 @@ func ExampleMatcher() {
 	// af 3 High
 	// ----
 	// iw 9 Exact
-	// iw-IL 8 Exact
+	// he 10 Exact
 	// ----
 	// fr-u-cu-frf 2 Exact
 	// fr-u-cu-frf 2 High
 	// en-u-co-phonebk 0 No
+
+	// TODO: "he" should be "he-u-rg-IL High"
 }
 
 func ExampleComprehends() {
