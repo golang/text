@@ -9,7 +9,7 @@ zh-CN, zh-TW, iw ; 	zh-Hant ; 	zh-TW
 zh-CN, zh-TW, iw ; 	zh ; 	zh-CN
 zh-CN, zh-TW, iw ; 	zh-Hans-CN ; 	zh-CN
 zh-CN, zh-TW, iw ; 	zh-Hant-HK ; 	zh-TW
-zh-CN, zh-TW, iw ; 	he-IT ; 	iw ; iw  # should the surface tag be he?
+zh-CN, zh-TW, iw ; 	he-IT ; 	iw ; iw
 
 # language-specific script fallbacks 1
 en, sr, nl ; 	sr-Latn ; 	sr
@@ -217,9 +217,10 @@ en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	pt-M
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	pt-ST ; 	pt-PT
 en, en-US, en-GB, es, es-419, pt, pt-BR, pt-PT, zh,  zh-Hant, zh-Hant-HK ; 	pt-TL ; 	pt-PT
 
-# preserve Unicode extension
+# preserve extensions
 en, de, sl-nedis ; 	de-FR-u-co-phonebk ; 	de ; de-u-co-phonebk
 en, de, sl-nedis ; 	sl-nedis-u-cu-eur ; 	sl-nedis ; sl-nedis-u-cu-eur
 en, de, sl-nedis ; 	sl-u-cu-eur ; 	sl-nedis ; sl-nedis-u-cu-eur
 en, de, sl-nedis ; 	sl-HR-nedis-u-cu-eur ; 	sl-nedis ; sl-nedis-u-cu-eur
+en, de, sl-nedis ; 	de-t-m0-iso-i0-pinyin ; 	de ; de-t-m0-iso-i0-pinyin
 

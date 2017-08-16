@@ -83,9 +83,8 @@ func (m *matcher) Match(want ...Tag) (t Tag, index int, c Confidence) {
 	// to do after the fact, so we do it here.
 	// TODO: add in alternative variants to -u-va-.
 	// TODO: add preferred region to -u-rg-.
-	// TODO: add other extensions. Merge with existing extensions.
-	if u, ok := w.Extension('u'); ok {
-		t, _ = Raw.Compose(t, u)
+	if e := w.Extensions(); len(e) > 0 {
+		t, _ = Raw.Compose(t, e)
 	}
 	return t, index, c
 }
