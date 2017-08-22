@@ -25,15 +25,6 @@ const (
 	numModes
 )
 
-// A RoundingContext indicates how a number should be converted to digits.
-type RoundingContext struct {
-	Mode      RoundingMode
-	Increment int32 // if > 0, round to Increment * 10^-Scale
-
-	Precision int32 // maximum number of significant digits.
-	Scale     int32 // maximum number of decimals after the dot.
-}
-
 const maxIntDigits = 20
 
 // A Decimal represents floating point number represented in digits of the base

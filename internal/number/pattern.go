@@ -48,12 +48,27 @@ type Pattern struct {
 
 	FormatWidth uint16
 
-	RoundIncrement uint32 // Use Min*Digits to determine scale
-	PadRune        rune
-	DigitShift     uint8 // Number of decimals to shift. Used for % and ‰.
+	PadRune rune
+
+	RoundingContext
 
 	GroupingSize [2]uint8
 	Flags        PatternFlag
+}
+
+// A RoundingContext indicates how a number should be converted to digits.
+// It contains all information needed to determine the "visible digits" as
+// required by the pluralization rules.
+type RoundingContext struct {
+	Mode RoundingMode
+
+	Precision int32 // maximum number of significant digits.
+	Scale     int32 // maximum number of decimals after the dot.
+
+	// if > 0, round to Increment * 10^-Scale
+	Increment uint32 // Use Min*Digits to determine scale
+
+	DigitShift uint8 // Number of decimals to shift. Used for % and ‰.
 
 	// Number of digits.
 	// TODO: consider using uint32
@@ -63,7 +78,12 @@ type Pattern struct {
 	MaxFractionDigits    uint8
 	MinSignificantDigits uint8
 	MaxSignificantDigits uint8
-	MinExponentDigits    uint8
+
+	MinExponentDigits uint8
+}
+
+func (r *RoundingContext) isScientific() bool {
+	return r.MinExponentDigits > 0
 }
 
 func (f *Pattern) needsSep(pos int) bool {
@@ -339,7 +359,7 @@ func (p *parser) integer(r rune) state {
 		p.updateGrouping()
 		return next
 	}
-	p.RoundIncrement = p.RoundIncrement*10 + uint32(r-'0')
+	p.Increment = p.Increment*10 + uint32(r-'0')
 	p.groupingCount++
 	p.MinIntegerDigits++
 	return p.integer
@@ -389,7 +409,7 @@ func (p *parser) normalizeSigDigitsWithExponent() state {
 func (p *parser) fraction(r rune) state {
 	switch r {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		p.RoundIncrement = p.RoundIncrement*10 + uint32(r-'0')
+		p.Increment = p.Increment*10 + uint32(r-'0')
 		p.MinFractionDigits++
 		p.MaxFractionDigits++
 	case '#':

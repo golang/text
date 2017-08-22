@@ -193,7 +193,9 @@ func TestAppendDecimal(t *testing.T) {
 	}, {
 		pattern: "#,max_int=2",
 		pat: &Pattern{
-			MaxIntegerDigits: 2,
+			RoundingContext: RoundingContext{
+				MaxIntegerDigits: 2,
+			},
 		},
 		test: pairs{
 			"2017": "17",
@@ -201,8 +203,10 @@ func TestAppendDecimal(t *testing.T) {
 	}, {
 		pattern: "0,max_int=2",
 		pat: &Pattern{
-			MaxIntegerDigits: 2,
-			MinIntegerDigits: 1,
+			RoundingContext: RoundingContext{
+				MaxIntegerDigits: 2,
+				MinIntegerDigits: 1,
+			},
 		},
 		test: pairs{
 			"2000": "0",
@@ -212,8 +216,10 @@ func TestAppendDecimal(t *testing.T) {
 	}, {
 		pattern: "00,max_int=2",
 		pat: &Pattern{
-			MaxIntegerDigits: 2,
-			MinIntegerDigits: 2,
+			RoundingContext: RoundingContext{
+				MaxIntegerDigits: 2,
+				MinIntegerDigits: 2,
+			},
 		},
 		test: pairs{
 			"2000": "00",
@@ -223,8 +229,10 @@ func TestAppendDecimal(t *testing.T) {
 	}, {
 		pattern: "@@@@,max_int=2",
 		pat: &Pattern{
-			MaxIntegerDigits:     2,
-			MinSignificantDigits: 4,
+			RoundingContext: RoundingContext{
+				MaxIntegerDigits:     2,
+				MinSignificantDigits: 4,
+			},
 		},
 		test: pairs{
 			"2017": "17.00",

@@ -28,7 +28,6 @@ import (
 type Formatter struct {
 	Pattern
 	Info
-	RoundingContext
 }
 
 func (f *Formatter) init(t language.Tag, index []uint8) {
@@ -89,7 +88,7 @@ func (f *Formatter) Append(dst []byte, x interface{}) []byte {
 func (f *Formatter) Format(dst []byte, d *Decimal) []byte {
 	var result []byte
 	var postPrefix, preSuffix int
-	if f.MinExponentDigits > 0 {
+	if f.isScientific() {
 		result, postPrefix, preSuffix = appendScientific(dst, f, d)
 	} else {
 		result, postPrefix, preSuffix = appendDecimal(dst, f, d)
@@ -132,22 +131,22 @@ func (f *Formatter) Format(dst []byte, d *Decimal) []byte {
 }
 
 // TODO: just return visible digits.
-func decimalVisibleDigits(f *Formatter, d *Decimal) Decimal {
+func decimalVisibleDigits(r *RoundingContext, d *Decimal) Decimal {
 	if d.NaN || d.Inf {
 		return *d
 	}
 	n := d.normalize()
-	if maxSig := int(f.MaxSignificantDigits); maxSig > 0 {
+	if maxSig := int(r.MaxSignificantDigits); maxSig > 0 {
 		// TODO: really round to zero?
 		n.round(ToZero, maxSig)
 	}
 	digits := n.Digits
 	exp := n.Exp
-	exp += int32(f.Pattern.DigitShift)
+	exp += int32(r.DigitShift)
 
 	// Cap integer digits. Remove *most-significant* digits.
-	if f.MaxIntegerDigits > 0 {
-		if p := int(exp) - int(f.MaxIntegerDigits); p > 0 {
+	if r.MaxIntegerDigits > 0 {
+		if p := int(exp) - int(r.MaxIntegerDigits); p > 0 {
 			if p > len(digits) {
 				p = len(digits)
 			}
@@ -166,8 +165,8 @@ func decimalVisibleDigits(f *Formatter, d *Decimal) Decimal {
 
 	// Rounding usually is done by convert, but we don't rely on it.
 	numFrac := len(digits) - int(exp)
-	if f.MaxSignificantDigits == 0 && int(f.MaxFractionDigits) < numFrac {
-		p := int(exp) + int(f.MaxFractionDigits)
+	if r.MaxSignificantDigits == 0 && int(r.MaxFractionDigits) < numFrac {
+		p := int(exp) + int(r.MaxFractionDigits)
 		if p <= 0 {
 			p = 0
 		} else if p >= len(digits) {
@@ -179,18 +178,18 @@ func decimalVisibleDigits(f *Formatter, d *Decimal) Decimal {
 	// set End (trailing zeros)
 	n.End = int32(len(digits))
 	if len(digits) == 0 {
-		if f.MinFractionDigits > 0 {
-			n.End = int32(f.MinFractionDigits)
+		if r.MinFractionDigits > 0 {
+			n.End = int32(r.MinFractionDigits)
 		}
-		if p := int32(f.MinSignificantDigits) - 1; p > n.End {
+		if p := int32(r.MinSignificantDigits) - 1; p > n.End {
 			n.End = p
 		}
 	} else {
-		if end := exp + int32(f.MinFractionDigits); end > n.End {
+		if end := exp + int32(r.MinFractionDigits); end > n.End {
 			n.End = end
 		}
-		if n.End < int32(f.MinSignificantDigits) {
-			n.End = int32(f.MinSignificantDigits)
+		if n.End < int32(r.MinSignificantDigits) {
+			n.End = int32(r.MinSignificantDigits)
 		}
 	}
 	n.Digits = digits
@@ -204,7 +203,7 @@ func appendDecimal(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, pre
 	if dst, ok := f.renderSpecial(dst, d); ok {
 		return dst, 0, len(dst)
 	}
-	n := decimalVisibleDigits(f, d)
+	n := decimalVisibleDigits(&f.RoundingContext, d)
 	digits := n.Digits
 	exp := n.Exp
 
@@ -272,7 +271,7 @@ func appendDecimal(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, pre
 	return appendAffix(dst, f, suffix, neg), savedLen, len(dst)
 }
 
-func scientificVisibleDigits(f *Formatter, d *Decimal) Decimal {
+func scientificVisibleDigits(r *RoundingContext, d *Decimal) Decimal {
 	if d.NaN || d.Inf {
 		return *d
 	}
@@ -280,12 +279,12 @@ func scientificVisibleDigits(f *Formatter, d *Decimal) Decimal {
 
 	// Significant digits are transformed by the parser for scientific notation
 	// and do not need to be handled here.
-	maxInt, numInt := int(f.MaxIntegerDigits), int(f.MinIntegerDigits)
+	maxInt, numInt := int(r.MaxIntegerDigits), int(r.MinIntegerDigits)
 	if numInt == 0 {
 		numInt = 1
 	}
-	maxSig := int(f.MaxFractionDigits) + numInt
-	minSig := int(f.MinFractionDigits) + numInt
+	maxSig := int(r.MaxFractionDigits) + numInt
+	minSig := int(r.MinFractionDigits) + numInt
 
 	if maxSig > 0 {
 		// TODO: really round to zero?
@@ -332,7 +331,7 @@ func appendScientific(dst []byte, f *Formatter, d *Decimal) (b []byte, postPre, 
 		return dst, 0, 0
 	}
 	// n := d.normalize()
-	n := scientificVisibleDigits(f, d)
+	n := scientificVisibleDigits(&f.RoundingContext, d)
 	digits := n.Digits
 	exp := n.Exp
 	numInt := int(n.Comma)
