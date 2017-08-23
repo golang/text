@@ -22,6 +22,15 @@ func mkfloat(num string) float64 {
 // digits are shifted. Numbers may have an additional exponent or be the special
 // value NaN, Inf, or -Inf.
 func mkdec(num string) (d Decimal) {
+	var r RoundingContext
+	d.Convert(&r, dec(num))
+	return
+}
+
+type dec string
+
+func (s dec) Convert(d *Decimal, _ *RoundingContext) {
+	num := string(s)
 	if num[0] == '-' {
 		d.Neg = true
 		num = num[1:]
@@ -52,7 +61,7 @@ func mkdec(num string) (d Decimal) {
 	for i := range d.Digits {
 		d.Digits[i] -= '0'
 	}
-	return d.normalize()
+	*d = d.normalize()
 }
 
 func byteNum(s string) []byte {
