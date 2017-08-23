@@ -27,11 +27,37 @@ const (
 
 const maxIntDigits = 20
 
-// A Decimal represents floating point number represented in digits of the base
-// in which a number is to be displayed. Digits represents a number [0, 1.0),
-// and the absolute value represented by Decimal is Digits * 10^Exp.
-// Leading and trailing zeros may be omitted and Exp may point outside a valid
-// position in Digits.
+// A Decimal represents a floating point number in decimal format.
+// Digits represents a number [0, 1.0), and the absolute value represented by
+// Decimal is Digits * 10^Exp. Leading and trailing zeros may be omitted and Exp
+// may point outside a valid position in Digits.
+//
+// Examples:
+//      Number     Decimal
+//      12345      Digits: [1, 2, 3, 4, 5], Exp: 5
+//      12.345     Digits: [1, 2, 3, 4, 5], Exp: 2
+//      12000      Digits: [1, 2],          Exp: 5
+//      12000.00   Digits: [1, 2],          Exp: 5
+//      0.00123    Digits: [1, 2, 3],       Exp: -2
+//      0          Digits: [],              Exp: 0
+type Decimal struct {
+	digits
+
+	buf [maxIntDigits]byte
+}
+
+type digits struct {
+	Digits []byte // mantissa digits, big-endian
+	Exp    int32  // exponent
+	Neg    bool
+	Inf    bool // Takes precedence over Digits and Exp.
+	NaN    bool // Takes precedence over Inf.
+}
+
+// Digits represents a floating point number represented in digits of the
+// base in which a number is to be displayed. It is similar to Decimal, but
+// keeps track of trailing fraction zeros and the comma placement for
+// engineering notation.
 //
 // Examples:
 //      Number     Decimal
@@ -47,20 +73,23 @@ const maxIntDigits = 20
 //      1.23e4     Digits: [1, 2, 3],       Exp: 5, End: 3, Comma: 1
 //    engineering
 //      12.3e3     Digits: [1, 2, 3],       Exp: 5, End: 3, Comma: 2
-type Decimal struct {
-	Digits []byte // mantissa digits, big-endian
-	Exp    int32  // exponent
+type Digits struct {
+	digits
 	// End indicates the end position of the number.
 	End int32 // For decimals Exp <= End. For scientific len(Digits) <= End.
 	// Comma is used for the comma position for scientific (always 0 or 1) and
 	// engineering notation (always 0, 1, 2, or 3).
 	Comma uint8
+	// IsScientific indicates whether this number is to be rendered as a
+	// scientific number.
+	IsScientific bool
+}
 
-	Neg bool
-	Inf bool // Takes precedence over Digits and Exp.
-	NaN bool // Takes precedence over Inf.
-
-	buf [maxIntDigits]byte
+func (d *Digits) NumFracDigits() int {
+	if d.Exp >= d.End {
+		return 0
+	}
+	return int(d.End - d.Exp)
 }
 
 // normalize returns a new Decimal with leading and trailing zeros removed.
@@ -142,7 +171,7 @@ func appendZeros(buf []byte, n int) []byte {
 	return buf
 }
 
-func (d *Decimal) round(mode RoundingMode, n int) {
+func (d *digits) round(mode RoundingMode, n int) {
 	if n >= len(d.Digits) {
 		return
 	}
@@ -218,7 +247,7 @@ func (r RoundingMode) roundFloat(x float64) float64 {
 	return i
 }
 
-func (x *Decimal) roundUp(n int) {
+func (x *digits) roundUp(n int) {
 	if n < 0 || n >= len(x.Digits) {
 		return // nothing to do
 	}
@@ -239,7 +268,7 @@ func (x *Decimal) roundUp(n int) {
 	// x already trimmed
 }
 
-func (x *Decimal) roundDown(n int) {
+func (x *digits) roundDown(n int) {
 	if n < 0 || n >= len(x.Digits) {
 		return // nothing to do
 	}
@@ -249,7 +278,7 @@ func (x *Decimal) roundDown(n int) {
 
 // trim cuts off any trailing zeros from x's mantissa;
 // they are meaningless for the value of x.
-func trim(x *Decimal) {
+func trim(x *digits) {
 	i := len(x.Digits)
 	for i > 0 && x.Digits[i-1] == 0 {
 		i--

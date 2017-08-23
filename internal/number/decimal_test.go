@@ -86,11 +86,11 @@ func TestDecimalString(t *testing.T) {
 		want string
 	}{
 		{want: "0"},
-		{Decimal{Digits: nil, Exp: 1000}, "0"}, // exponent of 1000 is ignored
-		{Decimal{Digits: byteNum("12345"), Exp: 0}, "0.12345"},
-		{Decimal{Digits: byteNum("12345"), Exp: -3}, "0.00012345"},
-		{Decimal{Digits: byteNum("12345"), Exp: +3}, "123.45"},
-		{Decimal{Digits: byteNum("12345"), Exp: +10}, "1234500000"},
+		{Decimal{digits: digits{Digits: nil, Exp: 1000}}, "0"}, // exponent of 1000 is ignored
+		{Decimal{digits: digits{Digits: byteNum("12345"), Exp: 0}}, "0.12345"},
+		{Decimal{digits: digits{Digits: byteNum("12345"), Exp: -3}}, "0.00012345"},
+		{Decimal{digits: digits{Digits: byteNum("12345"), Exp: +3}}, "123.45"},
+		{Decimal{digits: digits{Digits: byteNum("12345"), Exp: +10}}, "1234500000"},
 	} {
 		if got := test.x.String(); got != test.want {
 			t.Errorf("%v == %q; want %q", test.x, got, test.want)

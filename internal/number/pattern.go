@@ -60,13 +60,13 @@ type Pattern struct {
 // It contains all information needed to determine the "visible digits" as
 // required by the pluralization rules.
 type RoundingContext struct {
-	Mode RoundingMode
-
 	Precision int32 // maximum number of significant digits.
 	Scale     int32 // maximum number of decimals after the dot.
 
 	// if > 0, round to Increment * 10^-Scale
 	Increment uint32 // Use Min*Digits to determine scale
+
+	Mode RoundingMode
 
 	DigitShift uint8 // Number of decimals to shift. Used for % and ‰.
 
@@ -80,6 +80,25 @@ type RoundingContext struct {
 	MaxSignificantDigits uint8
 
 	MinExponentDigits uint8
+}
+
+func (r *RoundingContext) update() {
+	if r.Scale > 0 {
+		r.SetScale(int(r.Scale))
+	}
+	if r.Precision > 0 {
+		r.SetPrecision(int(r.Precision))
+	}
+}
+
+// SetScale fixes the RoundingContext to a fixed number of fraction digits.
+func (r *RoundingContext) SetScale(scale int) {
+	r.MinFractionDigits = uint8(scale)
+	r.MaxFractionDigits = uint8(scale)
+}
+
+func (r *RoundingContext) SetPrecision(prec int) {
+	r.MaxSignificantDigits = uint8(prec)
 }
 
 func (r *RoundingContext) isScientific() bool {
