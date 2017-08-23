@@ -113,13 +113,12 @@ func getIntApprox(digits []byte, start, end, nMod, big int) (n int) {
 //      100000.00  []byte{1}           6......3
 func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) Form {
 	index, _ := language.CompactIndex(t)
-	endN := len(digits) + exp
 
 	// Differentiate up to including mod 1000000 for the integer part.
-	n := getIntApprox(digits, 0, endN, 6, 1000000)
+	n := getIntApprox(digits, 0, exp, 6, 1000000)
 
 	// Differentiate up to including mod 100 for the fractional part.
-	f := getIntApprox(digits, endN, endN+scale, 2, 100)
+	f := getIntApprox(digits, exp, exp+scale, 2, 100)
 
 	return matchPlural(p, index, n, f, scale)
 }
