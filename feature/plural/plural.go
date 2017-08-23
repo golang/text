@@ -144,6 +144,25 @@ func (p *Rules) matchComponents(t language.Tag, n, f, scale int) Form {
 	return matchPlural(p, index, n, f, scale)
 }
 
+// MatchPlural returns the plural form for the given language and plural
+// operands (as defined in
+// http://unicode.org/reports/tr35/tr35-numbers.html#Language_Plural_Rules):
+//  where
+//  	n  absolute value of the source number (integer and decimals)
+//  input
+//  	i  integer digits of n.
+//  	v  number of visible fraction digits in n, with trailing zeros.
+//  	w  number of visible fraction digits in n, without trailing zeros.
+//  	f  visible fractional digits in n, with trailing zeros (f = t * 10^(v-w))
+//  	t  visible fractional digits in n, without trailing zeros.
+//
+// If any of the operand values is too large to fit in an int, it is okay to
+// pass the value modulo 10,000,000.
+func (p *Rules) MatchPlural(lang language.Tag, i, v, w, f, t int) Form {
+	index, _ := language.CompactIndex(lang)
+	return matchPlural(p, index, i, f, v)
+}
+
 func matchPlural(p *Rules, index int, n, f, v int) Form {
 	nMask := p.inclusionMasks[n%maxMod]
 	// Compute the fMask inline in the rules below, as it is relatively rare.
