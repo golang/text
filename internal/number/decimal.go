@@ -292,7 +292,7 @@ func trim(x *digits) {
 // A Converter converts a number into decimals according to the given rounding
 // criteria.
 type Converter interface {
-	Convert(d *Decimal, r *RoundingContext)
+	Convert(d *Decimal, r RoundingContext)
 }
 
 const (
@@ -302,7 +302,7 @@ const (
 
 // Convert converts the given number to the decimal representation using the
 // supplied RoundingContext.
-func (d *Decimal) Convert(r *RoundingContext, number interface{}) {
+func (d *Decimal) Convert(r RoundingContext, number interface{}) {
 	switch f := number.(type) {
 	case Converter:
 		d.clear()
@@ -344,7 +344,7 @@ func (d *Decimal) Convert(r *RoundingContext, number interface{}) {
 }
 
 // ConvertInt converts an integer to decimals.
-func (d *Decimal) ConvertInt(r *RoundingContext, signed bool, x uint64) {
+func (d *Decimal) ConvertInt(r RoundingContext, signed bool, x uint64) {
 	if r.Increment > 0 {
 		// TODO: if uint64 is too large, fall back to float64
 		if signed {
@@ -364,7 +364,7 @@ func (d *Decimal) ConvertInt(r *RoundingContext, signed bool, x uint64) {
 }
 
 // ConvertFloat converts a floating point number to decimals.
-func (d *Decimal) ConvertFloat(r *RoundingContext, x float64, size int) {
+func (d *Decimal) ConvertFloat(r RoundingContext, x float64, size int) {
 	d.clear()
 	if math.IsNaN(x) {
 		d.NaN = true
@@ -380,11 +380,13 @@ func (d *Decimal) ConvertFloat(r *RoundingContext, x float64, size int) {
 		return
 	}
 	// Simple case: decimal notation
-	if r.Scale > 0 || r.Increment > 0 || r.Precision == 0 {
-		if int(r.Scale) > len(scales) {
-			x *= math.Pow(10, float64(r.Scale))
+	scale := r.scale()
+	prec := r.precision()
+	if scale > 0 || r.Increment > 0 || prec == 0 {
+		if scale > len(scales) {
+			x *= math.Pow(10, float64(scale))
 		} else {
-			x *= scales[r.Scale]
+			x *= scales[scale]
 		}
 		if r.Increment > 0 {
 			inc := float64(r.Increment)
@@ -395,7 +397,7 @@ func (d *Decimal) ConvertFloat(r *RoundingContext, x float64, size int) {
 			x = r.Mode.roundFloat(x)
 		}
 		d.fillIntDigits(uint64(math.Abs(x)))
-		d.Exp = int32(len(d.Digits)) - r.Scale
+		d.Exp = int32(len(d.Digits) - scale)
 		return
 	}
 
@@ -407,7 +409,6 @@ func (d *Decimal) ConvertFloat(r *RoundingContext, x float64, size int) {
 	//   AppendDigits(dst []byte, x float64, base, size, prec int) (digits []byte, exp, accuracy int)
 	// TODO: This only supports the nearest even rounding mode.
 
-	prec := int(r.Precision)
 	if prec > 0 {
 		prec--
 	}

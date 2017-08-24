@@ -81,12 +81,12 @@ func (f *Formatter) InitPerMille(t language.Tag) {
 
 func (f *Formatter) Append(dst []byte, x interface{}) []byte {
 	var d Decimal
-	r := &f.RoundingContext
+	r := f.RoundingContext
 	d.Convert(r, x)
 	return f.Render(dst, FormatDigits(&d, r))
 }
 
-func FormatDigits(d *Decimal, r *RoundingContext) Digits {
+func FormatDigits(d *Decimal, r RoundingContext) Digits {
 	if r.isScientific() {
 		return scientificVisibleDigits(r, d)
 	}
@@ -94,7 +94,7 @@ func FormatDigits(d *Decimal, r *RoundingContext) Digits {
 }
 
 func (f *Formatter) Format(dst []byte, d *Decimal) []byte {
-	return f.Render(dst, FormatDigits(d, &f.RoundingContext))
+	return f.Render(dst, FormatDigits(d, f.RoundingContext))
 }
 
 func (f *Formatter) Render(dst []byte, d Digits) []byte {
@@ -142,7 +142,7 @@ func (f *Formatter) Render(dst []byte, d Digits) []byte {
 	return result
 }
 
-func decimalVisibleDigits(r *RoundingContext, d *Decimal) Digits {
+func decimalVisibleDigits(r RoundingContext, d *Decimal) Digits {
 	if d.NaN || d.Inf {
 		return Digits{digits: digits{Neg: d.Neg, NaN: d.NaN, Inf: d.Inf}}
 	}
@@ -282,7 +282,7 @@ func appendDecimal(dst []byte, f *Formatter, n *Digits) (b []byte, postPre, preS
 	return appendAffix(dst, f, suffix, neg), savedLen, len(dst)
 }
 
-func scientificVisibleDigits(r *RoundingContext, d *Decimal) Digits {
+func scientificVisibleDigits(r RoundingContext, d *Decimal) Digits {
 	if d.NaN || d.Inf {
 		return Digits{digits: digits{Neg: d.Neg, NaN: d.NaN, Inf: d.Inf}}
 	}

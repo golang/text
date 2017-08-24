@@ -39,18 +39,13 @@ import (
 //
 // This type is only intended for internal use.
 type Pattern struct {
-	// TODO: this struct can be packed a lot better than it is now. Should be
-	// possible to make it 32 bytes.
-
-	Affix     string // includes prefix and suffix. First byte is prefix length.
-	Offset    uint16 // Offset into Affix for prefix and suffix
-	NegOffset uint16 // Offset into Affix for negative prefix and suffix or 0.
-
-	FormatWidth uint16
-
-	PadRune rune
-
 	RoundingContext
+
+	Affix       string // includes prefix and suffix. First byte is prefix length.
+	Offset      uint16 // Offset into Affix for prefix and suffix
+	NegOffset   uint16 // Offset into Affix for negative prefix and suffix or 0.
+	PadRune     rune
+	FormatWidth uint16
 
 	GroupingSize [2]uint8
 	Flags        PatternFlag
@@ -60,45 +55,44 @@ type Pattern struct {
 // It contains all information needed to determine the "visible digits" as
 // required by the pluralization rules.
 type RoundingContext struct {
-	Precision int32 // maximum number of significant digits.
-	Scale     int32 // maximum number of decimals after the dot.
-
-	// if > 0, round to Increment * 10^-Scale
-	Increment uint32 // Use Min*Digits to determine scale
+	Increment uint32 // if > 0, round to Increment * 10^-scale()
+	// TODO: unify these two fields so that there is a more unambiguous meaning
+	// of how precision is handled.
+	MaxSignificantDigits int16 // -1 is infinite precision
+	MaxFractionDigits    uint16
 
 	Mode RoundingMode
 
 	DigitShift uint8 // Number of decimals to shift. Used for % and ‰.
 
 	// Number of digits.
-	// TODO: consider using uint32
-	MinIntegerDigits     uint8
+	MinIntegerDigits uint8
+
 	MaxIntegerDigits     uint8
 	MinFractionDigits    uint8
-	MaxFractionDigits    uint8
 	MinSignificantDigits uint8
-	MaxSignificantDigits uint8
 
 	MinExponentDigits uint8
 }
 
-func (r *RoundingContext) update() {
-	if r.Scale > 0 {
-		r.SetScale(int(r.Scale))
+func (r *RoundingContext) scale() int {
+	// scale is 0 when precision is set.
+	if r.MaxSignificantDigits != 0 {
+		return 0
 	}
-	if r.Precision > 0 {
-		r.SetPrecision(int(r.Precision))
-	}
+	return int(r.MaxFractionDigits)
 }
+
+func (r *RoundingContext) precision() int { return int(r.MaxSignificantDigits) }
 
 // SetScale fixes the RoundingContext to a fixed number of fraction digits.
 func (r *RoundingContext) SetScale(scale int) {
 	r.MinFractionDigits = uint8(scale)
-	r.MaxFractionDigits = uint8(scale)
+	r.MaxFractionDigits = uint16(scale)
 }
 
 func (r *RoundingContext) SetPrecision(prec int) {
-	r.MaxSignificantDigits = uint8(prec)
+	r.MaxSignificantDigits = int16(prec)
 }
 
 func (r *RoundingContext) isScientific() bool {
@@ -420,7 +414,7 @@ func (p *parser) sigDigitsFinal(r rune) state {
 func (p *parser) normalizeSigDigitsWithExponent() state {
 	p.MinIntegerDigits, p.MaxIntegerDigits = 1, 1
 	p.MinFractionDigits = p.MinSignificantDigits - 1
-	p.MaxFractionDigits = p.MaxSignificantDigits - 1
+	p.MaxFractionDigits = uint16(p.MaxSignificantDigits) - 1
 	p.MinSignificantDigits, p.MaxSignificantDigits = 0, 0
 	return p.exponent
 }

@@ -23,13 +23,13 @@ func mkfloat(num string) float64 {
 // value NaN, Inf, or -Inf.
 func mkdec(num string) (d Decimal) {
 	var r RoundingContext
-	d.Convert(&r, dec(num))
+	d.Convert(r, dec(num))
 	return
 }
 
 type dec string
 
-func (s dec) Convert(d *Decimal, _ *RoundingContext) {
+func (s dec) Convert(d *Decimal, _ RoundingContext) {
 	num := string(s)
 	if num[0] == '-' {
 		d.Neg = true
@@ -241,14 +241,18 @@ func TestRounding(t *testing.T) {
 }
 
 func TestConvert(t *testing.T) {
-	scale2 := &RoundingContext{Scale: 2}
-	scale2away := &RoundingContext{Scale: 2, Mode: AwayFromZero}
-	inc0_05 := &RoundingContext{Increment: 5, Scale: 2}
-	inc50 := &RoundingContext{Increment: 50}
-	prec3 := &RoundingContext{Precision: 3}
+	scale2 := RoundingContext{}
+	scale2.SetScale(2)
+	scale2away := RoundingContext{Mode: AwayFromZero}
+	scale2away.SetScale(2)
+	inc0_05 := RoundingContext{Increment: 5}
+	inc0_05.SetScale(2)
+	inc50 := RoundingContext{Increment: 50}
+	prec3 := RoundingContext{}
+	prec3.SetPrecision(3)
 	testCases := []struct {
 		x   interface{}
-		rc  *RoundingContext
+		rc  RoundingContext
 		out string
 	}{
 		{int8(-34), scale2, "-34"},
@@ -294,7 +298,7 @@ func TestConvert(t *testing.T) {
 
 type converter int
 
-func (c converter) Convert(d *Decimal, r *RoundingContext) {
+func (c converter) Convert(d *Decimal, r RoundingContext) {
 	d.Digits = append(d.Digits, 1, 0, 0)
 	d.Exp = 3
 }

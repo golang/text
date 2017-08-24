@@ -453,7 +453,7 @@ func TestAppendDecimal(t *testing.T) {
 			buf := make([]byte, 100)
 			t.Run(tc.pattern+"/"+num, func(t *testing.T) {
 				var d Decimal
-				d.Convert(&f.RoundingContext, dec(num))
+				d.Convert(f.RoundingContext, dec(num))
 				buf = f.Format(buf[:0], &d)
 				if got := string(buf); got != want {
 					t.Errorf("\n got %[1]q (%[1]s)\nwant %[2]q (%[2]s)", got, want)
@@ -480,7 +480,7 @@ func TestLocales(t *testing.T) {
 			var f Formatter
 			f.InitDecimal(tc.tag)
 			var d Decimal
-			d.Convert(&f.RoundingContext, dec(tc.num))
+			d.Convert(f.RoundingContext, dec(tc.num))
 			b := f.Format(nil, &d)
 			if got := string(b); got != tc.want {
 				t.Errorf("got %[1]q (%[1]s); want %[2]q (%[2]s)", got, tc.want)
@@ -508,7 +508,7 @@ func TestFormatters(t *testing.T) {
 			tc.init(language.English)
 			f.SetScale(2)
 			var d Decimal
-			d.Convert(&f.RoundingContext, dec(tc.num))
+			d.Convert(f.RoundingContext, dec(tc.num))
 			b := f.Format(nil, &d)
 			if got := string(b); got != tc.want {
 				t.Errorf("got %[1]q (%[1]s); want %[2]q (%[2]s)", got, tc.want)
