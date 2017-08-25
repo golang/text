@@ -332,6 +332,8 @@ func (d *Decimal) Convert(r RoundingContext, number interface{}) {
 	case uint64:
 		d.ConvertInt(r, unsigned, f)
 
+	default:
+		d.NaN = true
 		// TODO:
 		// case string: if produced by strconv, allows for easy arbitrary pos.
 		// case reflect.Value:

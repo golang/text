@@ -284,6 +284,7 @@ func TestConvert(t *testing.T) {
 		{math.Inf(1), inc50, "Inf"},
 		{math.Inf(-1), inc50, "-Inf"},
 		{math.NaN(), inc50, "NaN"},
+		{"clearly not a number", scale2, "NaN"},
 	}
 	for _, tc := range testCases {
 		var d Decimal
