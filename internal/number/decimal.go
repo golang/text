@@ -57,7 +57,7 @@ type digits struct {
 // Digits represents a floating point number represented in digits of the
 // base in which a number is to be displayed. It is similar to Decimal, but
 // keeps track of trailing fraction zeros and the comma placement for
-// engineering notation.
+// engineering notation. Digits must have at least one digit.
 //
 // Examples:
 //      Number     Decimal
@@ -68,9 +68,12 @@ type digits struct {
 //      12000.00   Digits: [1, 2],          Exp: 5  End: 7
 //      0.00123    Digits: [1, 2, 3],       Exp: -2 End: 3
 //      0          Digits: [],              Exp: 0  End: 1
-//    scientific:
-//      0          Digits: [],              Exp: 0, End: 1, Comma: 0
+//    scientific (actual exp is Exp - Comma)
+//      0e0        Digits: [0],             Exp: 1, End: 1, Comma: 1
+//      .0e0       Digits: [0],             Exp: 0, End: 1, Comma: 0
+//      0.0e0      Digits: [0],             Exp: 1, End: 2, Comma: 1
 //      1.23e4     Digits: [1, 2, 3],       Exp: 5, End: 3, Comma: 1
+//      .123e5     Digits: [1, 2, 3],       Exp: 5, End: 3, Comma: 0
 //    engineering
 //      12.3e3     Digits: [1, 2, 3],       Exp: 5, End: 3, Comma: 2
 type Digits struct {

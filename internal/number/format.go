@@ -142,6 +142,8 @@ func (f *Formatter) Render(dst []byte, d Digits) []byte {
 	return result
 }
 
+// decimalVisibleDigits converts d according to the RoundingContext. Note that
+// the exponent may change as a result of this operation.
 func decimalVisibleDigits(r RoundingContext, d *Decimal) Digits {
 	if d.NaN || d.Inf {
 		return Digits{digits: digits{Neg: d.Neg, NaN: d.NaN, Inf: d.Inf}}
@@ -288,6 +290,13 @@ func scientificVisibleDigits(r RoundingContext, d *Decimal) Digits {
 	}
 	n := Digits{digits: d.normalize().digits, IsScientific: true}
 
+	// Normalize to have at least one digit. This simplifies engineering
+	// notation.
+	if len(n.Digits) == 0 {
+		n.Digits = append(n.Digits, 0)
+		n.Exp = 1
+	}
+
 	// Significant digits are transformed by the parser for scientific notation
 	// and do not need to be handled here.
 	maxInt, numInt := int(r.MaxIntegerDigits), int(r.MinIntegerDigits)
@@ -301,37 +310,27 @@ func scientificVisibleDigits(r RoundingContext, d *Decimal) Digits {
 		// TODO: really round to zero?
 		n.round(ToZero, maxSig)
 	}
-	digits := n.Digits
-	exp := n.Exp
 
 	// If a maximum number of integers is specified, the minimum must be 1
 	// and the exponent is grouped by this number (e.g. for engineering)
-	if len(digits) == 0 {
-		exp = 0
-	} else if maxInt > numInt {
+	if maxInt > numInt {
 		// Correct the exponent to reflect a single integer digit.
-		exp--
 		numInt = 1
 		// engineering
 		// 0.01234 ([12345]e-1) -> 1.2345e-2  12.345e-3
 		// 12345   ([12345]e+5) -> 1.2345e4  12.345e3
-		d := int(exp) % maxInt
+		d := int(n.Exp-1) % maxInt
 		if d < 0 {
 			d += maxInt
 		}
-		exp -= int32(d)
 		numInt += d
-	} else {
-		exp -= int32(numInt)
 	}
 
 	n.Comma = uint8(numInt)
-	n.End = int32(len(digits))
+	n.End = int32(len(n.Digits))
 	if n.End < int32(minSig) {
 		n.End = int32(minSig)
 	}
-	n.Digits = digits
-	n.Exp = exp
 	return n
 }
 
@@ -342,7 +341,6 @@ func appendScientific(dst []byte, f *Formatter, n *Digits) (b []byte, postPre, p
 		return dst, 0, 0
 	}
 	digits := n.Digits
-	exp := n.Exp
 	numInt := int(n.Comma)
 	numFrac := int(n.End) - int(n.Comma)
 
@@ -387,6 +385,7 @@ func appendScientific(dst []byte, f *Formatter, n *Digits) (b []byte, postPre, p
 	buf := [12]byte{}
 	// TODO: use exponential if superscripting is not available (no Latin
 	// numbers or no tags) and use exponential in all other cases.
+	exp := n.Exp - int32(n.Comma)
 	exponential := f.Symbol(SymExponential)
 	if exponential == "E" {
 		dst = append(dst, "\u202f"...) // NARROW NO-BREAK SPACE
