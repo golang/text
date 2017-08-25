@@ -104,3 +104,19 @@ func (f Formatter) Format(state format.State, verb rune) {
 	d.Convert(p.RoundingContext, f.value)
 	state.Write(p.Format(nil, &d))
 }
+
+// Digits returns information about which logical digits will be presented to
+// the user. This information is relevant, for instance, to determine plural
+// forms.
+func (f Formatter) Digits(buf []byte, tag language.Tag, scale int) number.Digits {
+	var p number.Formatter
+	f.initFunc(&p, tag)
+	if scale >= 0 {
+		// TODO: this only works well for decimal numbers, which is generally
+		// fine.
+		p.SetScale(scale)
+	}
+	var d number.Decimal
+	d.Convert(p.RoundingContext, f.value)
+	return number.FormatDigits(&d, p.RoundingContext)
+}

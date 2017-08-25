@@ -80,11 +80,11 @@ func TestFormatter(t *testing.T) {
 		want: "       123",
 	}, {
 		desc: "format width pad option before",
-		f:    Decimal(123, PadRune('*'), FormatWidth(10)),
+		f:    Decimal(123, Pad('*'), FormatWidth(10)),
 		want: "*******123",
 	}, {
 		desc: "format width pad option after",
-		f:    Decimal(123, FormatWidth(10), PadRune('*')),
+		f:    Decimal(123, FormatWidth(10), Pad('*')),
 		want: "*******123",
 	}, {
 		desc: "format width illegal",

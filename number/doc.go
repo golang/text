@@ -22,7 +22,6 @@
 //    p.Printf("There are %v bikes per household.", number.Decimal(1.2))
 //    // Prints: Er zijn 1,2 fietsen per huishouden.
 //
-// Provided that the printed translation is available.
 //
 // The width and scale specified in the formatting directives override the
 // configuration of the formatter.

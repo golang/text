@@ -21,14 +21,14 @@ const (
 	scientificVerbs = "veg"
 )
 
-// Decimal represents a number as a floating point decimal.
+// Decimal formats a number as a floating point decimal.
 func Decimal(x interface{}, opts ...Option) Formatter {
 	return newFormatter(decimalOptions, opts, x)
 }
 
 var decimalOptions = newOptions(decimalVerbs, (*number.Formatter).InitDecimal)
 
-// Scientific prints a values in scientific format.
+// Scientific formats a number in scientific format.
 func Scientific(x interface{}, opts ...Option) Formatter {
 	return newFormatter(scientificOptions, opts, x)
 }

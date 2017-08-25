@@ -48,7 +48,7 @@ func MinIntegerDigits(min int) Option {
 	}
 }
 
-// MaxFractionDigits specifies the maximum number of digits after the comma.
+// MaxFractionDigits specifies the maximum number of fractional digits.
 func MaxFractionDigits(max int) Option {
 	return func(t language.Tag, f *number.Formatter) {
 		if max >= 1<<15 {
@@ -58,7 +58,7 @@ func MaxFractionDigits(max int) Option {
 	}
 }
 
-// MinFractionDigits specifies the minimum number of digits after the comma.
+// MinFractionDigits specifies the minimum number of fractional digits.
 func MinFractionDigits(min int) Option {
 	return func(t language.Tag, f *number.Formatter) {
 		if min >= 1<<8 {
@@ -161,8 +161,8 @@ func FormatWidth(n int) Option {
 	}
 }
 
-// PadRune sets the rune to be used for filling up to the format width.
-func PadRune(r rune) Option {
+// Pad sets the rune to be used for filling up to the format width.
+func Pad(r rune) Option {
 	return func(t language.Tag, f *number.Formatter) {
 		f.PadRune = r
 	}
