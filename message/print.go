@@ -1040,7 +1040,7 @@ formatLoop:
 						p.fmt.plusV = p.fmt.plus
 						p.fmt.plus = false
 					}
-					p.printArg(p.Arg(p.argNum), rune(c))
+					p.printArg(p.Arg(p.argNum+1), rune(c))
 					p.argNum++
 					i++
 					continue formatLoop
