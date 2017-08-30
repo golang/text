@@ -55,11 +55,13 @@ type Pattern struct {
 // It contains all information needed to determine the "visible digits" as
 // required by the pluralization rules.
 type RoundingContext struct {
-	Increment uint32
 	// TODO: unify these two fields so that there is a more unambiguous meaning
 	// of how precision is handled.
 	MaxSignificantDigits int16 // -1 is unlimited
 	MaxFractionDigits    int16 // -1 is unlimited
+
+	Increment      uint32
+	IncrementScale uint8 // May differ from printed scale.
 
 	Mode RoundingMode
 
@@ -209,6 +211,9 @@ func ParsePattern(s string) (f *Pattern, err error) {
 		p.NegOffset = 0
 	} else {
 		p.Affix = affix
+	}
+	if p.Increment == 0 {
+		p.IncrementScale = 0
 	}
 	return p.Pattern, nil
 }
@@ -423,6 +428,7 @@ func (p *parser) fraction(r rune) state {
 	switch r {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		p.Increment = p.Increment*10 + uint32(r-'0')
+		p.IncrementScale++
 		p.MinFractionDigits++
 		p.MaxFractionDigits++
 	case '#':

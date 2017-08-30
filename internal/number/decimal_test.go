@@ -245,7 +245,7 @@ func TestConvert(t *testing.T) {
 	scale2.SetScale(2)
 	scale2away := RoundingContext{Mode: AwayFromZero}
 	scale2away.SetScale(2)
-	inc0_05 := RoundingContext{Increment: 5}
+	inc0_05 := RoundingContext{Increment: 5, IncrementScale: 2}
 	inc0_05.SetScale(2)
 	inc50 := RoundingContext{Increment: 50}
 	prec3 := RoundingContext{}
