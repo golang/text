@@ -154,6 +154,17 @@ var testCases = []struct {
 		},
 	},
 }, {
+	"##0.###E00",
+	&Pattern{
+		FormatWidth: 10,
+		RoundingContext: RoundingContext{
+			MinIntegerDigits:  1,
+			MaxIntegerDigits:  3,
+			MaxFractionDigits: 3,
+			MinExponentDigits: 2,
+		},
+	},
+}, {
 	"##00.0#E0",
 	&Pattern{
 		FormatWidth: 9,
