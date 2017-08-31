@@ -358,6 +358,7 @@ func (p *parser) number(r rune) state {
 	case '@':
 		p.groupingCount++
 		p.leadingSharps = 0
+		p.MaxFractionDigits = -1
 		return p.sigDigits(r)
 	case ',':
 		if p.leadingSharps == 0 { // no leading commas
