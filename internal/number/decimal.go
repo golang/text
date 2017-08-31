@@ -412,21 +412,11 @@ func (d *Decimal) ConvertFloat(r RoundingContext, x float64, size int) {
 	//   Something like this would work:
 	//   AppendDigits(dst []byte, x float64, base, size, prec int) (digits []byte, exp, accuracy int)
 	if r.Mode == ToNearestEven {
-		// We can't round if limitations are placed on both the fraction and
-		// significant digits.
-		if r.MaxFractionDigits == 0 && r.MaxSignificantDigits > 0 {
-			prec = int(r.MaxSignificantDigits)
-		} else if r.isScientific() {
-			if r.MaxIntegerDigits == 1 && (r.MaxSignificantDigits == 0 ||
-				int(r.MaxFractionDigits+1) == int(r.MaxSignificantDigits)) {
-				verb = 'e'
-				// Note: don't add DigitShift: it is only used for decimals.
-				prec = int(r.MaxFractionDigits)
-				prec += int(r.DigitShift)
-			}
-		} else if r.MaxFractionDigits > 0 && r.MaxSignificantDigits == 0 {
+		if n := r.RoundSignificantDigits(); n >= 0 {
+			prec = n
+		} else if n = r.RoundFractionDigits(); n >= 0 {
+			prec = n
 			verb = 'f'
-			prec = int(r.MaxFractionDigits) + int(r.DigitShift)
 		}
 	}
 
