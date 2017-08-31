@@ -250,6 +250,7 @@ func TestConvert(t *testing.T) {
 	inc50 := RoundingContext{Increment: 50}
 	prec3 := RoundingContext{}
 	prec3.SetPrecision(3)
+	roundShift := RoundingContext{DigitShift: 2, MaxFractionDigits: 2}
 	testCases := []struct {
 		x   interface{}
 		rc  RoundingContext
@@ -277,6 +278,10 @@ func TestConvert(t *testing.T) {
 		{0.075, inc0_05, "0.10"},
 		{325, inc50, "300"},
 		{375, inc50, "400"},
+
+		// Here the scale is 2, but the digits get shifted left. As we use
+		// AppendFloat to do the rounding an exta 0 gets added.
+		{0.123, roundShift, "0.1230"},
 
 		{converter(3), scale2, "100"},
 

@@ -420,12 +420,13 @@ func (d *Decimal) ConvertFloat(r RoundingContext, x float64, size int) {
 			if r.MaxIntegerDigits == 1 && (r.MaxSignificantDigits == 0 ||
 				int(r.MaxFractionDigits+1) == int(r.MaxSignificantDigits)) {
 				verb = 'e'
+				// Note: don't add DigitShift: it is only used for decimals.
 				prec = int(r.MaxFractionDigits)
 				prec += int(r.DigitShift)
 			}
 		} else if r.MaxFractionDigits > 0 && r.MaxSignificantDigits == 0 {
 			verb = 'f'
-			prec = int(r.MaxFractionDigits)
+			prec = int(r.MaxFractionDigits) + int(r.DigitShift)
 		}
 	}
 
