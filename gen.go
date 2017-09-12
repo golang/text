@@ -25,7 +25,9 @@ import (
 	"sync"
 	"unicode"
 
+	"golang.org/x/text/collate"
 	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -72,11 +74,8 @@ func main() {
 		fmt.Printf("Requested Unicode version %s; core unicode version is %s.\n",
 			gen.UnicodeVersion(),
 			unicode.Version)
-		// TODO: use collate to compare. Simple comparison will work, though,
-		// until Unicode reaches version 10. To avoid circular dependencies, we
-		// could use the NumericWeighter without using package collate using a
-		// trivial Weighter implementation.
-		if gen.UnicodeVersion() < unicode.Version && !*force {
+		c := collate.New(language.Und, collate.Numeric)
+		if c.CompareString(gen.UnicodeVersion(), unicode.Version) < 0 && !*force {
 			os.Exit(2)
 		}
 		updateCore = true
