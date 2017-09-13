@@ -160,7 +160,7 @@ type options struct {
 
 	// mapping implements a validation and mapping step as defined in RFC 5895
 	// or UTS 46, tailored to, for example, domain registration or lookup.
-	mapping func(p *Profile, s string) (string, error)
+	mapping func(p *Profile, s string) (mapped string, isBidi bool, err error)
 
 	// bidirule, if specified, checks whether s conforms to the Bidi Rule
 	// defined in RFC 5893.
@@ -300,8 +300,9 @@ func (e runeError) Error() string {
 // see http://www.unicode.org/reports/tr46.
 func (p *Profile) process(s string, toASCII bool) (string, error) {
 	var err error
+	var isBidi bool
 	if p.mapping != nil {
-		s, err = p.mapping(p, s)
+		s, isBidi, err = p.mapping(p, s)
 	}
 	// Remove leading empty labels.
 	if p.removeLeadingDots {
@@ -309,14 +310,12 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 		}
 	}
 	// TODO: allow for a quick check the tables data.
-	isBidi := bidirule.DirectionString(s) != bidi.LeftToRight
 	// It seems like we should only create this error on ToASCII, but the
 	// UTS 46 conformance tests suggests we should always check this.
 	if err == nil && p.verifyDNSLength && s == "" {
 		err = &labelError{s, "A4"}
 	}
 	labels := labelIter{orig: s}
-	var badBidi, bb bool
 	for ; !labels.done(); labels.next() {
 		label := labels.label()
 		if label == "" {
@@ -345,12 +344,18 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				// This should be called on NonTransitional, according to the
 				// spec, but that currently does not have any effect. Use the
 				// original profile to preserve options.
-				err, bb = p.validateLabel(u, true)
-				badBidi = badBidi || bb
+				err = p.validateLabel(u)
 			}
 		} else if err == nil {
-			err, bb = p.validateLabel(label, true)
-			badBidi = badBidi || bb
+			err = p.validateLabel(label)
+		}
+	}
+	if isBidi && p.bidirule != nil && err == nil {
+		for labels.reset(); !labels.done(); labels.next() {
+			if !p.bidirule(labels.label()) {
+				err = &labelError{s, "B"}
+				break
+			}
 		}
 	}
 	if toASCII {
@@ -381,22 +386,26 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 			err = &labelError{s, "A4"}
 		}
 	}
-	if badBidi && isBidi {
-		err = &labelError{s, "B"}
-	}
 	return s, err
 }
 
-func normalize(p *Profile, s string) (string, error) {
-	return norm.NFC.String(s), nil
+func normalize(p *Profile, s string) (mapped string, isBidi bool, err error) {
+	// TODO: consider first doing a quick check to see if any of these checks
+	// need to be done. This will make it slower in the general case, but
+	// faster in the common case.
+	mapped = norm.NFC.String(s)
+	isBidi = bidirule.DirectionString(mapped) == bidi.RightToLeft
+	return mapped, isBidi, nil
 }
 
-func validateRegistration(p *Profile, s string) (string, error) {
+func validateRegistration(p *Profile, s string) (idem string, bidi bool, err error) {
+	// TODO: filter need for normalization in loop below.
 	if !norm.NFC.IsNormalString(s) {
-		return s, &labelError{s, "V1"}
+		return s, false, &labelError{s, "V1"}
 	}
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
+		bidi = bidi || info(v).isBidi(s[i:])
 		// Copy bytes not copied so far.
 		switch p.simplify(info(v).category()) {
 		// TODO: handle the NV8 defined in the Unicode idna data set to allow
@@ -404,21 +413,41 @@ func validateRegistration(p *Profile, s string) (string, error) {
 		case valid, deviation:
 		case disallowed, mapped, unknown, ignored:
 			r, _ := utf8.DecodeRuneInString(s[i:])
-			return s, runeError(r)
+			return s, bidi, runeError(r)
 		}
 		i += sz
 	}
-	return s, nil
+	return s, bidi, nil
 }
 
-func validateAndMap(p *Profile, s string) (string, error) {
+func (c info) isBidi(s string) bool {
+	if !c.isMapped() {
+		return c&attributesMask == rtl
+	}
+	// TODO: also store bidi info for mapped data. This is possible, but a bit
+	// cumbersome and not for the common case.
+	p, _ := bidi.LookupString(s)
+	switch p.Class() {
+	case bidi.R, bidi.AL, bidi.AN:
+		return true
+	}
+	return false
+}
+
+func validateAndMap(p *Profile, s string) (vm string, bidi bool, err error) {
 	var (
-		err error
-		b   []byte
-		k   int
+		b []byte
+		k int
 	)
+	// combinedInfoBits contains the or-ed bits of all runes. We use this
+	// to derive the mayNeedNorm bit later. This may trigger normalization
+	// overeagerly, but it will not do so in the common case. The end result
+	// is another 10% saving on BenchmarkProfile for the common case.
+	var combinedInfoBits info
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
+		combinedInfoBits |= info(v)
+		bidi = bidi || info(v).isBidi(s[i:])
 		start := i
 		i += sz
 		// Copy bytes not copied so far.
@@ -445,7 +474,9 @@ func validateAndMap(p *Profile, s string) (string, error) {
 	}
 	if k == 0 {
 		// No changes so far.
-		s = norm.NFC.String(s)
+		if combinedInfoBits&mayNeedNorm != 0 {
+			s = norm.NFC.String(s)
+		}
 	} else {
 		b = append(b, s[k:]...)
 		if norm.NFC.QuickSpan(b) != len(b) {
@@ -454,7 +485,7 @@ func validateAndMap(p *Profile, s string) (string, error) {
 		// TODO: the punycode converters require strings as input.
 		s = string(b)
 	}
-	return s, err
+	return s, bidi, err
 }
 
 // A labelIter allows iterating over domain name labels.
@@ -549,6 +580,8 @@ func validateFromPunycode(p *Profile, s string) error {
 	if !norm.NFC.IsNormalString(s) {
 		return &labelError{s, "V1"}
 	}
+	// TODO: detect whether string may have to be normalized in the following
+	// loop.
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
 		if c := p.simplify(info(v).category()); c != valid && c != deviation {
@@ -623,35 +656,32 @@ var joinStates = [][numJoinTypes]joinState{
 
 // validateLabel validates the criteria from Section 4.1. Item 1, 4, and 6 are
 // already implicitly satisfied by the overall implementation.
-func (p *Profile) validateLabel(s string, isBidi bool) (err error, badBidi bool) {
+func (p *Profile) validateLabel(s string) (err error) {
 	if s == "" {
 		if p.verifyDNSLength {
-			return &labelError{s, "A4"}, badBidi
+			return &labelError{s, "A4"}
 		}
-		return nil, badBidi
-	}
-	if isBidi && p.bidirule != nil && !p.bidirule(s) {
-		badBidi = true
+		return nil
 	}
 	if !p.validateLabels {
-		return nil, badBidi
+		return nil
 	}
 	trie := p.trie // p.validateLabels is only set if trie is set.
 	if len(s) > 4 && s[2] == '-' && s[3] == '-' {
-		return &labelError{s, "V2"}, badBidi
+		return &labelError{s, "V2"}
 	}
 	if s[0] == '-' || s[len(s)-1] == '-' {
-		return &labelError{s, "V3"}, badBidi
+		return &labelError{s, "V3"}
 	}
 	// TODO: merge the use of this in the trie.
 	v, sz := trie.lookupString(s)
 	x := info(v)
 	if x.isModifier() {
-		return &labelError{s, "V5"}, badBidi
+		return &labelError{s, "V5"}
 	}
 	// Quickly return in the absence of zero-width (non) joiners.
 	if strings.Index(s, zwj) == -1 && strings.Index(s, zwnj) == -1 {
-		return nil, badBidi
+		return nil
 	}
 	st := stateStart
 	for i := 0; ; {
@@ -672,9 +702,9 @@ func (p *Profile) validateLabel(s string, isBidi bool) (err error, badBidi bool)
 		x = info(v)
 	}
 	if st == stateFAIL || st == stateAfter {
-		return &labelError{s, "C"}, badBidi
+		return &labelError{s, "C"}
 	}
-	return nil, badBidi
+	return nil
 }
 
 func ascii(s string) bool {
