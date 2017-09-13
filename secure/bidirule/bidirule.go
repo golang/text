@@ -155,6 +155,7 @@ func DirectionString(s string) bidi.Direction {
 		e, sz := bidi.LookupString(s[i:])
 		if sz == 0 {
 			i++
+			continue
 		}
 		c := e.Class()
 		if c == bidi.R || c == bidi.AL || c == bidi.AN {

@@ -717,6 +717,11 @@ var testCases = [][]ruleTest{
 		dir: bidi.LeftToRight,
 		n:   len("FAX\u2a77\U0001d186"),
 		err: ErrInvalid,
+	}, {
+		in:  "\x80\u0660",
+		dir: bidi.RightToLeft,
+		n:   0,
+		err: ErrInvalid,
 	}},
 }
 
