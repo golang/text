@@ -79,6 +79,19 @@ func main() {
 			os.Exit(2)
 		}
 		updateCore = true
+		goroot := os.Getenv("GOROOT")
+		appendToFile(
+			filepath.Join(goroot, "api", "except.txt"),
+			fmt.Sprintf("pkg unicode, const Version = %q\n", unicode.Version),
+		)
+		const lines = `pkg unicode, const Version = %q
+// TODO: add a new line of the following form for each new script and property.
+pkg unicode, var <new script or property> *RangeTable
+`
+		appendToFile(
+			filepath.Join(goroot, "api", "next.txt"),
+			fmt.Sprintf(lines, gen.UnicodeVersion()),
+		)
 	}
 
 	var unicode = &dependency{}
@@ -129,6 +142,20 @@ func main() {
 		os.Exit(1)
 	}
 	vprintf("SUCCESS\n")
+}
+
+func appendToFile(file, text string) {
+	fmt.Println("Augmenting", file)
+	w, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		fmt.Println("Failed to open file:", err)
+		os.Exit(1)
+	}
+	defer w.Close()
+	if _, err := w.WriteString(text); err != nil {
+		fmt.Println("Failed to write to file:", err)
+		os.Exit(1)
+	}
 }
 
 var (
@@ -243,7 +270,7 @@ func copyPackage(dirSrc, dirDst, search, replace string) {
 		base := filepath.Base(file)
 		if err != nil || info.IsDir() ||
 			!strings.HasSuffix(base, ".go") ||
-			strings.HasSuffix(base, "_test.go") && !strings.HasPrefix(base, "example") ||
+			strings.HasSuffix(base, "_test.go") ||
 			// Don't process subdirectories.
 			filepath.Dir(file) != dirSrc {
 			return nil
