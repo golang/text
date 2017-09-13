@@ -203,9 +203,6 @@ func (t *Transformer) isRTL() bool {
 }
 
 func (t *Transformer) isFinal() bool {
-	if !t.isRTL() {
-		return true
-	}
 	return t.state == ruleLTRFinal || t.state == ruleRTLFinal || t.state == ruleInitial
 }
 

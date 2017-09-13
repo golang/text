@@ -21,6 +21,7 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/text/secure/bidirule"
+	"golang.org/x/text/unicode/bidi"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -142,7 +143,6 @@ func MapForLookup() Option {
 		o.mapping = validateAndMap
 		StrictDomainName(true)(o)
 		ValidateLabels(true)(o)
-		RemoveLeadingDots(true)(o)
 	}
 }
 
@@ -251,23 +251,21 @@ var (
 
 	punycode = &Profile{}
 	lookup   = &Profile{options{
-		transitional:      true,
-		useSTD3Rules:      true,
-		validateLabels:    true,
-		removeLeadingDots: true,
-		trie:              trie,
-		fromPuny:          validateFromPunycode,
-		mapping:           validateAndMap,
-		bidirule:          bidirule.ValidString,
+		transitional:   true,
+		useSTD3Rules:   true,
+		validateLabels: true,
+		trie:           trie,
+		fromPuny:       validateFromPunycode,
+		mapping:        validateAndMap,
+		bidirule:       bidirule.ValidString,
 	}}
 	display = &Profile{options{
-		useSTD3Rules:      true,
-		validateLabels:    true,
-		removeLeadingDots: true,
-		trie:              trie,
-		fromPuny:          validateFromPunycode,
-		mapping:           validateAndMap,
-		bidirule:          bidirule.ValidString,
+		useSTD3Rules:   true,
+		validateLabels: true,
+		trie:           trie,
+		fromPuny:       validateFromPunycode,
+		mapping:        validateAndMap,
+		bidirule:       bidirule.ValidString,
 	}}
 	registration = &Profile{options{
 		useSTD3Rules:    true,
@@ -310,12 +308,15 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 		for ; len(s) > 0 && s[0] == '.'; s = s[1:] {
 		}
 	}
+	// TODO: allow for a quick check the tables data.
+	isBidi := bidirule.DirectionString(s) != bidi.LeftToRight
 	// It seems like we should only create this error on ToASCII, but the
 	// UTS 46 conformance tests suggests we should always check this.
 	if err == nil && p.verifyDNSLength && s == "" {
 		err = &labelError{s, "A4"}
 	}
 	labels := labelIter{orig: s}
+	var badBidi, bb bool
 	for ; !labels.done(); labels.next() {
 		label := labels.label()
 		if label == "" {
@@ -335,6 +336,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				// Spec says keep the old label.
 				continue
 			}
+			isBidi = isBidi || bidirule.DirectionString(u) != bidi.LeftToRight
 			labels.set(u)
 			if err == nil && p.validateLabels {
 				err = p.fromPuny(p, u)
@@ -343,10 +345,12 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				// This should be called on NonTransitional, according to the
 				// spec, but that currently does not have any effect. Use the
 				// original profile to preserve options.
-				err = p.validateLabel(u)
+				err, bb = p.validateLabel(u, true)
+				badBidi = badBidi || bb
 			}
 		} else if err == nil {
-			err = p.validateLabel(label)
+			err, bb = p.validateLabel(label, true)
+			badBidi = badBidi || bb
 		}
 	}
 	if toASCII {
@@ -376,6 +380,9 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 		if len(s) < 1 || n > 253 {
 			err = &labelError{s, "A4"}
 		}
+	}
+	if badBidi && isBidi {
+		err = &labelError{s, "B"}
 	}
 	return s, err
 }
@@ -616,35 +623,35 @@ var joinStates = [][numJoinTypes]joinState{
 
 // validateLabel validates the criteria from Section 4.1. Item 1, 4, and 6 are
 // already implicitly satisfied by the overall implementation.
-func (p *Profile) validateLabel(s string) error {
+func (p *Profile) validateLabel(s string, isBidi bool) (err error, badBidi bool) {
 	if s == "" {
 		if p.verifyDNSLength {
-			return &labelError{s, "A4"}
+			return &labelError{s, "A4"}, badBidi
 		}
-		return nil
+		return nil, badBidi
 	}
-	if p.bidirule != nil && !p.bidirule(s) {
-		return &labelError{s, "B"}
+	if isBidi && p.bidirule != nil && !p.bidirule(s) {
+		badBidi = true
 	}
 	if !p.validateLabels {
-		return nil
+		return nil, badBidi
 	}
 	trie := p.trie // p.validateLabels is only set if trie is set.
 	if len(s) > 4 && s[2] == '-' && s[3] == '-' {
-		return &labelError{s, "V2"}
+		return &labelError{s, "V2"}, badBidi
 	}
 	if s[0] == '-' || s[len(s)-1] == '-' {
-		return &labelError{s, "V3"}
+		return &labelError{s, "V3"}, badBidi
 	}
 	// TODO: merge the use of this in the trie.
 	v, sz := trie.lookupString(s)
 	x := info(v)
 	if x.isModifier() {
-		return &labelError{s, "V5"}
+		return &labelError{s, "V5"}, badBidi
 	}
 	// Quickly return in the absence of zero-width (non) joiners.
 	if strings.Index(s, zwj) == -1 && strings.Index(s, zwnj) == -1 {
-		return nil
+		return nil, badBidi
 	}
 	st := stateStart
 	for i := 0; ; {
@@ -665,9 +672,9 @@ func (p *Profile) validateLabel(s string) error {
 		x = info(v)
 	}
 	if st == stateFAIL || st == stateAfter {
-		return &labelError{s, "C"}
+		return &labelError{s, "C"}, badBidi
 	}
-	return nil
+	return nil, badBidi
 }
 
 func ascii(s string) bool {
