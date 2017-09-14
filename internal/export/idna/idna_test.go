@@ -300,3 +300,9 @@ func unescape(s string) string {
 	}
 	return s
 }
+
+func BenchmarkProfile(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Lookup.ToASCII("www.yahoogle.com")
+	}
+}
