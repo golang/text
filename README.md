@@ -1,9 +1,11 @@
 This repository holds supplementary Go libraries for text processing, many involving Unicode.
 
+
 # Semantic Versioning
 This repo uses Semantic versioning (http://semver.org/), so
 1. MAJOR version when you make incompatible API changes,
-1. MINOR version when you add functionality in a backwards-compatible manner, and
+1. MINOR version when you add functionality in a backwards-compatible manner,
+   and
 1. PATCH version when you make backwards-compatible bug fixes.
 
 A Unicode major and minor version bump is mapped to a major version bump in
@@ -16,8 +18,8 @@ So going from 0.1.0 to 0.2.0 is considered to be a major version bump.
 A major new CLDR version is mapped to a minor version increase in x/text.
 Any other new CLDR version is mapped to a patch version increase in x/text.
 
-# Contribute
 
+# Contribute
 To submit changes to this repository, see http://golang.org/doc/contribute.html.
 
 To generate the tables in this repository (except for the encoding tables),
@@ -59,5 +61,3 @@ backwards compatibility is not maintained.
 So updating to a different version may not work.
 
 The files in DATA/{iana|icu|w3|whatwg} are currently not versioned.
-
-
