@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
 	"golang.org/x/text/internal/gen"
@@ -326,9 +327,18 @@ func loadTestdata(t *testing.T, test string) (tree *Tree, file []byte) {
 	}
 
 	context := Enum("context")
-	// Align era with width values.
-	width := Enum("width", "abbreviated", "narrow", "wide")
-	eraType := Enum("era", "eraAbbr", "eraNarrow", "eraNames")
+	widthMap := func(s string) string {
+		// Align era with width values.
+		if r, ok := map[string]string{
+			"eraAbbr":   "abbreviated",
+			"eraNarrow": "narrow",
+			"eraNames":  "wide",
+		}[s]; ok {
+			s = r
+		}
+		return "w" + strings.Title(s)
+	}
+	width := EnumFunc("width", widthMap, "abbreviated", "narrow", "wide")
 	r := rand.New(rand.NewSource(0))
 
 	for _, loc := range data.Locales() {
@@ -364,7 +374,7 @@ func loadTestdata(t *testing.T, test string) (tree *Tree, file []byte) {
 					}
 				}
 				if x := x.Index(cal.Eras); x != nil {
-					opts := []Option{eraType, SharedType()}
+					opts := []Option{width, SharedType()}
 					if x := x.Index(cal.Eras.EraNames, opts...); x != nil {
 						for _, e := range cal.Eras.EraNames.Era {
 							x.IndexFromAlt(e).SetValue(e.Type, e)

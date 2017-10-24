@@ -10,6 +10,7 @@ type enumIndex int
 // An enum is a collection of enum values.
 type enum struct {
 	name   string // the Go type of the enum
+	rename func(string) string
 	keyMap map[string]enumIndex
 	keys   []string
 }
@@ -17,6 +18,9 @@ type enum struct {
 // lookup returns the index for the enum corresponding to the string. If s
 // currently does not exist it will add the entry.
 func (e *enum) lookup(s string) enumIndex {
+	if e.rename != nil {
+		s = e.rename(s)
+	}
 	x, ok := e.keyMap[s]
 	if !ok {
 		if e.keyMap == nil {
@@ -49,7 +53,7 @@ func (t *typeInfo) lookupSubtype(s string, opts *options) (x enumIndex, sub *typ
 		}
 	}
 	if opts.sharedEnums != nil && t.enum != opts.sharedEnums {
-		panic("incompatible enumss defined")
+		panic("incompatible enums defined")
 	}
 	x = t.enum.lookup(s)
 	if t.entries == nil {

@@ -43,7 +43,12 @@ func (o *options) setAlias(n Element) {
 // position (starting at 0). Other values may still be added and will be
 // assigned to subsequent values.
 func Enum(name string, value ...string) Option {
-	enum := &enum{name: name, keyMap: map[string]enumIndex{}}
+	return EnumFunc(name, nil, value...)
+}
+
+// EnumFunc is like Enum but also takes a function that allows rewriting keys.
+func EnumFunc(name string, rename func(string) string, value ...string) Option {
+	enum := &enum{name: name, rename: rename, keyMap: map[string]enumIndex{}}
 	for _, e := range value {
 		enum.lookup(e)
 	}
@@ -61,13 +66,6 @@ func Enum(name string, value ...string) Option {
 		o.sharedEnums = enum
 	}
 }
-
-// TODO:
-// // RenameFunc renames enum values. This is mostly used to sanitize enum values
-// // to make them proper identifiers.
-// func RenameFunc(rename func(string) string) Option {
-// 	return nil
-// }
 
 // SharedType returns an option which causes all Indexes to which this option is
 // passed to have the same type.

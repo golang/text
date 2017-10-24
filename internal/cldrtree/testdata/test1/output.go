@@ -11,9 +11,9 @@ var tree = &cldrtree.Tree{locales, indices, buckets}
 //   - format
 //   - stand-alone
 // <width>
-//   - abbreviated
-//   - narrow
-//   - wide
+//   - wAbbreviated
+//   - wNarrow
+//   - wWide
 //
 // - calendars
 //   - chinese
@@ -43,9 +43,9 @@ const (
 type width int
 
 const (
-	abbreviated width = iota
-	narrow
-	wide
+	wAbbreviated width = iota
+	wNarrow
+	wWide
 )
 
 var locales = []uint32{ // 754 elements

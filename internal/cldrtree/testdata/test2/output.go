@@ -7,17 +7,13 @@ import "golang.org/x/text/internal/cldrtree"
 var tree = &cldrtree.Tree{locales, indices, buckets}
 
 // Path values:
-// <era>
-//   - eraAbbr
-//   - eraNarrow
-//   - eraNames
+// <width>
+//   - wAbbreviated
+//   - wNarrow
+//   - wWide
 // <context>
 //   - format
 //   - stand-alone
-// <width>
-//   - abbreviated
-//   - narrow
-//   - wide
 //
 // - calendars
 //   - buddhist
@@ -40,7 +36,7 @@ var tree = &cldrtree.Tree{locales, indices, buckets}
 //           - 1..13
 //           - 7leap
 //     - eras
-//       - <era>
+//       - <width>
 //         - ""
 //         - variant
 //           - 0..1
@@ -79,13 +75,13 @@ var tree = &cldrtree.Tree{locales, indices, buckets}
 // total string size:  9931
 // bucket waste:       0
 
-// era specifies a property of a CLDR field.
-type era int
+// width specifies a property of a CLDR field.
+type width int
 
 const (
-	eraAbbr era = iota
-	eraNarrow
-	eraNames
+	wAbbreviated width = iota
+	wNarrow
+	wWide
 )
 
 // context specifies a property of a CLDR field.
@@ -94,15 +90,6 @@ type context int
 const (
 	format context = iota
 	standAlone
-)
-
-// width specifies a property of a CLDR field.
-type width int
-
-const (
-	abbreviated width = iota
-	narrow
-	wide
 )
 
 var locales = []uint32{ // 754 elements
