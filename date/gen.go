@@ -9,6 +9,7 @@ package main
 import (
 	"flag"
 	"log"
+	"strconv"
 	"strings"
 
 	"golang.org/x/text/internal/cldrtree"
@@ -70,6 +71,20 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 	}
 	width := cldrtree.EnumFunc("width", widthMap, "abbreviated", "narrow", "wide")
 	length := cldrtree.Enum("length")
+	relative := cldrtree.EnumFunc("relative", func(s string) string {
+		x, err := strconv.ParseInt(s, 10, 8)
+		if err != nil {
+			log.Fatal("Invalid number:", err)
+		}
+		return []string{
+			"before2",
+			"before1",
+			"current",
+			"after1",
+			"after2",
+			"after3",
+		}[x+2]
+	})
 
 	zoneType := cldrtree.SharedType()
 	metaZoneType := cldrtree.SharedType()
@@ -213,7 +228,7 @@ func genCLDRTree(w *gen.CodeWriter, data *cldr.CLDR) {
 					x.Index(d).SetValue("", d)
 				}
 				for _, r := range f.Relative {
-					x.Index(r).SetValue(r.Type, r)
+					x.Index(r).SetValue(r.Type, r, relative)
 				}
 				for _, rt := range f.RelativeTime {
 					x := x.Index(rt).IndexFromType(rt)
