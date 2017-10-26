@@ -309,7 +309,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 		for ; len(s) > 0 && s[0] == '.'; s = s[1:] {
 		}
 	}
-	// TODO: allow for a quick check the tables data.
+	// TODO: allow for a quick check of the tables data.
 	// It seems like we should only create this error on ToASCII, but the
 	// UTS 46 conformance tests suggests we should always check this.
 	if err == nil && p.verifyDNSLength && s == "" {
