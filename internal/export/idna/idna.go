@@ -405,6 +405,9 @@ func validateRegistration(p *Profile, s string) (idem string, bidi bool, err err
 	}
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
+		if sz == 0 {
+			return s, bidi, runeError(utf8.RuneError)
+		}
 		bidi = bidi || info(v).isBidi(s[i:])
 		// Copy bytes not copied so far.
 		switch p.simplify(info(v).category()) {
@@ -446,6 +449,15 @@ func validateAndMap(p *Profile, s string) (vm string, bidi bool, err error) {
 	var combinedInfoBits info
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
+		if sz == 0 {
+			b = append(b, s[k:i]...)
+			b = append(b, "\ufffd"...)
+			k = len(s)
+			if err == nil {
+				err = runeError(utf8.RuneError)
+			}
+			break
+		}
 		combinedInfoBits |= info(v)
 		bidi = bidi || info(v).isBidi(s[i:])
 		start := i
@@ -584,6 +596,9 @@ func validateFromPunycode(p *Profile, s string) error {
 	// loop.
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
+		if sz == 0 {
+			return runeError(utf8.RuneError)
+		}
 		if c := p.simplify(info(v).category()); c != valid && c != deviation {
 			return &labelError{s, "V6"}
 		}
