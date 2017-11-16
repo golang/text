@@ -13,13 +13,16 @@ import (
 	"go/constant"
 	"go/format"
 	"go/parser"
+	"go/token"
 	"go/types"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"unicode"
 
+	fmtparser "golang.org/x/text/internal/format"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -64,7 +67,7 @@ func runExtract(cmd *Command, args []string) error {
 		return buf.String()
 	}
 
-	var translations []Translation
+	var messages []Message
 
 	for _, info := range iprog.InitialPackages() {
 		for _, f := range info.Files {
@@ -103,70 +106,88 @@ func runExtract(cmd *Command, args []string) error {
 					return true
 				}
 
+				fmtType, ok := m[meth.Obj().Name()]
+				if !ok {
+					return true
+				}
 				// argn is the index of the format string.
-				argn, ok := m[meth.Obj().Name()]
-				if !ok || argn >= len(call.Args) {
+				argn := fmtType.arg
+				if argn >= len(call.Args) {
 					return true
 				}
 
-				// Skip calls with non-constant format string.
-				fmtstr := info.Types[call.Args[argn]].Value
-				if fmtstr == nil || fmtstr.Kind() != constant.String {
+				args := call.Args[fmtType.arg:]
+
+				fmtMsg, ok := msgStr(info, args[0])
+				if !ok {
+					// TODO: identify the type of the format argument. If it
+					// is not a string, multiple keys may be defined.
 					return true
 				}
-
-				posn := conf.Fset.Position(call.Lparen)
-				filepos := fmt.Sprintf("%s:%d:%d", filepath.Base(posn.Filename), posn.Line, posn.Column)
-
-				// TODO: identify the type of the format argument. If it is not
-				// a string, multiple keys may be defined.
-				var key []string
-
-				// TODO: replace substitutions (%v) with a translator friendly
-				// notation. For instance:
-				//     "%d files remaining" -> "{numFiles} files remaining", or
-				//     "%d files remaining" -> "{arg1} files remaining"
-				// Alternatively, this could be done at a later stage.
-				msg := constant.StringVal(fmtstr)
-
-				// Construct a Translation unit.
-				c := Translation{
-					Key:              key,
-					Position:         filepath.Join(info.Pkg.Path(), filepos),
-					Original:         Text{Msg: msg},
-					ExtractedComment: getComment(call.Args[0]),
-					// TODO(fix): this doesn't get the before comment.
-					// Comment: getComment(call),
-				}
-
-				for i, arg := range call.Args[argn+1:] {
-					var val string
+				key := []string{fmtMsg}
+				arguments := []Argument{}
+				args = args[1:]
+				simArgs := make([]interface{}, len(args))
+				for i, arg := range args {
+					expr := print(arg)
+					val := ""
 					if v := info.Types[arg].Value; v != nil {
 						val = v.ExactString()
+						simArgs[i] = val
+						switch arg.(type) {
+						case *ast.BinaryExpr, *ast.UnaryExpr:
+							expr = val
+						}
 					}
-					posn := conf.Fset.Position(arg.Pos())
-					filepos := fmt.Sprintf("%s:%d:%d", filepath.Base(posn.Filename), posn.Line, posn.Column)
-					c.Args = append(c.Args, Argument{
-						ID:             i + 1,
+					arguments = append(arguments, Argument{
+						ArgNum:         i + 1,
 						Type:           info.Types[arg].Type.String(),
 						UnderlyingType: info.Types[arg].Type.Underlying().String(),
-						Expr:           print(arg),
+						Expr:           expr,
 						Value:          val,
 						Comment:        getComment(arg),
-						Position:       filepath.Join(info.Pkg.Path(), filepos),
+						Position:       posString(conf, info, arg.Pos()),
 						// TODO report whether it implements
 						// interfaces plural.Interface,
 						// gender.Interface.
 					})
 				}
+				msg := ""
 
-				translations = append(translations, c)
+				p := fmtparser.Parser{}
+				p.Reset(simArgs)
+				for p.SetFormat(fmtMsg); p.Scan(); {
+					switch p.Status {
+					case fmtparser.StatusText:
+						msg += p.Text()
+					case fmtparser.StatusSubstitution,
+						fmtparser.StatusBadWidthSubstitution,
+						fmtparser.StatusBadPrecSubstitution:
+						arg := arguments[p.ArgNum-1]
+						id := getID(&arg)
+						arguments[p.ArgNum-1].ID = id
+						// TODO: do we allow the same entry to be formatted
+						// differently within the same string, do we give
+						// a warning, or is this an error?
+						arguments[p.ArgNum-1].Format = append(arguments[p.ArgNum-1].Format, p.Text())
+						msg += fmt.Sprintf("{%s}", id)
+					}
+				}
+
+				messages = append(messages, Message{
+					Key:      key,
+					Position: posString(conf, info, call.Lparen),
+					Message:  Text{Msg: msg},
+					// TODO(fix): this doesn't get the before comment.
+					Comment: getComment(call.Args[0]),
+					Args:    arguments,
+				})
 				return true
 			})
 		}
 	}
 
-	data, err := json.MarshalIndent(translations, "", "    ")
+	data, err := json.MarshalIndent(messages, "", "    ")
 	if err != nil {
 		return err
 	}
@@ -181,15 +202,60 @@ func runExtract(cmd *Command, args []string) error {
 	return nil
 }
 
+func posString(conf loader.Config, info *loader.PackageInfo, pos token.Pos) string {
+	p := conf.Fset.Position(pos)
+	file := fmt.Sprintf("%s:%d:%d", filepath.Base(p.Filename), p.Line, p.Column)
+	return filepath.Join(info.Pkg.Path(), file)
+}
+
 // extractFuncs indicates the types and methods for which to extract strings,
 // and which argument to extract.
 // TODO: use the types in conf.Import("golang.org/x/text/message") to extract
 // the correct instances.
-var extractFuncs = map[string]map[string]int{
+var extractFuncs = map[string]map[string]extractType{
 	// TODO: Printer -> *golang.org/x/text/message.Printer
 	"message.Printer": {
-		"Printf":  0,
-		"Sprintf": 0,
-		"Fprintf": 1,
+		"Printf":  extractType{arg: 0, format: true},
+		"Sprintf": extractType{arg: 0, format: true},
+		"Fprintf": extractType{arg: 1, format: true},
+
+		"Lookup": extractType{arg: 0},
 	},
+}
+
+type extractType struct {
+	// format indicates if the next arg is a formatted string or whether to
+	// concatenate all arguments
+	format bool
+	// arg indicates the position of the argument to extract.
+	arg int
+}
+
+func getID(arg *Argument) string {
+	s := getLastComponent(arg.Expr)
+	s = strings.Replace(s, " ", "", -1)
+	// For small variable names, use user-defined types for more info.
+	if len(s) <= 2 && arg.UnderlyingType != arg.Type {
+		s = getLastComponent(arg.Type)
+	}
+	return strings.Title(s)
+}
+
+func getLastComponent(s string) string {
+	return s[1+strings.LastIndexByte(s, '.'):]
+}
+
+func msgStr(info *loader.PackageInfo, e ast.Expr) (s string, ok bool) {
+	v := info.Types[e].Value
+	if v == nil || v.Kind() != constant.String {
+		return "", false
+	}
+	s = constant.StringVal(v)
+	// Only record strings with letters.
+	for _, r := range s {
+		if unicode.In(r, unicode.L) {
+			return s, true
+		}
+	}
+	return "", false
 }

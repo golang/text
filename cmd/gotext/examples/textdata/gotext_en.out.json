@@ -1,0 +1,185 @@
+[
+    {
+        "key": [
+            "Hello %s!\n"
+        ],
+        "message": {
+            "msg": "Hello {City}!\n"
+        },
+        "args": [
+            {
+                "id": "City",
+                "argNum": 1,
+                "format": [
+                    "%s"
+                ],
+                "type": "string",
+                "underlyingType": "string",
+                "expr": "city",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:31:26"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:31:10"
+    },
+    {
+        "key": [
+            "Hello %s!\n"
+        ],
+        "message": {
+            "msg": "Hello {Town}!\n"
+        },
+        "args": [
+            {
+                "id": "Town",
+                "argNum": 1,
+                "format": [
+                    "%s"
+                ],
+                "type": "string",
+                "underlyingType": "string",
+                "expr": "town",
+                "comment": "Town",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:36:3"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:35:10"
+    },
+    {
+        "key": [
+            "%s is visiting %s!\n"
+        ],
+        "message": {
+            "msg": "{Person} is visiting {Place}!\n"
+        },
+        "args": [
+            {
+                "id": "Person",
+                "argNum": 1,
+                "format": [
+                    "%s"
+                ],
+                "type": "string",
+                "underlyingType": "string",
+                "expr": "person",
+                "comment": "The person of matter.",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:41:3"
+            },
+            {
+                "id": "Place",
+                "argNum": 2,
+                "format": [
+                    "%s"
+                ],
+                "type": "string",
+                "underlyingType": "string",
+                "expr": "place",
+                "comment": "Place the person is visiting.",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:42:3"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:40:10"
+    },
+    {
+        "key": [
+            "%s is visiting %s!\n"
+        ],
+        "message": {
+            "msg": "{Person} is visiting {Place}!\n"
+        },
+        "comment": "Person visiting a place.",
+        "args": [
+            {
+                "id": "Person",
+                "argNum": 1,
+                "format": [
+                    "%s"
+                ],
+                "type": "string",
+                "underlyingType": "string",
+                "expr": "pp.Person",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:54:3"
+            },
+            {
+                "id": "Place",
+                "argNum": 2,
+                "format": [
+                    "%s"
+                ],
+                "type": "string",
+                "underlyingType": "string",
+                "expr": "pp.Place",
+                "comment": "Place the person is visiting.",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:55:3"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:53:10"
+    },
+    {
+        "key": [
+            "%d files remaining!"
+        ],
+        "message": {
+            "msg": "{2} files remaining!"
+        },
+        "args": [
+            {
+                "id": "2",
+                "argNum": 1,
+                "format": [
+                    "%d"
+                ],
+                "type": "int",
+                "underlyingType": "int",
+                "expr": "2",
+                "value": "2",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:59:34"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:59:10"
+    },
+    {
+        "key": [
+            "%d more files remaining!"
+        ],
+        "message": {
+            "msg": "{N} more files remaining!"
+        },
+        "args": [
+            {
+                "id": "N",
+                "argNum": 1,
+                "format": [
+                    "%d"
+                ],
+                "type": "int",
+                "underlyingType": "int",
+                "expr": "n",
+                "value": "2",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:64:39"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:64:10"
+    },
+    {
+        "key": [
+            "Use the following code for your discount: %d\n"
+        ],
+        "message": {
+            "msg": "Use the following code for your discount: {ReferralCode}\n"
+        },
+        "args": [
+            {
+                "id": "ReferralCode",
+                "argNum": 1,
+                "format": [
+                    "%d"
+                ],
+                "type": "golang.org/x/text/cmd/gotext/examples.referralCode",
+                "underlyingType": "int",
+                "expr": "c",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:69:61"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:69:10"
+    }
+]
