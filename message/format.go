@@ -22,6 +22,8 @@ const (
 
 // flags placed in a separate struct for easy clearing.
 type fmtFlags struct {
+	verb rune
+
 	widPresent  bool
 	precPresent bool
 	minus       bool
@@ -35,7 +37,47 @@ type fmtFlags struct {
 	// different, flagless formats set at the top level.
 	plusV  bool
 	sharpV bool
+
+	wid  int // width
+	prec int // precision
+
+	// retain arguments across calls.
+	args []interface{}
+	// retain current argument number across calls
+	argNum int
+
+	// reordered records whether the format string used argument reordering.
+	reordered bool
+	// goodArgNum records whether the most recent reordering directive was valid.
+	goodArgNum bool
+
+	// position info
+	format   string
+	startPos int
+	endPos   int
+	state    state
 }
+
+func (p *fmtFlags) Text() string { return p.format[p.startPos:p.endPos] }
+
+func (p *fmtFlags) init(format string) {
+	p.format = format
+	p.startPos = 0
+	p.endPos = 0
+	p.argNum = 0
+}
+
+type state int
+
+const (
+	text state = iota
+	substitution
+	badWidth
+	badPrec
+	noVerb
+	badArgNum
+	missingArg
+)
 
 // A formatInfo is the raw formatter used by Printf etc.
 // It prints into a buffer that must be set up separately.
@@ -44,16 +86,22 @@ type formatInfo struct {
 
 	fmtFlags
 
-	wid  int // width
-	prec int // precision
-
 	// intbuf is large enough to store %b of an int64 with a sign and
 	// avoids padding at the end of the struct on 32 bit architectures.
 	intbuf [68]byte
 }
 
-func (f *formatInfo) clearflags() {
-	f.fmtFlags = fmtFlags{}
+func (f *fmtFlags) clearflags() {
+	f.widPresent = false
+	f.precPresent = false
+	f.minus = false
+	f.plus = false
+	f.sharp = false
+	f.space = false
+	f.zero = false
+
+	f.plusV = false
+	f.sharpV = false
 }
 
 func (f *formatInfo) init(buf *bytes.Buffer) {

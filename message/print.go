@@ -48,10 +48,6 @@ type printer struct {
 	// buffer for accumulating output.
 	bytes.Buffer
 
-	// retain arguments across calls.
-	args []interface{}
-	// retain current argument number across calls
-	argNum int
 	// arg holds the current item, as an interface{}.
 	arg interface{}
 	// value is used instead of arg for reflect values.
@@ -60,10 +56,6 @@ type printer struct {
 	// fmt is used to format basic items such as integers or strings.
 	fmt formatInfo
 
-	// reordered records whether the format string used argument reordering.
-	reordered bool
-	// goodArgNum records whether the most recent reordering directive was valid.
-	goodArgNum bool
 	// panicking is set by catchPanic to avoid infinite panic, recover, panic, ... recursion.
 	panicking bool
 	// erroring is set when printing an error string to guard against calling handleMethods.
@@ -75,8 +67,9 @@ type printer struct {
 
 func (p *printer) reset() {
 	p.Buffer.Reset()
-	p.argNum = 0
-	p.reordered = false
+	p.fmt.argNum = 0
+	p.fmt.startPos = 0
+	p.fmt.reordered = false
 	p.panicking = false
 	p.erroring = false
 	p.fmt.init(&p.Buffer)
@@ -911,7 +904,7 @@ func (p *printer) printValue(value reflect.Value, verb rune, depth int) {
 }
 
 // intFromArg gets the argNumth element of a. On return, isInt reports whether the argument has integer type.
-func (p *printer) intFromArg() (num int, isInt bool) {
+func (p *fmtFlags) intFromArg() (num int, isInt bool) {
 	if p.argNum < len(p.args) {
 		arg := p.args[p.argNum]
 		num, isInt = arg.(int) // Almost always OK.
@@ -971,7 +964,7 @@ func parseArgNumber(format string) (index int, wid int, ok bool) {
 // updateArgNumber returns the next argument to evaluate, which is either the value of the passed-in
 // argNum or the value of the bracketed integer that begins format[i:]. It also returns
 // the new value of i, that is, the index of the next byte of the format to process.
-func (p *printer) updateArgNumber(format string, i int) (newi int, found bool) {
+func (p *fmtFlags) updateArgNumber(format string, i int) (newi int, found bool) {
 	if len(format) <= i || format[i] != '[' {
 		return i, false
 	}
@@ -997,151 +990,184 @@ func (p *printer) missingArg(verb rune) {
 	p.WriteString(missingString)
 }
 
-func (p *printer) doPrintf(format string) {
+func (p *fmtFlags) Scan() bool {
+	p.state = text
+	format := p.format
 	end := len(format)
+	if p.endPos >= end {
+		return false
+	}
 	afterIndex := false // previous item in format was an index like [3].
-formatLoop:
-	for i := 0; i < end; {
-		p.goodArgNum = true
-		lasti := i
-		for i < end && format[i] != '%' {
-			i++
-		}
-		if i > lasti {
-			p.WriteString(format[lasti:i])
-		}
-		if i >= end {
-			// done processing format string
-			break
-		}
 
-		// Process one verb
+	p.startPos = p.endPos
+	p.goodArgNum = true
+	i := p.startPos
+	for i < end && format[i] != '%' {
 		i++
+	}
+	if i > p.startPos {
+		p.endPos = i
+		return true
+	}
+	// Process one verb
+	i++
 
-		// Do we have flags?
-		p.fmt.clearflags()
-	simpleFormat:
-		for ; i < end; i++ {
-			c := format[i]
-			switch c {
-			case '#':
-				p.fmt.sharp = true
-			case '0':
-				p.fmt.zero = !p.fmt.minus // Only allow zero padding to the left.
-			case '+':
-				p.fmt.plus = true
-			case '-':
-				p.fmt.minus = true
-				p.fmt.zero = false // Do not pad with zeros to the right.
-			case ' ':
-				p.fmt.space = true
-			default:
-				// Fast path for common case of ascii lower case simple verbs
-				// without precision or width or argument indices.
-				if 'a' <= c && c <= 'z' && p.argNum < len(p.args) {
-					if c == 'v' {
-						// Go syntax
-						p.fmt.sharpV = p.fmt.sharp
-						p.fmt.sharp = false
-						// Struct-field syntax
-						p.fmt.plusV = p.fmt.plus
-						p.fmt.plus = false
-					}
-					p.printArg(p.Arg(p.argNum+1), rune(c))
-					p.argNum++
-					i++
-					continue formatLoop
+	p.state = substitution
+
+	// Do we have flags?
+	p.clearflags()
+
+simpleFormat:
+	for ; i < end; i++ {
+		c := p.format[i]
+		switch c {
+		case '#':
+			p.sharp = true
+		case '0':
+			p.zero = !p.minus // Only allow zero padding to the left.
+		case '+':
+			p.plus = true
+		case '-':
+			p.minus = true
+			p.zero = false // Do not pad with zeros to the right.
+		case ' ':
+			p.space = true
+		default:
+			// Fast path for common case of ascii lower case simple verbs
+			// without precision or width or argument indices.
+			if 'a' <= c && c <= 'z' && p.argNum < len(p.args) {
+				if c == 'v' {
+					// Go syntax
+					p.sharpV = p.sharp
+					p.sharp = false
+					// Struct-field syntax
+					p.plusV = p.plus
+					p.plus = false
 				}
-				// Format is more complex than simple flags and a verb or is malformed.
-				break simpleFormat
+				p.verb = rune(c)
+				p.argNum++
+				p.endPos = i + 1
+				return true
 			}
+			// Format is more complex than simple flags and a verb or is malformed.
+			break simpleFormat
+		}
+	}
+
+	// Do we have an explicit argument index?
+	i, afterIndex = p.updateArgNumber(format, i)
+
+	// Do we have width?
+	if i < end && format[i] == '*' {
+		i++
+		p.wid, p.widPresent = p.intFromArg()
+
+		if !p.widPresent {
+			p.state = badWidth
 		}
 
-		// Do we have an explicit argument index?
-		i, afterIndex = p.updateArgNumber(format, i)
+		// We have a negative width, so take its value and ensure
+		// that the minus flag is set
+		if p.wid < 0 {
+			p.wid = -p.wid
+			p.minus = true
+			p.zero = false // Do not pad with zeros to the right.
+		}
+		afterIndex = false
+	} else {
+		p.wid, p.widPresent, i = parsenum(format, i, end)
+		if afterIndex && p.widPresent { // "%[3]2d"
+			p.goodArgNum = false
+		}
+	}
 
-		// Do we have width?
+	// Do we have precision?
+	if i+1 < end && format[i] == '.' {
+		i++
+		if afterIndex { // "%[3].2d"
+			p.goodArgNum = false
+		}
+		i, afterIndex = p.updateArgNumber(format, i)
 		if i < end && format[i] == '*' {
 			i++
-			p.fmt.wid, p.fmt.widPresent = p.intFromArg()
-
-			if !p.fmt.widPresent {
-				p.WriteString(badWidthString)
+			p.prec, p.precPresent = p.intFromArg()
+			// Negative precision arguments don't make sense
+			if p.prec < 0 {
+				p.prec = 0
+				p.precPresent = false
 			}
-
-			// We have a negative width, so take its value and ensure
-			// that the minus flag is set
-			if p.fmt.wid < 0 {
-				p.fmt.wid = -p.fmt.wid
-				p.fmt.minus = true
-				p.fmt.zero = false // Do not pad with zeros to the right.
+			if !p.precPresent {
+				p.state = badPrec
 			}
 			afterIndex = false
 		} else {
-			p.fmt.wid, p.fmt.widPresent, i = parsenum(format, i, end)
-			if afterIndex && p.fmt.widPresent { // "%[3]2d"
-				p.goodArgNum = false
+			p.prec, p.precPresent, i = parsenum(format, i, end)
+			if !p.precPresent {
+				p.prec = 0
+				p.precPresent = true
 			}
 		}
+	}
 
-		// Do we have precision?
-		if i+1 < end && format[i] == '.' {
-			i++
-			if afterIndex { // "%[3].2d"
-				p.goodArgNum = false
-			}
-			i, afterIndex = p.updateArgNumber(format, i)
-			if i < end && format[i] == '*' {
-				i++
-				p.fmt.prec, p.fmt.precPresent = p.intFromArg()
-				// Negative precision arguments don't make sense
-				if p.fmt.prec < 0 {
-					p.fmt.prec = 0
-					p.fmt.precPresent = false
-				}
-				if !p.fmt.precPresent {
-					p.WriteString(badPrecString)
-				}
-				afterIndex = false
-			} else {
-				p.fmt.prec, p.fmt.precPresent, i = parsenum(format, i, end)
-				if !p.fmt.precPresent {
-					p.fmt.prec = 0
-					p.fmt.precPresent = true
-				}
-			}
-		}
+	if !afterIndex {
+		i, afterIndex = p.updateArgNumber(format, i)
+	}
 
-		if !afterIndex {
-			i, afterIndex = p.updateArgNumber(format, i)
-		}
+	if i >= end {
+		p.endPos = i
+		p.state = noVerb
+		return true
+	}
 
-		if i >= end {
+	verb, w := utf8.DecodeRuneInString(format[i:])
+	p.endPos = i + w
+	p.verb = verb
+
+	switch {
+	case verb == '%': // Percent does not absorb operands and ignores f.wid and f.prec.
+		p.startPos = p.endPos - 1
+		p.state = text
+	case !p.goodArgNum:
+		p.state = badArgNum
+	case p.argNum >= len(p.args): // No argument left over to print for the current verb.
+		p.state = missingArg
+	case verb == 'v':
+		// Go syntax
+		p.sharpV = p.sharp
+		p.sharp = false
+		// Struct-field syntax
+		p.plusV = p.plus
+		p.plus = false
+		fallthrough
+	default:
+		p.argNum++
+	}
+	return true
+}
+
+func (p *printer) doPrintf(format string) {
+	p.fmt.fmtFlags.init(format)
+
+	for p.fmt.Scan() {
+		switch p.fmt.state {
+		case text:
+			p.WriteString(p.fmt.Text())
+		case substitution:
+			p.printArg(p.Arg(p.fmt.argNum), p.fmt.verb)
+		case badWidth:
+			p.WriteString(badWidthString)
+			p.printArg(p.Arg(p.fmt.argNum), p.fmt.verb)
+		case badPrec:
+			p.WriteString(badPrecString)
+			p.printArg(p.Arg(p.fmt.argNum), p.fmt.verb)
+		case noVerb:
 			p.WriteString(noVerbString)
-			break
-		}
-
-		verb, w := utf8.DecodeRuneInString(format[i:])
-		i += w
-
-		switch {
-		case verb == '%': // Percent does not absorb operands and ignores f.wid and f.prec.
-			p.WriteByte('%')
-		case !p.goodArgNum:
-			p.badArgNum(verb)
-		case p.argNum >= len(p.args): // No argument left over to print for the current verb.
-			p.missingArg(verb)
-		case verb == 'v':
-			// Go syntax
-			p.fmt.sharpV = p.fmt.sharp
-			p.fmt.sharp = false
-			// Struct-field syntax
-			p.fmt.plusV = p.fmt.plus
-			p.fmt.plus = false
-			fallthrough
+		case badArgNum:
+			p.badArgNum(p.fmt.verb)
+		case missingArg:
+			p.missingArg(p.fmt.verb)
 		default:
-			p.printArg(p.args[p.argNum], verb)
-			p.argNum++
+			panic("unreachable")
 		}
 	}
 
@@ -1149,10 +1175,10 @@ formatLoop:
 	// argument. Note that this behavior is necessarily different from fmt:
 	// different variants of messages may opt to drop some or all of the
 	// arguments.
-	if !p.reordered && p.argNum < len(p.args) && p.argNum != 0 {
+	if !p.fmt.reordered && p.fmt.argNum < len(p.fmt.args) && p.fmt.argNum != 0 {
 		p.fmt.clearflags()
 		p.WriteString(extraString)
-		for i, arg := range p.args[p.argNum:] {
+		for i, arg := range p.fmt.args[p.fmt.argNum:] {
 			if i > 0 {
 				p.WriteString(commaSpaceString)
 			}
@@ -1160,7 +1186,7 @@ formatLoop:
 				p.WriteString(nilAngleString)
 			} else {
 				p.WriteString(reflect.TypeOf(arg).String())
-				p.WriteByte('=')
+				p.WriteString("=")
 				p.printArg(arg, 'v')
 			}
 		}
