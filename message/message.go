@@ -120,7 +120,7 @@ func (p *Printer) Printf(key Reference, a ...interface{}) (n int, err error) {
 
 func lookupAndFormat(p *Printer, r Reference, a []interface{}) {
 	p.printer.reset()
-	p.printer.fmt.args = a
+	p.printer.fmt.Reset(a)
 	var id, msg string
 	switch v := r.(type) {
 	case string:
@@ -142,8 +142,8 @@ func lookupAndFormat(p *Printer, r Reference, a []interface{}) {
 // Arg implements catmsg.Renderer.
 func (p *printer) Arg(i int) interface{} { // TODO, also return "ok" bool
 	i--
-	if uint(i) < uint(len(p.fmt.args)) {
-		return p.fmt.args[i]
+	if uint(i) < uint(len(p.fmt.Args)) {
+		return p.fmt.Args[i]
 	}
 	return nil
 }
