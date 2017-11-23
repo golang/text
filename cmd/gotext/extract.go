@@ -124,7 +124,17 @@ func runExtract(cmd *Command, args []string) error {
 					// is not a string, multiple keys may be defined.
 					return true
 				}
-				key := []string{fmtMsg}
+				comment := ""
+				key := []string{}
+				if ident, ok := args[0].(*ast.Ident); ok {
+					key = append(key, ident.Name)
+					if v, ok := ident.Obj.Decl.(*ast.ValueSpec); ok && v.Comment != nil {
+						// TODO: get comment above ValueSpec as well
+						comment = v.Comment.Text()
+					}
+				}
+
+				key = append(key, fmtMsg)
 				arguments := []Argument{}
 				args = args[1:]
 				simArgs := make([]interface{}, len(args))
@@ -174,12 +184,16 @@ func runExtract(cmd *Command, args []string) error {
 					}
 				}
 
+				if c := getComment(call.Args[0]); c != "" {
+					comment = c
+				}
+
 				messages = append(messages, Message{
 					Key:      key,
 					Position: posString(conf, info, call.Lparen),
 					Message:  Text{Msg: msg},
 					// TODO(fix): this doesn't get the before comment.
-					Comment: getComment(call.Args[0]),
+					Comment: comment,
 					Args:    arguments,
 				})
 				return true

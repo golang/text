@@ -23,8 +23,8 @@ func main() {
 
 	p.Print("Hello ", person, " in ", place, "!\n")
 
-	// Greet a city.
-	p.Print("Hello city!\n")
+	// Greet everyone.
+	p.Printf("Hello world!\n")
 
 	city := "Amsterdam"
 	// Greet a city.
@@ -63,8 +63,17 @@ func main() {
 	// Numeric var
 	p.Printf("%d more files remaining!", n)
 
+	// Infer better names from type names.
 	type referralCode int
 
-	c := referralCode(5)
+	const c = referralCode(5)
 	p.Printf("Use the following code for your discount: %d\n", c)
+
+	// Using a constant for a message will cause the constant name to be
+	// added as an identifier, allowing for stable message identifiers.
+
+	// Explain that a device is out of order.
+	const msgOutOfOrder = "%s is out of order!" // FOO
+	const device = "Soda machine"
+	p.Printf(msgOutOfOrder, device)
 }

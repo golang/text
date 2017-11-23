@@ -1,6 +1,15 @@
 [
     {
         "key": [
+            "Hello world!\n"
+        ],
+        "message": {
+            "msg": "Hello world!\n"
+        },
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:27:10"
+    },
+    {
+        "key": [
             "Hello %s!\n"
         ],
         "message": {
@@ -177,9 +186,35 @@
                 "type": "golang.org/x/text/cmd/gotext/examples.referralCode",
                 "underlyingType": "int",
                 "expr": "c",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:69:61"
+                "value": "5",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:70:61"
             }
         ],
-        "position": "golang.org/x/text/cmd/gotext/examples/main.go:69:10"
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:70:10"
+    },
+    {
+        "key": [
+            "msgOutOfOrder",
+            "%s is out of order!"
+        ],
+        "message": {
+            "msg": "{Device} is out of order!"
+        },
+        "comment": "FOO\n",
+        "args": [
+            {
+                "id": "Device",
+                "argNum": 1,
+                "format": [
+                    "%s"
+                ],
+                "type": "string",
+                "underlyingType": "string",
+                "expr": "device",
+                "value": "\"Soda machine\"",
+                "position": "golang.org/x/text/cmd/gotext/examples/main.go:78:26"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:78:10"
     }
 ]
