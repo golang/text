@@ -35,6 +35,7 @@ type formatInfo struct {
 }
 
 func (f *formatInfo) init(buf *bytes.Buffer) {
+	f.ClearFlags()
 	f.buf = buf
 }
 

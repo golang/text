@@ -9,6 +9,7 @@ import (
 	"fmt" // TODO: consider copying interfaces from package fmt to avoid dependency.
 	"math"
 	"reflect"
+	"sync"
 	"unicode/utf8"
 
 	"golang.org/x/text/internal/format"
@@ -37,13 +38,38 @@ const (
 	invReflectString = "<invalid reflect.Value>"
 )
 
+var printerPool = sync.Pool{
+	New: func() interface{} { return new(printer) },
+}
+
+// newPrinter allocates a new printer struct or grabs a cached one.
+func newPrinter(pp *Printer) *printer {
+	p := printerPool.Get().(*printer)
+	p.Printer = *pp
+	// TODO: cache most of the following call.
+	p.catContext = pp.cat.Context(pp.tag, p)
+
+	p.panicking = false
+	p.erroring = false
+	p.fmt.init(&p.Buffer)
+	return p
+}
+
+// free saves used printer structs in printerFree; avoids an allocation per invocation.
+func (p *printer) free() {
+	p.Buffer.Reset()
+	p.arg = nil
+	p.value = reflect.Value{}
+	printerPool.Put(p)
+}
+
 // printer is used to store a printer's state.
 // It implements "golang.org/x/text/internal/format".State.
 type printer struct {
+	Printer
+
 	// the context for looking up message translations
 	catContext *catalog.Context
-	// the language
-	tag language.Tag
 
 	// buffer for accumulating output.
 	bytes.Buffer
@@ -60,16 +86,6 @@ type printer struct {
 	panicking bool
 	// erroring is set when printing an error string to guard against calling handleMethods.
 	erroring bool
-
-	toDecimal    number.Formatter
-	toScientific number.Formatter
-}
-
-func (p *printer) reset() {
-	p.Buffer.Reset()
-	p.panicking = false
-	p.erroring = false
-	p.fmt.init(&p.Buffer)
 }
 
 // Language implements "golang.org/x/text/internal/format".State.
