@@ -15,17 +15,14 @@
         "message": {
             "msg": "Hello {City}!\n"
         },
-        "args": [
+        "placeholders": [
             {
                 "id": "City",
-                "argNum": 1,
-                "format": [
-                    "%s"
-                ],
+                "string": "%[1]s",
                 "type": "string",
                 "underlyingType": "string",
-                "expr": "city",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:31:26"
+                "argNum": 1,
+                "expr": "city"
             }
         ],
         "position": "golang.org/x/text/cmd/gotext/examples/main.go:31:10"
@@ -37,18 +34,15 @@
         "message": {
             "msg": "Hello {Town}!\n"
         },
-        "args": [
+        "placeholders": [
             {
                 "id": "Town",
-                "argNum": 1,
-                "format": [
-                    "%s"
-                ],
+                "string": "%[1]s",
                 "type": "string",
                 "underlyingType": "string",
+                "argNum": 1,
                 "expr": "town",
-                "comment": "Town",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:36:3"
+                "comment": "Town"
             }
         ],
         "position": "golang.org/x/text/cmd/gotext/examples/main.go:35:10"
@@ -60,68 +54,64 @@
         "message": {
             "msg": "{Person} is visiting {Place}!\n"
         },
-        "args": [
+        "placeholders": [
             {
                 "id": "Person",
-                "argNum": 1,
-                "format": [
-                    "%s"
-                ],
+                "string": "%[1]s",
                 "type": "string",
                 "underlyingType": "string",
+                "argNum": 1,
                 "expr": "person",
-                "comment": "The person of matter.",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:41:3"
+                "comment": "The person of matter."
             },
             {
                 "id": "Place",
-                "argNum": 2,
-                "format": [
-                    "%s"
-                ],
+                "string": "%[2]s",
                 "type": "string",
                 "underlyingType": "string",
+                "argNum": 2,
                 "expr": "place",
-                "comment": "Place the person is visiting.",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:42:3"
+                "comment": "Place the person is visiting."
             }
         ],
         "position": "golang.org/x/text/cmd/gotext/examples/main.go:40:10"
     },
     {
         "key": [
-            "%s is visiting %s!\n"
+            "%[1]s is visiting %[3]s!\n"
         ],
         "message": {
             "msg": "{Person} is visiting {Place}!\n"
         },
         "comment": "Person visiting a place.",
-        "args": [
+        "placeholders": [
             {
                 "id": "Person",
-                "argNum": 1,
-                "format": [
-                    "%s"
-                ],
+                "string": "%[1]s",
                 "type": "string",
                 "underlyingType": "string",
-                "expr": "pp.Person",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:54:3"
+                "argNum": 1,
+                "expr": "pp.Person"
             },
             {
                 "id": "Place",
-                "argNum": 2,
-                "format": [
-                    "%s"
-                ],
+                "string": "%[3]s",
                 "type": "string",
                 "underlyingType": "string",
+                "argNum": 3,
                 "expr": "pp.Place",
-                "comment": "Place the person is visiting.",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:55:3"
+                "comment": "Place the person is visiting."
+            },
+            {
+                "id": "Extra",
+                "string": "%[2]v",
+                "type": "int",
+                "underlyingType": "int",
+                "argNum": 2,
+                "expr": "pp.extra"
             }
         ],
-        "position": "golang.org/x/text/cmd/gotext/examples/main.go:53:10"
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:55:10"
     },
     {
         "key": [
@@ -130,21 +120,17 @@
         "message": {
             "msg": "{2} files remaining!"
         },
-        "args": [
+        "placeholders": [
             {
                 "id": "2",
-                "argNum": 1,
-                "format": [
-                    "%d"
-                ],
+                "string": "%[1]d",
                 "type": "int",
                 "underlyingType": "int",
-                "expr": "2",
-                "value": "2",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:59:34"
+                "argNum": 1,
+                "expr": "2"
             }
         ],
-        "position": "golang.org/x/text/cmd/gotext/examples/main.go:59:10"
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:62:10"
     },
     {
         "key": [
@@ -153,21 +139,17 @@
         "message": {
             "msg": "{N} more files remaining!"
         },
-        "args": [
+        "placeholders": [
             {
                 "id": "N",
-                "argNum": 1,
-                "format": [
-                    "%d"
-                ],
+                "string": "%[1]d",
                 "type": "int",
                 "underlyingType": "int",
-                "expr": "n",
-                "value": "2",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:64:39"
+                "argNum": 1,
+                "expr": "n"
             }
         ],
-        "position": "golang.org/x/text/cmd/gotext/examples/main.go:64:10"
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:67:10"
     },
     {
         "key": [
@@ -176,21 +158,17 @@
         "message": {
             "msg": "Use the following code for your discount: {ReferralCode}\n"
         },
-        "args": [
+        "placeholders": [
             {
                 "id": "ReferralCode",
-                "argNum": 1,
-                "format": [
-                    "%d"
-                ],
+                "string": "%[1]d",
                 "type": "golang.org/x/text/cmd/gotext/examples.referralCode",
                 "underlyingType": "int",
-                "expr": "c",
-                "value": "5",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:70:61"
+                "argNum": 1,
+                "expr": "c"
             }
         ],
-        "position": "golang.org/x/text/cmd/gotext/examples/main.go:70:10"
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:73:10"
     },
     {
         "key": [
@@ -201,20 +179,43 @@
             "msg": "{Device} is out of order!"
         },
         "comment": "FOO\n",
-        "args": [
+        "placeholders": [
             {
                 "id": "Device",
-                "argNum": 1,
-                "format": [
-                    "%s"
-                ],
+                "string": "%[1]s",
                 "type": "string",
                 "underlyingType": "string",
-                "expr": "device",
-                "value": "\"Soda machine\"",
-                "position": "golang.org/x/text/cmd/gotext/examples/main.go:78:26"
+                "argNum": 1,
+                "expr": "device"
             }
         ],
-        "position": "golang.org/x/text/cmd/gotext/examples/main.go:78:10"
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:81:10"
+    },
+    {
+        "key": [
+            "%.2[1]f miles traveled (%[1]f)"
+        ],
+        "message": {
+            "msg": "{Miles} miles traveled ({Miles_1})"
+        },
+        "placeholders": [
+            {
+                "id": "Miles",
+                "string": "%.2[1]f",
+                "type": "float64",
+                "underlyingType": "float64",
+                "argNum": 1,
+                "expr": "miles"
+            },
+            {
+                "id": "Miles_1",
+                "string": "%[1]f",
+                "type": "float64",
+                "underlyingType": "float64",
+                "argNum": 1,
+                "expr": "miles"
+            }
+        ],
+        "position": "golang.org/x/text/cmd/gotext/examples/main.go:85:10"
     }
 ]

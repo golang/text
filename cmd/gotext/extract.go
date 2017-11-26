@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	fmtparser "golang.org/x/text/internal/format"
 	"golang.org/x/tools/go/loader"
@@ -135,7 +136,7 @@ func runExtract(cmd *Command, args []string) error {
 				}
 
 				key = append(key, fmtMsg)
-				arguments := []Argument{}
+				arguments := []argument{}
 				args = args[1:]
 				simArgs := make([]interface{}, len(args))
 				for i, arg := range args {
@@ -149,7 +150,7 @@ func runExtract(cmd *Command, args []string) error {
 							expr = val
 						}
 					}
-					arguments = append(arguments, Argument{
+					arguments = append(arguments, argument{
 						ArgNum:         i + 1,
 						Type:           info.Types[arg].Type.String(),
 						UnderlyingType: info.Types[arg].Type.Underlying().String(),
@@ -164,6 +165,8 @@ func runExtract(cmd *Command, args []string) error {
 				}
 				msg := ""
 
+				ph := placeholders{index: map[string]string{}}
+
 				p := fmtparser.Parser{}
 				p.Reset(simArgs)
 				for p.SetFormat(fmtMsg); p.Scan(); {
@@ -173,15 +176,24 @@ func runExtract(cmd *Command, args []string) error {
 					case fmtparser.StatusSubstitution,
 						fmtparser.StatusBadWidthSubstitution,
 						fmtparser.StatusBadPrecSubstitution:
+						arguments[p.ArgNum-1].used = true
 						arg := arguments[p.ArgNum-1]
-						id := getID(&arg)
-						arguments[p.ArgNum-1].ID = id
-						// TODO: do we allow the same entry to be formatted
-						// differently within the same string, do we give
-						// a warning, or is this an error?
-						arguments[p.ArgNum-1].Format = append(arguments[p.ArgNum-1].Format, p.Text())
-						msg += fmt.Sprintf("{%s}", id)
+						sub := p.Text()
+						if !p.HasIndex {
+							r, sz := utf8.DecodeLastRuneInString(sub)
+							sub = fmt.Sprintf("%s[%d]%c", sub[:len(sub)-sz], p.ArgNum, r)
+						}
+						msg += fmt.Sprintf("{%s}", ph.addArg(&arg, sub))
 					}
+				}
+
+				// Add additional Placeholders that can be used in translations
+				// that are not present in the string.
+				for _, arg := range arguments {
+					if arg.used {
+						continue
+					}
+					ph.addArg(&arg, fmt.Sprintf("%%[%d]v", arg.ArgNum))
 				}
 
 				if c := getComment(call.Args[0]); c != "" {
@@ -189,12 +201,12 @@ func runExtract(cmd *Command, args []string) error {
 				}
 
 				messages = append(messages, Message{
-					Key:      key,
-					Position: posString(conf, info, call.Lparen),
-					Message:  Text{Msg: msg},
+					Key:     key,
+					Message: Text{Msg: msg},
 					// TODO(fix): this doesn't get the before comment.
-					Comment: comment,
-					Args:    arguments,
+					Comment:      comment,
+					Placeholders: ph.slice,
+					Position:     posString(conf, info, call.Lparen),
 				})
 				return true
 			})
@@ -245,7 +257,7 @@ type extractType struct {
 	arg int
 }
 
-func getID(arg *Argument) string {
+func getID(arg *argument) string {
 	s := getLastComponent(arg.Expr)
 	s = strings.Replace(s, " ", "", -1)
 	// For small variable names, use user-defined types for more info.
@@ -253,6 +265,32 @@ func getID(arg *Argument) string {
 		s = getLastComponent(arg.Type)
 	}
 	return strings.Title(s)
+}
+
+type placeholders struct {
+	index map[string]string
+	slice []Placeholder
+}
+
+func (p *placeholders) addArg(arg *argument, sub string) (id string) {
+	id = getID(arg)
+	id1 := id
+	alt, ok := p.index[id1]
+	for i := 1; ok && alt != sub; i++ {
+		id1 = fmt.Sprintf("%s_%d", id, i)
+		alt, ok = p.index[id1]
+	}
+	p.index[id1] = sub
+	p.slice = append(p.slice, Placeholder{
+		ID:             id1,
+		String:         sub,
+		Type:           arg.Type,
+		UnderlyingType: arg.UnderlyingType,
+		ArgNum:         arg.ArgNum,
+		Expr:           arg.Expr,
+		Comment:        arg.Comment,
+	})
+	return id1
 }
 
 func getLastComponent(s string) string {

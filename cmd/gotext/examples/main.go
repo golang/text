@@ -45,13 +45,16 @@ func main() {
 	pp := struct {
 		Person string // The person of matter. // TODO: get this comment.
 		Place  string
+		extra  int
 	}{
-		person, place,
+		person, place, 4,
 	}
 
 	// extract will drop this comment in favor of the one below.
-	p.Printf("%s is visiting %s!\n", // Person visiting a place.
+	// argument is added as a placeholder.
+	p.Printf("%[1]s is visiting %[3]s!\n", // Person visiting a place.
 		pp.Person,
+		pp.extra,
 		pp.Place, // Place the person is visiting.
 	)
 
@@ -76,4 +79,8 @@ func main() {
 	const msgOutOfOrder = "%s is out of order!" // FOO
 	const device = "Soda machine"
 	p.Printf(msgOutOfOrder, device)
+
+	// Double arguments.
+	miles := 1.2345
+	p.Printf("%.2[1]f miles traveled (%[1]f)", miles)
 }

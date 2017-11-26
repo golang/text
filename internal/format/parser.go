@@ -28,6 +28,8 @@ type Parser struct {
 	PlusV  bool
 	SharpV bool
 
+	HasIndex bool
+
 	Width int
 	Prec  int // precision
 
@@ -94,6 +96,8 @@ func (p *Parser) ClearFlags() {
 
 	p.PlusV = false
 	p.SharpV = false
+
+	p.HasIndex = false
 }
 
 // Scan scans the next part of the format string and sets the status to
@@ -220,6 +224,7 @@ simpleFormat:
 	if !afterIndex {
 		i, afterIndex = p.updateArgNumber(format, i)
 	}
+	p.HasIndex = afterIndex
 
 	if i >= end {
 		p.endPos = i
