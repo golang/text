@@ -70,7 +70,7 @@ func runExtract(cmd *Command, args []string) error {
 
 	var messages []Message
 
-	for _, info := range iprog.InitialPackages() {
+	for _, info := range iprog.AllPackages {
 		for _, f := range info.Files {
 			// Associate comments with nodes.
 			cmap := ast.NewCommentMap(iprog.Fset, f, f.Comments)
@@ -259,12 +259,36 @@ type extractType struct {
 
 func getID(arg *argument) string {
 	s := getLastComponent(arg.Expr)
+	s = strip(s)
 	s = strings.Replace(s, " ", "", -1)
 	// For small variable names, use user-defined types for more info.
 	if len(s) <= 2 && arg.UnderlyingType != arg.Type {
 		s = getLastComponent(arg.Type)
 	}
 	return strings.Title(s)
+}
+
+// strip is a dirty hack to convert function calls to placeholder IDs.
+func strip(s string) string {
+	s = strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) || r == '-' {
+			return '_'
+		}
+		if !unicode.In(r, unicode.Letter, unicode.Mark) {
+			return -1
+		}
+		return r
+	}, s)
+	// Strip "Get" from getter functions.
+	if strings.HasPrefix(s, "Get") || strings.HasPrefix(s, "get") {
+		if len(s) > len("get") {
+			r, _ := utf8.DecodeRuneInString(s)
+			if !unicode.In(r, unicode.Ll, unicode.M) { // not lower or mark
+				s = s[len("get"):]
+			}
+		}
+	}
+	return s
 }
 
 type placeholders struct {

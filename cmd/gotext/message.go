@@ -106,7 +106,7 @@ type Text struct {
 // Select selects a Text based on the feature value associated with a feature of
 // a certain argument.
 type Select struct {
-	Feature string          `json:"feature"` // Name of variable or Feature type
+	Feature string          `json:"feature"` // Name of Feature type (e.g plural)
 	Arg     string          `json:"arg"`     // The placeholder ID
 	Cases   map[string]Text `json:"cases"`
 }
