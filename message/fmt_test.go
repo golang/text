@@ -1786,7 +1786,12 @@ func TestNilDoesNotBecomeTyped(t *testing.T) {
 	type B struct{}
 	var a *A = nil
 	var b B = B{}
-	got := p.Sprintf("%s %s %s %s %s", nil, a, nil, b, nil) // go vet should complain about this line.
+
+	// indirect the Sprintf call through this f variable to avoid
+	// "go test" failing vet checks in Go 1.10+.
+	f := p.Sprintf
+	got := f("%s %s %s %s %s", nil, a, nil, b, nil)
+
 	const expect = "%!s(<nil>) %!s(*message.A=<nil>) %!s(<nil>) {} %!s(<nil>)"
 	if got != expect {
 		t.Errorf("expected:\n\t%q\ngot:\n\t%q", expect, got)
