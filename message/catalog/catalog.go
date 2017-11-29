@@ -154,7 +154,6 @@ package catalog // import "golang.org/x/text/message/catalog"
 
 import (
 	"errors"
-	"fmt"
 
 	"golang.org/x/text/internal/catmsg"
 	"golang.org/x/text/language"
@@ -223,12 +222,6 @@ func (c *Catalog) SetMacro(tag language.Tag, name string, msg ...Message) error 
 // ErrNotFound indicates there was no message for the given key.
 var ErrNotFound = errors.New("catalog: message not found")
 
-// A Message holds a collection of translations for the same phrase that may
-// vary based on the values of substitution arguments.
-type Message interface {
-	catmsg.Message
-}
-
 // String specifies a plain message string. It can be used as fallback if no
 // other strings match or as a simple standalone message.
 //
@@ -245,22 +238,6 @@ func String(name string) Message {
 // The name passed to a Var must be unique within message sequence.
 func Var(name string, msg ...Message) Message {
 	return &catmsg.Var{Name: name, Message: firstInSequence(msg)}
-}
-
-// firstInSequence is a message type that prints the first message in the
-// sequence that resolves to a match for the given substitution arguments.
-type firstInSequence []Message
-
-func (s firstInSequence) Compile(e *catmsg.Encoder) error {
-	e.EncodeMessageType(catmsg.First)
-	err := catmsg.ErrIncomplete
-	for i, m := range s {
-		if err == nil {
-			return fmt.Errorf("catalog: message argument %d is complete and blocks subsequent messages", i-1)
-		}
-		err = e.EncodeMessage(m)
-	}
-	return err
 }
 
 // Context returns a Context for formatting messages.
