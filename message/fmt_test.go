@@ -1787,10 +1787,10 @@ func TestNilDoesNotBecomeTyped(t *testing.T) {
 	var a *A = nil
 	var b B = B{}
 
-	// indirect the Sprintf call through this f variable to avoid
+	// indirect the Sprintf call through this noVetWarn variable to avoid
 	// "go test" failing vet checks in Go 1.10+.
-	f := p.Sprintf
-	got := f("%s %s %s %s %s", nil, a, nil, b, nil)
+	noVetWarn := p.Sprintf
+	got := noVetWarn("%s %s %s %s %s", nil, a, nil, b, nil)
 
 	const expect = "%!s(<nil>) %!s(*message.A=<nil>) %!s(<nil>) {} %!s(<nil>)"
 	if got != expect {
