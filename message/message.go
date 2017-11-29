@@ -22,11 +22,11 @@ type Printer struct {
 	toDecimal    number.Formatter
 	toScientific number.Formatter
 
-	cat *catalog.Catalog
+	cat catalog.Catalog
 }
 
 type options struct {
-	cat *catalog.Catalog
+	cat catalog.Catalog
 	// TODO:
 	// - allow %s to print integers in written form (tables are likely too large
 	//   to enable this by default).
@@ -38,14 +38,14 @@ type options struct {
 type Option func(o *options)
 
 // Catalog defines the catalog to be used.
-func Catalog(c *catalog.Catalog) Option {
+func Catalog(c catalog.Catalog) Option {
 	return func(o *options) { o.cat = c }
 }
 
 // NewPrinter returns a Printer that formats messages tailored to language t.
 func NewPrinter(t language.Tag, opts ...Option) *Printer {
 	options := &options{
-		cat: defaultCatalog,
+		cat: DefaultCatalog,
 	}
 	for _, o := range opts {
 		o(options)

@@ -154,13 +154,87 @@ package catalog // import "golang.org/x/text/message/catalog"
 
 import (
 	"errors"
+	"fmt"
+
+	"golang.org/x/text/internal"
 
 	"golang.org/x/text/internal/catmsg"
 	"golang.org/x/text/language"
 )
 
-// A Catalog holds translations for messages for supported languages.
-type Catalog struct {
+// A Catalog allows lookup of translated messages.
+type Catalog interface {
+	// Languages returns all languages for which the Catalog contains variants.
+	Languages() []language.Tag
+
+	// A Context is used for evaluating Messages.
+	Context(tag language.Tag, r catmsg.Renderer) *Context
+
+	lookup(tag language.Tag, key string) (data string, ok bool)
+}
+
+// NewFromMap creates a Catalog from the given map. If a Dictionary is
+// underspecified the entry is retrieved from a parent language.
+func NewFromMap(dictionaries map[string]Dictionary, opts ...Option) (Catalog, error) {
+	c := &catalog{
+		dicts: map[language.Tag]Dictionary{},
+	}
+	for lang, dict := range dictionaries {
+		tag, err := language.Parse(lang)
+		if err != nil {
+			return nil, fmt.Errorf("catalog: invalid language tag %q", lang)
+		}
+		if _, ok := c.dicts[tag]; ok {
+			return nil, fmt.Errorf("catalog: duplicate entry for tag %q after normalization", tag)
+		}
+		c.dicts[tag] = dict
+		c.langs = append(c.langs, tag)
+	}
+	internal.SortTags(c.langs)
+	return c, nil
+}
+
+// A Dictionary is a source of translations for a single language.
+type Dictionary interface {
+	// Lookup returns a message compiled with catmsg.Compile for the given key.
+	// It returns false for ok if such a message could not be found.
+	Lookup(key string) (data string, ok bool)
+}
+
+type catalog struct {
+	langs  []language.Tag
+	dicts  map[language.Tag]Dictionary
+	macros store
+}
+
+func (c *catalog) Languages() []language.Tag { return c.langs }
+
+func (c *catalog) lookup(tag language.Tag, key string) (data string, ok bool) {
+	for ; ; tag = tag.Parent() {
+		if dict, ok := c.dicts[tag]; ok {
+			if data, ok := dict.Lookup(key); ok {
+				return data, true
+			}
+		}
+		if tag == language.Und {
+			break
+		}
+	}
+	return "", false
+}
+
+// Context returns a Context for formatting messages.
+// Only one Message may be formatted per context at any given time.
+func (c *catalog) Context(tag language.Tag, r catmsg.Renderer) *Context {
+	return &Context{
+		cat: c,
+		tag: tag,
+		dec: catmsg.NewDecoder(tag, r, &dict{&c.macros, tag}),
+	}
+}
+
+// A Builder allows building a Catalog programmatically.
+type Builder struct {
 	options
 
 	index  store
@@ -185,9 +259,9 @@ type Option func(*options)
 //
 // func Dict(tag language.Tag, d ...Dictionary) Option
 
-// New returns a new Catalog.
-func New(opts ...Option) *Catalog {
-	c := &Catalog{}
+// NewBuilder returns an empty mutable Catalog.
+func NewBuilder(opts ...Option) *Builder {
+	c := &Builder{}
 	for _, o := range opts {
 		o(&c.options)
 	}
@@ -195,12 +269,12 @@ func New(opts ...Option) *Catalog {
 }
 
 // Languages returns all languages for which the Catalog contains variants.
-func (c *Catalog) Languages() []language.Tag {
+func (c *Builder) Languages() []language.Tag {
 	return c.index.languages()
 }
 
 // SetString is shorthand for Set(tag, key, String(msg)).
-func (c *Catalog) SetString(tag language.Tag, key string, msg string) error {
+func (c *Builder) SetString(tag language.Tag, key string, msg string) error {
 	return c.set(tag, key, &c.index, String(msg))
 }
 
@@ -208,14 +282,14 @@ func (c *Catalog) SetString(tag language.Tag, key string, msg string) error {
 //
 // When evaluation this message, the first Message in the sequence to msgs to
 // evaluate to a string will be the message returned.
-func (c *Catalog) Set(tag language.Tag, key string, msg ...Message) error {
+func (c *Builder) Set(tag language.Tag, key string, msg ...Message) error {
 	return c.set(tag, key, &c.index, msg...)
 }
 
 // SetMacro defines a Message that may be substituted in another message.
 // The arguments to a macro Message are passed as arguments in the
 // placeholder the form "${foo(arg1, arg2)}".
-func (c *Catalog) SetMacro(tag language.Tag, name string, msg ...Message) error {
+func (c *Builder) SetMacro(tag language.Tag, name string, msg ...Message) error {
 	return c.set(tag, name, &c.macros, msg...)
 }
 
@@ -242,26 +316,26 @@ func Var(name string, msg ...Message) Message {
 
 // Context returns a Context for formatting messages.
 // Only one Message may be formatted per context at any given time.
-func (c *Catalog) Context(tag language.Tag, r catmsg.Renderer) *Context {
+func (b *Builder) Context(tag language.Tag, r catmsg.Renderer) *Context {
 	return &Context{
-		cat: c,
+		cat: b,
 		tag: tag,
-		dec: catmsg.NewDecoder(tag, r, &dict{&c.macros, tag}),
+		dec: catmsg.NewDecoder(tag, r, &dict{&b.macros, tag}),
 	}
 }
 
 // A Context is used for evaluating Messages.
 // Only one Message may be formatted per context at any given time.
 type Context struct {
-	cat *Catalog
-	tag language.Tag
+	cat Catalog
+	tag language.Tag // TODO: use compact index.
 	dec *catmsg.Decoder
 }
 
 // Execute looks up and executes the message with the given key.
 // It returns ErrNotFound if no message could be found in the index.
 func (c *Context) Execute(key string) error {
-	data, ok := c.cat.index.lookup(c.tag, key)
+	data, ok := c.cat.lookup(c.tag, key)
 	if !ok {
 		return ErrNotFound
 	}
