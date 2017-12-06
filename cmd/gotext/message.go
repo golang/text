@@ -6,6 +6,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 
 	"golang.org/x/text/language"
 )
@@ -50,6 +51,48 @@ type Message struct {
 
 	// Extraction information.
 	Position string `json:"position,omitempty"` // filePosition:line
+}
+
+// Placeholder reports the placeholder for the given ID if it is defined or nil
+// otherwise.
+func (m *Message) Placeholder(id string) *Placeholder {
+	for _, p := range m.Placeholders {
+		if p.ID == id {
+			return &p
+		}
+	}
+	return nil
+}
+
+// Substitute replaces placeholders in msg with their original value.
+func (m *Message) Substitute(msg string) (sub string, err error) {
+	last := 0
+	for i := 0; i < len(msg); {
+		pLeft := strings.IndexByte(msg[i:], '{')
+		if pLeft == -1 {
+			break
+		}
+		pLeft += i
+		pRight := strings.IndexByte(msg[pLeft:], '}')
+		if pRight == -1 {
+			return "", errorf("unmatched '}'")
+		}
+		pRight += pLeft
+		id := strings.TrimSpace(msg[pLeft+1 : pRight])
+		i = pRight + 1
+		if id != "" && id[0] == '$' {
+			continue
+		}
+		sub += msg[last:pLeft]
+		last = i
+		ph := m.Placeholder(id)
+		if ph == nil {
+			return "", errorf("unknown placeholder %q in message %q", id, msg)
+		}
+		sub += ph.String
+	}
+	sub += msg[last:]
+	return sub, err
 }
 
 // A Placeholder is a part of the message that should not be changed by a
@@ -116,6 +159,11 @@ type Text struct {
 
 	// Example contains an example message formatted with default values.
 	Example string `json:"example,omitempty"`
+}
+
+// IsEmpty reports whether this Text can generate anything.
+func (t *Text) IsEmpty() bool {
+	return t.Msg == "" && t.Select == nil && t.Var == nil
 }
 
 // rawText erases the UnmarshalJSON method.

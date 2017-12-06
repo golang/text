@@ -36,7 +36,7 @@ var (
 var cmdRewrite = &Command{
 	Run:       runRewrite,
 	UsageLine: "rewrite <package>",
-	Short:     "rewrite rewrites fmt functions to use a message Printer",
+	Short:     "rewrites fmt functions to use a message Printer",
 	Long: `
 rewrite is typically done once for a project. It rewrites all usages of
 fmt to use x/text's message package whenever a message.Printer is in scope.

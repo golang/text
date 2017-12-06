@@ -12,6 +12,12 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
+const (
+	extractFile  = "extracted.gotext.json"
+	outFile      = "out.gotext.json"
+	gotextSuffix = ".gotext.json"
+)
+
 // NOTE: The command line tool already prefixes with "gotext:".
 var (
 	wrap = func(err error, msg string) error {

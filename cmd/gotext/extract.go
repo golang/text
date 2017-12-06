@@ -46,7 +46,7 @@ func init() {
 var cmdExtract = &Command{
 	Run:       runExtract,
 	UsageLine: "extract <package>*",
-	Short:     "extract strings to be translated from code",
+	Short:     "extracts strings to be translated from code",
 }
 
 func runExtract(cmd *Command, args []string) error {
@@ -224,7 +224,7 @@ func runExtract(cmd *Command, args []string) error {
 	os.MkdirAll(*dir, 0755)
 	// TODO: this file can probably go if we replace the extract + generate
 	// cycle with a init once and update cycle.
-	file := filepath.Join(*dir, "extracted.gotext.json")
+	file := filepath.Join(*dir, extractFile)
 	if err := ioutil.WriteFile(file, data, 0644); err != nil {
 		return wrapf(err, "could not create file")
 	}
@@ -238,7 +238,7 @@ func runExtract(cmd *Command, args []string) error {
 		if err != nil {
 			return wrap(err, "JSON marshal failed")
 		}
-		file := filepath.Join(*dir, tag.String(), "out.gotext.json")
+		file := filepath.Join(*dir, tag.String(), outFile)
 		if err := os.MkdirAll(filepath.Dir(file), 0750); err != nil {
 			return wrap(err, "dir create failed")
 		}
