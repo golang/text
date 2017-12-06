@@ -5,6 +5,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"golang.org/x/text/language"
 )
 
@@ -35,7 +37,7 @@ type Message struct {
 	Key         []string `json:"key,omitempty"`
 	Meaning     string   `json:"meaning,omitempty"`
 	Message     Text     `json:"message"`
-	Translation *Text    `json:"translation,omitempty"`
+	Translation *Text    `json:"translation,omitempty"` // TODO: not pointer?
 
 	Comment           string `json:"comment,omitempty"`
 	TranslatorComment string `json:"translatorComment,omitempty"`
@@ -113,6 +115,25 @@ type Text struct {
 
 	// Example contains an example message formatted with default values.
 	Example string `json:"example,omitempty"`
+}
+
+// rawText erases the UnmarshalJSON method.
+type rawText Text
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (t *Text) UnmarshalJSON(b []byte) error {
+	if b[0] == '"' {
+		return json.Unmarshal(b, &t.Msg)
+	}
+	return json.Unmarshal(b, (*rawText)(t))
+}
+
+// MarshalJSON implements json.Marshaler.
+func (t *Text) MarshalJSON() ([]byte, error) {
+	if t.Select == nil && t.Var == nil && t.Example == "" {
+		return json.Marshal(t.Msg)
+	}
+	return json.Marshal((*rawText)(t))
 }
 
 // Select selects a Text based on the feature value associated with a feature of

@@ -5,18 +5,14 @@
             "key": [
                 "Hello world!\n"
             ],
-            "message": {
-                "msg": "Hello world!\n"
-            },
+            "message": "Hello world!\n",
             "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:27:10"
         },
         {
             "key": [
                 "Hello %s!\n"
             ],
-            "message": {
-                "msg": "Hello {City}!\n"
-            },
+            "message": "Hello {City}!\n",
             "placeholders": [
                 {
                     "id": "City",
@@ -33,9 +29,7 @@
             "key": [
                 "Hello %s!\n"
             ],
-            "message": {
-                "msg": "Hello {Town}!\n"
-            },
+            "message": "Hello {Town}!\n",
             "placeholders": [
                 {
                     "id": "Town",
@@ -53,9 +47,7 @@
             "key": [
                 "%s is visiting %s!\n"
             ],
-            "message": {
-                "msg": "{Person} is visiting {Place}!\n"
-            },
+            "message": "{Person} is visiting {Place}!\n",
             "placeholders": [
                 {
                     "id": "Person",
@@ -82,9 +74,7 @@
             "key": [
                 "%[1]s is visiting %[3]s!\n"
             ],
-            "message": {
-                "msg": "{Person} is visiting {Place}!\n"
-            },
+            "message": "{Person} is visiting {Place}!\n",
             "comment": "Person visiting a place.",
             "placeholders": [
                 {
@@ -119,9 +109,7 @@
             "key": [
                 "%d files remaining!"
             ],
-            "message": {
-                "msg": "{} files remaining!"
-            },
+            "message": "{} files remaining!",
             "placeholders": [
                 {
                     "id": "",
@@ -138,9 +126,7 @@
             "key": [
                 "%d more files remaining!"
             ],
-            "message": {
-                "msg": "{N} more files remaining!"
-            },
+            "message": "{N} more files remaining!",
             "placeholders": [
                 {
                     "id": "N",
@@ -157,9 +143,7 @@
             "key": [
                 "Use the following code for your discount: %d\n"
             ],
-            "message": {
-                "msg": "Use the following code for your discount: {ReferralCode}\n"
-            },
+            "message": "Use the following code for your discount: {ReferralCode}\n",
             "placeholders": [
                 {
                     "id": "ReferralCode",
@@ -177,9 +161,7 @@
                 "msgOutOfOrder",
                 "%s is out of order!"
             ],
-            "message": {
-                "msg": "{Device} is out of order!"
-            },
+            "message": "{Device} is out of order!",
             "comment": "FOO\n",
             "placeholders": [
                 {
@@ -197,9 +179,7 @@
             "key": [
                 "%.2[1]f miles traveled (%[1]f)"
             ],
-            "message": {
-                "msg": "{Miles} miles traveled ({Miles_1})"
-            },
+            "message": "{Miles} miles traveled ({Miles_1})",
             "placeholders": [
                 {
                     "id": "Miles",
