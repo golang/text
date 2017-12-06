@@ -6,6 +6,7 @@
                 "Hello %s!\n"
             ],
             "message": "Hello {From}!\n",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "From",
@@ -23,6 +24,7 @@
                 "Do you like your browser (%s)?\n"
             ],
             "message": "Do you like your browser ({User_Agent})?\n",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "User_Agent",

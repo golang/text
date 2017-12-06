@@ -37,7 +37,7 @@ type Message struct {
 	Key         []string `json:"key,omitempty"`
 	Meaning     string   `json:"meaning,omitempty"`
 	Message     Text     `json:"message"`
-	Translation *Text    `json:"translation,omitempty"` // TODO: not pointer?
+	Translation Text     `json:"translation"`
 
 	Comment           string `json:"comment,omitempty"`
 	TranslatorComment string `json:"translatorComment,omitempty"`

@@ -6,6 +6,7 @@
                 "Hello world!\n"
             ],
             "message": "Hello world!\n",
+            "translation": "",
             "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:27:10"
         },
         {
@@ -13,6 +14,7 @@
                 "Hello %s!\n"
             ],
             "message": "Hello {City}!\n",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "City",
@@ -30,6 +32,7 @@
                 "Hello %s!\n"
             ],
             "message": "Hello {Town}!\n",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Town",
@@ -48,6 +51,7 @@
                 "%s is visiting %s!\n"
             ],
             "message": "{Person} is visiting {Place}!\n",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Person",
@@ -75,6 +79,7 @@
                 "%[1]s is visiting %[3]s!\n"
             ],
             "message": "{Person} is visiting {Place}!\n",
+            "translation": "",
             "comment": "Person visiting a place.",
             "placeholders": [
                 {
@@ -110,6 +115,7 @@
                 "%d files remaining!"
             ],
             "message": "{} files remaining!",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "",
@@ -127,6 +133,7 @@
                 "%d more files remaining!"
             ],
             "message": "{N} more files remaining!",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "N",
@@ -144,6 +151,7 @@
                 "Use the following code for your discount: %d\n"
             ],
             "message": "Use the following code for your discount: {ReferralCode}\n",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "ReferralCode",
@@ -162,6 +170,7 @@
                 "%s is out of order!"
             ],
             "message": "{Device} is out of order!",
+            "translation": "",
             "comment": "FOO\n",
             "placeholders": [
                 {
@@ -180,6 +189,7 @@
                 "%.2[1]f miles traveled (%[1]f)"
             ],
             "message": "{Miles} miles traveled ({Miles_1})",
+            "translation": "",
             "placeholders": [
                 {
                     "id": "Miles",
