@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package pipeline
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 	"go/constant"
 	"go/format"
 	"go/token"
+	"io"
 	"os"
 	"strings"
 
@@ -19,37 +20,15 @@ import (
 
 const printerType = "golang.org/x/text/message.Printer"
 
-// TODO:
-// - merge information into existing files
-// - handle different file formats (PO, XLIFF)
-// - handle features (gender, plural)
-// - message rewriting
-
-func init() {
-	overwrite = cmdRewrite.Flag.Bool("w", false, "write files in place")
-}
-
-var (
-	overwrite *bool
-)
-
-var cmdRewrite = &Command{
-	Run:       runRewrite,
-	UsageLine: "rewrite <package>",
-	Short:     "rewrites fmt functions to use a message Printer",
-	Long: `
-rewrite is typically done once for a project. It rewrites all usages of
-fmt to use x/text's message package whenever a message.Printer is in scope.
-It rewrites Print and Println calls with constant strings to the equivalent
-using Printf to allow translators to reorder arguments.
-`,
-}
-
-func runRewrite(cmd *Command, args []string) error {
+// Rewrite rewrites the Go files in a single package to use the localization
+// machinery and rewrites strings to adopt best practices when possible.
+// If w is not nil the generated files are written to it, each files with a
+// "--- <filename>" header. Otherwise the files are overwritten.
+func Rewrite(w io.Writer, goPackage string) error {
 	conf := &loader.Config{
 		AllowErrors: true, // Allow unused instances of message.Printer.
 	}
-	prog, err := loadPackages(conf, args)
+	prog, err := loadPackages(conf, []string{goPackage})
 	if err != nil {
 		return wrap(err, "")
 	}
@@ -68,12 +47,14 @@ func runRewrite(cmd *Command, args []string) error {
 
 			ast.Walk(&r, f)
 
-			w := os.Stdout
-			if *overwrite {
+			w := w
+			if w == nil {
 				var err error
 				if w, err = os.Create(conf.Fset.File(f.Pos()).Name()); err != nil {
 					return wrap(err, "open failed")
 				}
+			} else {
+				fmt.Fprintln(w, "---", conf.Fset.File(f.Pos()).Name())
 			}
 
 			if err := format.Node(w, conf.Fset, f); err != nil {

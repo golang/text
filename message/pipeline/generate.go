@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package pipeline
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
+	"io"
 	"regexp"
 	"sort"
 	"strings"
@@ -21,83 +18,29 @@ import (
 	"golang.org/x/text/internal/catmsg"
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/language"
-	"golang.org/x/tools/go/loader"
 )
-
-func init() {
-	out = cmdGenerate.Flag.String("out", "", "output file to write to")
-}
-
-var (
-	out *string
-)
-
-var cmdGenerate = &Command{
-	Run:       runGenerate,
-	UsageLine: "generate <package>",
-	Short:     "generates code to insert translated messages",
-}
 
 var transRe = regexp.MustCompile(`messages\.(.*)\.json`)
 
-func runGenerate(cmd *Command, args []string) error {
-	prog, err := loadPackages(&loader.Config{}, args)
-	if err != nil {
-		return wrap(err, "could not load package")
-	}
-
-	pkgs := prog.InitialPackages()
-	if len(pkgs) != 1 {
-		return fmt.Errorf("more than one package selected: %v", pkgs)
-	}
-
+// Generate writes a Go file with the given package name to w, which defines a
+// Catalog with translated messages.
+func Generate(w io.Writer, pkg string, extracted *Locale, trans ...*Locale) (n int, err error) {
 	// TODO: add in external input. Right now we assume that all files are
 	// manually created and stored in the textdata directory.
 
 	// Build up index of translations and original messages.
-	extracted := Locale{}
 	translations := map[language.Tag]map[string]Message{}
 	languages := []language.Tag{}
 	langVars := []string{}
 	usedKeys := map[string]int{}
 
-	err = filepath.Walk(*dir, func(path string, f os.FileInfo, err error) error {
-		if err != nil {
-			return wrap(err, "loading data")
-		}
-		if f.IsDir() {
-			return nil
-		}
-		if f.Name() == extractFile {
-			b, err := ioutil.ReadFile(path)
-			if err != nil {
-				return wrap(err, "read file failed")
-			}
-			if err := json.Unmarshal(b, &extracted); err != nil {
-				return wrap(err, "unmarshal source failed")
-			}
-			return nil
-		}
-		if f.Name() == outFile {
-			return nil
-		}
-		if !strings.HasSuffix(path, gotextSuffix) {
-			return nil
-		}
-		b, err := ioutil.ReadFile(path)
-		if err != nil {
-			return wrap(err, "read file failed")
-		}
-		var locale Locale
-		if err := json.Unmarshal(b, &locale); err != nil {
-			return wrap(err, "parsing translation file failed")
-		}
-		tag := locale.Language
+	for _, loc := range trans {
+		tag := loc.Language
 		if _, ok := translations[tag]; !ok {
 			translations[tag] = map[string]Message{}
 			languages = append(languages, tag)
 		}
-		for _, m := range locale.Messages {
+		for _, m := range loc.Messages {
 			if !m.Translation.IsEmpty() {
 				for _, id := range m.ID {
 					if _, ok := translations[tag][id]; ok {
@@ -107,10 +50,6 @@ func runGenerate(cmd *Command, args []string) error {
 				}
 			}
 		}
-		return nil
-	})
-	if err != nil {
-		return err
 	}
 
 	// Verify completeness and register keys.
@@ -133,7 +72,7 @@ func runGenerate(cmd *Command, args []string) error {
 		}
 	}
 
-	w := gen.NewCodeWriter()
+	cw := gen.NewCodeWriter()
 
 	x := &struct {
 		Fallback  language.Tag
@@ -143,8 +82,8 @@ func runGenerate(cmd *Command, args []string) error {
 		Languages: langVars,
 	}
 
-	if err := lookup.Execute(w, x); err != nil {
-		return wrap(err, "error")
+	if err := lookup.Execute(cw, x); err != nil {
+		return 0, wrap(err, "error")
 	}
 
 	keyToIndex := []string{}
@@ -152,11 +91,11 @@ func runGenerate(cmd *Command, args []string) error {
 		keyToIndex = append(keyToIndex, k)
 	}
 	sort.Strings(keyToIndex)
-	fmt.Fprint(w, "var messageKeyToIndex = map[string]int{\n")
+	fmt.Fprint(cw, "var messageKeyToIndex = map[string]int{\n")
 	for _, k := range keyToIndex {
-		fmt.Fprintf(w, "%q: %d,\n", k, usedKeys[k])
+		fmt.Fprintf(cw, "%q: %d,\n", k, usedKeys[k])
 	}
-	fmt.Fprint(w, "}\n\n")
+	fmt.Fprint(cw, "}\n\n")
 
 	for i, tag := range languages {
 		dict := translations[tag]
@@ -166,12 +105,12 @@ func runGenerate(cmd *Command, args []string) error {
 				if trans, ok := dict[id]; ok && !trans.Translation.IsEmpty() {
 					m, err := assemble(&msg, &trans.Translation)
 					if err != nil {
-						return wrap(err, "error")
+						return 0, wrap(err, "error")
 					}
 					// TODO: support macros.
 					data, err := catmsg.Compile(tag, nil, m)
 					if err != nil {
-						return wrap(err, "error")
+						return 0, wrap(err, "error")
 					}
 					key := usedKeys[msg.Key]
 					if d := a[key]; d != "" && d != data {
@@ -189,20 +128,10 @@ func runGenerate(cmd *Command, args []string) error {
 			index = append(index, uint32(p))
 		}
 
-		w.WriteVar(langVars[i]+"Index", index)
-		w.WriteConst(langVars[i]+"Data", strings.Join(a, ""))
+		cw.WriteVar(langVars[i]+"Index", index)
+		cw.WriteConst(langVars[i]+"Data", strings.Join(a, ""))
 	}
-
-	pkg := pkgs[0].Pkg.Name()
-	if *out == "" {
-		if _, err = w.WriteGo(os.Stdout, pkg); err != nil {
-			return wrap(err, "could not write go file")
-		}
-	} else {
-		w.WriteGoFile(*out, pkg)
-	}
-
-	return nil
+	return cw.WriteGo(w, pkg)
 }
 
 func assemble(m *Message, t *Text) (msg catmsg.Message, err error) {

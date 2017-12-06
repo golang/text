@@ -2,28 +2,23 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package pipeline
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"go/ast"
 	"go/constant"
 	"go/format"
 	"go/token"
 	"go/types"
-	"io/ioutil"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/text/internal"
 	fmtparser "golang.org/x/text/internal/format"
-	"golang.org/x/text/language"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -33,27 +28,12 @@ import (
 // - handle features (gender, plural)
 // - message rewriting
 
-var (
-	srcLang *string
-	lang    *string
-)
-
-func init() {
-	srcLang = cmdExtract.Flag.String("srclang", "en-US", "the source-code language")
-	lang = cmdExtract.Flag.String("lang", "en-US", "comma-separated list of languages to process")
-}
-
-var cmdExtract = &Command{
-	Run:       runExtract,
-	UsageLine: "extract <package>*",
-	Short:     "extracts strings to be translated from code",
-}
-
-func runExtract(cmd *Command, args []string) error {
+// Extract extracts all strings form the package defined in Config.
+func Extract(c *Config) (*Locale, error) {
 	conf := loader.Config{}
-	prog, err := loadPackages(&conf, args)
+	prog, err := loadPackages(&conf, c.Packages)
 	if err != nil {
-		return wrap(err, "")
+		return nil, wrap(err, "")
 	}
 
 	// print returns Go syntax for the specified node.
@@ -209,44 +189,11 @@ func runExtract(cmd *Command, args []string) error {
 		}
 	}
 
-	tag, err := language.Parse(*srcLang)
-	if err != nil {
-		return wrap(err, "")
-	}
-	out := Locale{
-		Language: tag,
+	out := &Locale{
+		Language: c.SourceLanguage,
 		Messages: messages,
 	}
-	data, err := json.MarshalIndent(out, "", "    ")
-	if err != nil {
-		return wrap(err, "")
-	}
-	os.MkdirAll(*dir, 0755)
-	// TODO: this file can probably go if we replace the extract + generate
-	// cycle with a init once and update cycle.
-	file := filepath.Join(*dir, extractFile)
-	if err := ioutil.WriteFile(file, data, 0644); err != nil {
-		return wrapf(err, "could not create file")
-	}
-
-	langs := append(getLangs(), tag)
-	langs = internal.UniqueTags(langs)
-	for _, tag := range langs {
-		// TODO: inject translations from existing files to avoid retranslation.
-		out.Language = tag
-		data, err := json.MarshalIndent(out, "", "    ")
-		if err != nil {
-			return wrap(err, "JSON marshal failed")
-		}
-		file := filepath.Join(*dir, tag.String(), outFile)
-		if err := os.MkdirAll(filepath.Dir(file), 0750); err != nil {
-			return wrap(err, "dir create failed")
-		}
-		if err := ioutil.WriteFile(file, data, 0740); err != nil {
-			return wrap(err, "write failed")
-		}
-	}
-	return nil
+	return out, nil
 }
 
 func posString(conf loader.Config, info *loader.PackageInfo, pos token.Pos) string {

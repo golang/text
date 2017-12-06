@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+// Package pipeline provides tools for creating translation pipelines.
+//
+// NOTE: UNDER DEVELOPMENT. API MAY CHANGE.
+package pipeline
 
 import (
 	"fmt"
 	"go/build"
 	"go/parser"
+	"log"
 
 	"golang.org/x/tools/go/loader"
 )
@@ -28,6 +32,11 @@ var (
 	}
 	errorf = fmt.Errorf
 )
+
+// TODO: don't log.
+func logf(format string, args ...interface{}) {
+	log.Printf(format, args...)
+}
 
 func loadPackages(conf *loader.Config, args []string) (*loader.Program, error) {
 	if len(args) == 0 {

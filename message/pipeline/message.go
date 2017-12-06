@@ -1,8 +1,8 @@
-// Copyright 2016 The Go Authors. All rights reserved.
+// Copyright 2017 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package pipeline
 
 import (
 	"encoding/json"
@@ -22,6 +22,25 @@ import (
 // a hypothetical translation from English to English, where the source defines
 // the format string "%d file(s) remaining".
 // See the examples directory for examples of extracted messages.
+
+// Config contains configuration for the translation pipeline.
+type Config struct {
+	SourceLanguage language.Tag
+
+	// Supported indicates the languages for which data should be generated.
+	// If unspecified, it will attempt to derive the set of supported languages
+	// from the context.
+	Supported []language.Tag
+
+	Packages []string
+
+	// TODO:
+	// - Printf-style configuration
+	// - Template-style configuration
+	// - Extraction options
+	// - Rewrite options
+	// - Generation options
+}
 
 // A Locale is used to store all information for a single locale. This type is
 // used both for extraction and injection.
