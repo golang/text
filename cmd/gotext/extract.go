@@ -23,7 +23,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"golang.org/x/text/internal"
 	fmtparser "golang.org/x/text/internal/format"
+	"golang.org/x/text/language"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -32,6 +34,16 @@ import (
 // - handle different file formats (PO, XLIFF)
 // - handle features (gender, plural)
 // - message rewriting
+
+var (
+	srcLang *string
+	lang    *string
+)
+
+func init() {
+	srcLang = cmdExtract.Flag.String("srclang", "en-US", "the source-code language")
+	lang = cmdExtract.Flag.String("lang", "en-US", "comma-separated list of languages to process")
+}
 
 var cmdExtract = &Command{
 	Run:       runExtract,
@@ -213,15 +225,40 @@ func runExtract(cmd *Command, args []string) error {
 		}
 	}
 
-	data, err := json.MarshalIndent(messages, "", "    ")
+	tag, err := language.Parse(*srcLang)
 	if err != nil {
 		return err
 	}
-	for _, tag := range getLangs() {
-		// TODO: merge with existing files, don't overwrite.
-		os.MkdirAll(*dir, 0744)
-		file := filepath.Join(*dir, fmt.Sprintf("gotext_%v.out.json", tag))
-		if err := ioutil.WriteFile(file, data, 0744); err != nil {
+	out := Locale{
+		Language: tag,
+		Messages: messages,
+	}
+	data, err := json.MarshalIndent(out, "", "    ")
+	if err != nil {
+		return err
+	}
+	os.MkdirAll(*dir, 0755)
+	// TODO: this file can probably go if we replace the extract + generate
+	// cycle with a init once and update cycle.
+	file := filepath.Join(*dir, "extracted.gotext.json")
+	if err := ioutil.WriteFile(file, data, 0644); err != nil {
+		return fmt.Errorf("could not create file: %v", err)
+	}
+
+	langs := append(getLangs(), tag)
+	langs = internal.UniqueTags(langs)
+	for _, tag := range langs {
+		// TODO: inject translations from existing files to avoid retranslation.
+		out.Language = tag
+		data, err := json.MarshalIndent(out, "", "    ")
+		if err != nil {
+			return err
+		}
+		file := filepath.Join(*dir, tag.String(), "out.gotext.json")
+		if err := os.MkdirAll(filepath.Dir(file), 0750); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(file, data, 0740); err != nil {
 			return fmt.Errorf("could not create file: %v", err)
 		}
 	}

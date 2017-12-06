@@ -4,6 +4,10 @@
 
 package main
 
+import (
+	"golang.org/x/text/language"
+)
+
 // TODO: these definitions should be moved to a package so that the can be used
 // by other tools.
 
@@ -15,6 +19,14 @@ package main
 // a hypothetical translation from English to English, where the source defines
 // the format string "%d file(s) remaining".
 // See the examples directory for examples of extracted messages.
+
+// A Locale is used to store all information for a single locale. This type is
+// used both for extraction and injection.
+type Locale struct {
+	Language language.Tag    `json:"language"`
+	Messages []Message       `json:"messages"`
+	Macros   map[string]Text `json:"macros,omitempty"`
+}
 
 // A Message describes a message to be translated.
 type Message struct {
