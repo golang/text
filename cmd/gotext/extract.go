@@ -130,7 +130,6 @@ func runExtract(cmd *Command, args []string) error {
 					}
 				}
 
-				key = append(key, fmtMsg)
 				arguments := []argument{}
 				args = args[1:]
 				simArgs := make([]interface{}, len(args))
@@ -181,6 +180,7 @@ func runExtract(cmd *Command, args []string) error {
 						msg += fmt.Sprintf("{%s}", ph.addArg(&arg, sub))
 					}
 				}
+				key = append(key, msg)
 
 				// Add additional Placeholders that can be used in translations
 				// that are not present in the string.
@@ -196,7 +196,8 @@ func runExtract(cmd *Command, args []string) error {
 				}
 
 				messages = append(messages, Message{
-					Key:     key,
+					ID:      key,
+					Key:     fmtMsg,
 					Message: Text{Msg: msg},
 					// TODO(fix): this doesn't get the before comment.
 					Comment:      comment,

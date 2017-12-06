@@ -32,12 +32,13 @@ type Locale struct {
 
 // A Message describes a message to be translated.
 type Message struct {
-	// Key contains a list of identifiers for the message. If this list is empty
-	// the message itself is used as the key.
-	Key         []string `json:"key,omitempty"`
-	Meaning     string   `json:"meaning,omitempty"`
-	Message     Text     `json:"message"`
-	Translation Text     `json:"translation"`
+	// ID contains a list of identifiers for the message.
+	ID IDList `json:"id"`
+	// Key is the string that is used to look up the message at runtime.
+	Key         string `json:"key"`
+	Meaning     string `json:"meaning,omitempty"`
+	Message     Text   `json:"message"`
+	Translation Text   `json:"translation"`
 
 	Comment           string `json:"comment,omitempty"`
 	TranslatorComment string `json:"translatorComment,omitempty"`
@@ -134,6 +135,28 @@ func (t *Text) MarshalJSON() ([]byte, error) {
 		return json.Marshal(t.Msg)
 	}
 	return json.Marshal((*rawText)(t))
+}
+
+// IDList is a set identifiers that each may refer to possibly different
+// versions of the same message. When looking up a messages, the first
+// identifier in the list takes precedence.
+type IDList []string
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (id *IDList) UnmarshalJSON(b []byte) error {
+	if b[0] == '"' {
+		*id = []string{""}
+		return json.Unmarshal(b, &((*id)[0]))
+	}
+	return json.Unmarshal(b, (*[]string)(id))
+}
+
+// MarshalJSON implements json.Marshaler.
+func (id *IDList) MarshalJSON() ([]byte, error) {
+	if len(*id) == 1 {
+		return json.Marshal((*id)[0])
+	}
+	return json.Marshal((*[]string)(id))
 }
 
 // Select selects a Text based on the feature value associated with a feature of
