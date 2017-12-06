@@ -53,7 +53,7 @@ func runExtract(cmd *Command, args []string) error {
 	conf := loader.Config{}
 	prog, err := loadPackages(&conf, args)
 	if err != nil {
-		return err
+		return wrap(err, "")
 	}
 
 	// print returns Go syntax for the specified node.
@@ -210,7 +210,7 @@ func runExtract(cmd *Command, args []string) error {
 
 	tag, err := language.Parse(*srcLang)
 	if err != nil {
-		return err
+		return wrap(err, "")
 	}
 	out := Locale{
 		Language: tag,
@@ -218,14 +218,14 @@ func runExtract(cmd *Command, args []string) error {
 	}
 	data, err := json.MarshalIndent(out, "", "    ")
 	if err != nil {
-		return err
+		return wrap(err, "")
 	}
 	os.MkdirAll(*dir, 0755)
 	// TODO: this file can probably go if we replace the extract + generate
 	// cycle with a init once and update cycle.
 	file := filepath.Join(*dir, "extracted.gotext.json")
 	if err := ioutil.WriteFile(file, data, 0644); err != nil {
-		return fmt.Errorf("could not create file: %v", err)
+		return wrapf(err, "could not create file")
 	}
 
 	langs := append(getLangs(), tag)
@@ -235,14 +235,14 @@ func runExtract(cmd *Command, args []string) error {
 		out.Language = tag
 		data, err := json.MarshalIndent(out, "", "    ")
 		if err != nil {
-			return err
+			return wrap(err, "JSON marshal failed")
 		}
 		file := filepath.Join(*dir, tag.String(), "out.gotext.json")
 		if err := os.MkdirAll(filepath.Dir(file), 0750); err != nil {
-			return err
+			return wrap(err, "dir create failed")
 		}
 		if err := ioutil.WriteFile(file, data, 0740); err != nil {
-			return fmt.Errorf("could not create file: %v", err)
+			return wrap(err, "write failed")
 		}
 	}
 	return nil

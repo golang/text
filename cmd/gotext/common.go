@@ -5,10 +5,22 @@
 package main
 
 import (
+	"fmt"
 	"go/build"
 	"go/parser"
 
 	"golang.org/x/tools/go/loader"
+)
+
+// NOTE: The command line tool already prefixes with "gotext:".
+var (
+	wrap = func(err error, msg string) error {
+		return fmt.Errorf("%s: %v", msg, err)
+	}
+	wrapf = func(err error, msg string, args ...interface{}) error {
+		return wrap(err, fmt.Sprintf(msg, args...))
+	}
+	errorf = fmt.Errorf
 )
 
 func loadPackages(conf *loader.Config, args []string) (*loader.Program, error) {
@@ -22,7 +34,7 @@ func loadPackages(conf *loader.Config, args []string) (*loader.Program, error) {
 	// Use the initial packages from the command line.
 	args, err := conf.FromArgs(args, false)
 	if err != nil {
-		return nil, err
+		return nil, wrap(err, "loading packages failed")
 	}
 
 	// Load, parse and type-check the whole program.

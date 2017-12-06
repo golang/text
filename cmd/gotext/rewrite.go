@@ -11,7 +11,6 @@ import (
 	"go/constant"
 	"go/format"
 	"go/token"
-	"log"
 	"os"
 	"strings"
 
@@ -52,7 +51,7 @@ func runRewrite(cmd *Command, args []string) error {
 	}
 	prog, err := loadPackages(conf, args)
 	if err != nil {
-		return err
+		return wrap(err, "")
 	}
 
 	for _, info := range prog.InitialPackages() {
@@ -73,12 +72,12 @@ func runRewrite(cmd *Command, args []string) error {
 			if *overwrite {
 				var err error
 				if w, err = os.Create(conf.Fset.File(f.Pos()).Name()); err != nil {
-					log.Fatalf("Could not open file: %v", err)
+					return wrap(err, "open failed")
 				}
 			}
 
 			if err := format.Node(w, conf.Fset, f); err != nil {
-				return err
+				return wrap(err, "go format failed")
 			}
 		}
 	}

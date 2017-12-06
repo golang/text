@@ -125,7 +125,7 @@ func main() {
 			cmd.Flag.Parse(args[1:])
 			args = cmd.Flag.Args()
 			if err := cmd.Run(cmd, args); err != nil {
-				fatalf("gotext: %v", err)
+				fatalf("gotext: %+v", err)
 			}
 			exit()
 			return
@@ -285,10 +285,10 @@ func help(args []string) {
 		if arg == "gendocumentation" {
 			b, err := format.Source(w.Bytes())
 			if err != nil {
-				errorf("Could not format generated docs: %v\n", err)
+				logf("Could not format generated docs: %v\n", err)
 			}
 			if err := ioutil.WriteFile("doc.go", b, 0666); err != nil {
-				errorf("Could not create file alldocs.go: %v\n", err)
+				logf("Could not create file alldocs.go: %v\n", err)
 			}
 		} else {
 			fmt.Println(w.String())
@@ -336,11 +336,11 @@ func exit() {
 }
 
 func fatalf(format string, args ...interface{}) {
-	errorf(format, args...)
+	logf(format, args...)
 	exit()
 }
 
-func errorf(format string, args ...interface{}) {
+func logf(format string, args ...interface{}) {
 	log.Printf(format, args...)
 	setExitStatus(1)
 }
