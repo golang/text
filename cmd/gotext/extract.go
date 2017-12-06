@@ -9,10 +9,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/ast"
-	"go/build"
 	"go/constant"
 	"go/format"
-	"go/parser"
 	"go/token"
 	"go/types"
 	"io/ioutil"
@@ -52,23 +50,8 @@ var cmdExtract = &Command{
 }
 
 func runExtract(cmd *Command, args []string) error {
-	if len(args) == 0 {
-		args = []string{"."}
-	}
-
-	conf := loader.Config{
-		Build:      &build.Default,
-		ParserMode: parser.ParseComments,
-	}
-
-	// Use the initial packages from the command line.
-	args, err := conf.FromArgs(args, false)
-	if err != nil {
-		return err
-	}
-
-	// Load, parse and type-check the whole program.
-	iprog, err := conf.Load()
+	conf := loader.Config{}
+	prog, err := loadPackages(&conf, args)
 	if err != nil {
 		return err
 	}
@@ -82,10 +65,10 @@ func runExtract(cmd *Command, args []string) error {
 
 	var messages []Message
 
-	for _, info := range iprog.AllPackages {
+	for _, info := range prog.AllPackages {
 		for _, f := range info.Files {
 			// Associate comments with nodes.
-			cmap := ast.NewCommentMap(iprog.Fset, f, f.Comments)
+			cmap := ast.NewCommentMap(prog.Fset, f, f.Comments)
 			getComment := func(n ast.Node) string {
 				cs := cmap.Filter(n).Comments()
 				if len(cs) > 0 {
