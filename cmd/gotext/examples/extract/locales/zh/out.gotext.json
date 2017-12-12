@@ -106,13 +106,13 @@
             "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:56:10"
         },
         {
-            "id": "{} files remaining!",
+            "id": "{2} files remaining!",
             "key": "%d files remaining!",
-            "message": "{} files remaining!",
+            "message": "{2} files remaining!",
             "translation": "",
             "placeholders": [
                 {
-                    "id": "",
+                    "id": "2",
                     "string": "%[1]d",
                     "type": "int",
                     "underlyingType": "int",

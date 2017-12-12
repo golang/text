@@ -249,7 +249,7 @@ func strip(s string) string {
 		if unicode.IsSpace(r) || r == '-' {
 			return '_'
 		}
-		if !unicode.In(r, unicode.Letter, unicode.Mark) {
+		if !unicode.In(r, unicode.Letter, unicode.Mark, unicode.Number) {
 			return -1
 		}
 		return r
