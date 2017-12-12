@@ -28,8 +28,12 @@ import (
 // - handle features (gender, plural)
 // - message rewriting
 
+// - %m substitutions
+// - `msg:"etc"` tags
+// - msg/Msg top-level vars and strings.
+
 // Extract extracts all strings form the package defined in Config.
-func Extract(c *Config) (*Locale, error) {
+func Extract(c *Config) (*State, error) {
 	conf := loader.Config{}
 	prog, err := loadPackages(&conf, c.Packages)
 	if err != nil {
@@ -189,11 +193,14 @@ func Extract(c *Config) (*Locale, error) {
 		}
 	}
 
-	out := &Locale{
-		Language: c.SourceLanguage,
-		Messages: messages,
-	}
-	return out, nil
+	return &State{
+		Config:  *c,
+		program: prog,
+		Extracted: Messages{
+			Language: c.SourceLanguage,
+			Messages: messages,
+		},
+	}, nil
 }
 
 func posString(conf loader.Config, info *loader.PackageInfo, pos token.Pos) string {

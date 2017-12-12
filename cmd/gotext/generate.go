@@ -50,8 +50,8 @@ func runGenerate(cmd *Command, args []string) error {
 	// manually created and stored in the textdata directory.
 
 	// Build up index of translations and original messages.
-	extracted := pipeline.Locale{}
-	translations := []*pipeline.Locale{}
+	extracted := pipeline.Messages{}
+	translations := []pipeline.Messages{}
 
 	err = filepath.Walk(*dir, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
@@ -80,11 +80,11 @@ func runGenerate(cmd *Command, args []string) error {
 		if err != nil {
 			return wrap(err, "read file failed")
 		}
-		var locale pipeline.Locale
+		var locale pipeline.Messages
 		if err := json.Unmarshal(b, &locale); err != nil {
 			return wrap(err, "parsing translation file failed")
 		}
-		translations = append(translations, &locale)
+		translations = append(translations, locale)
 		return nil
 	})
 	if err != nil {

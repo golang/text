@@ -46,7 +46,11 @@ func runExtract(cmd *Command, args []string) error {
 		SourceLanguage: tag,
 		Packages:       args,
 	}
-	out, err := pipeline.Extract(config)
+	state, err := pipeline.Extract(config)
+	if err != nil {
+		return wrap(err, "extract failed")
+	}
+	out := state.Extracted
 
 	data, err := json.MarshalIndent(out, "", "    ")
 	if err != nil {
