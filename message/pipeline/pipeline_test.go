@@ -57,7 +57,7 @@ func TestFullCycle(t *testing.T) {
 			//  for range s.Config.Actions {
 			//  	//  TODO: do the actions.
 			//  }
-			// chk(t, s.Export()) // TODO
+			chk(t, s.Export())
 			chk(t, s.Generate())
 
 			writeJSON(t, filepath.Join(dir, "extracted.gotext.json"), s.Extracted)
@@ -93,14 +93,10 @@ func checkOutput(t *testing.T, p string) {
 			scanWant := bufio.NewScanner(bytes.NewReader(want))
 			line := 0
 			clean := func(s string) string {
-				s = path.Clean(filepath.ToSlash(s))
-				if i := strings.LastIndex(s, "Size:"); i != -1 {
+				if i := strings.LastIndex(s, "//"); i != -1 {
 					s = s[:i]
 				}
-				if i := strings.LastIndex(s, "Total table size"); i != -1 {
-					s = s[:i]
-				}
-				return s
+				return path.Clean(filepath.ToSlash(s))
 			}
 			for scanGot.Scan() && scanWant.Scan() {
 				got := clean(scanGot.Text())

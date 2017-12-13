@@ -15,12 +15,14 @@ import (
 	"go/parser"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
 	"unicode"
 
+	"golang.org/x/text/internal"
 	"golang.org/x/text/language"
 	"golang.org/x/text/runes"
 	"golang.org/x/tools/go/loader"
@@ -248,7 +250,31 @@ func (s *State) Merge() error {
 
 // Export writes out the messages to translation out files.
 func (s *State) Export() error {
-	panic("unimplemented")
+	langs := []language.Tag{s.Config.SourceLanguage}
+	for _, t := range s.Translations {
+		langs = append(langs, t.Language)
+	}
+	langs = internal.UniqueTags(langs)
+	out := s.Extracted
+	path, err := outPattern(s)
+	if err != nil {
+		return wrap(err, "export failed")
+	}
+	for _, tag := range langs {
+		// TODO: inject translations from existing files to avoid retranslation.
+		out.Language = tag
+		data, err := json.MarshalIndent(out, "", "    ")
+		if err != nil {
+			return wrap(err, "JSON marshal failed")
+		}
+		file := fmt.Sprintf(path, tag)
+		if err := os.MkdirAll(filepath.Dir(file), 0755); err != nil {
+			return wrap(err, "dir create failed")
+		}
+		if err := ioutil.WriteFile(file, data, 0644); err != nil {
+			return wrap(err, "write failed")
+		}
+	}
 	return nil
 }
 

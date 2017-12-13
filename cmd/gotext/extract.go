@@ -5,12 +5,6 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-
-	"golang.org/x/text/internal"
 	"golang.org/x/text/message/pipeline"
 )
 
@@ -40,24 +34,5 @@ func runExtract(cmd *Command, config *pipeline.Config, args []string) error {
 	if err != nil {
 		return wrap(err, "extract failed")
 	}
-	out := state.Extracted
-
-	langs := append(getLangs(), config.SourceLanguage)
-	langs = internal.UniqueTags(langs)
-	for _, tag := range langs {
-		// TODO: inject translations from existing files to avoid retranslation.
-		out.Language = tag
-		data, err := json.MarshalIndent(out, "", "    ")
-		if err != nil {
-			return wrap(err, "JSON marshal failed")
-		}
-		file := filepath.Join(*dir, tag.String(), outFile)
-		if err := os.MkdirAll(filepath.Dir(file), 0750); err != nil {
-			return wrap(err, "dir create failed")
-		}
-		if err := ioutil.WriteFile(file, data, 0740); err != nil {
-			return wrap(err, "write failed")
-		}
-	}
-	return nil
+	return wrap(state.Export(), "export failed")
 }
