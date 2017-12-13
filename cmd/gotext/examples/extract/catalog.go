@@ -62,7 +62,7 @@ var en_USIndex = []uint32{ // 8 elements
 
 const en_USData string = "" + // Size: 201 bytes
 	"\x02Hello world!\x0a\x02Hello %[1]s!\x0a\x02%[1]s is visiting %[2]s!\x0a" +
-	"\x02%[1]s is visiting %[3]s!\x0a\x04\x01\x81\x01\x00\x02\x14\x02One file" +
+	"\x02%[1]s is visiting %[3]s!\x0a\x14\x01\x81\x01\x00\x02\x14\x02One file" +
 	" remaining!\x00&\x02There are %[1]d more files remaining!\x02%[1]s is ou" +
 	"t of order!\x02%.2[1]f miles traveled (%[1]f)"
 
@@ -73,4 +73,4 @@ var zhIndex = []uint32{ // 8 elements
 
 const zhData string = ""
 
-// Total table size 471 bytes (0KiB); checksum: 7746955
+// Total table size 471 bytes (0KiB); checksum: 2452D1C5
