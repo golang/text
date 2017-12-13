@@ -14,7 +14,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"golang.org/x/text/language"
 )
 
 var genFiles = flag.Bool("gen", false, "generate output files instead of comparing")
@@ -36,10 +39,11 @@ func TestFullCycle(t *testing.T) {
 			dir := filepath.Join(path, f.Name())
 			pkgPath := fmt.Sprintf("%s/%s", path, f.Name())
 			config := Config{
-				Packages:   []string{pkgPath},
-				Dir:        filepath.Join(dir, "locales"),
-				GenFile:    "catalog_gen.go",
-				GenPackage: pkgPath,
+				SourceLanguage: language.AmericanEnglish,
+				Packages:       []string{pkgPath},
+				Dir:            filepath.Join(dir, "locales"),
+				GenFile:        "catalog_gen.go",
+				GenPackage:     pkgPath,
 			}
 			// TODO: load config if available.
 			s, err := Extract(&config)
@@ -85,9 +89,19 @@ func checkOutput(t *testing.T, p string) {
 			scanGot := bufio.NewScanner(bytes.NewReader(got))
 			scanWant := bufio.NewScanner(bytes.NewReader(want))
 			line := 0
+			clean := func(s string) string {
+				s = path.Clean(filepath.ToSlash(s))
+				if i := strings.LastIndex(s, "Size:"); i != -1 {
+					s = s[:i]
+				}
+				if i := strings.LastIndex(s, "Total table size"); i != -1 {
+					s = s[:i]
+				}
+				return s
+			}
 			for scanGot.Scan() && scanWant.Scan() {
-				got := path.Clean(filepath.ToSlash(scanGot.Text()))
-				want := path.Clean(filepath.ToSlash(scanWant.Text()))
+				got := clean(scanGot.Text())
+				want := clean(scanWant.Text())
 				if got != want {
 					t.Errorf("file %q differs from .want file at line %d:\n\t%s\n\t%s", gotFile, line, got, want)
 					break
