@@ -34,5 +34,11 @@ func runExtract(cmd *Command, config *pipeline.Config, args []string) error {
 	if err != nil {
 		return wrap(err, "extract failed")
 	}
+	if err := state.Import(); err != nil {
+		return wrap(err, "import failed")
+	}
+	if err := state.Merge(); err != nil {
+		return wrap(err, "merge failed")
+	}
 	return wrap(state.Export(), "export failed")
 }

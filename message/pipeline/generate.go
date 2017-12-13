@@ -86,7 +86,6 @@ func (s *State) generate() (*gen.CodeWriter, error) {
 	// Build up index of translations and original messages.
 	translations := map[language.Tag]map[string]Message{}
 	languages := []language.Tag{}
-	langVars := []string{}
 	usedKeys := map[string]int{}
 
 	for _, loc := range s.Translations {
@@ -110,6 +109,7 @@ func (s *State) generate() (*gen.CodeWriter, error) {
 	// Verify completeness and register keys.
 	internal.SortTags(languages)
 
+	langVars := []string{}
 	for _, tag := range languages {
 		langVars = append(langVars, strings.Replace(tag.String(), "-", "_", -1))
 		dict := translations[tag]

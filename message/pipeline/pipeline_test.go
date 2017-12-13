@@ -52,7 +52,7 @@ func TestFullCycle(t *testing.T) {
 			s, err := Extract(&config)
 			chk(t, err)
 			chk(t, s.Import())
-			// chk(t, s.Merge()) // TODO
+			chk(t, s.Merge())
 			// TODO:
 			//  for range s.Config.Actions {
 			//  	//  TODO: do the actions.
