@@ -289,7 +289,7 @@ func (s *State) Merge() error {
 
 	// Build index of translations.
 	translations := map[language.Tag]map[string]Message{}
-	languages := []language.Tag{}
+	languages := append([]language.Tag{}, s.Config.Supported...)
 
 	for _, t := range s.Translations {
 		tag := t.Language
@@ -308,7 +308,7 @@ func (s *State) Merge() error {
 			}
 		}
 	}
-	internal.SortTags(languages)
+	languages = internal.UniqueTags(languages)
 
 	for _, tag := range languages {
 		ms := Messages{Language: tag}

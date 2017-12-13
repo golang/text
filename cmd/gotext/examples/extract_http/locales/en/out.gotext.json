@@ -1,10 +1,11 @@
 {
-    "language": "zh",
+    "language": "en",
     "messages": [
         {
             "id": "Hello {From}!",
             "message": "Hello {From}!",
-            "translation": "",
+            "translation": "Hello {From}!",
+            "translatorComment": "Copied from source.",
             "placeholders": [
                 {
                     "id": "From",
@@ -14,12 +15,14 @@
                     "argNum": 1,
                     "expr": "r.Header.Get(\"From\")"
                 }
-            ]
+            ],
+            "fuzzy": true
         },
         {
             "id": "Do you like your browser ({User_Agent})?",
             "message": "Do you like your browser ({User_Agent})?",
-            "translation": "",
+            "translation": "Do you like your browser ({User_Agent})?",
+            "translatorComment": "Copied from source.",
             "placeholders": [
                 {
                     "id": "User_Agent",
@@ -29,7 +32,8 @@
                     "argNum": 1,
                     "expr": "r.Header.Get(\"User-Agent\")"
                 }
-            ]
+            ],
+            "fuzzy": true
         }
     ]
 }

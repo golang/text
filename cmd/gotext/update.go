@@ -14,17 +14,23 @@ import (
 // - handle features (gender, plural)
 // - message rewriting
 
+var (
+	lang *string
+	out  *string
+)
+
 func init() {
-	lang = cmdExtract.Flag.String("lang", "en-US", "comma-separated list of languages to process")
+	lang = cmdUpdate.Flag.String("lang", "en-US", "comma-separated list of languages to process")
+	out = cmdUpdate.Flag.String("out", "", "output file to write to")
 }
 
-var cmdExtract = &Command{
-	Run:       runExtract,
-	UsageLine: "extract <package>*",
-	Short:     "extracts strings to be translated from code",
+var cmdUpdate = &Command{
+	Run:       runUpdate,
+	UsageLine: "update <package>* [-out <gofile>]",
+	Short:     "merge translations and generate catalog",
 }
 
-func runExtract(cmd *Command, config *pipeline.Config, args []string) error {
+func runUpdate(cmd *Command, config *pipeline.Config, args []string) error {
 	config.Packages = args
 	state, err := pipeline.Extract(config)
 	if err != nil {
@@ -36,5 +42,11 @@ func runExtract(cmd *Command, config *pipeline.Config, args []string) error {
 	if err := state.Merge(); err != nil {
 		return wrap(err, "merge failed")
 	}
-	return wrap(state.Export(), "export failed")
+	if err := state.Export(); err != nil {
+		return wrap(err, "export failed")
+	}
+	if *out != "" {
+		return wrap(state.Generate(), "generation failed")
+	}
+	return nil
 }
