@@ -162,6 +162,14 @@ func (s *State) generate() (*gen.CodeWriter, error) {
 					if err != nil {
 						return nil, wrap(err, "error")
 					}
+					_, leadWS, trailWS := trimWS(msg.Key)
+					if leadWS != "" || trailWS != "" {
+						m = catmsg.Affix{
+							Message: m,
+							Prefix:  leadWS,
+							Suffix:  trailWS,
+						}
+					}
 					// TODO: support macros.
 					data, err := catmsg.Compile(tag, nil, m)
 					if err != nil {

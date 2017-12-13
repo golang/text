@@ -2,22 +2,22 @@
     "language": "en-US",
     "messages": [
         {
-"id": "Hello world!\n",
+            "id": "Hello world!",
             "key": "Hello world!\n",
-            "message": "Hello world!\n",
-            "translation":  "Hello world!\n"
+            "message": "Hello world!",
+            "translation":  "Hello world!"
         },
         {
-            "id": "Hello {City}!\n",
+            "id": "Hello {City}!",
             "key": "Hello %s!\n",
-            "message": "Hello {City}!\n",
-            "translation": "Hello {City}!\n"
+            "message": "Hello {City}!",
+            "translation": "Hello {City}!"
         },
         {
-            "id": "Hello {Town}!\n",
+            "id": "Hello {Town}!",
             "key": "Hello %s!\n",
-            "message": "Hello {Town}!\n",
-            "translation": "Hello {Town}!\n",
+            "message": "Hello {Town}!",
+            "translation": "Hello {Town}!",
             "placeholders": [
                 {
                     "id": "Town",
@@ -31,16 +31,16 @@
             ]
         },
         {
-            "id": "{Person} is visiting {Place}!\n",
+            "id": "{Person} is visiting {Place}!",
             "key": "%s is visiting %s!\n",
-            "message": "{Person} is visiting {Place}!\n",
-            "translation": "{Person} is visiting {Place}!\n"
+            "message": "{Person} is visiting {Place}!",
+            "translation": "{Person} is visiting {Place}!"
         },
         {
-            "id": "{Person} is visiting {Place}!\n",
+            "id": "{Person} is visiting {Place}!",
             "key": "%[1]s is visiting %[3]s!\n",
-            "message": "{Person} is visiting {Place}!\n",
-            "translation": "{Person} is visiting {Place}!\n"
+            "message": "{Person} is visiting {Place}!",
+            "translation": "{Person} is visiting {Place}!"
         },
         {
             "id": "{2} files remaining!",
@@ -70,9 +70,9 @@
             }
         },
         {
-            "id": "Use the following code for your discount: {ReferralCode}\n",
+            "id": "Use the following code for your discount: {ReferralCode}",
             "key": "Use the following code for your discount: %d\n",
-            "message": "Use the following code for your discount: {ReferralCode}\n",
+            "message": "Use the following code for your discount: {ReferralCode}",
             "translation": ""
         },
         {

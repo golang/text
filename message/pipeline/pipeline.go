@@ -19,8 +19,10 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"golang.org/x/text/language"
+	"golang.org/x/text/runes"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -248,6 +250,21 @@ func (s *State) Merge() error {
 func (s *State) Export() error {
 	panic("unimplemented")
 	return nil
+}
+
+var (
+	ws    = runes.In(unicode.White_Space).Contains
+	notWS = runes.NotIn(unicode.White_Space).Contains
+)
+
+func trimWS(s string) (trimmed, leadWS, trailWS string) {
+	trimmed = strings.TrimRightFunc(s, ws)
+	trailWS = s[len(trimmed):]
+	if i := strings.IndexFunc(trimmed, notWS); i > 0 {
+		leadWS = trimmed[:i]
+		trimmed = trimmed[i:]
+	}
+	return trimmed, leadWS, trailWS
 }
 
 // NOTE: The command line tool already prefixes with "gotext:".

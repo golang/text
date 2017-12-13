@@ -2,16 +2,16 @@
     "language": "und",
     "messages": [
         {
-            "id": "Hello world!\n",
+            "id": "Hello world!",
             "key": "Hello world!\n",
-            "message": "Hello world!\n",
+            "message": "Hello world!",
             "translation": "",
             "position": "testdata/test1/test1.go:19:10"
         },
         {
-            "id": "Hello {City}!\n",
+            "id": "Hello {City}!",
             "key": "Hello %s!\n",
-            "message": "Hello {City}!\n",
+            "message": "Hello {City}!",
             "translation": "",
             "placeholders": [
                 {
@@ -26,9 +26,9 @@
             "position": "testdata/test1/test1.go:24:10"
         },
         {
-            "id": "{Person} is visiting {Place}!\n",
+            "id": "{Person} is visiting {Place}!",
             "key": "%s is visiting %s!\n",
-            "message": "{Person} is visiting {Place}!\n",
+            "message": "{Person} is visiting {Place}!",
             "translation": "",
             "placeholders": [
                 {
@@ -53,9 +53,9 @@
             "position": "testdata/test1/test1.go:30:10"
         },
         {
-            "id": "{Person} is visiting {Place}!\n",
+            "id": "{Person} is visiting {Place}!",
             "key": "%[1]s is visiting %[3]s!\n",
-            "message": "{Person} is visiting {Place}!\n",
+            "message": "{Person} is visiting {Place}!",
             "translation": "",
             "comment": "Field names are placeholders.",
             "placeholders": [
@@ -122,9 +122,9 @@
             "position": "testdata/test1/test1.go:56:10"
         },
         {
-            "id": "Use the following code for your discount: {ReferralCode}\n",
+            "id": "Use the following code for your discount: {ReferralCode}",
             "key": "Use the following code for your discount: %d\n",
-            "message": "Use the following code for your discount: {ReferralCode}\n",
+            "message": "Use the following code for your discount: {ReferralCode}",
             "translation": "",
             "placeholders": [
                 {
