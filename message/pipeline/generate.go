@@ -6,7 +6,9 @@ package pipeline
 
 import (
 	"fmt"
+	"go/build"
 	"io"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -25,8 +27,12 @@ var transRe = regexp.MustCompile(`messages\.(.*)\.json`)
 
 // Generate writes a Go file that defines a Catalog with translated messages.
 func (s *State) Generate() error {
-	filename := s.Config.CatalogFile
-	prog, err := loadPackages(&loader.Config{}, []string{filename})
+	path := s.Config.GenPackage
+	if path == "" {
+		path = "."
+	}
+	isDir := path[0] == '.'
+	prog, err := loadPackages(&loader.Config{}, []string{path})
 	if err != nil {
 		return wrap(err, "could not load package")
 	}
@@ -40,7 +46,12 @@ func (s *State) Generate() error {
 	if err != nil {
 		return err
 	}
-	cw.WriteGoFile(filename, pkg) // TODO: WriteGoFile should return error.
+	if !isDir {
+		gopath := build.Default.GOPATH
+		path = filepath.Join(gopath, filepath.FromSlash(pkgs[0].Pkg.Path()))
+	}
+	path = filepath.Join(path, s.Config.GenFile)
+	cw.WriteGoFile(path, pkg) // TODO: WriteGoFile should return error.
 	return err
 }
 

@@ -8,10 +8,17 @@
 package pipeline
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"go/build"
 	"go/parser"
+	"io/ioutil"
 	"log"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"text/template"
 
 	"golang.org/x/text/language"
 	"golang.org/x/tools/go/loader"
@@ -20,7 +27,7 @@ import (
 const (
 	extractFile  = "extracted.gotext.json"
 	outFile      = "out.gotext.json"
-	gotextSuffix = ".gotext.json"
+	gotextSuffix = "gotext.json"
 )
 
 // Config contains configuration for the translation pipeline.
@@ -41,8 +48,14 @@ type Config struct {
 	// Dir is the root dir for all operations.
 	Dir string
 
-	// TranslationsPattern is a regular expression for input translation files
-	// that match anywhere in the directory structure rooted at Dir.
+	// TranslationsPattern is a regular expression to match incoming translation
+	// files. These files may appear in any directory rooted at Dir.
+	// language for the translation files is determined as follows:
+	//   1. From the Language field in the file.
+	//   2. If not present, from a valid language tag in the filename, separated
+	//      by dots (e.g. "en-US.json" or "incoming.pt_PT.xmb").
+	//   3. If not present, from a the closest subdirectory in which the file
+	//      is contained that parses as a valid language tag.
 	TranslationsPattern string
 
 	// OutPattern defines the location for translation files for a certain
@@ -65,9 +78,13 @@ type Config struct {
 
 	// --- Generation
 
-	// CatalogFile may be in a different package. It is not defined, it will
+	// GenFile may be in a different package. It is not defined, it will
 	// be written to stdout.
-	CatalogFile string
+	GenFile string
+
+	// GenPackage is the package or relative path into which to generate the
+	// file. If not specified it is relative to the current directory.
+	GenPackage string
 
 	// DeclareVar defines a variable to which to assing the generated Catalog.
 	DeclareVar string
@@ -117,30 +134,106 @@ type State struct {
 	Translations []Messages
 }
 
-// A full-cycle pipeline example:
-//
-//  func updateAll(c *Config) error {
-//  	s := Extract(c)
-//  	s.Import()
-//  	s.Merge()
-//  	for range s.Config.Actions {
-//  		if s.Err != nil {
-//  			return s.Err
-//  		}
-//  		//  TODO: do the actions.
-//  	}
-//  	if err := s.Export(); err != nil {
-//  		return err
-//  	}
-//  	if err := s.Generate(); err != nil {
-//  		return err
-//  	}
-//  	return nil
-//  }
+func (s *State) dir() string {
+	if d := s.Config.Dir; d != "" {
+		return d
+	}
+	return "./locales"
+}
+
+func outPattern(s *State) (string, error) {
+	c := s.Config
+	pat := c.OutPattern
+	if pat == "" {
+		pat = "{{.Dir}}/{{.Language}}/out.{{.Ext}}"
+	}
+
+	ext := c.Ext
+	if ext == "" {
+		ext = c.Format
+	}
+	if ext == "" {
+		ext = gotextSuffix
+	}
+	t, err := template.New("").Parse(pat)
+	if err != nil {
+		return "", wrap(err, "error parsing template")
+	}
+	buf := bytes.Buffer{}
+	err = t.Execute(&buf, map[string]string{
+		"Dir":      s.dir(),
+		"Language": "%s",
+		"Ext":      ext,
+	})
+	return filepath.FromSlash(buf.String()), wrap(err, "incorrect OutPattern")
+}
+
+var transRE = regexp.MustCompile(`.*\.` + gotextSuffix)
 
 // Import loads existing translation files.
 func (s *State) Import() error {
-	panic("unimplemented")
+	outPattern, err := outPattern(s)
+	if err != nil {
+		return err
+	}
+	re := transRE
+	if pat := s.Config.TranslationsPattern; pat != "" {
+		if re, err = regexp.Compile(pat); err != nil {
+			return wrapf(err, "error parsing regexp %q", s.Config.TranslationsPattern)
+		}
+	}
+	x := importer{s, outPattern, re}
+	return x.walkImport(s.dir(), s.Config.SourceLanguage)
+}
+
+type importer struct {
+	state      *State
+	outPattern string
+	transFile  *regexp.Regexp
+}
+
+func (i *importer) walkImport(path string, tag language.Tag) error {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil
+	}
+	for _, f := range files {
+		name := f.Name()
+		tag := tag
+		if f.IsDir() {
+			if t, err := language.Parse(name); err == nil {
+				tag = t
+			}
+			// We ignore errors
+			if err := i.walkImport(filepath.Join(path, name), tag); err != nil {
+				return err
+			}
+			continue
+		}
+		for _, l := range strings.Split(name, ".") {
+			if t, err := language.Parse(l); err == nil {
+				tag = t
+			}
+		}
+		file := filepath.Join(path, name)
+		// TODO: Should we skip files that match output files?
+		if fmt.Sprintf(i.outPattern, tag) == file {
+			continue
+		}
+		// TODO: handle different file formats.
+		if !i.transFile.MatchString(name) {
+			continue
+		}
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
+			return wrap(err, "read file failed")
+		}
+		var translations Messages
+		if err := json.Unmarshal(b, &translations); err != nil {
+			return wrap(err, "parsing translation file failed")
+		}
+		i.state.Translations = append(i.state.Translations, translations)
+	}
 	return nil
 }
 
@@ -160,9 +253,15 @@ func (s *State) Export() error {
 // NOTE: The command line tool already prefixes with "gotext:".
 var (
 	wrap = func(err error, msg string) error {
+		if err == nil {
+			return nil
+		}
 		return fmt.Errorf("%s: %v", msg, err)
 	}
 	wrapf = func(err error, msg string, args ...interface{}) error {
+		if err == nil {
+			return nil
+		}
 		return wrap(err, fmt.Sprintf(msg, args...))
 	}
 	errorf = fmt.Errorf
