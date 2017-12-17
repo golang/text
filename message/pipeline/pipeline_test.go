@@ -22,6 +22,9 @@ import (
 
 var genFiles = flag.Bool("gen", false, "generate output files instead of comparing")
 
+// setHelper is testing.T.Helper on Go 1.9+, overridden by go19_test.go.
+var setHelper = func(t *testing.T) {}
+
 func TestFullCycle(t *testing.T) {
 	const path = "./testdata"
 	dirs, err := ioutil.ReadDir(path)
@@ -31,7 +34,7 @@ func TestFullCycle(t *testing.T) {
 	for _, f := range dirs {
 		t.Run(f.Name(), func(t *testing.T) {
 			chk := func(t *testing.T, err error) {
-				t.Helper()
+				setHelper(t)
 				if err != nil {
 					t.Fatal(err)
 				}
