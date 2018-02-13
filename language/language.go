@@ -704,49 +704,61 @@ func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
 
 // CompactIndex returns an index, where 0 <= index < NumCompactTags, for tags
 // for which data exists in the text repository. The index will change over time
-// and should not be stored in persistent storage. Extensions, except for the
-// 'va' type of the 'u' extension, are ignored. It will return 0, false if no
-// compact tag exists, where 0 is the index for the root language (Und).
-func CompactIndex(t Tag) (index int, ok bool) {
+// and should not be stored in persistent storage. If t does not match a compact
+// index, exact will be false and the compact index will be returned for the
+// first match after repeatedly taking the Parent of t.
+func CompactIndex(t Tag) (index int, exact bool) {
 	// TODO: perhaps give more frequent tags a lower index.
 	// TODO: we could make the indexes stable. This will excluded some
 	//       possibilities for optimization, so don't do this quite yet.
+	exact = true
+
 	b, s, r := t.Raw()
-	if len(t.str) > 0 {
+	switch {
+	case len(t.str) > 0:
 		if strings.HasPrefix(t.str, "x-") {
 			// We have no entries for user-defined tags.
 			return 0, false
 		}
 		if uint16(t.pVariant) != t.pExt {
-			// There are no tags with variants and an u-va type.
-			if t.TypeForKey("va") != "" {
-				return 0, false
+			if int(t.pExt) < len(t.str) {
+				exact = false
+				t, _ = Raw.Compose(b, s, r, t.Variants())
 			}
-			t, _ = Raw.Compose(b, s, r, t.Variants())
 		} else if _, ok := t.Extension('u'); ok {
+			// TODO: va may mean something else. Consider not considering it.
 			// Strip all but the 'va' entry.
+			old := t
 			variant := t.TypeForKey("va")
 			t, _ = Raw.Compose(b, s, r)
-			t, _ = t.SetTypeForKey("va", variant)
+			if variant != "" {
+				t, _ = t.SetTypeForKey("va", variant)
+			}
+			exact = old == t
 		}
 		if len(t.str) > 0 {
 			// We have some variants.
 			for i, s := range specialTags {
 				if s == t {
-					return i + 1, true
+					return i + 1, exact
 				}
 			}
-			return 0, false
+			exact = false
 		}
 	}
-	// No variants specified: just compare core components.
-	// The key has the form lllssrrr, where l, s, and r are nibbles for
-	// respectively the langID, scriptID, and regionID.
-	key := uint32(b.langID) << (8 + 12)
-	key |= uint32(s.scriptID) << 12
-	key |= uint32(r.regionID)
-	x, ok := coreTags[key]
-	return int(x), ok
+	for ; t != Und; t = t.Parent() {
+		// No variants specified: just compare core components.
+		// The key has the form lllssrrr, where l, s, and r are nibbles for
+		// respectively the langID, scriptID, and regionID.
+		key := uint32(b.langID) << (8 + 12)
+		key |= uint32(s.scriptID) << 12
+		key |= uint32(r.regionID)
+		if x, ok := coreTags[key]; ok {
+			return int(x), exact
+		}
+		exact = false
+	}
+	return int(0), exact
 }
 
 // Base is an ISO 639 language code, used for encoding the base language

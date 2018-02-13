@@ -87,14 +87,14 @@ func TestCompactIndex(t *testing.T) {
 		// will be solved if we decide to fix the indexes.
 		{"und", 0, true},
 		{"ca-ES-valencia", 1, true},
-		{"ca-ES-valencia-u-va-posix", 0, false},
-		{"ca-ES-valencia-u-co-phonebk", 1, true},
-		{"ca-ES-valencia-u-co-phonebk-va-posix", 0, false},
+		{"ca-ES-valencia-u-va-posix", 1, false},
+		{"ca-ES-valencia-u-co-phonebk", 1, false},
+		{"ca-ES-valencia-u-co-phonebk-va-posix", 1, false},
 		{"x-klingon", 0, false},
 		{"en-US", 232, true},
 		{"en-US-u-va-posix", 2, true},
 		{"en", 136, true},
-		{"en-u-co-phonebk", 136, true},
+		{"en-u-co-phonebk", 136, false},
 		{"en-001", 137, true},
 		{"sh", 0, false}, // We don't normalize.
 	}
