@@ -121,8 +121,8 @@ func TestGrandfathered(t *testing.T) {
 		{"en_us_posix", "en-US-u-va-posix"},
 		{"en-us-posix", "en-US-u-va-posix"},
 	} {
-		got := Raw.Make(tt.in)
-		want := Raw.MustParse(tt.out)
+		got := Make(tt.in)
+		want := MustParse(tt.out)
 		if got != want {
 			t.Errorf("%s: got %q; want %q", tt.in, got, want)
 		}

@@ -41,10 +41,6 @@ func TestEquality(t *testing.T) {
 		if tag != t1 {
 			t.Errorf("%d:%s: equality test 1 failed\n got: %#v\nwant: %#v)", i, s, t1, tag)
 		}
-		t2, _ := Compose(tag)
-		if tag != t2 {
-			t.Errorf("%d:%s: equality test 2 failed\n got: %#v\nwant: %#v", i, s, t2, tag)
-		}
 	}
 }
 
@@ -73,35 +69,6 @@ func TestMakeString(t *testing.T) {
 		// To alleviate this we set the number of runs to more than 1.
 		if n := testtext.AllocsPerRun(8, id.remakeString); n > 1 {
 			t.Errorf("%d: # allocs got %.1f; want <= 1", i, n)
-		}
-	}
-}
-
-func TestCompactIndex(t *testing.T) {
-	tests := []struct {
-		tag   string
-		index int
-		ok    bool
-	}{
-		// TODO: these values will change with each CLDR update. This issue
-		// will be solved if we decide to fix the indexes.
-		{"und", 0, true},
-		{"ca-ES-valencia", 1, true},
-		{"ca-ES-valencia-u-va-posix", 1, false},
-		{"ca-ES-valencia-u-co-phonebk", 1, false},
-		{"ca-ES-valencia-u-co-phonebk-va-posix", 1, false},
-		{"x-klingon", 0, false},
-		{"en-US", 232, true},
-		{"en-US-u-va-posix", 2, true},
-		{"en", 136, true},
-		{"en-u-co-phonebk", 136, false},
-		{"en-001", 137, true},
-		{"sh", 0, false}, // We don't normalize.
-	}
-	for _, tt := range tests {
-		x, ok := CompactIndex(Raw.MustParse(tt.tag))
-		if x != tt.index || ok != tt.ok {
-			t.Errorf("%s: got %d, %v; want %d %v", tt.tag, x, ok, tt.index, tt.ok)
 		}
 	}
 }
@@ -139,33 +106,6 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
-func TestBase(t *testing.T) {
-	tests := []struct {
-		loc, lang string
-		conf      Confidence
-	}{
-		{"und", "en", Low},
-		{"x-abc", "und", No},
-		{"en", "en", Exact},
-		{"und-Cyrl", "ru", High},
-		// If a region is not included, the official language should be English.
-		{"und-US", "en", High},
-		// TODO: not-explicitly listed scripts should probably be und, No
-		// Modify addTags to return info on how the match was derived.
-		// {"und-Aghb", "und", No},
-	}
-	for i, tt := range tests {
-		loc, _ := Parse(tt.loc)
-		lang, conf := loc.Base()
-		if lang.String() != tt.lang {
-			t.Errorf("%d: language was %s; want %s", i, lang, tt.lang)
-		}
-		if conf != tt.conf {
-			t.Errorf("%d: confidence was %d; want %d", i, conf, tt.conf)
-		}
-	}
-}
-
 func TestParseBase(t *testing.T) {
 	tests := []struct {
 		in  string
@@ -187,38 +127,8 @@ func TestParseBase(t *testing.T) {
 		if x.String() != tt.out || err == nil != tt.ok {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
 		}
-		if y, _, _ := Raw.Make(tt.out).Raw(); x != y {
+		if y, _, _ := Make(tt.out).Raw(); x != y {
 			t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, x, y)
-		}
-	}
-}
-
-func TestScript(t *testing.T) {
-	tests := []struct {
-		loc, scr string
-		conf     Confidence
-	}{
-		{"und", "Latn", Low},
-		{"en-Latn", "Latn", Exact},
-		{"en", "Latn", High},
-		{"sr", "Cyrl", Low},
-		{"kk", "Cyrl", High},
-		{"kk-CN", "Arab", Low},
-		{"cmn", "Hans", Low},
-		{"ru", "Cyrl", High},
-		{"ru-RU", "Cyrl", High},
-		{"yue", "Hant", Low},
-		{"x-abc", "Zzzz", Low},
-		{"und-zyyy", "Zyyy", Exact},
-	}
-	for i, tt := range tests {
-		loc, _ := Parse(tt.loc)
-		sc, conf := loc.Script()
-		if sc.String() != tt.scr {
-			t.Errorf("%d:%s: script was %s; want %s", i, tt.loc, sc, tt.scr)
-		}
-		if conf != tt.conf {
-			t.Errorf("%d:%s: confidence was %d; want %d", i, tt.loc, conf, tt.conf)
 		}
 	}
 }
@@ -243,35 +153,9 @@ func TestParseScript(t *testing.T) {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, x, err == nil, tt.out, tt.ok)
 		}
 		if err == nil {
-			if _, y, _ := Raw.Make("und-" + tt.out).Raw(); x != y {
+			if _, y, _ := Make("und-" + tt.out).Raw(); x != y {
 				t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, x, y)
 			}
-		}
-	}
-}
-
-func TestRegion(t *testing.T) {
-	tests := []struct {
-		loc, reg string
-		conf     Confidence
-	}{
-		{"und", "US", Low},
-		{"en", "US", Low},
-		{"zh-Hant", "TW", Low},
-		{"en-US", "US", Exact},
-		{"cmn", "CN", Low},
-		{"ru", "RU", Low},
-		{"yue", "HK", Low},
-		{"x-abc", "ZZ", Low},
-	}
-	for i, tt := range tests {
-		loc, _ := Raw.Parse(tt.loc)
-		reg, conf := loc.Region()
-		if reg.String() != tt.reg {
-			t.Errorf("%d:%s: region was %s; want %s", i, tt.loc, reg, tt.reg)
-		}
-		if conf != tt.conf {
-			t.Errorf("%d:%s: confidence was %d; want %d", i, tt.loc, conf, tt.conf)
 		}
 	}
 }
@@ -320,7 +204,7 @@ func TestParseRegion(t *testing.T) {
 			t.Errorf("%d:%s: was %s, %v; want %s, %v", i, tt.in, r, err == nil, tt.out, tt.ok)
 		}
 		if err == nil {
-			if _, _, y := Raw.Make("und-" + tt.out).Raw(); r != y {
+			if _, _, y := Make("und-" + tt.out).Raw(); r != y {
 				t.Errorf("%d:%s: tag was %s; want %s", i, tt.in, r, y)
 			}
 		}
@@ -347,7 +231,7 @@ func TestIsCountry(t *testing.T) {
 	}
 	for i, tt := range tests {
 		reg, _ := getRegionID([]byte(tt.reg))
-		r := Region{reg}
+		r := reg
 		if r.IsCountry() != tt.country {
 			t.Errorf("%d: IsCountry(%s) was %v; want %v", i, tt.reg, r.IsCountry(), tt.country)
 		}
@@ -374,7 +258,7 @@ func TestIsGroup(t *testing.T) {
 	}
 	for i, tt := range tests {
 		reg, _ := getRegionID([]byte(tt.reg))
-		r := Region{reg}
+		r := reg
 		if r.IsGroup() != tt.group {
 			t.Errorf("%d: IsGroup(%s) was %v; want %v", i, tt.reg, r.IsGroup(), tt.group)
 		}
@@ -409,8 +293,8 @@ func TestContains(t *testing.T) {
 	for i, tt := range tests {
 		enc, _ := getRegionID([]byte(tt.enclosing))
 		con, _ := getRegionID([]byte(tt.contained))
-		r := Region{enc}
-		if got := r.Contains(Region{con}); got != tt.contains {
+		r := enc
+		if got := r.Contains(con); got != tt.contains {
 			t.Errorf("%d: %s.Contains(%s) was %v; want %v", i, tt.enclosing, tt.contained, got, tt.contains)
 		}
 	}
@@ -509,7 +393,7 @@ func TestRegionTLD(t *testing.T) {
 		}
 
 		r := MustParseRegion(tt.in)
-		var want Region
+		var want regionID
 		if tt.out != "ZZ" {
 			want = MustParseRegion(tt.out)
 		}
@@ -519,63 +403,6 @@ func TestRegionTLD(t *testing.T) {
 		}
 		if tld != want {
 			t.Errorf("TLD(%v): got %v; want %v", r, tld, want)
-		}
-	}
-}
-
-func TestCanonicalize(t *testing.T) {
-	// TODO: do a full test using CLDR data in a separate regression test.
-	tests := []struct {
-		in, out string
-		option  CanonType
-	}{
-		{"en-Latn", "en", SuppressScript},
-		{"sr-Cyrl", "sr-Cyrl", SuppressScript},
-		{"sh", "sr-Latn", Legacy},
-		{"sh-HR", "sr-Latn-HR", Legacy},
-		{"sh-Cyrl-HR", "sr-Cyrl-HR", Legacy},
-		{"tl", "fil", Legacy},
-		{"no", "no", Legacy},
-		{"no", "nb", Legacy | CLDR},
-		{"cmn", "cmn", Legacy},
-		{"cmn", "zh", Macro},
-		{"cmn-u-co-stroke", "zh-u-co-stroke", Macro},
-		{"yue", "yue", Macro},
-		{"nb", "no", Macro},
-		{"nb", "nb", Macro | CLDR},
-		{"no", "no", Macro},
-		{"no", "no", Macro | CLDR},
-		{"iw", "he", DeprecatedBase},
-		{"iw", "he", Deprecated | CLDR},
-		{"mo", "ro-MD", Deprecated}, // Adopted by CLDR as of version 25.
-		{"alb", "sq", Legacy},       // bibliographic
-		{"dut", "nl", Legacy},       // bibliographic
-		// As of CLDR 25, mo is no longer considered a legacy mapping.
-		{"mo", "mo", Legacy | CLDR},
-		{"und-AN", "und-AN", Deprecated},
-		{"und-YD", "und-YE", DeprecatedRegion},
-		{"und-YD", "und-YD", DeprecatedBase},
-		{"und-Qaai", "und-Zinh", DeprecatedScript},
-		{"und-Qaai", "und-Qaai", DeprecatedBase},
-		{"drh", "mn", All}, // drh -> khk -> mn
-	}
-	for i, tt := range tests {
-		in, _ := Raw.Parse(tt.in)
-		in, _ = tt.option.Canonicalize(in)
-		if in.String() != tt.out {
-			t.Errorf("%d:%s: was %s; want %s", i, tt.in, in.String(), tt.out)
-		}
-		if int(in.pVariant) > int(in.pExt) || int(in.pExt) > len(in.str) {
-			t.Errorf("%d:%s:offsets %d <= %d <= %d must be true", i, tt.in, in.pVariant, in.pExt, len(in.str))
-		}
-	}
-	// Test idempotence.
-	for _, base := range Supported.BaseLanguages() {
-		tag, _ := Raw.Compose(base)
-		got, _ := All.Canonicalize(tag)
-		want, _ := All.Canonicalize(got)
-		if got != want {
-			t.Errorf("idem(%s): got %s; want %s", tag, got, want)
 		}
 	}
 }
@@ -802,8 +629,8 @@ func TestParent(t *testing.T) {
 		{"pt-TL", "pt-PT"},
 	}
 	for _, tt := range tests {
-		tag := Raw.MustParse(tt.in)
-		if p := Raw.MustParse(tt.out); p != tag.Parent() {
+		tag := MustParse(tt.in)
+		if p := MustParse(tt.out); p != tag.Parent() {
 			t.Errorf("%s: was %v; want %v", tt.in, tag.Parent(), p)
 		}
 	}

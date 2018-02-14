@@ -177,6 +177,15 @@ func (b langID) IsPrivateUse() bool {
 	return langPrivateStart <= b && b <= langPrivateEnd
 }
 
+// SuppressScript returns the script marked as SuppressScript in the IANA
+// language tag repository, or 0 if there is no such script.
+func (b langID) SuppressScript() scriptID {
+	if b < langNoIndexOffset {
+		return scriptID(suppressScript[b])
+	}
+	return 0
+}
+
 type regionID uint16
 
 // getRegionID returns the region id for s if s is a valid 2-letter region code

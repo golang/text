@@ -9,8 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strconv"
-	"strings"
 
 	"golang.org/x/text/internal/tag"
 )
@@ -224,20 +222,7 @@ func (s *scanner) acceptMinSize(min int) (end int) {
 // value. All other values are preserved. It accepts tags in the BCP 47 format
 // and extensions to this standard defined in
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
-// The resulting tag is canonicalized using the default canonicalization type.
 func Parse(s string) (t Tag, err error) {
-	return Default.Parse(s)
-}
-
-// Parse parses the given BCP 47 string and returns a valid Tag. If parsing
-// failed it returns an error and any part of the tag that could be parsed.
-// If parsing succeeded but an unknown value was found, it returns
-// ValueError. The Tag returned in this case is just stripped of the unknown
-// value. All other values are preserved. It accepts tags in the BCP 47 format
-// and extensions to this standard defined in
-// http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
-// The resulting tag is canonicalized using the the canonicalization type c.
-func (c CanonType) Parse(s string) (t Tag, err error) {
 	// TODO: consider supporting old-style locale key-value pairs.
 	if s == "" {
 		return und, errSyntax
@@ -258,12 +243,7 @@ func (c CanonType) Parse(s string) (t Tag, err error) {
 		}
 	}
 	scan := makeScannerString(s)
-	t, err = parse(&scan, s)
-	t, changed := t.canonicalize(c)
-	if changed {
-		t.remakeString()
-	}
-	return t, err
+	return parse(&scan, s)
 }
 
 func parse(scan *scanner, s string) (t Tag, err error) {
@@ -558,181 +538,6 @@ func parseExtension(scan *scanner) int {
 	return end
 }
 
-// Compose creates a Tag from individual parts, which may be of type Tag, Base,
-// Script, Region, Variant, []Variant, Extension, []Extension or error. If a
-// Base, Script or Region or slice of type Variant or Extension is passed more
-// than once, the latter will overwrite the former. Variants and Extensions are
-// accumulated, but if two extensions of the same type are passed, the latter
-// will replace the former. A Tag overwrites all former values and typically
-// only makes sense as the first argument. The resulting tag is returned after
-// canonicalizing using the Default CanonType. If one or more errors are
-// encountered, one of the errors is returned.
-func Compose(part ...interface{}) (t Tag, err error) {
-	return Default.Compose(part...)
-}
-
-// Compose creates a Tag from individual parts, which may be of type Tag, Base,
-// Script, Region, Variant, []Variant, Extension, []Extension or error. If a
-// Base, Script or Region or slice of type Variant or Extension is passed more
-// than once, the latter will overwrite the former. Variants and Extensions are
-// accumulated, but if two extensions of the same type are passed, the latter
-// will replace the former. A Tag overwrites all former values and typically
-// only makes sense as the first argument. The resulting tag is returned after
-// canonicalizing using CanonType c. If one or more errors are encountered,
-// one of the errors is returned.
-func (c CanonType) Compose(part ...interface{}) (t Tag, err error) {
-	var b builder
-	if err = b.update(part...); err != nil {
-		return und, err
-	}
-	t, _ = b.tag.canonicalize(c)
-
-	if len(b.ext) > 0 || len(b.variant) > 0 {
-		sort.Sort(sortVariant(b.variant))
-		sort.Strings(b.ext)
-		if b.private != "" {
-			b.ext = append(b.ext, b.private)
-		}
-		n := maxCoreSize + tokenLen(b.variant...) + tokenLen(b.ext...)
-		buf := make([]byte, n)
-		p := t.genCoreBytes(buf)
-		t.pVariant = byte(p)
-		p += appendTokens(buf[p:], b.variant...)
-		t.pExt = uint16(p)
-		p += appendTokens(buf[p:], b.ext...)
-		t.str = string(buf[:p])
-	} else if b.private != "" {
-		t.str = b.private
-		t.remakeString()
-	}
-	return
-}
-
-type builder struct {
-	tag Tag
-
-	private string // the x extension
-	ext     []string
-	variant []string
-
-	err error
-}
-
-func (b *builder) addExt(e string) {
-	if e == "" {
-	} else if e[0] == 'x' {
-		b.private = e
-	} else {
-		b.ext = append(b.ext, e)
-	}
-}
-
-var errInvalidArgument = errors.New("invalid Extension or Variant")
-
-func (b *builder) update(part ...interface{}) (err error) {
-	replace := func(l *[]string, s string, eq func(a, b string) bool) bool {
-		if s == "" {
-			b.err = errInvalidArgument
-			return true
-		}
-		for i, v := range *l {
-			if eq(v, s) {
-				(*l)[i] = s
-				return true
-			}
-		}
-		return false
-	}
-	for _, x := range part {
-		switch v := x.(type) {
-		case Tag:
-			b.tag.lang = v.lang
-			b.tag.region = v.region
-			b.tag.script = v.script
-			if v.str != "" {
-				b.variant = nil
-				for x, s := "", v.str[v.pVariant:v.pExt]; s != ""; {
-					x, s = nextToken(s)
-					b.variant = append(b.variant, x)
-				}
-				b.ext, b.private = nil, ""
-				for i, e := int(v.pExt), ""; i < len(v.str); {
-					i, e = getExtension(v.str, i)
-					b.addExt(e)
-				}
-			}
-		case Base:
-			b.tag.lang = v.langID
-		case Script:
-			b.tag.script = v.scriptID
-		case Region:
-			b.tag.region = v.regionID
-		case Variant:
-			if !replace(&b.variant, v.variant, func(a, b string) bool { return a == b }) {
-				b.variant = append(b.variant, v.variant)
-			}
-		case Extension:
-			if !replace(&b.ext, v.s, func(a, b string) bool { return a[0] == b[0] }) {
-				b.addExt(v.s)
-			}
-		case []Variant:
-			b.variant = nil
-			for _, x := range v {
-				b.update(x)
-			}
-		case []Extension:
-			b.ext, b.private = nil, ""
-			for _, e := range v {
-				b.update(e)
-			}
-		// TODO: support parsing of raw strings based on morphology or just extensions?
-		case error:
-			err = v
-		}
-	}
-	return
-}
-
-func tokenLen(token ...string) (n int) {
-	for _, t := range token {
-		n += len(t) + 1
-	}
-	return
-}
-
-func appendTokens(b []byte, token ...string) int {
-	p := 0
-	for _, t := range token {
-		b[p] = '-'
-		copy(b[p+1:], t)
-		p += 1 + len(t)
-	}
-	return p
-}
-
-type sortVariant []string
-
-func (s sortVariant) Len() int {
-	return len(s)
-}
-
-func (s sortVariant) Swap(i, j int) {
-	s[j], s[i] = s[i], s[j]
-}
-
-func (s sortVariant) Less(i, j int) bool {
-	return variantIndex[s[i]] < variantIndex[s[j]]
-}
-
-func findExt(list []string, x byte) int {
-	for i, e := range list {
-		if e[0] == x {
-			return i
-		}
-	}
-	return -1
-}
-
 // getExtension returns the name, body and end position of the extension.
 func getExtension(s string, p int) (end int, ext string) {
 	if s[p] == '-' {
@@ -761,99 +566,4 @@ func nextExtension(s string, p int) int {
 		}
 	}
 	return len(s)
-}
-
-var errInvalidWeight = errors.New("ParseAcceptLanguage: invalid weight")
-
-// ParseAcceptLanguage parses the contents of an Accept-Language header as
-// defined in http://www.ietf.org/rfc/rfc2616.txt and returns a list of Tags and
-// a list of corresponding quality weights. It is more permissive than RFC 2616
-// and may return non-nil slices even if the input is not valid.
-// The Tags will be sorted by highest weight first and then by first occurrence.
-// Tags with a weight of zero will be dropped. An error will be returned if the
-// input could not be parsed.
-func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
-	var entry string
-	for s != "" {
-		if entry, s = split(s, ','); entry == "" {
-			continue
-		}
-
-		entry, weight := split(entry, ';')
-
-		// Scan the language.
-		t, err := Parse(entry)
-		if err != nil {
-			id, ok := acceptFallback[entry]
-			if !ok {
-				return nil, nil, err
-			}
-			t = Tag{lang: id}
-		}
-
-		// Scan the optional weight.
-		w := 1.0
-		if weight != "" {
-			weight = consume(weight, 'q')
-			weight = consume(weight, '=')
-			// consume returns the empty string when a token could not be
-			// consumed, resulting in an error for ParseFloat.
-			if w, err = strconv.ParseFloat(weight, 32); err != nil {
-				return nil, nil, errInvalidWeight
-			}
-			// Drop tags with a quality weight of 0.
-			if w <= 0 {
-				continue
-			}
-		}
-
-		tag = append(tag, t)
-		q = append(q, float32(w))
-	}
-	sortStable(&tagSort{tag, q})
-	return tag, q, nil
-}
-
-// consume removes a leading token c from s and returns the result or the empty
-// string if there is no such token.
-func consume(s string, c byte) string {
-	if s == "" || s[0] != c {
-		return ""
-	}
-	return strings.TrimSpace(s[1:])
-}
-
-func split(s string, c byte) (head, tail string) {
-	if i := strings.IndexByte(s, c); i >= 0 {
-		return strings.TrimSpace(s[:i]), strings.TrimSpace(s[i+1:])
-	}
-	return strings.TrimSpace(s), ""
-}
-
-// Add hack mapping to deal with a small number of cases that that occur
-// in Accept-Language (with reasonable frequency).
-var acceptFallback = map[string]langID{
-	"english": _en,
-	"deutsch": _de,
-	"italian": _it,
-	"french":  _fr,
-	"*":       _mul, // defined in the spec to match all languages.
-}
-
-type tagSort struct {
-	tag []Tag
-	q   []float32
-}
-
-func (s *tagSort) Len() int {
-	return len(s.q)
-}
-
-func (s *tagSort) Less(i, j int) bool {
-	return s.q[i] > s.q[j]
-}
-
-func (s *tagSort) Swap(i, j int) {
-	s.tag[i], s.tag[j] = s.tag[j], s.tag[i]
-	s.q[i], s.q[j] = s.q[j], s.q[i]
 }

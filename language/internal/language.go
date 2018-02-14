@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:generate go run gen.go gen_common.go -output tables.go
-//go:generate go run gen_index.go
 
 package language
 
@@ -55,20 +54,15 @@ type Tag struct {
 // Make is a convenience wrapper for Parse that omits the error.
 // In case of an error, a sensible default is returned.
 func Make(s string) Tag {
-	return Default.Make(s)
-}
-
-// Make is a convenience wrapper for c.Parse that omits the error.
-// In case of an error, a sensible default is returned.
-func (c CanonType) Make(s string) Tag {
-	t, _ := c.Parse(s)
+	t, _ := Parse(s)
 	return t
 }
 
 // Raw returns the raw base language, script and region, without making an
 // attempt to infer their values.
-func (t Tag) Raw() (b Base, s Script, r Region) {
-	return Base{t.lang}, Script{t.script}, Region{t.region}
+// TODO: consider removing
+func (t Tag) Raw() (b langID, s scriptID, r regionID) {
+	return t.lang, t.script, t.region
 }
 
 // equalTags compares language, script and region subtags only.
@@ -87,156 +81,6 @@ func (t Tag) IsRoot() bool {
 // private reports whether the Tag consists solely of a private use tag.
 func (t Tag) private() bool {
 	return t.str != "" && t.pVariant == 0
-}
-
-// CanonType can be used to enable or disable various types of canonicalization.
-type CanonType int
-
-const (
-	// Replace deprecated base languages with their preferred replacements.
-	DeprecatedBase CanonType = 1 << iota
-	// Replace deprecated scripts with their preferred replacements.
-	DeprecatedScript
-	// Replace deprecated regions with their preferred replacements.
-	DeprecatedRegion
-	// Remove redundant scripts.
-	SuppressScript
-	// Normalize legacy encodings. This includes legacy languages defined in
-	// CLDR as well as bibliographic codes defined in ISO-639.
-	Legacy
-	// Map the dominant language of a macro language group to the macro language
-	// subtag. For example cmn -> zh.
-	Macro
-	// The CLDR flag should be used if full compatibility with CLDR is required.
-	// There are a few cases where language.Tag may differ from CLDR. To follow all
-	// of CLDR's suggestions, use All|CLDR.
-	CLDR
-
-	// Raw can be used to Compose or Parse without Canonicalization.
-	Raw CanonType = 0
-
-	// Replace all deprecated tags with their preferred replacements.
-	Deprecated = DeprecatedBase | DeprecatedScript | DeprecatedRegion
-
-	// All canonicalizations recommended by BCP 47.
-	BCP47 = Deprecated | SuppressScript
-
-	// All canonicalizations.
-	All = BCP47 | Legacy | Macro
-
-	// Default is the canonicalization used by Parse, Make and Compose. To
-	// preserve as much information as possible, canonicalizations that remove
-	// potentially valuable information are not included. The Matcher is
-	// designed to recognize similar tags that would be the same if
-	// they were canonicalized using All.
-	Default = Deprecated | Legacy
-
-	canonLang = DeprecatedBase | Legacy | Macro
-
-	// TODO: LikelyScript, LikelyRegion: suppress similar to ICU.
-)
-
-// canonicalize returns the canonicalized equivalent of the tag and
-// whether there was any change.
-func (t Tag) canonicalize(c CanonType) (Tag, bool) {
-	if c == Raw {
-		return t, false
-	}
-	changed := false
-	if c&SuppressScript != 0 {
-		if t.lang < langNoIndexOffset && uint8(t.script) == suppressScript[t.lang] {
-			t.script = 0
-			changed = true
-		}
-	}
-	if c&canonLang != 0 {
-		for {
-			if l, aliasType := normLang(t.lang); l != t.lang {
-				switch aliasType {
-				case langLegacy:
-					if c&Legacy != 0 {
-						if t.lang == _sh && t.script == 0 {
-							t.script = _Latn
-						}
-						t.lang = l
-						changed = true
-					}
-				case langMacro:
-					if c&Macro != 0 {
-						// We deviate here from CLDR. The mapping "nb" -> "no"
-						// qualifies as a typical Macro language mapping.  However,
-						// for legacy reasons, CLDR maps "no", the macro language
-						// code for Norwegian, to the dominant variant "nb". This
-						// change is currently under consideration for CLDR as well.
-						// See http://unicode.org/cldr/trac/ticket/2698 and also
-						// http://unicode.org/cldr/trac/ticket/1790 for some of the
-						// practical implications. TODO: this check could be removed
-						// if CLDR adopts this change.
-						if c&CLDR == 0 || t.lang != _nb {
-							changed = true
-							t.lang = l
-						}
-					}
-				case langDeprecated:
-					if c&DeprecatedBase != 0 {
-						if t.lang == _mo && t.region == 0 {
-							t.region = _MD
-						}
-						t.lang = l
-						changed = true
-						// Other canonicalization types may still apply.
-						continue
-					}
-				}
-			} else if c&Legacy != 0 && t.lang == _no && c&CLDR != 0 {
-				t.lang = _nb
-				changed = true
-			}
-			break
-		}
-	}
-	if c&DeprecatedScript != 0 {
-		if t.script == _Qaai {
-			changed = true
-			t.script = _Zinh
-		}
-	}
-	if c&DeprecatedRegion != 0 {
-		if r := normRegion(t.region); r != 0 {
-			changed = true
-			t.region = r
-		}
-	}
-	return t, changed
-}
-
-// Canonicalize returns the canonicalized equivalent of the tag.
-func (c CanonType) Canonicalize(t Tag) (Tag, error) {
-	t, changed := t.canonicalize(c)
-	if changed {
-		t.remakeString()
-	}
-	return t, nil
-}
-
-// Confidence indicates the level of certainty for a given return value.
-// For example, Serbian may be written in Cyrillic or Latin script.
-// The confidence level indicates whether a value was explicitly specified,
-// whether it is typically the only possible value, or whether there is
-// an ambiguity.
-type Confidence int
-
-const (
-	No    Confidence = iota // full confidence that there was no match
-	Low                     // most likely value picked out of a set of alternatives
-	High                    // value is generally assumed to be the correct match
-	Exact                   // exact match or explicitly specified value
-)
-
-var confName = []string{"No", "Low", "High", "Exact"}
-
-func (c Confidence) String() string {
-	return confName[c]
 }
 
 // remakeString is used to update t.str in case lang, script or region changed.
@@ -314,85 +158,9 @@ func (t Tag) MarshalText() (text []byte, err error) {
 
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (t *Tag) UnmarshalText(text []byte) error {
-	tag, err := Raw.Parse(string(text))
+	tag, err := Parse(string(text))
 	*t = tag
 	return err
-}
-
-// Base returns the base language of the language tag. If the base language is
-// unspecified, an attempt will be made to infer it from the context.
-// It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
-func (t Tag) Base() (Base, Confidence) {
-	if t.lang != 0 {
-		return Base{t.lang}, Exact
-	}
-	c := High
-	if t.script == 0 && !(Region{t.region}).IsCountry() {
-		c = Low
-	}
-	if tag, err := addTags(t); err == nil && tag.lang != 0 {
-		return Base{tag.lang}, c
-	}
-	return Base{0}, No
-}
-
-// Script infers the script for the language tag. If it was not explicitly given, it will infer
-// a most likely candidate.
-// If more than one script is commonly used for a language, the most likely one
-// is returned with a low confidence indication. For example, it returns (Cyrl, Low)
-// for Serbian.
-// If a script cannot be inferred (Zzzz, No) is returned. We do not use Zyyy (undetermined)
-// as one would suspect from the IANA registry for BCP 47. In a Unicode context Zyyy marks
-// common characters (like 1, 2, 3, '.', etc.) and is therefore more like multiple scripts.
-// See http://www.unicode.org/reports/tr24/#Values for more details. Zzzz is also used for
-// unknown value in CLDR.  (Zzzz, Exact) is returned if Zzzz was explicitly specified.
-// Note that an inferred script is never guaranteed to be the correct one. Latin is
-// almost exclusively used for Afrikaans, but Arabic has been used for some texts
-// in the past.  Also, the script that is commonly used may change over time.
-// It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
-func (t Tag) Script() (Script, Confidence) {
-	if t.script != 0 {
-		return Script{t.script}, Exact
-	}
-	sc, c := scriptID(_Zzzz), No
-	if t.lang < langNoIndexOffset {
-		if scr := scriptID(suppressScript[t.lang]); scr != 0 {
-			// Note: it is not always the case that a language with a suppress
-			// script value is only written in one script (e.g. kk, ms, pa).
-			if t.region == 0 {
-				return Script{scriptID(scr)}, High
-			}
-			sc, c = scr, High
-		}
-	}
-	if tag, err := addTags(t); err == nil {
-		if tag.script != sc {
-			sc, c = tag.script, Low
-		}
-	} else {
-		t, _ = (Deprecated | Macro).Canonicalize(t)
-		if tag, err := addTags(t); err == nil && tag.script != sc {
-			sc, c = tag.script, Low
-		}
-	}
-	return Script{sc}, c
-}
-
-// Region returns the region for the language tag. If it was not explicitly given, it will
-// infer a most likely candidate from the context.
-// It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
-func (t Tag) Region() (Region, Confidence) {
-	if t.region != 0 {
-		return Region{t.region}, Exact
-	}
-	if t, err := addTags(t); err == nil {
-		return Region{t.region}, Low // TODO: differentiate between high and low.
-	}
-	t, _ = (Deprecated | Macro).Canonicalize(t)
-	if tag, err := addTags(t); err == nil {
-		return Region{tag.region}, Low
-	}
-	return Region{_ZZ}, No // TODO: return world instead of undetermined?
 }
 
 // Variant returns the variants specified explicitly for this language tag.
@@ -414,7 +182,8 @@ func (t Tag) Variants() []Variant {
 func (t Tag) Parent() Tag {
 	if t.str != "" {
 		// Strip the variants and extensions.
-		t, _ = Raw.Compose(t.Raw())
+		b, s, r := t.Raw()
+		t = Tag{lang: b, script: s, region: r}
 		if t.region == 0 && t.script != 0 && t.lang != 0 {
 			base, _ := addTags(Tag{lang: t.lang})
 			if base.script == t.script {
@@ -702,129 +471,49 @@ func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
 	}
 }
 
-// CompactIndex returns an index, where 0 <= index < NumCompactTags, for tags
-// for which data exists in the text repository. The index will change over time
-// and should not be stored in persistent storage. If t does not match a compact
-// index, exact will be false and the compact index will be returned for the
-// first match after repeatedly taking the Parent of t.
-func CompactIndex(t Tag) (index int, exact bool) {
-	// TODO: perhaps give more frequent tags a lower index.
-	// TODO: we could make the indexes stable. This will excluded some
-	//       possibilities for optimization, so don't do this quite yet.
-	exact = true
-
-	b, s, r := t.Raw()
-	switch {
-	case len(t.str) > 0:
-		if strings.HasPrefix(t.str, "x-") {
-			// We have no entries for user-defined tags.
-			return 0, false
-		}
-		if uint16(t.pVariant) != t.pExt {
-			if int(t.pExt) < len(t.str) {
-				exact = false
-				t, _ = Raw.Compose(b, s, r, t.Variants())
-			}
-		} else if _, ok := t.Extension('u'); ok {
-			// TODO: va may mean something else. Consider not considering it.
-			// Strip all but the 'va' entry.
-			old := t
-			variant := t.TypeForKey("va")
-			t, _ = Raw.Compose(b, s, r)
-			if variant != "" {
-				t, _ = t.SetTypeForKey("va", variant)
-			}
-			exact = old == t
-		}
-		if len(t.str) > 0 {
-			// We have some variants.
-			for i, s := range specialTags {
-				if s == t {
-					return i + 1, exact
-				}
-			}
-			exact = false
-		}
-	}
-	for ; t != Und; t = t.Parent() {
-		// No variants specified: just compare core components.
-		// The key has the form lllssrrr, where l, s, and r are nibbles for
-		// respectively the langID, scriptID, and regionID.
-		key := uint32(b.langID) << (8 + 12)
-		key |= uint32(s.scriptID) << 12
-		key |= uint32(r.regionID)
-		if x, ok := coreTags[key]; ok {
-			return int(x), exact
-		}
-		exact = false
-	}
-	return int(0), exact
-}
-
-// Base is an ISO 639 language code, used for encoding the base language
-// of a language tag.
-type Base struct {
-	langID
-}
-
 // ParseBase parses a 2- or 3-letter ISO 639 code.
 // It returns a ValueError if s is a well-formed but unknown language identifier
 // or another error if another error occurred.
-func ParseBase(s string) (Base, error) {
+func ParseBase(s string) (langID, error) {
 	if n := len(s); n < 2 || 3 < n {
-		return Base{}, errSyntax
+		return 0, errSyntax
 	}
 	var buf [3]byte
-	l, err := getLangID(buf[:copy(buf[:], s)])
-	return Base{l}, err
-}
-
-// Script is a 4-letter ISO 15924 code for representing scripts.
-// It is idiomatically represented in title case.
-type Script struct {
-	scriptID
+	return getLangID(buf[:copy(buf[:], s)])
 }
 
 // ParseScript parses a 4-letter ISO 15924 code.
 // It returns a ValueError if s is a well-formed but unknown script identifier
 // or another error if another error occurred.
-func ParseScript(s string) (Script, error) {
+func ParseScript(s string) (scriptID, error) {
 	if len(s) != 4 {
-		return Script{}, errSyntax
+		return 0, errSyntax
 	}
 	var buf [4]byte
-	sc, err := getScriptID(script, buf[:copy(buf[:], s)])
-	return Script{sc}, err
-}
-
-// Region is an ISO 3166-1 or UN M.49 code for representing countries and regions.
-type Region struct {
-	regionID
+	return getScriptID(script, buf[:copy(buf[:], s)])
 }
 
 // EncodeM49 returns the Region for the given UN M.49 code.
 // It returns an error if r is not a valid code.
-func EncodeM49(r int) (Region, error) {
-	rid, err := getRegionM49(r)
-	return Region{rid}, err
+func EncodeM49(r int) (regionID, error) {
+	return getRegionM49(r)
 }
 
 // ParseRegion parses a 2- or 3-letter ISO 3166-1 or a UN M.49 code.
 // It returns a ValueError if s is a well-formed but unknown region identifier
 // or another error if another error occurred.
-func ParseRegion(s string) (Region, error) {
+func ParseRegion(s string) (regionID, error) {
 	if n := len(s); n < 2 || 3 < n {
-		return Region{}, errSyntax
+		return 0, errSyntax
 	}
 	var buf [3]byte
-	r, err := getRegionID(buf[:copy(buf[:], s)])
-	return Region{r}, err
+	return getRegionID(buf[:copy(buf[:], s)])
 }
 
 // IsCountry returns whether this region is a country or autonomous area. This
 // includes non-standard definitions from CLDR.
-func (r Region) IsCountry() bool {
-	if r.regionID == 0 || r.IsGroup() || r.IsPrivateUse() && r.regionID != _XK {
+func (r regionID) IsCountry() bool {
+	if r == 0 || r.IsGroup() || r.IsPrivateUse() && r != _XK {
 		return false
 	}
 	return true
@@ -832,20 +521,16 @@ func (r Region) IsCountry() bool {
 
 // IsGroup returns whether this region defines a collection of regions. This
 // includes non-standard definitions from CLDR.
-func (r Region) IsGroup() bool {
-	if r.regionID == 0 {
+func (r regionID) IsGroup() bool {
+	if r == 0 {
 		return false
 	}
-	return int(regionInclusion[r.regionID]) < len(regionContainment)
+	return int(regionInclusion[r]) < len(regionContainment)
 }
 
 // Contains returns whether Region c is contained by Region r. It returns true
 // if c == r.
-func (r Region) Contains(c Region) bool {
-	return r.regionID.contains(c.regionID)
-}
-
-func (r regionID) contains(c regionID) bool {
+func (r regionID) Contains(c regionID) bool {
 	if r == c {
 		return true
 	}
@@ -876,14 +561,14 @@ var errNoTLD = errors.New("language: region is not a valid ccTLD")
 // canonical form with a ccTLD. To get that ccTLD canonicalize r first. The
 // region will already be canonicalized it was obtained from a Tag that was
 // obtained using any of the default methods.
-func (r Region) TLD() (Region, error) {
+func (r regionID) TLD() (regionID, error) {
 	// See http://en.wikipedia.org/wiki/Country_code_top-level_domain for the
 	// difference between ISO 3166-1 and IANA ccTLD.
-	if r.regionID == _GB {
-		r = Region{_UK}
+	if r == _GB {
+		r = _UK
 	}
 	if (r.typ() & ccTLD) == 0 {
-		return Region{}, errNoTLD
+		return 0, errNoTLD
 	}
 	return r, nil
 }
@@ -891,9 +576,9 @@ func (r Region) TLD() (Region, error) {
 // Canonicalize returns the region or a possible replacement if the region is
 // deprecated. It will not return a replacement for deprecated regions that
 // are split into multiple regions.
-func (r Region) Canonicalize() Region {
-	if cr := normRegion(r.regionID); cr != 0 {
-		return Region{cr}
+func (r regionID) Canonicalize() regionID {
+	if cr := normRegion(r); cr != 0 {
+		return cr
 	}
 	return r
 }
