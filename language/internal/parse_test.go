@@ -262,14 +262,14 @@ func partChecks(t *testing.T, f func(*parseTest) (Tag, bool)) {
 		if skip {
 			continue
 		}
-		if l, _ := getLangID(b(tt.lang)); l != tag.lang {
-			t.Errorf("%d: lang was %q; want %q", i, tag.lang, l)
+		if l, _ := getLangID(b(tt.lang)); l != tag.LangID {
+			t.Errorf("%d: lang was %q; want %q", i, tag.LangID, l)
 		}
-		if sc, _ := getScriptID(script, b(tt.script)); sc != tag.script {
-			t.Errorf("%d: script was %q; want %q", i, tag.script, sc)
+		if sc, _ := getScriptID(script, b(tt.script)); sc != tag.ScriptID {
+			t.Errorf("%d: script was %q; want %q", i, tag.ScriptID, sc)
 		}
-		if r, _ := getRegionID(b(tt.region)); r != tag.region {
-			t.Errorf("%d: region was %q; want %q", i, tag.region, r)
+		if r, _ := getRegionID(b(tt.region)); r != tag.RegionID {
+			t.Errorf("%d: region was %q; want %q", i, tag.RegionID, r)
 		}
 		if tag.str == "" {
 			continue

@@ -287,9 +287,9 @@ func parse(scan *scanner, s string) (t Tag, err error) {
 func parseTag(scan *scanner) (t Tag, end int) {
 	var e error
 	// TODO: set an error if an unknown lang, script or region is encountered.
-	t.lang, e = getLangID(scan.token)
+	t.LangID, e = getLangID(scan.token)
 	scan.setError(e)
-	scan.replace(t.lang.String())
+	scan.replace(t.LangID.String())
 	langStart := scan.start
 	end = scan.scan()
 	for len(scan.token) == 3 && isAlpha(scan.token[0]) {
@@ -297,7 +297,7 @@ func parseTag(scan *scanner) (t Tag, end int) {
 		// to a tag of the form <extlang>.
 		lang, e := getLangID(scan.token)
 		if lang != 0 {
-			t.lang = lang
+			t.LangID = lang
 			copy(scan.b[langStart:], lang.String())
 			scan.b[langStart+3] = '-'
 			scan.start = langStart + 4
@@ -306,18 +306,18 @@ func parseTag(scan *scanner) (t Tag, end int) {
 		end = scan.scan()
 	}
 	if len(scan.token) == 4 && isAlpha(scan.token[0]) {
-		t.script, e = getScriptID(script, scan.token)
-		if t.script == 0 {
+		t.ScriptID, e = getScriptID(script, scan.token)
+		if t.ScriptID == 0 {
 			scan.gobble(e)
 		}
 		end = scan.scan()
 	}
 	if n := len(scan.token); n >= 2 && n <= 3 {
-		t.region, e = getRegionID(scan.token)
-		if t.region == 0 {
+		t.RegionID, e = getRegionID(scan.token)
+		if t.RegionID == 0 {
 			scan.gobble(e)
 		} else {
-			scan.replace(t.region.String())
+			scan.replace(t.RegionID.String())
 		}
 		end = scan.scan()
 	}

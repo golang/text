@@ -33,16 +33,21 @@ const (
 // specific language or locale. All language tag values are guaranteed to be
 // well-formed.
 type Tag struct {
-	lang   langID
-	region regionID
-	// TODO: we will soon run out of positions for script. Idea: instead of
-	// storing lang, region, and script codes, store only the compact index and
+	// TODO: the following fields have the form TagTypeID. This name is chosen
+	// to allow refactoring the public package without conflicting with its
+	// Base, Script, and Region methods. Once the transition is fully completed
+	// the ID can be stripped from the name.
+
+	LangID   Language
+	RegionID Region
+	// TODO: we will soon run out of positions for ScriptID. Idea: instead of
+	// storing lang, region, and ScriptID codes, store only the compact index and
 	// have a lookup table from this code to its expansion. This greatly speeds
 	// up table lookup, speed up common variant cases.
 	// This will also immediately free up 3 extra bytes. Also, the pVariant
 	// field can now be moved to the lookup table, as the compact index uniquely
 	// determines the offset of a possible variant.
-	script   scriptID
+	ScriptID Script
 	pVariant byte   // offset in str, includes preceding '-'
 	pExt     uint16 // offset of first extension, includes preceding '-'
 
@@ -61,13 +66,13 @@ func Make(s string) Tag {
 // Raw returns the raw base language, script and region, without making an
 // attempt to infer their values.
 // TODO: consider removing
-func (t Tag) Raw() (b langID, s scriptID, r regionID) {
-	return t.lang, t.script, t.region
+func (t Tag) Raw() (b Language, s Script, r Region) {
+	return t.LangID, t.ScriptID, t.RegionID
 }
 
 // equalTags compares language, script and region subtags only.
 func (t Tag) equalTags(a Tag) bool {
-	return t.lang == a.lang && t.script == a.script && t.region == a.region
+	return t.LangID == a.LangID && t.ScriptID == a.ScriptID && t.RegionID == a.RegionID
 }
 
 // IsRoot returns true if t is equal to language "und".
@@ -78,15 +83,16 @@ func (t Tag) IsRoot() bool {
 	return t.equalTags(und)
 }
 
-// private reports whether the Tag consists solely of a private use tag.
-func (t Tag) private() bool {
+// IsPrivateUse reports whether the Tag consists solely of an IsPrivateUse use
+// tag.
+func (t Tag) IsPrivateUse() bool {
 	return t.str != "" && t.pVariant == 0
 }
 
-// remakeString is used to update t.str in case lang, script or region changed.
+// RemakeString is used to update t.str in case lang, script or region changed.
 // It is assumed that pExt and pVariant still point to the start of the
 // respective parts.
-func (t *Tag) remakeString() {
+func (t *Tag) RemakeString() {
 	if t.str == "" {
 		return
 	}
@@ -119,14 +125,14 @@ func (t *Tag) remakeString() {
 // to the given buffer and returns the number of bytes written. It will never
 // write more than maxCoreSize bytes.
 func (t *Tag) genCoreBytes(buf []byte) int {
-	n := t.lang.stringToBuf(buf[:])
-	if t.script != 0 {
+	n := t.LangID.stringToBuf(buf[:])
+	if t.ScriptID != 0 {
 		n += copy(buf[n:], "-")
-		n += copy(buf[n:], t.script.String())
+		n += copy(buf[n:], t.ScriptID.String())
 	}
-	if t.region != 0 {
+	if t.RegionID != 0 {
 		n += copy(buf[n:], "-")
-		n += copy(buf[n:], t.region.String())
+		n += copy(buf[n:], t.RegionID.String())
 	}
 	return n
 }
@@ -136,8 +142,8 @@ func (t Tag) String() string {
 	if t.str != "" {
 		return t.str
 	}
-	if t.script == 0 && t.region == 0 {
-		return t.lang.String()
+	if t.ScriptID == 0 && t.RegionID == 0 {
+		return t.LangID.String()
 	}
 	buf := [maxCoreSize]byte{}
 	return string(buf[:t.genCoreBytes(buf[:])])
@@ -147,8 +153,8 @@ func (t Tag) String() string {
 func (t Tag) MarshalText() (text []byte, err error) {
 	if t.str != "" {
 		text = append(text, t.str...)
-	} else if t.script == 0 && t.region == 0 {
-		text = append(text, t.lang.String()...)
+	} else if t.ScriptID == 0 && t.RegionID == 0 {
+		text = append(text, t.LangID.String()...)
 	} else {
 		buf := [maxCoreSize]byte{}
 		text = buf[:t.genCoreBytes(buf[:])]
@@ -183,31 +189,31 @@ func (t Tag) Parent() Tag {
 	if t.str != "" {
 		// Strip the variants and extensions.
 		b, s, r := t.Raw()
-		t = Tag{lang: b, script: s, region: r}
-		if t.region == 0 && t.script != 0 && t.lang != 0 {
-			base, _ := addTags(Tag{lang: t.lang})
-			if base.script == t.script {
-				return Tag{lang: t.lang}
+		t = Tag{LangID: b, ScriptID: s, RegionID: r}
+		if t.RegionID == 0 && t.ScriptID != 0 && t.LangID != 0 {
+			base, _ := addTags(Tag{LangID: t.LangID})
+			if base.ScriptID == t.ScriptID {
+				return Tag{LangID: t.LangID}
 			}
 		}
 		return t
 	}
-	if t.lang != 0 {
-		if t.region != 0 {
-			maxScript := t.script
+	if t.LangID != 0 {
+		if t.RegionID != 0 {
+			maxScript := t.ScriptID
 			if maxScript == 0 {
 				max, _ := addTags(t)
-				maxScript = max.script
+				maxScript = max.ScriptID
 			}
 
 			for i := range parents {
-				if langID(parents[i].lang) == t.lang && scriptID(parents[i].maxScript) == maxScript {
+				if Language(parents[i].lang) == t.LangID && Script(parents[i].maxScript) == maxScript {
 					for _, r := range parents[i].fromRegion {
-						if regionID(r) == t.region {
+						if Region(r) == t.RegionID {
 							return Tag{
-								lang:   t.lang,
-								script: scriptID(parents[i].script),
-								region: regionID(parents[i].toRegion),
+								LangID:   t.LangID,
+								ScriptID: Script(parents[i].script),
+								RegionID: Region(parents[i].toRegion),
 							}
 						}
 					}
@@ -215,19 +221,19 @@ func (t Tag) Parent() Tag {
 			}
 
 			// Strip the script if it is the default one.
-			base, _ := addTags(Tag{lang: t.lang})
-			if base.script != maxScript {
-				return Tag{lang: t.lang, script: maxScript}
+			base, _ := addTags(Tag{LangID: t.LangID})
+			if base.ScriptID != maxScript {
+				return Tag{LangID: t.LangID, ScriptID: maxScript}
 			}
-			return Tag{lang: t.lang}
-		} else if t.script != 0 {
+			return Tag{LangID: t.LangID}
+		} else if t.ScriptID != 0 {
 			// The parent for an base-script pair with a non-default script is
 			// "und" instead of the base language.
-			base, _ := addTags(Tag{lang: t.lang})
-			if base.script != t.script {
+			base, _ := addTags(Tag{LangID: t.LangID})
+			if base.ScriptID != t.ScriptID {
 				return und
 			}
-			return Tag{lang: t.lang}
+			return Tag{LangID: t.LangID}
 		}
 	}
 	return und
@@ -329,7 +335,7 @@ var (
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
 // An empty value removes an existing pair with the same key.
 func (t Tag) SetTypeForKey(key, value string) (Tag, error) {
-	if t.private() {
+	if t.IsPrivateUse() {
 		return t, errPrivateUse
 	}
 	if len(key) != 2 {
@@ -474,7 +480,7 @@ func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
 // ParseBase parses a 2- or 3-letter ISO 639 code.
 // It returns a ValueError if s is a well-formed but unknown language identifier
 // or another error if another error occurred.
-func ParseBase(s string) (langID, error) {
+func ParseBase(s string) (Language, error) {
 	if n := len(s); n < 2 || 3 < n {
 		return 0, errSyntax
 	}
@@ -485,7 +491,7 @@ func ParseBase(s string) (langID, error) {
 // ParseScript parses a 4-letter ISO 15924 code.
 // It returns a ValueError if s is a well-formed but unknown script identifier
 // or another error if another error occurred.
-func ParseScript(s string) (scriptID, error) {
+func ParseScript(s string) (Script, error) {
 	if len(s) != 4 {
 		return 0, errSyntax
 	}
@@ -495,14 +501,14 @@ func ParseScript(s string) (scriptID, error) {
 
 // EncodeM49 returns the Region for the given UN M.49 code.
 // It returns an error if r is not a valid code.
-func EncodeM49(r int) (regionID, error) {
+func EncodeM49(r int) (Region, error) {
 	return getRegionM49(r)
 }
 
 // ParseRegion parses a 2- or 3-letter ISO 3166-1 or a UN M.49 code.
 // It returns a ValueError if s is a well-formed but unknown region identifier
 // or another error if another error occurred.
-func ParseRegion(s string) (regionID, error) {
+func ParseRegion(s string) (Region, error) {
 	if n := len(s); n < 2 || 3 < n {
 		return 0, errSyntax
 	}
@@ -512,7 +518,7 @@ func ParseRegion(s string) (regionID, error) {
 
 // IsCountry returns whether this region is a country or autonomous area. This
 // includes non-standard definitions from CLDR.
-func (r regionID) IsCountry() bool {
+func (r Region) IsCountry() bool {
 	if r == 0 || r.IsGroup() || r.IsPrivateUse() && r != _XK {
 		return false
 	}
@@ -521,7 +527,7 @@ func (r regionID) IsCountry() bool {
 
 // IsGroup returns whether this region defines a collection of regions. This
 // includes non-standard definitions from CLDR.
-func (r regionID) IsGroup() bool {
+func (r Region) IsGroup() bool {
 	if r == 0 {
 		return false
 	}
@@ -530,7 +536,7 @@ func (r regionID) IsGroup() bool {
 
 // Contains returns whether Region c is contained by Region r. It returns true
 // if c == r.
-func (r regionID) Contains(c regionID) bool {
+func (r Region) Contains(c Region) bool {
 	if r == c {
 		return true
 	}
@@ -561,7 +567,7 @@ var errNoTLD = errors.New("language: region is not a valid ccTLD")
 // canonical form with a ccTLD. To get that ccTLD canonicalize r first. The
 // region will already be canonicalized it was obtained from a Tag that was
 // obtained using any of the default methods.
-func (r regionID) TLD() (regionID, error) {
+func (r Region) TLD() (Region, error) {
 	// See http://en.wikipedia.org/wiki/Country_code_top-level_domain for the
 	// difference between ISO 3166-1 and IANA ccTLD.
 	if r == _GB {
@@ -576,7 +582,7 @@ func (r regionID) TLD() (regionID, error) {
 // Canonicalize returns the region or a possible replacement if the region is
 // deprecated. It will not return a replacement for deprecated regions that
 // are split into multiple regions.
-func (r regionID) Canonicalize() regionID {
+func (r Region) Canonicalize() Region {
 	if cr := normRegion(r); cr != 0 {
 		return cr
 	}

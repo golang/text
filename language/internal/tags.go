@@ -18,7 +18,7 @@ func MustParse(s string) Tag {
 
 // MustParseBase is like ParseBase, but panics if the given base cannot be parsed.
 // It simplifies safe initialization of Base values.
-func MustParseBase(s string) langID {
+func MustParseBase(s string) Language {
 	b, err := ParseBase(s)
 	if err != nil {
 		panic(err)
@@ -28,7 +28,7 @@ func MustParseBase(s string) langID {
 
 // MustParseScript is like ParseScript, but panics if the given script cannot be
 // parsed. It simplifies safe initialization of Script values.
-func MustParseScript(s string) scriptID {
+func MustParseScript(s string) Script {
 	scr, err := ParseScript(s)
 	if err != nil {
 		panic(err)
@@ -38,7 +38,7 @@ func MustParseScript(s string) scriptID {
 
 // MustParseRegion is like ParseRegion, but panics if the given region cannot be
 // parsed. It simplifies safe initialization of Region values.
-func MustParseRegion(s string) regionID {
+func MustParseRegion(s string) Region {
 	r, err := ParseRegion(s)
 	if err != nil {
 		panic(err)

@@ -114,13 +114,6 @@ likelyRegionList holds lists info associated with likelyRegion.`,
 likelyScript is a lookup table, indexed by scriptID, for the most likely
 languages and regions given a script.`,
 	`
-matchLang holds pairs of langIDs of base languages that are typically
-mutually intelligible. Each pair is associated with a confidence and
-whether the intelligibility goes one or both ways.`,
-	`
-matchScript holds pairs of scriptIDs where readers of one script
-can typically also read the other. Each is associated with a confidence.`,
-	`
 nRegionGroups is the number of region groups.`,
 	`
 regionInclusion maps region identifiers to sets of regions in regionInclusionBits,
@@ -665,9 +658,9 @@ func (b *builder) parseIndices() {
 			b.langNoIndex.remove(s)
 		}
 	}
-	b.writeConst("numLanguages", len(b.lang.slice())+len(b.langNoIndex.slice()))
-	b.writeConst("numScripts", len(b.script.slice()))
-	b.writeConst("numRegions", len(b.region.slice()))
+	b.writeConst("NumLanguages", len(b.lang.slice())+len(b.langNoIndex.slice()))
+	b.writeConst("NumScripts", len(b.script.slice()))
+	b.writeConst("NumRegions", len(b.region.slice()))
 
 	// Add dummy codes at the start of each list to represent "unspecified".
 	b.lang.add("---")
@@ -729,7 +722,7 @@ func (b *builder) writeLanguage() {
 	// Get language codes that need to be mapped (overlong 3-letter codes,
 	// deprecated 2-letter codes, legacy and grandfathered tags.)
 	langAliasMap := stringSet{}
-	aliasTypeMap := map[string]langAliasType{}
+	aliasTypeMap := map[string]AliasType{}
 
 	// altLangISO3 get the alternative ISO3 names that need to be mapped.
 	altLangISO3 := stringSet{}
@@ -751,7 +744,7 @@ func (b *builder) writeLanguage() {
 		} else if len(a.Type) <= 3 {
 			switch a.Reason {
 			case "macrolanguage":
-				aliasTypeMap[a.Type] = langMacro
+				aliasTypeMap[a.Type] = Macro
 			case "deprecated":
 				// handled elsewhere
 				continue
@@ -759,7 +752,7 @@ func (b *builder) writeLanguage() {
 				if a.Type == "no" {
 					continue
 				}
-				aliasTypeMap[a.Type] = langLegacy
+				aliasTypeMap[a.Type] = Legacy
 			default:
 				log.Fatalf("new %s alias: %s", a.Reason, a.Type)
 			}
@@ -771,14 +764,14 @@ func (b *builder) writeLanguage() {
 	// This can be removed if CLDR adopts this change.
 	langAliasMap.add("nb")
 	langAliasMap.updateLater("nb", "no")
-	aliasTypeMap["nb"] = langMacro
+	aliasTypeMap["nb"] = Macro
 
 	for k, v := range b.registry {
 		// Also add deprecated values for 3-letter ISO codes, which CLDR omits.
 		if v.typ == "language" && v.deprecated != "" && v.preferred != "" {
 			langAliasMap.add(k)
 			langAliasMap.updateLater(k, v.preferred)
-			aliasTypeMap[k] = langDeprecated
+			aliasTypeMap[k] = Deprecated
 		}
 	}
 	// Fix CLDR mappings.
@@ -845,7 +838,7 @@ func (b *builder) writeLanguage() {
 	b.writeSlice("altLangIndex", altLangIndex)
 
 	b.writeSortedMap("langAliasMap", &langAliasMap, b.langIndex)
-	types := make([]langAliasType, len(langAliasMap.s))
+	types := make([]AliasType, len(langAliasMap.s))
 	for i, s := range langAliasMap.s {
 		types[i] = aliasTypeMap[s]
 	}

@@ -59,7 +59,7 @@ func TestMakeString(t *testing.T) {
 		mod, _ := Parse(tt.out)
 		id.setTagsFrom(mod)
 		for j := 0; j < 2; j++ {
-			id.remakeString()
+			id.RemakeString()
 			if str := id.String(); str != tt.out {
 				t.Errorf("%d:%d: found %s; want %s", i, j, id.String(), tt.out)
 			}
@@ -67,7 +67,7 @@ func TestMakeString(t *testing.T) {
 		// The bytes to string conversion as used in remakeString
 		// occasionally measures as more than one alloc, breaking this test.
 		// To alleviate this we set the number of runs to more than 1.
-		if n := testtext.AllocsPerRun(8, id.remakeString); n > 1 {
+		if n := testtext.AllocsPerRun(8, id.RemakeString); n > 1 {
 			t.Errorf("%d: # allocs got %.1f; want <= 1", i, n)
 		}
 	}
@@ -393,7 +393,7 @@ func TestRegionTLD(t *testing.T) {
 		}
 
 		r := MustParseRegion(tt.in)
-		var want regionID
+		var want Region
 		if tt.out != "ZZ" {
 			want = MustParseRegion(tt.out)
 		}

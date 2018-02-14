@@ -6,19 +6,19 @@ package language
 
 // BaseLanguages returns the list of all supported base languages. It generates
 // the list by traversing the internal structures.
-func BaseLanguages() []langID {
-	base := make([]langID, 0, numLanguages)
+func BaseLanguages() []Language {
+	base := make([]Language, 0, NumLanguages)
 	for i := 0; i < langNoIndexOffset; i++ {
 		// We included "und" already for the value 0.
 		if i != nonCanonicalUnd {
-			base = append(base, langID(i))
+			base = append(base, Language(i))
 		}
 	}
 	i := langNoIndexOffset
 	for _, v := range langNoIndex {
 		for k := 0; k < 8; k++ {
 			if v&1 == 1 {
-				base = append(base, langID(i))
+				base = append(base, Language(i))
 			}
 			v >>= 1
 			i++

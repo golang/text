@@ -7,11 +7,11 @@ import "golang.org/x/text/internal/tag"
 // CLDRVersion is the CLDR version from which the tables in this package are derived.
 const CLDRVersion = "32"
 
-const numLanguages = 8665
+const NumLanguages = 8665
 
-const numScripts = 242
+const NumScripts = 242
 
-const numRegions = 357
+const NumRegions = 357
 
 type fromTo struct {
 	from uint16
@@ -751,7 +751,7 @@ var langAliasMap = [164]fromTo{
 }
 
 // Size: 164 bytes, 164 elements
-var langAliasTypes = [164]langAliasType{
+var langAliasTypes = [164]AliasType{
 	// Entry 0 - 3F
 	1, 0, 0, 0, 0, 0, 0, 1, 2, 2, 0, 1, 0, 0, 1, 2,
 	1, 1, 2, 0, 1, 0, 1, 2, 1, 1, 0, 0, 2, 1, 1, 0,

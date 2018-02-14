@@ -370,7 +370,7 @@ func TestGetScriptID(t *testing.T) {
 	idx := tag.Index("0000BbbbDdddEeeeZzzz\xff\xff\xff\xff")
 	tests := []struct {
 		in  string
-		out scriptID
+		out Script
 	}{
 		{"    ", 0},
 		{"      ", 0},
