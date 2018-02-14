@@ -335,7 +335,7 @@ func TestParse(t *testing.T) {
 
 func TestErrors(t *testing.T) {
 	mkInvalid := func(s string) error {
-		return mkErrInvalid([]byte(s))
+		return NewValueError([]byte(s))
 	}
 	tests := []struct {
 		in  string

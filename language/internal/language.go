@@ -178,8 +178,8 @@ func (t Tag) Variants() string {
 	return t.str[t.pVariant:t.pExt]
 }
 
-// VariantOrPrivateTagStr returns variants or private use tags.
-func (t Tag) VariantOrPrivateTagStr() string {
+// VariantOrPrivateUseTags returns variants or private use tags.
+func (t Tag) VariantOrPrivateUseTags() string {
 	if t.pExt > 0 {
 		return t.str[t.pVariant:t.pExt]
 	}
@@ -191,11 +191,6 @@ func (t Tag) VariantOrPrivateTagStr() string {
 func (t Tag) HasString() bool {
 	return t.str != ""
 }
-
-// // IsPrivateUse reports whether this is tag starting with x-.
-// func (t Tag) IsPrivateUse() bool {
-// 	return t.str != "" && strings.HasPrefix(t.str, "x-")
-// }
 
 // Parent returns the CLDR parent of t. In CLDR, missing fields in data for a
 // specific language are substituted with fields from the parent language.
@@ -592,7 +587,7 @@ func ParseVariant(s string) (Variant, error) {
 	if id, ok := variantIndex[s]; ok {
 		return Variant{id, s}, nil
 	}
-	return Variant{}, mkErrInvalid([]byte(s))
+	return Variant{}, NewValueError([]byte(s))
 }
 
 // String returns the string representation of the variant.

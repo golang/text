@@ -21,7 +21,7 @@ func findIndex(idx tag.Index, key []byte, form string) (index int, err error) {
 	}
 	i := idx.Index(key)
 	if i == -1 {
-		return 0, mkErrInvalid(key)
+		return 0, NewValueError(key)
 	}
 	return i, nil
 }
@@ -43,17 +43,20 @@ func getLangID(s []byte) (Language, error) {
 	return getLangISO3(s)
 }
 
+// TODO language normalization as well as the AliasMaps could be moved to the
+// higher level package, but it is a bit tricky to separate the generation.
+
 func (id Language) Canonicalize() (Language, AliasType) {
 	return normLang(id)
 }
 
 // mapLang returns the mapped langID of id according to mapping m.
 func normLang(id Language) (Language, AliasType) {
-	k := sort.Search(len(langAliasMap), func(i int) bool {
-		return langAliasMap[i].from >= uint16(id)
+	k := sort.Search(len(AliasMap), func(i int) bool {
+		return AliasMap[i].From >= uint16(id)
 	})
-	if k < len(langAliasMap) && langAliasMap[k].from == uint16(id) {
-		return Language(langAliasMap[k].to), langAliasTypes[k]
+	if k < len(AliasMap) && AliasMap[k].From == uint16(id) {
+		return Language(AliasMap[k].To), AliasTypes[k]
 	}
 	return id, AliasTypeUnknown
 }
@@ -67,7 +70,7 @@ func getLangISO2(s []byte) (Language, error) {
 	if i := lang.Index(s); i != -1 && lang.Elem(i)[3] != 0 {
 		return Language(i), nil
 	}
-	return 0, mkErrInvalid(s)
+	return 0, NewValueError(s)
 }
 
 const base = 'z' - 'a' + 1
@@ -120,7 +123,7 @@ func getLangISO3(s []byte) (Language, error) {
 				return Language(i), nil
 			}
 		}
-		return 0, mkErrInvalid(s)
+		return 0, NewValueError(s)
 	}
 	return 0, ErrSyntax
 }
@@ -230,7 +233,7 @@ func getRegionISO3(s []byte) (Region, error) {
 				return Region(altRegionIDs[i/3]), nil
 			}
 		}
-		return 0, mkErrInvalid(s)
+		return 0, NewValueError(s)
 	}
 	return 0, ErrSyntax
 }
@@ -263,10 +266,10 @@ func getRegionM49(n int) (Region, error) {
 func normRegion(r Region) Region {
 	m := regionOldMap
 	k := sort.Search(len(m), func(i int) bool {
-		return m[i].from >= uint16(r)
+		return m[i].From >= uint16(r)
 	})
-	if k < len(m) && m[k].from == uint16(r) {
-		return Region(m[k].to)
+	if k < len(m) && m[k].From == uint16(r) {
+		return Region(m[k].To)
 	}
 	return 0
 }

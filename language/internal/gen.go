@@ -57,7 +57,7 @@ Each 3-letter code is followed by its 1-byte langID.`,
 	`
 altLangIndex is used to convert indexes in altLangISO3 to langIDs.`,
 	`
-langAliasMap maps langIDs to their suggested replacements.`,
+AliasMap maps langIDs to their suggested replacements.`,
 	`
 script is an alphabetically sorted list of ISO 15924 codes. The index
 of the script in the string, divided by 4, is the internal scriptID.`,
@@ -68,7 +68,7 @@ the UN.M49 codes used for groups.)`,
 	`
 regionISO holds a list of alphabetically sorted 2-letter ISO region codes.
 Each 2-letter codes is followed by two bytes with the following meaning:
-    - [A-Z}{2}: the first letter of the 2-letter code plus these two 
+    - [A-Z}{2}: the first letter of the 2-letter code plus these two
                 letters form the 3-letter ISO code.
     - 0, n:     index into altRegionISO3.`,
 	`
@@ -474,17 +474,17 @@ func (b *builder) writeSliceAddSize(name string, extraSize int, ss interface{}) 
 	b.p()
 }
 
-type fromTo struct {
-	from, to uint16
+type FromTo struct {
+	From, To uint16
 }
 
 func (b *builder) writeSortedMap(name string, ss *stringSet, index func(s string) uint16) {
 	ss.sortFunc(func(a, b string) bool {
 		return index(a) < index(b)
 	})
-	m := []fromTo{}
+	m := []FromTo{}
 	for _, s := range ss.s {
-		m = append(m, fromTo{index(s), index(ss.update[s])})
+		m = append(m, FromTo{index(s), index(ss.update[s])})
 	}
 	b.writeSlice(name, m)
 }
@@ -837,12 +837,12 @@ func (b *builder) writeLanguage() {
 	b.writeConst("altLangISO3", tag.Index(altLangISO3.join()))
 	b.writeSlice("altLangIndex", altLangIndex)
 
-	b.writeSortedMap("langAliasMap", &langAliasMap, b.langIndex)
+	b.writeSortedMap("AliasMap", &langAliasMap, b.langIndex)
 	types := make([]AliasType, len(langAliasMap.s))
 	for i, s := range langAliasMap.s {
 		types[i] = aliasTypeMap[s]
 	}
-	b.writeSlice("langAliasTypes", types)
+	b.writeSlice("AliasTypes", types)
 }
 
 var scriptConsts = []string{
@@ -1507,7 +1507,7 @@ func main() {
 	gen.WriteCLDRVersion(w)
 
 	b.parseIndices()
-	b.writeType(fromTo{})
+	b.writeType(FromTo{})
 	b.writeLanguage()
 	b.writeScript()
 	b.writeRegion()

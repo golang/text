@@ -41,9 +41,10 @@ type ValueError struct {
 	v [8]byte
 }
 
-func mkErrInvalid(s []byte) error {
+// NewValueError creates a new ValueError.
+func NewValueError(tag []byte) ValueError {
 	var e ValueError
-	copy(e.v[:], s)
+	copy(e.v[:], tag)
 	return e
 }
 
@@ -347,7 +348,7 @@ func parseVariants(scan *scanner, end int, t Tag) int {
 		if !ok {
 			// unknown variant
 			// TODO: allow user-defined variants?
-			scan.gobble(mkErrInvalid(scan.token))
+			scan.gobble(NewValueError(scan.token))
 			continue
 		}
 		varID = append(varID, v)
