@@ -17,7 +17,7 @@ import (
 // if it could not be found.
 func findIndex(idx tag.Index, key []byte, form string) (index int, err error) {
 	if !tag.FixCase(form, key) {
-		return 0, errSyntax
+		return 0, ErrSyntax
 	}
 	i := idx.Index(key)
 	if i == -1 {
@@ -43,6 +43,10 @@ func getLangID(s []byte) (Language, error) {
 	return getLangISO3(s)
 }
 
+func (id Language) Canonicalize() (Language, AliasType) {
+	return normLang(id)
+}
+
 // mapLang returns the mapped langID of id according to mapping m.
 func normLang(id Language) (Language, AliasType) {
 	k := sort.Search(len(langAliasMap), func(i int) bool {
@@ -58,7 +62,7 @@ func normLang(id Language) (Language, AliasType) {
 // or unknownLang if this does not exist.
 func getLangISO2(s []byte) (Language, error) {
 	if !tag.FixCase("zz", s) {
-		return 0, errSyntax
+		return 0, ErrSyntax
 	}
 	if i := lang.Index(s); i != -1 && lang.Elem(i)[3] != 0 {
 		return Language(i), nil
@@ -118,7 +122,7 @@ func getLangISO3(s []byte) (Language, error) {
 		}
 		return 0, mkErrInvalid(s)
 	}
-	return 0, errSyntax
+	return 0, ErrSyntax
 }
 
 // stringToBuf writes the string to b and returns the number of bytes
@@ -228,7 +232,7 @@ func getRegionISO3(s []byte) (Region, error) {
 		}
 		return 0, mkErrInvalid(s)
 	}
-	return 0, errSyntax
+	return 0, ErrSyntax
 }
 
 func getRegionM49(n int) (Region, error) {

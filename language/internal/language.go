@@ -169,18 +169,33 @@ func (t *Tag) UnmarshalText(text []byte) error {
 	return err
 }
 
-// Variant returns the variants specified explicitly for this language tag.
-// or nil if no variant was specified.
-func (t Tag) Variants() []Variant {
-	v := []Variant{}
-	if int(t.pVariant) < int(t.pExt) {
-		for x, str := "", t.str[t.pVariant:t.pExt]; str != ""; {
-			x, str = nextToken(str)
-			v = append(v, Variant{x})
-		}
+// Variants returns the part of the tag holding all variants or the empty string
+// if there are no variants defined.
+func (t Tag) Variants() string {
+	if t.pVariant == 0 {
+		return ""
 	}
-	return v
+	return t.str[t.pVariant:t.pExt]
 }
+
+// VariantOrPrivateTagStr returns variants or private use tags.
+func (t Tag) VariantOrPrivateTagStr() string {
+	if t.pExt > 0 {
+		return t.str[t.pVariant:t.pExt]
+	}
+	return t.str[t.pVariant:]
+}
+
+// HasString reports whether this tag defines more than just the raw
+// components.
+func (t Tag) HasString() bool {
+	return t.str != ""
+}
+
+// // IsPrivateUse reports whether this is tag starting with x-.
+// func (t Tag) IsPrivateUse() bool {
+// 	return t.str != "" && strings.HasPrefix(t.str, "x-")
+// }
 
 // Parent returns the CLDR parent of t. In CLDR, missing fields in data for a
 // specific language are substituted with fields from the parent language.
@@ -239,77 +254,52 @@ func (t Tag) Parent() Tag {
 	return und
 }
 
-// returns token t and the rest of the string.
-func nextToken(s string) (t, tail string) {
-	p := strings.Index(s[1:], "-")
-	if p == -1 {
-		return s[1:], ""
-	}
-	p++
-	return s[1:p], s[p:]
-}
-
-// Extension is a single BCP 47 extension.
-type Extension struct {
-	s string
-}
-
-// String returns the string representation of the extension, including the
-// type tag.
-func (e Extension) String() string {
-	return e.s
-}
-
 // ParseExtension parses s as an extension and returns it on success.
-func ParseExtension(s string) (e Extension, err error) {
+func ParseExtension(s string) (ext string, err error) {
 	scan := makeScannerString(s)
 	var end int
 	if n := len(scan.token); n != 1 {
-		return Extension{}, errSyntax
+		return "", ErrSyntax
 	}
 	scan.toLower(0, len(scan.b))
 	end = parseExtension(&scan)
 	if end != len(s) {
-		return Extension{}, errSyntax
+		return "", ErrSyntax
 	}
-	return Extension{string(scan.b)}, nil
+	return string(scan.b), nil
 }
 
-// Type returns the one-byte extension type of e. It returns 0 for the zero
-// exception.
-func (e Extension) Type() byte {
-	if e.s == "" {
-		return 0
-	}
-	return e.s[0]
+// HasVariants reports whether t has variants.
+func (t Tag) HasVariants() bool {
+	return uint16(t.pVariant) < t.pExt
 }
 
-// Tokens returns the list of tokens of e.
-func (e Extension) Tokens() []string {
-	return strings.Split(e.s, "-")
+// HasExtensions reports whether t has extensions.
+func (t Tag) HasExtensions() bool {
+	return int(t.pExt) < len(t.str)
 }
 
 // Extension returns the extension of type x for tag t. It will return
 // false for ok if t does not have the requested extension. The returned
 // extension will be invalid in this case.
-func (t Tag) Extension(x byte) (ext Extension, ok bool) {
+func (t Tag) Extension(x byte) (ext string, ok bool) {
 	for i := int(t.pExt); i < len(t.str)-1; {
 		var ext string
 		i, ext = getExtension(t.str, i)
 		if ext[0] == x {
-			return Extension{ext}, true
+			return ext, true
 		}
 	}
-	return Extension{}, false
+	return "", false
 }
 
 // Extensions returns all extensions of t.
-func (t Tag) Extensions() []Extension {
-	e := []Extension{}
+func (t Tag) Extensions() []string {
+	e := []string{}
 	for i := int(t.pExt); i < len(t.str)-1; {
 		var ext string
 		i, ext = getExtension(t.str, i)
-		e = append(e, Extension{ext})
+		e = append(e, ext)
 	}
 	return e
 }
@@ -482,7 +472,7 @@ func (t Tag) findTypeForKey(key string) (start, end int, hasExt bool) {
 // or another error if another error occurred.
 func ParseBase(s string) (Language, error) {
 	if n := len(s); n < 2 || 3 < n {
-		return 0, errSyntax
+		return 0, ErrSyntax
 	}
 	var buf [3]byte
 	return getLangID(buf[:copy(buf[:], s)])
@@ -493,7 +483,7 @@ func ParseBase(s string) (Language, error) {
 // or another error if another error occurred.
 func ParseScript(s string) (Script, error) {
 	if len(s) != 4 {
-		return 0, errSyntax
+		return 0, ErrSyntax
 	}
 	var buf [4]byte
 	return getScriptID(script, buf[:copy(buf[:], s)])
@@ -510,7 +500,7 @@ func EncodeM49(r int) (Region, error) {
 // or another error if another error occurred.
 func ParseRegion(s string) (Region, error) {
 	if n := len(s); n < 2 || 3 < n {
-		return 0, errSyntax
+		return 0, ErrSyntax
 	}
 	var buf [3]byte
 	return getRegionID(buf[:copy(buf[:], s)])
@@ -591,20 +581,21 @@ func (r Region) Canonicalize() Region {
 
 // Variant represents a registered variant of a language as defined by BCP 47.
 type Variant struct {
-	variant string
+	ID  uint8
+	str string
 }
 
 // ParseVariant parses and returns a Variant. An error is returned if s is not
 // a valid variant.
 func ParseVariant(s string) (Variant, error) {
 	s = strings.ToLower(s)
-	if _, ok := variantIndex[s]; ok {
-		return Variant{s}, nil
+	if id, ok := variantIndex[s]; ok {
+		return Variant{id, s}, nil
 	}
 	return Variant{}, mkErrInvalid([]byte(s))
 }
 
 // String returns the string representation of the variant.
 func (v Variant) String() string {
-	return v.variant
+	return v.str
 }

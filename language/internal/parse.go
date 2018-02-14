@@ -29,10 +29,10 @@ func isAlphaNum(s []byte) bool {
 	return true
 }
 
-// errSyntax is returned by any of the parsing functions when the
+// ErrSyntax is returned by any of the parsing functions when the
 // input is not well-formed, according to BCP 47.
 // TODO: return the position at which the syntax error occurred?
-var errSyntax = errors.New("language: tag is not well-formed")
+var ErrSyntax = errors.New("language: tag is not well-formed")
 
 // ValueError is returned by any of the parsing functions when the
 // input is well-formed but the respective subtag is not recognized
@@ -116,7 +116,7 @@ func (s *scanner) toLower(start, end int) {
 }
 
 func (s *scanner) setError(e error) {
-	if s.err == nil || (e == errSyntax && s.err != errSyntax) {
+	if s.err == nil || (e == ErrSyntax && s.err != ErrSyntax) {
 		s.err = e
 	}
 }
@@ -163,7 +163,7 @@ func (s *scanner) gobble(e error) {
 
 // deleteRange removes the given range from s.b before the current token.
 func (s *scanner) deleteRange(start, end int) {
-	s.setError(errSyntax)
+	s.setError(ErrSyntax)
 	s.b = s.b[:start+copy(s.b[start:], s.b[end:])]
 	diff := end - start
 	s.next -= diff
@@ -190,14 +190,14 @@ func (s *scanner) scan() (end int) {
 		}
 		token := s.b[s.start:s.end]
 		if i < 1 || i > 8 || !isAlphaNum(token) {
-			s.gobble(errSyntax)
+			s.gobble(ErrSyntax)
 			continue
 		}
 		s.token = token
 		return end
 	}
 	if n := len(s.b); n > 0 && s.b[n-1] == '-' {
-		s.setError(errSyntax)
+		s.setError(ErrSyntax)
 		s.b = s.b[:len(s.b)-1]
 	}
 	s.done = true
@@ -225,7 +225,7 @@ func (s *scanner) acceptMinSize(min int) (end int) {
 func Parse(s string) (t Tag, err error) {
 	// TODO: consider supporting old-style locale key-value pairs.
 	if s == "" {
-		return und, errSyntax
+		return und, ErrSyntax
 	}
 	if len(s) <= maxAltTaglen {
 		b := [maxAltTaglen]byte{}
@@ -252,18 +252,18 @@ func parse(scan *scanner, s string) (t Tag, err error) {
 	if n := len(scan.token); n <= 1 {
 		scan.toLower(0, len(scan.b))
 		if n == 0 || scan.token[0] != 'x' {
-			return t, errSyntax
+			return t, ErrSyntax
 		}
 		end = parseExtensions(scan)
 	} else if n >= 4 {
-		return und, errSyntax
+		return und, ErrSyntax
 	} else { // the usual case
 		t, end = parseTag(scan)
 		if n := len(scan.token); n == 1 {
 			t.pExt = uint16(end)
 			end = parseExtensions(scan)
 		} else if end < len(scan.b) {
-			scan.setError(errSyntax)
+			scan.setError(ErrSyntax)
 			scan.b = scan.b[:end]
 		}
 	}
@@ -438,7 +438,7 @@ func parseExtensions(scan *scanner) int {
 		end = parseExtension(scan)
 		extension := scan.b[extStart:end]
 		if len(extension) < 3 || (ext != 'x' && len(extension) < 4) {
-			scan.setError(errSyntax)
+			scan.setError(ErrSyntax)
 			end = extStart
 			continue
 		} else if start == extStart && (ext == 'x' || scan.start == len(scan.b)) {
@@ -507,7 +507,7 @@ func parseExtension(scan *scanner) int {
 					if keyEnd != end {
 						keys = append(keys, scan.b[keyStart:end])
 					} else {
-						scan.setError(errSyntax)
+						scan.setError(ErrSyntax)
 						end = keyStart
 					}
 				}

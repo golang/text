@@ -347,10 +347,10 @@ func TestErrors(t *testing.T) {
 		{"aa-Uuuu", mkInvalid("Uuuu")},
 		{"aa-AB", mkInvalid("AB")},
 		// ill-formed wins over invalid.
-		{"ac-u", errSyntax},
-		{"ac-u-ca", errSyntax},
-		{"ac-u-ca-co-pinyin", errSyntax},
-		{"noob", errSyntax},
+		{"ac-u", ErrSyntax},
+		{"ac-u-ca", ErrSyntax},
+		{"ac-u-ca-co-pinyin", ErrSyntax},
+		{"noob", ErrSyntax},
 	}
 	for _, tt := range tests {
 		_, err := Parse(tt.in)

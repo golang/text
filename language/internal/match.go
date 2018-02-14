@@ -224,18 +224,3 @@ func minimizeTags(t Tag) (Tag, error) {
 	}
 	return t, nil
 }
-
-func (t Tag) variants() string {
-	if t.pVariant == 0 {
-		return ""
-	}
-	return t.str[t.pVariant:t.pExt]
-}
-
-// variantOrPrivateTagStr returns variants or private use tags.
-func (t Tag) variantOrPrivateTagStr() string {
-	if t.pExt > 0 {
-		return t.str[t.pVariant:t.pExt]
-	}
-	return t.str[t.pVariant:]
-}
