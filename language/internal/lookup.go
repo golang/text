@@ -128,9 +128,9 @@ func getLangISO3(s []byte) (Language, error) {
 	return 0, ErrSyntax
 }
 
-// stringToBuf writes the string to b and returns the number of bytes
+// StringToBuf writes the string to b and returns the number of bytes
 // written.  cap(b) must be >= 3.
-func (id Language) stringToBuf(b []byte) int {
+func (id Language) StringToBuf(b []byte) int {
 	if id >= langNoIndexOffset {
 		intToStr(uint(id)-langNoIndexOffset, b[:3])
 		return 3

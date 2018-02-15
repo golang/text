@@ -125,7 +125,7 @@ func (t *Tag) RemakeString() {
 // to the given buffer and returns the number of bytes written. It will never
 // write more than maxCoreSize bytes.
 func (t *Tag) genCoreBytes(buf []byte) int {
-	n := t.LangID.stringToBuf(buf[:])
+	n := t.LangID.StringToBuf(buf[:])
 	if t.ScriptID != 0 {
 		n += copy(buf[n:], "-")
 		n += copy(buf[n:], t.ScriptID.String())
