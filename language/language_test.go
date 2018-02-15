@@ -49,35 +49,35 @@ func TestEquality(t *testing.T) {
 func TestCompactIndex(t *testing.T) {
 	tests := []struct {
 		tag   string
-		index int
+		index compactID
 		ok    bool
 	}{
 		// TODO: these values will change with each CLDR update. This issue
 		// will be solved if we decide to fix the indexes.
-		{"und", 0, true},
-		{"ca-ES-valencia", 1, true},
-		{"ca-ES-valencia-u-va-posix", 1, false},
-		{"ca-ES-valencia-u-co-phonebk", 1, false},
-		{"ca-ES-valencia-u-co-phonebk-va-posix", 1, false},
+		{"und", xund, true},
+		{"ca-ES-valencia", xcaESvalencia, true},
+		{"ca-ES-valencia-u-va-posix", xcaESvalencia, false},
+		{"ca-ES-valencia-u-co-phonebk", xcaESvalencia, false},
+		{"ca-ES-valencia-u-co-phonebk-va-posix", xcaESvalencia, false},
 		{"x-klingon", 0, false},
-		{"en-US", 232, true},
-		{"en-US-u-va-posix", 2, true},
-		{"en", 136, true},
-		{"en-u-co-phonebk", 136, false},
-		{"en-001", 137, true},
-		{"zh-Hant-HK", 763, true},
-		{"zh-HK", 763, false}, // maximized to zh-Hant-HK
-		{"nl-Beng", 0, false}, // parent skips script
-		{"nl-NO", 524, false}, // region is ignored
-		{"nl-Latn-NO", 524, false},
-		{"nl-Latn-NO-u-co-phonebk", 524, false},
-		{"nl-Latn-NO-valencia", 524, false},
-		{"nl-Latn-NO-oxendict", 524, false},
-		{"sh", 0, false}, // We don't normalize.
+		{"en-US", xenUS, true},
+		{"en-US-u-va-posix", xenUSuvaposix, true},
+		{"en", xen, true},
+		{"en-u-co-phonebk", xen, false},
+		{"en-001", xen001, true},
+		{"zh-Hant-HK", xzhHantHK, true},
+		{"zh-HK", xzhHantHK, false}, // maximized to zh-Hant-HK
+		{"nl-Beng", 0, false},       // parent skips script
+		{"nl-NO", xnl, false},       // region is ignored
+		{"nl-Latn-NO", xnl, false},
+		{"nl-Latn-NO-u-co-phonebk", xnl, false},
+		{"nl-Latn-NO-valencia", xnl, false},
+		{"nl-Latn-NO-oxendict", xnl, false},
+		{"sh", xsh, true}, // From plural rules.
 	}
 	for _, tt := range tests {
 		x, ok := CompactIndex(Raw.MustParse(tt.tag))
-		if x != tt.index || ok != tt.ok {
+		if compactID(x) != tt.index || ok != tt.ok {
 			t.Errorf("%s: got %d, %v; want %d %v", tt.tag, x, ok, tt.index, tt.ok)
 		}
 	}

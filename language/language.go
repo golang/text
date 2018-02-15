@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:generate go run gen.go -output tables.go
+//go:generate go run gen.go gen_index.go -output tables.go
 
 package language
 
@@ -432,7 +432,7 @@ func CompactIndex(t Tag) (index int, exact bool) {
 			// We have some variants.
 			for i, s := range specialTags {
 				if s == t.tag {
-					return i + 1, exact
+					return i + len(coreTags), exact
 				}
 			}
 			exact = false

@@ -325,7 +325,7 @@ func (h *matchHeader) addIfNew(n haveTag, exact bool) {
 	for i, v := range h.haveTags {
 		if v.maxScript == n.maxScript &&
 			v.maxRegion == n.maxRegion &&
-			v.tag.VariantOrPrivateTagStr() == n.tag.VariantOrPrivateTagStr() {
+			v.tag.VariantOrPrivateUseTags() == n.tag.VariantOrPrivateUseTags() {
 			for h.haveTags[i].nextMax != 0 {
 				i = int(h.haveTags[i].nextMax)
 			}
@@ -689,7 +689,7 @@ func regionGroupDist(a, b language.Region, script language.Script, lang language
 func equalsRest(a, b language.Tag) bool {
 	// TODO: don't include extensions in this comparison. To do this efficiently,
 	// though, we should handle private tags separately.
-	return a.ScriptID == b.ScriptID && a.RegionID == b.RegionID && a.VariantOrPrivateTagStr() == b.VariantOrPrivateTagStr()
+	return a.ScriptID == b.ScriptID && a.RegionID == b.RegionID && a.VariantOrPrivateUseTags() == b.VariantOrPrivateUseTags()
 }
 
 // isExactEquivalent returns true if canonicalizing the language will not alter

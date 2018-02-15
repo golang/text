@@ -4,11 +4,42 @@
 
 package language
 
-import "golang.org/x/text/language/internal"
+import (
+	"sort"
+	"strings"
+
+	"golang.org/x/text/language/internal"
+)
 
 type compactID uint16
 
 func getCoreIndex(t language.Tag) (id compactID, ok bool) {
-	x, ok := coreTags[language.GetCoreKey(t)]
-	return compactID(x), ok
+	cci, ok := language.GetCompactCore(t)
+	if !ok {
+		return 0, false
+	}
+	i := sort.Search(len(coreTags), func(i int) bool {
+		return cci <= coreTags[i]
+	})
+	if i == len(coreTags) || coreTags[i] != cci {
+		return 0, false
+	}
+	return compactID(i), true
+}
+
+func (c compactID) tag() language.Tag {
+	if int(c) >= len(coreTags) {
+		return specialTags[int(c)-len(coreTags)]
+	}
+	return coreTags[c].Tag()
+}
+
+var specialTags []language.Tag
+
+func init() {
+	tags := strings.Split(specialTagsStr, " ")
+	specialTags = make([]language.Tag, len(tags))
+	for i, t := range tags {
+		specialTags[i] = language.MustParse(t)
+	}
 }
