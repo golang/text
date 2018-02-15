@@ -257,7 +257,7 @@ func (t Tag) Script() (Script, Confidence) {
 		return Script{t.script()}, Exact
 	}
 	tt := t.tag
-	sc, c := scriptID(_Zzzz), No
+	sc, c := language.Script(_Zzzz), No
 	if scr := tt.LangID.SuppressScript(); scr != 0 {
 		// Note: it is not always the case that a language with a suppress
 		// script value is only written in one script (e.g. kk, ms, pa).

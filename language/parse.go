@@ -217,7 +217,7 @@ func split(s string, c byte) (head, tail string) {
 
 // Add hack mapping to deal with a small number of cases that that occur
 // in Accept-Language (with reasonable frequency).
-var acceptFallback = map[string]langID{
+var acceptFallback = map[string]language.Language{
 	"english": _en,
 	"deutsch": _de,
 	"italian": _it,
