@@ -128,8 +128,7 @@ const (
 	_Zzzz = 242
 )
 
-// Size: 357 bytes, 357 elements
-var regionToGroups = [357]uint8{
+var regionToGroups = []uint8{ // 357 elements
 	// Entry 0 - 3F
 	0x00, 0x00, 0x00, 0x04, 0x04, 0x00, 0x00, 0x04,
 	0x00, 0x00, 0x00, 0x00, 0x04, 0x04, 0x04, 0x00,
@@ -181,14 +180,13 @@ var regionToGroups = [357]uint8{
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00,
-}
+} // Size: 381 bytes
 
-// Size: 18 bytes, 3 elements
-var paradigmLocales = [3][3]uint16{
+var paradigmLocales = [][3]uint16{ // 3 elements
 	0: [3]uint16{0x139, 0x0, 0x7b},
 	1: [3]uint16{0x13e, 0x0, 0x1f},
 	2: [3]uint16{0x3c0, 0x41, 0xee},
-}
+} // Size: 42 bytes
 
 type mutualIntelligibility struct {
 	want     uint16
@@ -196,7 +194,6 @@ type mutualIntelligibility struct {
 	distance uint8
 	oneway   bool
 }
-
 type scriptIntelligibility struct {
 	wantLang   uint16
 	haveLang   uint16
@@ -204,7 +201,6 @@ type scriptIntelligibility struct {
 	haveScript uint8
 	distance   uint8
 }
-
 type regionIntelligibility struct {
 	lang     uint16
 	script   uint8
@@ -215,8 +211,7 @@ type regionIntelligibility struct {
 // matchLang holds pairs of langIDs of base languages that are typically
 // mutually intelligible. Each pair is associated with a confidence and
 // whether the intelligibility goes one or both ways.
-// Size: 678 bytes, 113 elements
-var matchLang = [113]mutualIntelligibility{
+var matchLang = []mutualIntelligibility{ // 113 elements
 	0:   {want: 0x1d1, have: 0xb7, distance: 0x4, oneway: false},
 	1:   {want: 0x407, have: 0xb7, distance: 0x4, oneway: false},
 	2:   {want: 0x407, have: 0x1d1, distance: 0x4, oneway: false},
@@ -330,12 +325,11 @@ var matchLang = [113]mutualIntelligibility{
 	110: {want: 0x512, have: 0x139, distance: 0xa, oneway: true},
 	111: {want: 0x518, have: 0x139, distance: 0xa, oneway: true},
 	112: {want: 0x52f, have: 0x139, distance: 0xa, oneway: true},
-}
+} // Size: 702 bytes
 
 // matchScript holds pairs of scriptIDs where readers of one script
 // can typically also read the other. Each is associated with a confidence.
-// Size: 208 bytes, 26 elements
-var matchScript = [26]scriptIntelligibility{
+var matchScript = []scriptIntelligibility{ // 26 elements
 	0:  {wantLang: 0x432, haveLang: 0x432, wantScript: 0x57, haveScript: 0x1f, distance: 0x5},
 	1:  {wantLang: 0x432, haveLang: 0x432, wantScript: 0x1f, haveScript: 0x57, distance: 0x5},
 	2:  {wantLang: 0x58, haveLang: 0x3e2, wantScript: 0x57, haveScript: 0x1f, distance: 0xa},
@@ -362,10 +356,9 @@ var matchScript = [26]scriptIntelligibility{
 	23: {wantLang: 0x512, haveLang: 0x139, wantScript: 0x3b, haveScript: 0x57, distance: 0xa},
 	24: {wantLang: 0x529, haveLang: 0x529, wantScript: 0x38, haveScript: 0x39, distance: 0xf},
 	25: {wantLang: 0x529, haveLang: 0x529, wantScript: 0x39, haveScript: 0x38, distance: 0x13},
-}
+} // Size: 232 bytes
 
-// Size: 90 bytes, 15 elements
-var matchRegion = [15]regionIntelligibility{
+var matchRegion = []regionIntelligibility{ // 15 elements
 	0:  {lang: 0x3a, script: 0x0, group: 0x4, distance: 0x4},
 	1:  {lang: 0x3a, script: 0x0, group: 0x84, distance: 0x4},
 	2:  {lang: 0x139, script: 0x0, group: 0x1, distance: 0x4},
@@ -381,6 +374,6 @@ var matchRegion = [15]regionIntelligibility{
 	12: {lang: 0x13e, script: 0x0, group: 0x80, distance: 0x5},
 	13: {lang: 0x3c0, script: 0x0, group: 0x80, distance: 0x5},
 	14: {lang: 0x529, script: 0x39, group: 0x80, distance: 0x5},
-}
+} // Size: 114 bytes
 
-// Total table size 1351 bytes (1KiB); checksum: B5A6F1BC
+// Total table size 1471 bytes (1KiB); checksum: 5E04E5F6
