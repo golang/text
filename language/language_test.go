@@ -65,6 +65,14 @@ func TestCompactIndex(t *testing.T) {
 		{"en", 136, true},
 		{"en-u-co-phonebk", 136, false},
 		{"en-001", 137, true},
+		{"zh-Hant-HK", 763, true},
+		{"zh-HK", 763, false}, // maximized to zh-Hant-HK
+		{"nl-Beng", 0, false}, // parent skips script
+		{"nl-NO", 524, false}, // region is ignored
+		{"nl-Latn-NO", 524, false},
+		{"nl-Latn-NO-u-co-phonebk", 524, false},
+		{"nl-Latn-NO-valencia", 524, false},
+		{"nl-Latn-NO-oxendict", 524, false},
 		{"sh", 0, false}, // We don't normalize.
 	}
 	for _, tt := range tests {

@@ -438,17 +438,24 @@ func CompactIndex(t Tag) (index int, exact bool) {
 			exact = false
 		}
 	}
-	for ; t != Und; t = t.Parent() {
+	if x, ok := getCoreIndex(t.tag); ok {
+		return int(x), exact
+	}
+	exact = false
+	if r.regionID != 0 && s.scriptID == 0 {
+		// Deal with cases where an extra script is inserted for the region.
+		t, _ := t.tag.Maximize()
+		if x, ok := getCoreIndex(t); ok {
+			return int(x), exact
+		}
+	}
+	for t = t.Parent(); t != Und; t = t.Parent() {
 		// No variants specified: just compare core components.
 		// The key has the form lllssrrr, where l, s, and r are nibbles for
 		// respectively the langID, scriptID, and regionID.
-		key := uint32(b.langID) << (8 + 12)
-		key |= uint32(s.scriptID) << 12
-		key |= uint32(r.regionID)
-		if x, ok := coreTags[key]; ok {
+		if x, ok := getCoreIndex(t.tag); ok {
 			return int(x), exact
 		}
-		exact = false
 	}
 	return int(0), exact
 }
