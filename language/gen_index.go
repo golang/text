@@ -104,5 +104,5 @@ func (b *builder) writeCompactIndex() {
 }
 
 func ident(s string) string {
-	return "x" + strings.Replace(s, "-", "", -1)
+	return strings.Replace(s, "-", "", -1) + "Index"
 }

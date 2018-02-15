@@ -19,12 +19,66 @@ import (
 // specific language or locale. All language tag values are guaranteed to be
 // well-formed.
 type Tag struct {
-	tag language.Tag
+	language compactID
+	locale   compactID
+	full     fullTag // always a language.Tag for now.
 }
 
-func (t *Tag) lang() language.Language { return t.tag.LangID }
-func (t *Tag) region() language.Region { return t.tag.RegionID }
-func (t *Tag) script() language.Script { return t.tag.ScriptID }
+type fullTag interface {
+	IsRoot() bool
+	Parent() language.Tag
+}
+
+func makeTag(t language.Tag) (tag Tag) {
+	if region := t.TypeForKey("rg"); len(region) > 2 {
+		if r, err := language.ParseRegion(region[:2]); err == nil {
+			tFull := t
+			t, _ = t.SetTypeForKey("rg", "")
+			var exact1, exact2 bool
+			tag.language, exact1 = compactIndex(t)
+			t.RegionID = r
+			tag.locale, exact2 = compactIndex(t)
+			if !exact1 || !exact2 {
+				tag.full = tFull
+			}
+			return tag
+		}
+	}
+	lang, ok := compactIndex(t)
+	tag.language = lang
+	tag.locale = lang
+	if !ok {
+		tag.full = t
+	}
+	return tag
+}
+
+func (t *Tag) tag() language.Tag {
+	if t.full != nil {
+		return t.full.(language.Tag)
+	}
+	tag := t.language.tag()
+	if t.language != t.locale {
+		loc := t.locale.tag()
+		tag.SetTypeForKey("rg", strings.ToLower(loc.RegionID.String())+"zzzz")
+	}
+	return tag
+}
+
+func (t *Tag) mayHaveVariants() bool {
+	return t.full != nil || int(t.language) >= len(coreTags)
+}
+
+func (t *Tag) mayHaveExtensions() bool {
+	return t.full != nil ||
+		int(t.language) >= len(coreTags) ||
+		t.language != t.locale
+}
+
+// TODO: improve performance.
+func (t *Tag) lang() language.Language { return t.tag().LangID }
+func (t *Tag) region() language.Region { return t.tag().RegionID }
+func (t *Tag) script() language.Script { return t.tag().ScriptID }
 
 // Make is a convenience wrapper for Parse that omits the error.
 // In case of an error, a sensible default is returned.
@@ -42,17 +96,16 @@ func (c CanonType) Make(s string) Tag {
 // Raw returns the raw base language, script and region, without making an
 // attempt to infer their values.
 func (t Tag) Raw() (b Base, s Script, r Region) {
-	return Base{t.tag.LangID}, Script{t.tag.ScriptID}, Region{t.tag.RegionID}
+	tt := t.tag()
+	return Base{tt.LangID}, Script{tt.ScriptID}, Region{tt.RegionID}
 }
 
 // IsRoot returns true if t is equal to language "und".
 func (t Tag) IsRoot() bool {
-	return t.tag.IsRoot()
-}
-
-// private reports whether the Tag consists solely of a private use tag.
-func (t Tag) private() bool {
-	return t.tag.IsPrivateUse()
+	if t.full != nil {
+		return t.full.IsRoot()
+	}
+	return t.language == _und
 }
 
 // CanonType can be used to enable or disable various types of canonicalization.
@@ -178,11 +231,20 @@ func canonicalize(c CanonType, t language.Tag) (language.Tag, bool) {
 
 // Canonicalize returns the canonicalized equivalent of the tag.
 func (c CanonType) Canonicalize(t Tag) (Tag, error) {
-	tt, changed := canonicalize(c, t.tag)
-	if changed {
-		tt.RemakeString()
+	// First try fast path.
+	if t.full == nil {
+		if _, changed := canonicalize(c, t.language.tag()); !changed {
+			return t, nil
+		}
 	}
-	return Tag{tt}, nil
+	// It is unlikely that one will canonicalize a tag after matching. So do
+	// a slow but simple approach here.
+	if tag, changed := canonicalize(c, t.tag()); changed {
+		tag.RemakeString()
+		return makeTag(tag), nil
+	}
+	return t, nil
+
 }
 
 // Confidence indicates the level of certainty for a given return value.
@@ -207,17 +269,20 @@ func (c Confidence) String() string {
 
 // String returns the canonical string representation of the language tag.
 func (t Tag) String() string {
-	return t.tag.String()
+	return t.tag().String()
 }
 
 // MarshalText implements encoding.TextMarshaler.
 func (t Tag) MarshalText() (text []byte, err error) {
-	return t.tag.MarshalText()
+	return t.tag().MarshalText()
 }
 
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (t *Tag) UnmarshalText(text []byte) error {
-	return t.tag.UnmarshalText(text)
+	var tag language.Tag
+	err := tag.UnmarshalText(text)
+	*t = makeTag(tag)
+	return err
 }
 
 // Base returns the base language of the language tag. If the base language is
@@ -227,7 +292,7 @@ func (t Tag) Base() (Base, Confidence) {
 	if b := t.lang(); b != 0 {
 		return Base{b}, Exact
 	}
-	tt := t.tag
+	tt := t.tag()
 	c := High
 	if tt.ScriptID == 0 && !tt.RegionID.IsCountry() {
 		c = Low
@@ -253,10 +318,10 @@ func (t Tag) Base() (Base, Confidence) {
 // in the past.  Also, the script that is commonly used may change over time.
 // It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
 func (t Tag) Script() (Script, Confidence) {
-	if t.script() != 0 {
-		return Script{t.script()}, Exact
+	if scr := t.script(); scr != 0 {
+		return Script{scr}, Exact
 	}
-	tt := t.tag
+	tt := t.tag()
 	sc, c := language.Script(_Zzzz), No
 	if scr := tt.LangID.SuppressScript(); scr != 0 {
 		// Note: it is not always the case that a language with a suppress
@@ -271,8 +336,8 @@ func (t Tag) Script() (Script, Confidence) {
 			sc, c = tag.ScriptID, Low
 		}
 	} else {
-		t, _ = (Deprecated | Macro).Canonicalize(t)
-		if tag, err := t.tag.Maximize(); err == nil && tag.ScriptID != sc {
+		tt, _ = canonicalize(Deprecated|Macro, tt)
+		if tag, err := tt.Maximize(); err == nil && tag.ScriptID != sc {
 			sc, c = tag.ScriptID, Low
 		}
 	}
@@ -283,15 +348,15 @@ func (t Tag) Script() (Script, Confidence) {
 // infer a most likely candidate from the context.
 // It uses a variant of CLDR's Add Likely Subtags algorithm. This is subject to change.
 func (t Tag) Region() (Region, Confidence) {
-	if t.region() != 0 {
-		return Region{t.region()}, Exact
+	if r := t.region(); r != 0 {
+		return Region{r}, Exact
 	}
-	tt := t.tag
+	tt := t.tag()
 	if tt, err := tt.Maximize(); err == nil {
 		return Region{tt.RegionID}, Low // TODO: differentiate between high and low.
 	}
-	t, _ = (Deprecated | Macro).Canonicalize(t)
-	if tag, err := t.tag.Maximize(); err == nil {
+	tt, _ = canonicalize(Deprecated|Macro, tt)
+	if tag, err := tt.Maximize(); err == nil {
 		return Region{tag.RegionID}, Low
 	}
 	return Region{_ZZ}, No // TODO: return world instead of undetermined?
@@ -300,8 +365,11 @@ func (t Tag) Region() (Region, Confidence) {
 // Variants returns the variants specified explicitly for this language tag.
 // or nil if no variant was specified.
 func (t Tag) Variants() []Variant {
+	if !t.mayHaveVariants() {
+		return nil
+	}
 	v := []Variant{}
-	x, str := "", t.tag.Variants()
+	x, str := "", t.tag().Variants()
 	for str != "" {
 		x, str = nextToken(str)
 		v = append(v, Variant{x})
@@ -313,7 +381,19 @@ func (t Tag) Variants() []Variant {
 // specific language are substituted with fields from the parent language.
 // The parent for a language may change for newer versions of CLDR.
 func (t Tag) Parent() Tag {
-	return Tag{t.tag.Parent()}
+	if t.full != nil {
+		return makeTag(t.full.Parent())
+	}
+	if t.language != t.locale {
+		// Simulate stripping -u-rg-xxxxxx
+		return Tag{language: t.language, locale: t.language}
+	}
+	// TODO: use parent lookup table once cycle from internal package is
+	// removed. Probably by internalizing the table and declaring this fast
+	// enough.
+	// lang := compactID(internal.Parent(uint16(t.language)))
+	lang, _ := compactIndex(t.language.tag().Parent())
+	return Tag{language: lang, locale: lang}
 }
 
 // returns token t and the rest of the string.
@@ -361,14 +441,20 @@ func (e Extension) Tokens() []string {
 // false for ok if t does not have the requested extension. The returned
 // extension will be invalid in this case.
 func (t Tag) Extension(x byte) (ext Extension, ok bool) {
-	e, ok := t.tag.Extension(x)
+	if !t.mayHaveExtensions() {
+		return Extension{}, false
+	}
+	e, ok := t.tag().Extension(x)
 	return Extension{e}, ok
 }
 
 // Extensions returns all extensions of t.
 func (t Tag) Extensions() []Extension {
+	if !t.mayHaveExtensions() {
+		return nil
+	}
 	e := []Extension{}
-	for _, ext := range t.tag.Extensions() {
+	for _, ext := range t.tag().Extensions() {
 		e = append(e, Extension{ext})
 	}
 	return e
@@ -379,7 +465,12 @@ func (t Tag) Extensions() []Extension {
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
 // TypeForKey will traverse the inheritance chain to get the correct value.
 func (t Tag) TypeForKey(key string) string {
-	return t.tag.TypeForKey(key)
+	if !t.mayHaveExtensions() {
+		if key != "rg" && key != "va" {
+			return ""
+		}
+	}
+	return t.tag().TypeForKey(key)
 }
 
 // SetTypeForKey returns a new Tag with the key set to type, where key and type
@@ -387,8 +478,8 @@ func (t Tag) TypeForKey(key string) string {
 // http://www.unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers.
 // An empty value removes an existing pair with the same key.
 func (t Tag) SetTypeForKey(key, value string) (Tag, error) {
-	tt, err := t.tag.SetTypeForKey(key, value)
-	return Tag{tt}, err
+	tt, err := t.tag().SetTypeForKey(key, value)
+	return makeTag(tt), err
 }
 
 // CompactIndex returns an index, where 0 <= index < NumCompactTags, for tags
@@ -397,6 +488,10 @@ func (t Tag) SetTypeForKey(key, value string) (Tag, error) {
 // index, exact will be false and the compact index will be returned for the
 // first match after repeatedly taking the Parent of t.
 func CompactIndex(t Tag) (index int, exact bool) {
+	return int(t.locale), t.language == t.locale && t.full == nil
+}
+
+func compactIndex(t language.Tag) (index compactID, exact bool) {
 	// TODO: perhaps give more frequent tags a lower index.
 	// TODO: we could make the indexes stable. This will excluded some
 	//       possibilities for optimization, so don't do this quite yet.
@@ -404,16 +499,19 @@ func CompactIndex(t Tag) (index int, exact bool) {
 
 	b, s, r := t.Raw()
 	switch {
-	case t.tag.HasString():
-		if t.private() {
+	case t.HasString():
+		if t.IsPrivateUse() {
 			// We have no entries for user-defined tags.
 			return 0, false
 		}
 		hasExtra := false
-		if t.tag.HasVariants() {
-			if t.tag.HasExtensions() {
+		if t.HasVariants() {
+			if t.HasExtensions() {
+				build := language.Builder{}
+				build.SetTag(t)
+				build.Private, build.Ext = "", nil
 				exact = false
-				t, _ = Raw.Compose(b, s, r, t.Variants())
+				t = build.Make()
 			}
 			hasExtra = true
 		} else if _, ok := t.Extension('u'); ok {
@@ -421,44 +519,48 @@ func CompactIndex(t Tag) (index int, exact bool) {
 			// Strip all but the 'va' entry.
 			old := t
 			variant := t.TypeForKey("va")
-			t, _ = Raw.Compose(b, s, r)
+			t = language.Tag{LangID: b, ScriptID: s, RegionID: r}
 			if variant != "" {
 				t, _ = t.SetTypeForKey("va", variant)
 				hasExtra = true
 			}
 			exact = old == t
+		} else {
+			exact = false
 		}
 		if hasExtra {
 			// We have some variants.
 			for i, s := range specialTags {
-				if s == t.tag {
-					return i + len(coreTags), exact
+				if s == t {
+					return compactID(i + len(coreTags)), exact
 				}
 			}
 			exact = false
 		}
 	}
-	if x, ok := getCoreIndex(t.tag); ok {
-		return int(x), exact
+	if x, ok := getCoreIndex(t); ok {
+		return x, exact
 	}
 	exact = false
-	if r.regionID != 0 && s.scriptID == 0 {
+	if r != 0 && s == 0 {
 		// Deal with cases where an extra script is inserted for the region.
-		t, _ := t.tag.Maximize()
+		t, _ := t.Maximize()
 		if x, ok := getCoreIndex(t); ok {
-			return int(x), exact
+			return x, exact
 		}
 	}
-	for t = t.Parent(); t != Und; t = t.Parent() {
+	for t = t.Parent(); t != root; t = t.Parent() {
 		// No variants specified: just compare core components.
 		// The key has the form lllssrrr, where l, s, and r are nibbles for
 		// respectively the langID, scriptID, and regionID.
-		if x, ok := getCoreIndex(t.tag); ok {
-			return int(x), exact
+		if x, ok := getCoreIndex(t); ok {
+			return x, exact
 		}
 	}
-	return int(0), exact
+	return 0, exact
 }
+
+var root = language.Tag{}
 
 // Base is an ISO 639 language code, used for encoding the base language
 // of a language tag.

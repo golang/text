@@ -45,13 +45,13 @@ func Parse(s string) (t Tag, err error) {
 func (c CanonType) Parse(s string) (t Tag, err error) {
 	tt, err := language.Parse(s)
 	if err != nil {
-		return Tag{tt}, err
+		return makeTag(tt), err
 	}
 	tt, changed := canonicalize(c, tt)
 	if changed {
 		tt.RemakeString()
 	}
-	return Tag{tt}, err
+	return makeTag(tt), err
 }
 
 // Compose creates a Tag from individual parts, which may be of type Tag, Base,
@@ -82,7 +82,7 @@ func (c CanonType) Compose(part ...interface{}) (t Tag, err error) {
 		return und, err
 	}
 	b.Tag, _ = canonicalize(c, b.Tag)
-	return Tag{b.Make()}, err
+	return makeTag(b.Make()), err
 }
 
 var errInvalidArgument = errors.New("invalid Extension or Variant")
@@ -104,18 +104,7 @@ func update(b *language.Builder, part ...interface{}) (err error) {
 	for _, x := range part {
 		switch v := x.(type) {
 		case Tag:
-			b.Tag.LangID = v.lang()
-			b.Tag.RegionID = v.region()
-			b.Tag.ScriptID = v.script()
-			// TODO: optimize
-			b.Variant = b.Variant[:0]
-			for _, vr := range v.Variants() {
-				b.Variant = append(b.Variant, vr.String())
-			}
-			b.Ext, b.Private = b.Ext[:0], ""
-			for _, e := range v.Extensions() {
-				b.AddExt(e.String())
-			}
+			b.SetTag(v.tag())
 		case Base:
 			b.Tag.LangID = v.langID
 		case Script:
@@ -173,7 +162,7 @@ func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
 			if !ok {
 				return nil, nil, err
 			}
-			t = Tag{tag: language.Tag{LangID: id}}
+			t = makeTag(language.Tag{LangID: id})
 		}
 
 		// Scan the optional weight.

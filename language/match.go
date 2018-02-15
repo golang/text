@@ -105,23 +105,22 @@ func (m *matcher) Match(want ...Tag) (t Tag, index int, c Confidence) {
 		// TODO: select first language tag based on script.
 	}
 	if w.RegionID != 0 && tt.RegionID != 0 && tt.RegionID.Contains(w.RegionID) {
-		t, _ := Raw.Compose(Tag{tt}, Region{w.RegionID})
-		tt = t.tag
+		tt.RegionID = w.RegionID
+		tt.RemakeString()
 	}
 	// Copy options from the user-provided tag into the result tag. This is hard
 	// to do after the fact, so we do it here.
 	// TODO: add in alternative variants to -u-va-.
 	// TODO: add preferred region to -u-rg-.
 	if e := w.Extensions(); len(e) > 0 {
-		// TODO: improve performance.
-		ext := make([]Extension, len(e))
-		for _, ee := range e {
-			ext = append(ext, Extension{ee})
+		b := language.Builder{}
+		b.SetTag(tt)
+		for _, e := range e {
+			b.AddExt(e)
 		}
-		t, _ := Raw.Compose(Tag{tt}, ext)
-		tt = t.tag
+		tt = b.Make()
 	}
-	return Tag{tt}, index, c
+	return makeTag(tt), index, c
 }
 
 // ErrMissingLikelyTagsData indicates no information was available
@@ -375,16 +374,18 @@ func newMatcher(supported []Tag, options []MatchOption) *matcher {
 	// Add supported languages to the index. Add exact matches first to give
 	// them precedence.
 	for i, tag := range supported {
-		pair, _ := makeHaveTag(tag.tag, i)
-		m.header(tag.tag.LangID).addIfNew(pair, true)
+		tt := tag.tag()
+		pair, _ := makeHaveTag(tt, i)
+		m.header(tt.LangID).addIfNew(pair, true)
 		m.supported = append(m.supported, &pair)
 	}
-	m.default_ = m.header(supported[0].tag.LangID).haveTags[0]
+	m.default_ = m.header(supported[0].lang()).haveTags[0]
 	// Keep these in two different loops to support the case that two equivalent
 	// languages are distinguished, such as iw and he.
 	for i, tag := range supported {
-		pair, max := makeHaveTag(tag.tag, i)
-		if max != tag.tag.LangID {
+		tt := tag.tag()
+		pair, max := makeHaveTag(tt, i)
+		if max != tt.LangID {
 			m.header(max).addIfNew(pair, true)
 		}
 	}
@@ -446,7 +447,7 @@ func newMatcher(supported []Tag, options []MatchOption) *matcher {
 func (m *matcher) getBest(want ...Tag) (got *haveTag, orig language.Tag, c Confidence) {
 	best := bestMatch{}
 	for i, ww := range want {
-		w := ww.tag
+		w := ww.tag()
 		var max language.Tag
 		// Check for exact match first.
 		h := m.index[w.LangID]
@@ -486,7 +487,7 @@ func (m *matcher) getBest(want ...Tag) (got *haveTag, orig language.Tag, c Confi
 		}
 		pin := true
 		for _, t := range want[i+1:] {
-			if w.LangID == t.tag.LangID {
+			if w.LangID == t.lang() {
 				pin = false
 				break
 			}
@@ -506,7 +507,7 @@ func (m *matcher) getBest(want ...Tag) (got *haveTag, orig language.Tag, c Confi
 	}
 	if best.conf <= No {
 		if len(want) != 0 {
-			return nil, want[0].tag, No
+			return nil, want[0].tag(), No
 		}
 		return nil, language.Tag{}, No
 	}

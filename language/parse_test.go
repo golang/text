@@ -179,14 +179,14 @@ func partChecks(t *testing.T, f func(*parseTest) (Tag, bool)) {
 		if r, _ := language.ParseRegion(tt.region); r != tag.region() {
 			t.Errorf("%d: region was %q; want %q", i, tag.region(), r)
 		}
-		v := tag.tag.Variants()
+		v := tag.tag().Variants()
 		if v != "" {
 			v = v[1:]
 		}
 		if v != tt.variants {
 			t.Errorf("%d: variants was %q; want %q", i, v, tt.variants)
 		}
-		if e := strings.Join(tag.tag.Extensions(), "-"); e != tt.ext {
+		if e := strings.Join(tag.tag().Extensions(), "-"); e != tt.ext {
 			t.Errorf("%d: extensions were %q; want %q", i, e, tt.ext)
 		}
 	}

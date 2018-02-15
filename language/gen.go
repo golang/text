@@ -97,16 +97,7 @@ func (b *builder) writeConsts(f func(string) int, values ...string) {
 // TODO: region inclusion data will probably not be use used in future matchers.
 
 var langConsts = []string{
-	"af", "am", "ar", "az", "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es",
-	"et", "fa", "fi", "fil", "fr", "gu", "he", "hi", "hr", "hu", "hy", "id", "is",
-	"it", "ja", "ka", "kk", "km", "kn", "ko", "ky", "lo", "lt", "lv", "mk", "ml",
-	"mn", "mo", "mr", "ms", "mul", "my", "nb", "ne", "nl", "no", "pa", "pl", "pt",
-	"ro", "ru", "sh", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta", "te", "th",
-	"tl", "tn", "tr", "uk", "ur", "uz", "vi", "zh", "zu",
-
-	// constants for grandfathered tags (if not already defined)
-	"jbo", "ami", "bnn", "hak", "tlh", "lb", "nv", "pwn", "tao", "tay", "tsu",
-	"nn", "sfb", "vgt", "sgg", "cmn", "nan", "hsn",
+	"de", "en", "fr", "it", "mo", "no", "nb", "pt", "sh", "mul", "und",
 }
 
 var scriptConsts = []string{

@@ -172,7 +172,7 @@ func TestRegionGroups(t *testing.T) {
 			t.Errorf("scripts differ: %q vs %q", aScript, bScript)
 			continue
 		}
-		d, _ := regionGroupDist(a.tag.RegionID, b.tag.RegionID, aScript.scriptID, a.tag.LangID)
+		d, _ := regionGroupDist(a.region(), b.region(), aScript.scriptID, a.lang())
 		if d != tc.distance {
 			t.Errorf("got %q; want %q", d, tc.distance)
 		}
@@ -189,7 +189,8 @@ func TestIsParadigmLocale(t *testing.T) {
 		"es-419": true,
 	}
 	for str, want := range testCases {
-		tag := Make(str).tag
+		tt := Make(str)
+		tag := tt.tag()
 		got := isParadigmLocale(tag.LangID, tag.RegionID)
 		if got != want {
 			t.Errorf("isPL(%q) = %v; want %v", str, got, want)

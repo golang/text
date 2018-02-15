@@ -124,7 +124,7 @@ func (s *coverage) BaseLanguages() []Base {
 		}
 		a := make([]Base, len(tags))
 		for i, t := range tags {
-			a[i] = Base{language.Language(t.tag.LangID)}
+			a[i] = Base{language.Language(t.lang())}
 		}
 		sort.Sort(bases(a))
 		k := 0

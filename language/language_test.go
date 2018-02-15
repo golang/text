@@ -32,7 +32,7 @@ func TestIsRoot(t *testing.T) {
 }
 
 func TestEquality(t *testing.T) {
-	for i, tt := range parseTests()[48:49] {
+	for i, tt := range parseTests() {
 		s := tt.in
 		tag := Make(s)
 		t1 := Make(tag.String())
@@ -54,26 +54,26 @@ func TestCompactIndex(t *testing.T) {
 	}{
 		// TODO: these values will change with each CLDR update. This issue
 		// will be solved if we decide to fix the indexes.
-		{"und", xund, true},
-		{"ca-ES-valencia", xcaESvalencia, true},
-		{"ca-ES-valencia-u-va-posix", xcaESvalencia, false},
-		{"ca-ES-valencia-u-co-phonebk", xcaESvalencia, false},
-		{"ca-ES-valencia-u-co-phonebk-va-posix", xcaESvalencia, false},
+		{"und", undIndex, true},
+		{"ca-ES-valencia", caESvalenciaIndex, true},
+		{"ca-ES-valencia-u-va-posix", caESvalenciaIndex, false},
+		{"ca-ES-valencia-u-co-phonebk", caESvalenciaIndex, false},
+		{"ca-ES-valencia-u-co-phonebk-va-posix", caESvalenciaIndex, false},
 		{"x-klingon", 0, false},
-		{"en-US", xenUS, true},
-		{"en-US-u-va-posix", xenUSuvaposix, true},
-		{"en", xen, true},
-		{"en-u-co-phonebk", xen, false},
-		{"en-001", xen001, true},
-		{"zh-Hant-HK", xzhHantHK, true},
-		{"zh-HK", xzhHantHK, false}, // maximized to zh-Hant-HK
-		{"nl-Beng", 0, false},       // parent skips script
-		{"nl-NO", xnl, false},       // region is ignored
-		{"nl-Latn-NO", xnl, false},
-		{"nl-Latn-NO-u-co-phonebk", xnl, false},
-		{"nl-Latn-NO-valencia", xnl, false},
-		{"nl-Latn-NO-oxendict", xnl, false},
-		{"sh", xsh, true}, // From plural rules.
+		{"en-US", enUSIndex, true},
+		{"en-US-u-va-posix", enUSuvaposixIndex, true},
+		{"en", enIndex, true},
+		{"en-u-co-phonebk", enIndex, false},
+		{"en-001", en001Index, true},
+		{"zh-Hant-HK", zhHantHKIndex, true},
+		{"zh-HK", zhHantHKIndex, false}, // maximized to zh-Hant-HK
+		{"nl-Beng", 0, false},           // parent skips script
+		{"nl-NO", nlIndex, false},       // region is ignored
+		{"nl-Latn-NO", nlIndex, false},
+		{"nl-Latn-NO-u-co-phonebk", nlIndex, false},
+		{"nl-Latn-NO-valencia", nlIndex, false},
+		{"nl-Latn-NO-oxendict", nlIndex, false},
+		{"sh", shIndex, true}, // From plural rules.
 	}
 	for _, tt := range tests {
 		x, ok := CompactIndex(Raw.MustParse(tt.tag))
