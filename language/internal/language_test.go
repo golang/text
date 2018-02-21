@@ -34,7 +34,7 @@ func TestIsRoot(t *testing.T) {
 }
 
 func TestEquality(t *testing.T) {
-	for i, tt := range parseTests()[48:49] {
+	for i, tt := range parseTests() {
 		s := tt.in
 		tag := Make(s)
 		t1 := Make(tag.String())

@@ -256,43 +256,45 @@ func TestParseExtensions(t *testing.T) {
 }
 
 // partChecks runs checks for each part by calling the function returned by f.
-func partChecks(t *testing.T, f func(*parseTest) (Tag, bool)) {
+func partChecks(t *testing.T, f func(*testing.T, *parseTest) (Tag, bool)) {
 	for i, tt := range parseTests() {
-		tag, skip := f(&tt)
-		if skip {
-			continue
-		}
-		if l, _ := getLangID(b(tt.lang)); l != tag.LangID {
-			t.Errorf("%d: lang was %q; want %q", i, tag.LangID, l)
-		}
-		if sc, _ := getScriptID(script, b(tt.script)); sc != tag.ScriptID {
-			t.Errorf("%d: script was %q; want %q", i, tag.ScriptID, sc)
-		}
-		if r, _ := getRegionID(b(tt.region)); r != tag.RegionID {
-			t.Errorf("%d: region was %q; want %q", i, tag.RegionID, r)
-		}
-		if tag.str == "" {
-			continue
-		}
-		p := int(tag.pVariant)
-		if p < int(tag.pExt) {
-			p++
-		}
-		if s, g := tag.str[p:tag.pExt], tt.variants; s != g {
-			t.Errorf("%d: variants was %q; want %q", i, s, g)
-		}
-		p = int(tag.pExt)
-		if p > 0 && p < len(tag.str) {
-			p++
-		}
-		if s, g := (tag.str)[p:], tt.ext; s != g {
-			t.Errorf("%d: extensions were %q; want %q", i, s, g)
-		}
+		t.Run(tt.in, func(t *testing.T) {
+			tag, skip := f(t, &tt)
+			if skip {
+				return
+			}
+			if l, _ := getLangID(b(tt.lang)); l != tag.LangID {
+				t.Errorf("%d: lang was %q; want %q", i, tag.LangID, l)
+			}
+			if sc, _ := getScriptID(script, b(tt.script)); sc != tag.ScriptID {
+				t.Errorf("%d: script was %q; want %q", i, tag.ScriptID, sc)
+			}
+			if r, _ := getRegionID(b(tt.region)); r != tag.RegionID {
+				t.Errorf("%d: region was %q; want %q", i, tag.RegionID, r)
+			}
+			if tag.str == "" {
+				return
+			}
+			p := int(tag.pVariant)
+			if p < int(tag.pExt) {
+				p++
+			}
+			if s, g := tag.str[p:tag.pExt], tt.variants; s != g {
+				t.Errorf("%d: variants was %q; want %q", i, s, g)
+			}
+			p = int(tag.pExt)
+			if p > 0 && p < len(tag.str) {
+				p++
+			}
+			if s, g := (tag.str)[p:], tt.ext; s != g {
+				t.Errorf("%d: extensions were %q; want %q", i, s, g)
+			}
+		})
 	}
 }
 
 func TestParseTag(t *testing.T) {
-	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
+	partChecks(t, func(t *testing.T, tt *parseTest) (id Tag, skip bool) {
 		if strings.HasPrefix(tt.in, "x-") || tt.rewrite {
 			return Tag{}, true
 		}
@@ -306,7 +308,7 @@ func TestParseTag(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
+	partChecks(t, func(t *testing.T, tt *parseTest) (id Tag, skip bool) {
 		id, err := Parse(tt.in)
 		ext := ""
 		if id.str != "" {
