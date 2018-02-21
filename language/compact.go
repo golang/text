@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/text/language/internal"
+	"golang.org/x/text/internal/language"
 )
 
 type compactID uint16

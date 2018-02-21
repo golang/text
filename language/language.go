@@ -12,7 +12,7 @@ package language
 import (
 	"strings"
 
-	"golang.org/x/text/language/internal"
+	"golang.org/x/text/internal/language"
 )
 
 // Tag represents a BCP 47 language tag. It is used to specify an instance of a

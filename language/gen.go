@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"golang.org/x/text/internal/gen"
-	"golang.org/x/text/language/internal"
+	"golang.org/x/text/internal/language"
 	"golang.org/x/text/unicode/cldr"
 )
 
@@ -38,7 +38,7 @@ func main() {
 	w := gen.NewCodeWriter()
 	defer w.WriteGoFile("tables.go", "language")
 
-	fmt.Fprintln(w, `import "golang.org/x/text/language/internal"`)
+	fmt.Fprintln(w, `import "golang.org/x/text/internal/language"`)
 
 	b := newBuilder(w)
 	gen.WriteCLDRVersion(w)

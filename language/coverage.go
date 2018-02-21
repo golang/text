@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"sort"
 
-	"golang.org/x/text/language/internal"
+	"golang.org/x/text/internal/language"
 )
 
 // The Coverage interface is used to define the level of coverage of an

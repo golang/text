@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"golang.org/x/text/language/internal"
+	"golang.org/x/text/internal/language"
 )
 
 // equalTags compares language, script and region subtags only.

@@ -230,8 +230,7 @@ func TestIsCountry(t *testing.T) {
 		{"XK", true},
 	}
 	for i, tt := range tests {
-		reg, _ := getRegionID([]byte(tt.reg))
-		r := reg
+		r, _ := getRegionID([]byte(tt.reg))
 		if r.IsCountry() != tt.country {
 			t.Errorf("%d: IsCountry(%s) was %v; want %v", i, tt.reg, r.IsCountry(), tt.country)
 		}
@@ -257,8 +256,7 @@ func TestIsGroup(t *testing.T) {
 		{"XK", false},
 	}
 	for i, tt := range tests {
-		reg, _ := getRegionID([]byte(tt.reg))
-		r := reg
+		r, _ := getRegionID([]byte(tt.reg))
 		if r.IsGroup() != tt.group {
 			t.Errorf("%d: IsGroup(%s) was %v; want %v", i, tt.reg, r.IsGroup(), tt.group)
 		}
