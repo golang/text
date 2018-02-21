@@ -46,37 +46,83 @@ func TestEquality(t *testing.T) {
 	}
 }
 
-func TestCompactIndex(t *testing.T) {
-	tests := []struct {
-		tag   string
-		index compactID
-		ok    bool
-	}{
-		// TODO: these values will change with each CLDR update. This issue
-		// will be solved if we decide to fix the indexes.
-		{"und", undIndex, true},
-		{"ca-ES-valencia", caESvalenciaIndex, true},
-		{"ca-ES-valencia-u-va-posix", caESvalenciaIndex, false},
-		{"ca-ES-valencia-u-co-phonebk", caESvalenciaIndex, false},
-		{"ca-ES-valencia-u-co-phonebk-va-posix", caESvalenciaIndex, false},
-		{"x-klingon", 0, false},
-		{"en-US", enUSIndex, true},
-		{"en-US-u-va-posix", enUSuvaposixIndex, true},
-		{"en", enIndex, true},
-		{"en-u-co-phonebk", enIndex, false},
-		{"en-001", en001Index, true},
-		{"zh-Hant-HK", zhHantHKIndex, true},
-		{"zh-HK", zhHantHKIndex, false}, // maximized to zh-Hant-HK
-		{"nl-Beng", 0, false},           // parent skips script
-		{"nl-NO", nlIndex, false},       // region is ignored
-		{"nl-Latn-NO", nlIndex, false},
-		{"nl-Latn-NO-u-co-phonebk", nlIndex, false},
-		{"nl-Latn-NO-valencia", nlIndex, false},
-		{"nl-Latn-NO-oxendict", nlIndex, false},
-		{"sh", shIndex, true}, // From plural rules.
+func TestString(t *testing.T) {
+	tests := []string{
+		"no-u-rg-dkzzzz",
 	}
+	for i, s := range tests {
+		tag := Make(s)
+		if tag.String() != s {
+			t.Errorf("%d:%s: got %s: want %s (%#v)", i, s, tag.String(), s, tag)
+		}
+	}
+}
+
+type compactTest struct {
+	tag   string
+	index compactID
+	ok    bool
+}
+
+var compactTests = []compactTest{
+	// TODO: these values will change with each CLDR update. This issue
+	// will be solved if we decide to fix the indexes.
+	{"und", undIndex, true},
+	{"ca-ES-valencia", caESvalenciaIndex, true},
+	{"ca-ES-valencia-u-va-posix", caESvalenciaIndex, false},
+	{"ca-ES-valencia-u-co-phonebk", caESvalenciaIndex, false},
+	{"ca-ES-valencia-u-co-phonebk-va-posix", caESvalenciaIndex, false},
+	{"x-klingon", 0, false},
+	{"en-US", enUSIndex, true},
+	{"en-US-u-va-posix", enUSuvaposixIndex, true},
+	{"en", enIndex, true},
+	{"en-u-co-phonebk", enIndex, false},
+	{"en-001", en001Index, true},
+	{"zh-Hant-HK", zhHantHKIndex, true},
+	{"zh-HK", zhHantHKIndex, false}, // maximized to zh-Hant-HK
+	{"nl-Beng", 0, false},           // parent skips script
+	{"nl-NO", nlIndex, false},       // region is ignored
+	{"nl-Latn-NO", nlIndex, false},
+	{"nl-Latn-NO-u-co-phonebk", nlIndex, false},
+	{"nl-Latn-NO-valencia", nlIndex, false},
+	{"nl-Latn-NO-oxendict", nlIndex, false},
+	{"sh", shIndex, true}, // From plural rules.
+}
+
+func TestCompactIndex(t *testing.T) {
+	tests := append(compactTests, []compactTest{
+		{"en-GB", enGBIndex, true},
+		{"en-GB-u-rg-uszzzz", enGBIndex, true},
+		{"en-GB-u-rg-USZZZZ", enGBIndex, true},
+		{"en-GB-u-rg-uszzzz-va-posix", enGBIndex, false},
+		{"en-GB-u-co-phonebk-rg-uszzzz", enGBIndex, false},
+		// Invalid region specifications are ignored.
+		{"en-GB-u-rg-usz-va-posix", enGBIndex, false},
+		{"en-GB-u-co-phonebk-rg-usz", enGBIndex, false},
+	}...)
 	for _, tt := range tests {
 		x, ok := CompactIndex(Raw.MustParse(tt.tag))
+		if compactID(x) != tt.index || ok != tt.ok {
+			t.Errorf("%s: got %d, %v; want %d %v", tt.tag, x, ok, tt.index, tt.ok)
+		}
+	}
+}
+
+func TestRegionalCompactIndex(t *testing.T) {
+	tests := append(compactTests, []compactTest{
+		{"en-GB", enGBIndex, true},
+		{"en-GB-u-rg-uszzzz", enUSIndex, true},
+		{"en-GB-u-rg-USZZZZ", enUSIndex, true},
+		// TODO: use different exact values for language and regional tag?
+		{"en-GB-u-rg-uszzzz-va-posix", enUSuvaposixIndex, false},
+		{"en-GB-u-co-phonebk-rg-uszzzz-va-posix", enUSuvaposixIndex, false},
+		{"en-GB-u-co-phonebk-rg-uszzzz", enUSIndex, false},
+		// Invalid region specifications are ignored.
+		{"en-GB-u-rg-usz-va-posix", enGBIndex, false},
+		{"en-GB-u-co-phonebk-rg-usz", enGBIndex, false},
+	}...)
+	for _, tt := range tests {
+		x, ok := regionalCompactIndex(Raw.MustParse(tt.tag))
 		if compactID(x) != tt.index || ok != tt.ok {
 			t.Errorf("%s: got %d, %v; want %d %v", tt.tag, x, ok, tt.index, tt.ok)
 		}
@@ -99,6 +145,12 @@ func TestMarshal(t *testing.T) {
 		"en-u-co-phonebk",
 		"en-001",
 		"sh",
+
+		"en-GB-u-rg-uszzzz",
+		"en-GB-u-rg-uszzzz-va-posix",
+		"en-GB-u-co-phonebk-rg-uszzzz",
+		// Invalid tags should also roundtrip.
+		"en-GB-u-co-phonebk-rg-uszz",
 	}
 	for _, tc := range testCases {
 		var tag Tag
@@ -532,6 +584,16 @@ func TestCanonicalize(t *testing.T) {
 		{"und-Qaai", "und-Zinh", DeprecatedScript},
 		{"und-Qaai", "und-Qaai", DeprecatedBase},
 		{"drh", "mn", All}, // drh -> khk -> mn
+
+		{"en-GB-u-rg-uszzzz", "en-GB-u-rg-uszzzz", Raw},
+		{"en-GB-u-rg-USZZZZ", "en-GB-u-rg-uszzzz", Raw},
+		// TODO: use different exact values for language and regional tag?
+		{"en-GB-u-rg-uszzzz-va-posix", "en-GB-u-rg-uszzzz-va-posix", Raw},
+		{"en-GB-u-rg-uszzzz-co-phonebk", "en-GB-u-co-phonebk-rg-uszzzz", Raw},
+		// Invalid region specifications are left as is.
+		{"en-GB-u-rg-usz", "en-GB-u-rg-usz", Raw},
+		{"en-GB-u-rg-usz-va-posix", "en-GB-u-rg-usz-va-posix", Raw},
+		{"en-GB-u-rg-usz-co-phonebk", "en-GB-u-co-phonebk-rg-usz", Raw},
 	}
 	for i, tt := range tests {
 		in, _ := Raw.Parse(tt.in)
@@ -558,6 +620,8 @@ func TestTypeForKey(t *testing.T) {
 		{"co", "en-u-co-phonebk", "phonebk"},
 		{"co", "en-u-co-phonebk-cu-aud", "phonebk"},
 		{"co", "x-foo-u-co-phonebk", ""},
+		{"va", "en-US-u-va-posix", "posix"},
+		{"rg", "en-u-rg-gbzzzz", "gbzzzz"},
 		{"nu", "en-u-co-phonebk-nu-arabic", "arabic"},
 		{"kc", "cmn-u-co-stroke", ""},
 	}
@@ -656,6 +720,19 @@ func TestParent(t *testing.T) {
 		{"pt-MZ", "pt-PT"},
 		{"pt-ST", "pt-PT"},
 		{"pt-TL", "pt-PT"},
+
+		{"en-GB-u-co-phonebk-rg-uszzzz", "en-GB"},
+		{"en-GB-u-rg-uszzzz", "en-GB"},
+		{"en-US-u-va-posix", "en-US"},
+
+		// Difference between language and regional tag.
+		{"ca-ES-valencia", "ca-ES"},
+		{"ca-ES-valencia-u-rg-ptzzzz", "ca-ES"},
+		{"en-US-u-va-variant", "en-US"},
+		{"en-u-va-variant", "en"},
+		{"en-u-rg-gbzzzz", "en"},
+		{"en-US-u-rg-gbzzzz", "en-US"},
+		{"nl-US-u-rg-gbzzzz", "nl-US"},
 	}
 	for _, tt := range tests {
 		tag := Raw.MustParse(tt.in)

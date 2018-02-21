@@ -74,10 +74,10 @@ func Compose(part ...interface{}) (t Tag, err error) {
 // than once, the latter will overwrite the former. Variants and Extensions are
 // accumulated, but if two extensions of the same type are passed, the latter
 // will replace the former. For -u extensions, though, the key-type pairs are
-// added, where later values overwrite older ones. A Tag overwrites all former values and typically
-// only makes sense as the first argument. The resulting tag is returned after
-// canonicalizing using CanonType c. If one or more errors are encountered,
-// one of the errors is returned.
+// added, where later values overwrite older ones. A Tag overwrites all former
+// values and typically only makes sense as the first argument. The resulting
+// tag is returned after canonicalizing using CanonType c. If one or more errors
+// are encountered, one of the errors is returned.
 func (c CanonType) Compose(part ...interface{}) (t Tag, err error) {
 	var b language.Builder
 	if err = update(&b, part...); err != nil {

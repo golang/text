@@ -40,13 +40,15 @@ func TestCompliance(t *testing.T) {
 				gotCombined, index, conf := NewMatcher(supported).Match(desired...)
 
 				gotMatch := supported[index]
-				wantMatch := mk(p.String(2))
+				wantMatch := Raw.Make(p.String(2)) // wantMatch may be null
 				if gotMatch != wantMatch {
 					t.Fatalf("match: got %q; want %q (%v)", gotMatch, wantMatch, conf)
 				}
-				wantCombined, err := Raw.Parse(p.String(3))
-				if err == nil && gotCombined != wantCombined {
-					t.Errorf("combined: got %q; want %q (%v)", gotCombined, wantCombined, conf)
+				if tag := strings.TrimSpace(p.String(3)); tag != "" {
+					wantCombined := Raw.MustParse(tag)
+					if err == nil && gotCombined != wantCombined {
+						t.Errorf("combined: got %q; want %q (%v)", gotCombined, wantCombined, conf)
+					}
 				}
 			})
 		})
@@ -68,7 +70,7 @@ var skip = map[string]bool{
 	// which is better.
 
 	// Inconsistencies in combined. I think the Go approach is more appropriate.
-	// We could use -u-rg- and -u-va- as alternative.
+	// We could use -u-rg- as alternative.
 	"und,fr/fr-BE-fonipa":              true, // combined: got "fr"; want "fr-BE-fonipa"
 	"und,fr-CA/fr-BE-fonipa":           true, // combined: got "fr-CA"; want "fr-BE-fonipa"
 	"und,fr-fonupa/fr-BE-fonipa":       true, // combined: got "fr-fonupa"; want "fr-BE-fonipa"

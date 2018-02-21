@@ -6,6 +6,7 @@ package language
 
 import (
 	"errors"
+	"strings"
 
 	"golang.org/x/text/language/internal"
 )
@@ -104,9 +105,14 @@ func (m *matcher) Match(want ...Tag) (t Tag, index int, c Confidence) {
 		}
 		// TODO: select first language tag based on script.
 	}
-	if w.RegionID != 0 && tt.RegionID != 0 && tt.RegionID.Contains(w.RegionID) {
-		tt.RegionID = w.RegionID
-		tt.RemakeString()
+	if w.RegionID != tt.RegionID && w.RegionID != 0 {
+		if w.RegionID != 0 && tt.RegionID != 0 && tt.RegionID.Contains(w.RegionID) {
+			tt.RegionID = w.RegionID
+			tt.RemakeString()
+		} else if r := w.RegionID.String(); len(r) == 2 {
+			// TODO: also filter macro and deprecated.
+			tt, _ = tt.SetTypeForKey("rg", strings.ToLower(r)+"zzzz")
+		}
 	}
 	// Copy options from the user-provided tag into the result tag. This is hard
 	// to do after the fact, so we do it here.

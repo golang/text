@@ -23,7 +23,7 @@ func TestMatchLanguage(t *testing.T) {
 		want string
 	}{{
 		args: "de-CH",
-		want: "de",
+		want: "de-u-rg-chzzzz",
 	}, {
 		args: "bn-u-nu-latn|en-US,en;q=0.9,de;q=0.8,nl;q=0.7",
 		want: "bn-u-nu-latn",

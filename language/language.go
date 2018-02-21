@@ -30,10 +30,11 @@ type fullTag interface {
 }
 
 func makeTag(t language.Tag) (tag Tag) {
-	if region := t.TypeForKey("rg"); len(region) > 2 {
+	if region := t.TypeForKey("rg"); len(region) == 6 && region[2:] == "zzzz" {
 		if r, err := language.ParseRegion(region[:2]); err == nil {
 			tFull := t
 			t, _ = t.SetTypeForKey("rg", "")
+			// TODO: should we not consider "va" for the language tag?
 			var exact1, exact2 bool
 			tag.language, exact1 = compactIndex(t)
 			t.RegionID = r
@@ -60,7 +61,7 @@ func (t *Tag) tag() language.Tag {
 	tag := t.language.tag()
 	if t.language != t.locale {
 		loc := t.locale.tag()
-		tag.SetTypeForKey("rg", strings.ToLower(loc.RegionID.String())+"zzzz")
+		tag, _ = tag.SetTypeForKey("rg", strings.ToLower(loc.RegionID.String())+"zzzz")
 	}
 	return tag
 }
@@ -483,12 +484,56 @@ func (t Tag) SetTypeForKey(key, value string) (Tag, error) {
 }
 
 // CompactIndex returns an index, where 0 <= index < NumCompactTags, for tags
-// for which data exists in the text repository. The index will change over time
+// for which data exists in the text repository.The index will change over time
 // and should not be stored in persistent storage. If t does not match a compact
 // index, exact will be false and the compact index will be returned for the
 // first match after repeatedly taking the Parent of t.
 func CompactIndex(t Tag) (index int, exact bool) {
-	return int(t.locale), t.language == t.locale && t.full == nil
+	return int(t.language), t.full == nil
+}
+
+// TODO: make these functions and methods public once we settle on the API and
+//
+
+// regionalCompactIndex returns the CompactIndex for the regional variant of
+// this tag. This index is used to indicate region-specific overrides, such as
+// default currency, default calendar and week data, default time cycle, and
+// default measurement system and unit preferences.
+//
+// For instance, the tag en-GB-u-rg-uszzzz specifies British English with US
+// settings for currency, number formatting, etc. The CompactIndex for this tag
+// will be that for en-GB, while the regionalCompactIndex will be the one
+// corresponding to en-US.
+func regionalCompactIndex(t Tag) (index int, exact bool) {
+	return int(t.locale), t.full == nil
+}
+
+// languageTag returns t stripped of regional variant indicators.
+//
+// At the moment this means it is stripped of a regional and variant subtag "rg"
+// and "va" in the "u" extension.
+func (t Tag) languageTag() Tag {
+	if t.full == nil {
+		return Tag{language: t.language, locale: t.language}
+	}
+	tt := t.tag()
+	tt.SetTypeForKey("rg", "")
+	tt.SetTypeForKey("va", "")
+	return makeTag(tt)
+}
+
+// regionalTag returns the regional variant of the tag.
+//
+// At the moment this means that the region is set from the regional subtag
+// "rg" in the "u" extension.
+func (t Tag) regionalTag() Tag {
+	rt := Tag{language: t.locale, locale: t.locale}
+	if t.full == nil {
+		return rt
+	}
+	t, _ = Raw.Compose(rt, t.Variants(), t.Extensions())
+	t, _ = t.SetTypeForKey("rg", "")
+	return t
 }
 
 func compactIndex(t language.Tag) (index compactID, exact bool) {

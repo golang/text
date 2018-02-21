@@ -36,6 +36,11 @@ func parseTests() []parseTest {
 		{in: "root", lang: "und"},
 		{in: "und", lang: "und"},
 		{in: "en", lang: "en"},
+
+		{in: "en-US-u-va-posix", lang: "en", region: "US", ext: "u-va-posix"},
+		{in: "ca-ES-valencia", lang: "ca", region: "ES", variants: "valencia"},
+		{in: "en-US-u-rg-gbzzzz", lang: "en", region: "US", ext: "u-rg-gbzzzz"},
+
 		{in: "xy", lang: "und", invalid: true},
 		{in: "en-ZY", lang: "en", invalid: true},
 		{in: "gsw", lang: "gsw"},
