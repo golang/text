@@ -59,10 +59,11 @@ func (c CanonType) Parse(s string) (t Tag, err error) {
 // Base, Script or Region or slice of type Variant or Extension is passed more
 // than once, the latter will overwrite the former. Variants and Extensions are
 // accumulated, but if two extensions of the same type are passed, the latter
-// will replace the former. A Tag overwrites all former values and typically
-// only makes sense as the first argument. The resulting tag is returned after
-// canonicalizing using the Default CanonType. If one or more errors are
-// encountered, one of the errors is returned.
+// will replace the former. For -u extensions, though, the key-type pairs are
+// added, where later values overwrite older ones. A Tag overwrites all former
+// values and typically only makes sense as the first argument. The resulting
+// tag is returned after canonicalizing using the Default CanonType. If one or
+// more errors are encountered, one of the errors is returned.
 func Compose(part ...interface{}) (t Tag, err error) {
 	return Default.Compose(part...)
 }
@@ -72,7 +73,8 @@ func Compose(part ...interface{}) (t Tag, err error) {
 // Base, Script or Region or slice of type Variant or Extension is passed more
 // than once, the latter will overwrite the former. Variants and Extensions are
 // accumulated, but if two extensions of the same type are passed, the latter
-// will replace the former. A Tag overwrites all former values and typically
+// will replace the former. For -u extensions, though, the key-type pairs are
+// added, where later values overwrite older ones. A Tag overwrites all former values and typically
 // only makes sense as the first argument. The resulting tag is returned after
 // canonicalizing using CanonType c. If one or more errors are encountered,
 // one of the errors is returned.
@@ -88,19 +90,6 @@ func (c CanonType) Compose(part ...interface{}) (t Tag, err error) {
 var errInvalidArgument = errors.New("invalid Extension or Variant")
 
 func update(b *language.Builder, part ...interface{}) (err error) {
-	replace := func(l *[]string, s string, eq func(a, b string) bool) bool {
-		if s == "" {
-			b.Err = errInvalidArgument
-			return true
-		}
-		for i, v := range *l {
-			if eq(v, s) {
-				(*l)[i] = s
-				return true
-			}
-		}
-		return false
-	}
 	for _, x := range part {
 		switch v := x.(type) {
 		case Tag:
@@ -112,26 +101,32 @@ func update(b *language.Builder, part ...interface{}) (err error) {
 		case Region:
 			b.Tag.RegionID = v.regionID
 		case Variant:
-			if !replace(&b.Variant, v.variant, func(a, b string) bool { return a == b }) {
-				b.Variant = append(b.Variant, v.variant)
+			if v.variant == "" {
+				err = errInvalidArgument
+				break
 			}
+			b.AddVariant(v.variant)
 		case Extension:
-			if !replace(&b.Ext, v.s, func(a, b string) bool { return a[0] == b[0] }) {
-				b.AddExt(v.s)
+			if v.s == "" {
+				err = errInvalidArgument
+				break
 			}
+			b.SetExt(v.s)
 		case []Variant:
-			b.Variant = nil
-			for _, x := range v {
-				update(b, x)
+			b.ClearVariants()
+			for _, v := range v {
+				b.AddVariant(v.variant)
 			}
 		case []Extension:
-			b.Ext, b.Private = nil, ""
+			b.ClearExtensions()
 			for _, e := range v {
-				update(b, e)
+				b.SetExt(e.s)
 			}
 		// TODO: support parsing of raw strings based on morphology or just extensions?
 		case error:
-			err = v
+			if v != nil {
+				err = v
+			}
 		}
 	}
 	return

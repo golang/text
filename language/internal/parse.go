@@ -34,6 +34,10 @@ func isAlphaNum(s []byte) bool {
 // TODO: return the position at which the syntax error occurred?
 var ErrSyntax = errors.New("language: tag is not well-formed")
 
+// ErrDuplicateKey is returned when a tag contains the same key twice with
+// different values in the -u section.
+var ErrDuplicateKey = errors.New("language: different values for same key in -u extension")
+
 // ValueError is returned by any of the parsing functions when the
 // input is well-formed but the respective subtag is not recognized
 // as a valid value.
@@ -164,7 +168,6 @@ func (s *scanner) gobble(e error) {
 
 // deleteRange removes the given range from s.b before the current token.
 func (s *scanner) deleteRange(start, end int) {
-	s.setError(ErrSyntax)
 	s.b = s.b[:start+copy(s.b[start:], s.b[end:])]
 	diff := end - start
 	s.next -= diff
@@ -411,18 +414,27 @@ func (s variantsSort) Less(i, j int) bool {
 	return s.i[i] < s.i[j]
 }
 
-type bytesSort [][]byte
+type bytesSort struct {
+	b [][]byte
+	n int // first n bytes to compare
+}
 
 func (b bytesSort) Len() int {
-	return len(b)
+	return len(b.b)
 }
 
 func (b bytesSort) Swap(i, j int) {
-	b[i], b[j] = b[j], b[i]
+	b.b[i], b.b[j] = b.b[j], b.b[i]
 }
 
 func (b bytesSort) Less(i, j int) bool {
-	return bytes.Compare(b[i], b[j]) == -1
+	for k := 0; k < b.n; k++ {
+		if b.b[i][k] == b.b[j][k] {
+			continue
+		}
+		return b.b[i][k] < b.b[j][k]
+	}
+	return false
 }
 
 // parseExtensions parses and normalizes the extensions in the buffer.
@@ -451,7 +463,7 @@ func parseExtensions(scan *scanner) int {
 		}
 		exts = append(exts, extension)
 	}
-	sort.Sort(bytesSort(exts))
+	sort.Sort(bytesSort{exts, 1})
 	if len(private) > 0 {
 		exts = append(exts, private)
 	}
@@ -483,7 +495,7 @@ func parseExtension(scan *scanner) int {
 					attrs = append(attrs, scan.token)
 					end = scan.end
 				}
-				sort.Sort(bytesSort(attrs))
+				sort.Sort(bytesSort{attrs, 3})
 				copy(scan.b[p:], bytes.Join(attrs, separator))
 				break
 			}
@@ -512,13 +524,25 @@ func parseExtension(scan *scanner) int {
 						end = keyStart
 					}
 				}
-				sort.Sort(bytesSort(keys))
+				sort.Stable(bytesSort{keys, 2})
+				if n := len(keys); n > 0 {
+					k := 0
+					for i := 1; i < n; i++ {
+						if !bytes.Equal(keys[k][:2], keys[i][:2]) {
+							k++
+							keys[k] = keys[i]
+						} else if !bytes.Equal(keys[k], keys[i]) {
+							scan.setError(ErrDuplicateKey)
+						}
+					}
+					keys = keys[:k+1]
+				}
 				reordered := bytes.Join(keys, separator)
 				if e := p + len(reordered); e < end {
 					scan.deleteRange(e, end)
 					end = e
 				}
-				copy(scan.b[p:], bytes.Join(keys, separator))
+				copy(scan.b[p:], reordered)
 				break
 			}
 		}

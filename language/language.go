@@ -508,8 +508,8 @@ func compactIndex(t language.Tag) (index compactID, exact bool) {
 		if t.HasVariants() {
 			if t.HasExtensions() {
 				build := language.Builder{}
-				build.SetTag(t)
-				build.Private, build.Ext = "", nil
+				build.SetTag(language.Tag{LangID: b, ScriptID: s, RegionID: r})
+				build.AddVariant(t.Variants())
 				exact = false
 				t = build.Make()
 			}

@@ -116,7 +116,7 @@ func parseTests() []parseTest {
 		{in: "en-u-cu-xau-co", lang: "en", extList: []string{"u-cu-xau"}, invalid: true},
 		// We allow duplicate keys as the LDML spec does not explicitly prohibit it.
 		// TODO: Consider eliminating duplicates and returning an error.
-		{in: "en-u-cu-xau-co-phonebk-cu-xau", lang: "en", ext: "u-co-phonebk-cu-xau-cu-xau", changed: true},
+		{in: "en-u-cu-xau-co-phonebk-cu-xau", lang: "en", ext: "u-co-phonebk-cu-xau", changed: true},
 		{in: "en-t-en-Cyrl-NL-fonipa", lang: "en", ext: "t-en-cyrl-nl-fonipa", changed: true},
 		{in: "en-t-en-Cyrl-NL-fonipa-t0-abc-def", lang: "en", ext: "t-en-cyrl-nl-fonipa-t0-abc-def", changed: true},
 		{in: "en-t-t0-abcd", lang: "en", ext: "t-t0-abcd"},
@@ -253,8 +253,10 @@ func TestCompose2(t *testing.T) {
 		r, _ := ParseRegion(tt.region)
 		p := []interface{}{l, s, r, s, r, l}
 		for _, x := range strings.Split(tt.variants, "-") {
-			v, _ := ParseVariant(x)
-			p = append(p, v)
+			if x != "" {
+				v, _ := ParseVariant(x)
+				p = append(p, v)
+			}
 		}
 		for _, x := range tt.extList {
 			e, _ := ParseExtension(x)

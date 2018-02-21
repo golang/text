@@ -182,9 +182,10 @@ func parseTests() []parseTest {
 		// Invalid "u" extension. Drop invalid parts.
 		{in: "en-u-cu-co-phonebk", lang: "en", extList: []string{"u-co-phonebk"}, invalid: true, changed: true},
 		{in: "en-u-cu-xau-co", lang: "en", extList: []string{"u-cu-xau"}, invalid: true},
-		// We allow duplicate keys as the LDML spec does not explicitly prohibit it.
-		// TODO: Consider eliminating duplicates and returning an error.
-		{in: "en-u-cu-xau-co-phonebk-cu-xau", lang: "en", ext: "u-co-phonebk-cu-xau-cu-xau", changed: true},
+		// LDML spec is not specific about it, but remove duplicates and return an error if the values differ.
+		{in: "en-u-cu-xau-co-phonebk-cu-xau", lang: "en", ext: "u-co-phonebk-cu-xau", changed: true},
+		// No change as the result is a substring of the original!
+		{in: "en-US-u-cu-xau-cu-eur", lang: "en", region: "US", ext: "u-cu-xau", invalid: true, changed: false},
 		{in: "en-t-en-Cyrl-NL-fonipa", lang: "en", ext: "t-en-cyrl-nl-fonipa", changed: true},
 		{in: "en-t-en-Cyrl-NL-fonipa-t0-abc-def", lang: "en", ext: "t-en-cyrl-nl-fonipa-t0-abc-def", changed: true},
 		{in: "en-t-t0-abcd", lang: "en", ext: "t-t0-abcd"},
