@@ -27,6 +27,22 @@ func TestTagSize(t *testing.T) {
 	}
 }
 
+func TestNoPublic(t *testing.T) {
+	noExportedField(t, reflect.TypeOf(Tag{}))
+}
+
+func noExportedField(t *testing.T, typ reflect.Type) {
+	for i := 0; i < typ.NumField(); i++ {
+		f := typ.Field(i)
+		if f.PkgPath == "" {
+			t.Errorf("Tag may not have exported fields, but has field %q", f.Name)
+		}
+		if f.Anonymous {
+			noExportedField(t, f.Type)
+		}
+	}
+}
+
 func TestEquality(t *testing.T) {
 	for i, tt := range parseTests() {
 		s := tt.in

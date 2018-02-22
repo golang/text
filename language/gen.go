@@ -38,13 +38,10 @@ func main() {
 	w := gen.NewCodeWriter()
 	defer w.WriteGoFile("tables.go", "language")
 
-	fmt.Fprintln(w, `import "golang.org/x/text/internal/language"`)
-
 	b := newBuilder(w)
 	gen.WriteCLDRVersion(w)
 
 	b.writeConstants()
-	b.writeCompactIndex()
 	b.writeMatchData()
 }
 
