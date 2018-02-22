@@ -91,10 +91,10 @@ func (b *builder) writeCompactIndex() {
 
 	fmt.Fprintln(w, "const (")
 	for i, t := range coreTags {
-		fmt.Fprintf(w, "%s compactID = %d\n", ident(t.Tag().String()), i)
+		fmt.Fprintf(w, "%s ID = %d\n", ident(t.Tag().String()), i)
 	}
 	for i, t := range special {
-		fmt.Fprintf(w, "%s compactID = %d\n", ident(t), i+len(coreTags))
+		fmt.Fprintf(w, "%s ID = %d\n", ident(t), i+len(coreTags))
 	}
 	fmt.Fprintln(w, ")")
 

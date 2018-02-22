@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package language
+package compact
 
 import (
 	"strings"
@@ -10,13 +10,6 @@ import (
 
 	"golang.org/x/text/internal/language"
 )
-
-// equalTags compares language, script and region subtags only.
-func (t Tag) equalTags(a Tag) bool {
-	return t.lang() == a.lang() &&
-		t.script() == a.script() &&
-		t.region() == a.region()
-}
 
 var errSyntax = language.ErrSyntax
 
@@ -175,216 +168,29 @@ func partChecks(t *testing.T, f func(*parseTest) (Tag, bool)) {
 		if skip {
 			continue
 		}
-		if l, _ := language.ParseBase(tt.lang); l != tag.lang() {
-			t.Errorf("%d: lang was %q; want %q", i, tag.lang(), l)
+		if l, _ := language.ParseBase(tt.lang); l != tag.Tag().LangID {
+			t.Errorf("%d: lang was %q; want %q", i, tag.Tag().LangID, l)
 		}
-		if sc, _ := language.ParseScript(tt.script); sc != tag.script() {
-			t.Errorf("%d: script was %q; want %q", i, tag.script(), sc)
+		if sc, _ := language.ParseScript(tt.script); sc != tag.Tag().ScriptID {
+			t.Errorf("%d: script was %q; want %q", i, tag.Tag().ScriptID, sc)
 		}
-		if r, _ := language.ParseRegion(tt.region); r != tag.region() {
-			t.Errorf("%d: region was %q; want %q", i, tag.region(), r)
+		if r, _ := language.ParseRegion(tt.region); r != tag.Tag().RegionID {
+			t.Errorf("%d: region was %q; want %q", i, tag.Tag().RegionID, r)
 		}
-		v := tag.tag().Variants()
+		v := tag.Tag().Variants()
 		if v != "" {
 			v = v[1:]
 		}
 		if v != tt.variants {
 			t.Errorf("%d: variants was %q; want %q", i, v, tt.variants)
 		}
-		if e := strings.Join(tag.tag().Extensions(), "-"); e != tt.ext {
+		if e := strings.Join(tag.Tag().Extensions(), "-"); e != tt.ext {
 			t.Errorf("%d: extensions were %q; want %q", i, e, tt.ext)
 		}
 	}
 }
 
-func TestParse(t *testing.T) {
-	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
-		id, _ = Raw.Parse(tt.in)
-		return id, false
-	})
-}
-
-func TestErrors(t *testing.T) {
-	mkInvalid := func(s string) error {
-		return language.NewValueError([]byte(s))
-	}
-	tests := []struct {
-		in  string
-		out error
-	}{
-		// invalid subtags.
-		{"ac", mkInvalid("ac")},
-		{"AC", mkInvalid("ac")},
-		{"aa-Uuuu", mkInvalid("Uuuu")},
-		{"aa-AB", mkInvalid("AB")},
-		// ill-formed wins over invalid.
-		{"ac-u", errSyntax},
-		{"ac-u-ca", errSyntax},
-		{"ac-u-ca-co-pinyin", errSyntax},
-		{"noob", errSyntax},
-	}
-	for _, tt := range tests {
-		_, err := Parse(tt.in)
-		if err != tt.out {
-			t.Errorf("%s: was %q; want %q", tt.in, err, tt.out)
-		}
-	}
-}
-
-func TestCompose1(t *testing.T) {
-	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
-		l, _ := ParseBase(tt.lang)
-		s, _ := ParseScript(tt.script)
-		r, _ := ParseRegion(tt.region)
-		v := []Variant{}
-		for _, x := range strings.Split(tt.variants, "-") {
-			p, _ := ParseVariant(x)
-			v = append(v, p)
-		}
-		e := []Extension{}
-		for _, x := range tt.extList {
-			p, _ := ParseExtension(x)
-			e = append(e, p)
-		}
-		id, _ = Raw.Compose(l, s, r, v, e)
-		return id, false
-	})
-}
-
-func TestCompose2(t *testing.T) {
-	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
-		l, _ := ParseBase(tt.lang)
-		s, _ := ParseScript(tt.script)
-		r, _ := ParseRegion(tt.region)
-		p := []interface{}{l, s, r, s, r, l}
-		for _, x := range strings.Split(tt.variants, "-") {
-			if x != "" {
-				v, _ := ParseVariant(x)
-				p = append(p, v)
-			}
-		}
-		for _, x := range tt.extList {
-			e, _ := ParseExtension(x)
-			p = append(p, e)
-		}
-		id, _ = Raw.Compose(p...)
-		return id, false
-	})
-}
-
-func TestCompose3(t *testing.T) {
-	partChecks(t, func(tt *parseTest) (id Tag, skip bool) {
-		id, _ = Raw.Parse(tt.in)
-		id, _ = Raw.Compose(id)
-		return id, false
-	})
-}
-
 func mk(s string) Tag {
-	return Raw.Make(s)
-}
-
-func TestParseAcceptLanguage(t *testing.T) {
-	type res struct {
-		t Tag
-		q float32
-	}
-	en := []res{{mk("en"), 1.0}}
-	tests := []struct {
-		out []res
-		in  string
-		ok  bool
-	}{
-		{en, "en", true},
-		{en, "   en", true},
-		{en, "en   ", true},
-		{en, "  en  ", true},
-		{en, "en,", true},
-		{en, ",en", true},
-		{en, ",,,en,,,", true},
-		{en, ",en;q=1", true},
-
-		// We allow an empty input, contrary to spec.
-		{nil, "", true},
-		{[]res{{mk("aa"), 1}}, "aa;", true}, // allow unspecified weight
-
-		// errors
-		{nil, ";", false},
-		{nil, "$", false},
-		{nil, "e;", false},
-		{nil, "x;", false},
-		{nil, "x", false},
-		{nil, "ac", false}, // non-existing language
-		{nil, "aa;q", false},
-		{nil, "aa;q=", false},
-		{nil, "aa;q=.", false},
-
-		// odd fallbacks
-		{
-			[]res{{mk("en"), 0.1}},
-			" english ;q=.1",
-			true,
-		},
-		{
-			[]res{{mk("it"), 1.0}, {mk("de"), 1.0}, {mk("fr"), 1.0}},
-			" italian, deutsch, french",
-			true,
-		},
-
-		// lists
-		{
-			[]res{{mk("en"), 0.1}},
-			"en;q=.1",
-			true,
-		},
-		{
-			[]res{{mk("mul"), 1.0}},
-			"*",
-			true,
-		},
-		{
-			[]res{{mk("en"), 1.0}, {mk("de"), 1.0}},
-			"en,de",
-			true,
-		},
-		{
-			[]res{{mk("en"), 1.0}, {mk("de"), .5}},
-			"en,de;q=0.5",
-			true,
-		},
-		{
-			[]res{{mk("de"), 0.8}, {mk("en"), 0.5}},
-			"  en ;   q    =   0.5    ,  , de;q=0.8",
-			true,
-		},
-		{
-			[]res{{mk("en"), 1.0}, {mk("de"), 1.0}, {mk("fr"), 1.0}, {mk("tlh"), 1.0}},
-			"en,de,fr,i-klingon",
-			true,
-		},
-		// sorting
-		{
-			[]res{{mk("tlh"), 0.4}, {mk("de"), 0.2}, {mk("fr"), 0.2}, {mk("en"), 0.1}},
-			"en;q=0.1,de;q=0.2,fr;q=0.2,i-klingon;q=0.4",
-			true,
-		},
-		// dropping
-		{
-			[]res{{mk("fr"), 0.2}, {mk("en"), 0.1}},
-			"en;q=0.1,de;q=0,fr;q=0.2,i-klingon;q=0.0",
-			true,
-		},
-	}
-	for i, tt := range tests {
-		tags, qs, e := ParseAcceptLanguage(tt.in)
-		if e == nil != tt.ok {
-			t.Errorf("%d:%s:err: was %v; want %v", i, tt.in, e == nil, tt.ok)
-		}
-		for j, tag := range tags {
-			if out := tt.out[j]; !tag.equalTags(out.t) || qs[j] != out.q {
-				t.Errorf("%d:%s: was %s, %1f; want %s, %1f", i, tt.in, tag, qs[j], out.t, out.q)
-				break
-			}
-		}
-	}
+	tag, _ := language.Parse(s)
+	return Make(tag)
 }

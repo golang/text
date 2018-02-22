@@ -2,7 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package language // import "golang.org/x/text/internal/language/compact"
+// Package compact defines a compact representation of language tags.
+//
+// Common language tags (at least all for which locale information is defined
+// in CLDR) are assigned a unique index. Each Tag is associated with such an
+// ID for selecting language-related resources (such as translations) as well
+// as one for selecting regional defaults (currency, number formatting, etc.)
+//
+// It may want to export this functionality at some point, but at this point
+// this is only available for use within x/text.
+package compact // import "golang.org/x/text/internal/language/compact"
 
 import (
 	"sort"
@@ -11,9 +20,10 @@ import (
 	"golang.org/x/text/internal/language"
 )
 
-type compactID uint16
+// ID is an integer identifying a single tag.
+type ID uint16
 
-func getCoreIndex(t language.Tag) (id compactID, ok bool) {
+func getCoreIndex(t language.Tag) (id ID, ok bool) {
 	cci, ok := language.GetCompactCore(t)
 	if !ok {
 		return 0, false
@@ -24,14 +34,15 @@ func getCoreIndex(t language.Tag) (id compactID, ok bool) {
 	if i == len(coreTags) || coreTags[i] != cci {
 		return 0, false
 	}
-	return compactID(i), true
+	return ID(i), true
 }
 
-func (c compactID) tag() language.Tag {
-	if int(c) >= len(coreTags) {
-		return specialTags[int(c)-len(coreTags)]
+// Tag converts id to an internal language Tag.
+func (id ID) Tag() language.Tag {
+	if int(id) >= len(coreTags) {
+		return specialTags[int(id)-len(coreTags)]
 	}
-	return coreTags[c].Tag()
+	return coreTags[id].Tag()
 }
 
 var specialTags []language.Tag
