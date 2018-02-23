@@ -120,6 +120,7 @@ pkg unicode, var <new script or property> *RangeTable
 		mib        = generate("./encoding/internal/identifier", unicode)
 		number     = generate("./internal/number", unicode, cldr, language, internal)
 		cldrtree   = generate("./internal/cldrtree", language, internal)
+		_          = generate("./unicode/runenames", unicode)
 		_          = generate("./encoding/htmlindex", unicode, language, mib)
 		_          = generate("./encoding/ianaindex", unicode, language, mib)
 		_          = generate("./secure/precis", unicode, norm, rangetable, cases, width, bidi)
