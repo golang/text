@@ -18,6 +18,10 @@ func TestMatchLanguage(t *testing.T) {
 	c.SetString(language.English, "", "")
 	c.SetString(language.German, "", "")
 
+	saved := DefaultCatalog
+	defer func() { DefaultCatalog = saved }()
+	DefaultCatalog = c
+
 	testCases := []struct {
 		args string // '|'-separated list
 		want string
@@ -32,7 +36,6 @@ func TestMatchLanguage(t *testing.T) {
 		want: "en",
 	}}
 	for _, tc := range testCases {
-		DefaultCatalog = c
 		t.Run(tc.args, func(t *testing.T) {
 			got := MatchLanguage(strings.Split(tc.args, "|")...)
 			if got != language.Make(tc.want) {
