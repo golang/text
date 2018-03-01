@@ -37,6 +37,11 @@ func getCoreIndex(t language.Tag) (id ID, ok bool) {
 	return ID(i), true
 }
 
+// Parent returns the ID of the parent or the root ID if id is already the root.
+func (id ID) Parent() ID {
+	return parents[id]
+}
+
 // Tag converts id to an internal language Tag.
 func (id ID) Tag() language.Tag {
 	if int(id) >= len(coreTags) {

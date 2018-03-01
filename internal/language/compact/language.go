@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 //go:generate go run gen.go gen_index.go -output tables.go
+//go:generate go run gen_parents.go
 
 package compact
 
