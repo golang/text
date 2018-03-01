@@ -52,6 +52,11 @@ func (b *builder) writeCompactIndex() {
 		m[tag] = true
 		// }
 	}
+
+	// TODO: plural rules are also defined for the deprecated tags:
+	//    iw mo sh tl
+	// Consider removing these as compact tags.
+
 	// Include locales for plural rules, which uses a different structure.
 	for _, plurals := range b.supp.Plurals {
 		for _, rules := range plurals.PluralRules {

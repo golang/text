@@ -39,8 +39,7 @@ type Formatter struct {
 
 func (f *Formatter) init(t language.Tag, index []uint8) {
 	f.Info = InfoFromTag(t)
-	ci, _ := language.CompactIndex(t)
-	f.Pattern = formats[index[ci]]
+	f.Pattern = formats[index[tagToID(t)]]
 }
 
 // InitPattern initializes a Formatter for the given Pattern.
