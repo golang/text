@@ -34,22 +34,50 @@ import (
 
 // Extract extracts all strings form the package defined in Config.
 func Extract(c *Config) (*State, error) {
-	conf := loader.Config{}
-	prog, err := loadPackages(&conf, c.Packages)
+	x, err := newExtracter(c)
 	if err != nil {
 		return nil, wrap(err, "")
 	}
 
+	x.extractMessages()
+
+	return &State{
+		Config:  *c,
+		program: x.iprog,
+		Extracted: Messages{
+			Language: c.SourceLanguage,
+			Messages: x.messages,
+		},
+	}, nil
+}
+
+type extracter struct {
+	conf     loader.Config
+	iprog    *loader.Program
+	messages []Message
+}
+
+func newExtracter(c *Config) (x *extracter, err error) {
+	x = &extracter{
+		conf: loader.Config{},
+	}
+
+	x.iprog, err = loadPackages(&x.conf, c.Packages)
+	if err != nil {
+		return nil, wrap(err, "")
+	}
+	return x, nil
+}
+
+func (x *extracter) extractMessages() {
 	// print returns Go syntax for the specified node.
 	print := func(n ast.Node) string {
 		var buf bytes.Buffer
-		format.Node(&buf, conf.Fset, n)
+		format.Node(&buf, x.conf.Fset, n)
 		return buf.String()
 	}
-
-	var messages []Message
-
-	for _, info := range prog.AllPackages {
+	prog := x.iprog
+	for _, info := range x.iprog.AllPackages {
 		for _, f := range info.Files {
 			// Associate comments with nodes.
 			cmap := ast.NewCommentMap(prog.Fset, f, f.Comments)
@@ -135,80 +163,76 @@ func Extract(c *Config) (*State, error) {
 						Expr:           expr,
 						Value:          val,
 						Comment:        getComment(arg),
-						Position:       posString(conf, info, arg.Pos()),
+						Position:       posString(&x.conf, info.Pkg, arg.Pos()),
 						// TODO report whether it implements
 						// interfaces plural.Interface,
 						// gender.Interface.
 					})
 				}
-				msg := ""
 
-				ph := placeholders{index: map[string]string{}}
+				formats := []string{fmtMsg}
+				for _, c := range formats {
+					fmtMsg = c
+					msg := ""
 
-				trimmed, _, _ := trimWS(fmtMsg)
+					ph := placeholders{index: map[string]string{}}
 
-				p := fmtparser.Parser{}
-				p.Reset(simArgs)
-				for p.SetFormat(trimmed); p.Scan(); {
-					switch p.Status {
-					case fmtparser.StatusText:
-						msg += p.Text()
-					case fmtparser.StatusSubstitution,
-						fmtparser.StatusBadWidthSubstitution,
-						fmtparser.StatusBadPrecSubstitution:
-						arguments[p.ArgNum-1].used = true
-						arg := arguments[p.ArgNum-1]
-						sub := p.Text()
-						if !p.HasIndex {
-							r, sz := utf8.DecodeLastRuneInString(sub)
-							sub = fmt.Sprintf("%s[%d]%c", sub[:len(sub)-sz], p.ArgNum, r)
+					trimmed, _, _ := trimWS(fmtMsg)
+
+					p := fmtparser.Parser{}
+					p.Reset(simArgs)
+					for p.SetFormat(trimmed); p.Scan(); {
+						switch p.Status {
+						case fmtparser.StatusText:
+							msg += p.Text()
+						case fmtparser.StatusSubstitution,
+							fmtparser.StatusBadWidthSubstitution,
+							fmtparser.StatusBadPrecSubstitution:
+							arguments[p.ArgNum-1].used = true
+							arg := arguments[p.ArgNum-1]
+							sub := p.Text()
+							if !p.HasIndex {
+								r, sz := utf8.DecodeLastRuneInString(sub)
+								sub = fmt.Sprintf("%s[%d]%c", sub[:len(sub)-sz], p.ArgNum, r)
+							}
+							msg += fmt.Sprintf("{%s}", ph.addArg(&arg, sub))
 						}
-						msg += fmt.Sprintf("{%s}", ph.addArg(&arg, sub))
 					}
-				}
-				key = append(key, msg)
+					key = append(key, msg)
 
-				// Add additional Placeholders that can be used in translations
-				// that are not present in the string.
-				for _, arg := range arguments {
-					if arg.used {
-						continue
+					// Add additional Placeholders that can be used in translations
+					// that are not present in the string.
+					for _, arg := range arguments {
+						if arg.used {
+							continue
+						}
+						ph.addArg(&arg, fmt.Sprintf("%%[%d]v", arg.ArgNum))
 					}
-					ph.addArg(&arg, fmt.Sprintf("%%[%d]v", arg.ArgNum))
-				}
 
-				if c := getComment(call.Args[0]); c != "" {
-					comment = c
-				}
+					if c := getComment(call.Args[0]); c != "" {
+						comment = c
+					}
 
-				messages = append(messages, Message{
-					ID:      key,
-					Key:     fmtMsg,
-					Message: Text{Msg: msg},
-					// TODO(fix): this doesn't get the before comment.
-					Comment:      comment,
-					Placeholders: ph.slice,
-					Position:     posString(conf, info, call.Lparen),
-				})
+					x.messages = append(x.messages, Message{
+						ID:      key,
+						Key:     fmtMsg,
+						Message: Text{Msg: msg},
+						// TODO(fix): this doesn't get the before comment.
+						Comment:      comment,
+						Placeholders: ph.slice,
+						Position:     posString(&x.conf, info.Pkg, call.Lparen),
+					})
+				}
 				return true
 			})
 		}
 	}
-
-	return &State{
-		Config:  *c,
-		program: prog,
-		Extracted: Messages{
-			Language: c.SourceLanguage,
-			Messages: messages,
-		},
-	}, nil
 }
 
-func posString(conf loader.Config, info *loader.PackageInfo, pos token.Pos) string {
+func posString(conf *loader.Config, pkg *types.Package, pos token.Pos) string {
 	p := conf.Fset.Position(pos)
 	file := fmt.Sprintf("%s:%d:%d", filepath.Base(p.Filename), p.Line, p.Column)
-	return filepath.Join(info.Pkg.Path(), file)
+	return filepath.Join(pkg.Path(), file)
 }
 
 // extractFuncs indicates the types and methods for which to extract strings,
