@@ -33,9 +33,7 @@ const debug = false
 // - handle features (gender, plural)
 // - message rewriting
 
-// - %m substitutions
 // - `msg:"etc"` tags
-// - msg/Msg top-level vars and strings.
 
 // Extract extracts all strings form the package defined in Config.
 func Extract(c *Config) (*State, error) {
@@ -64,16 +62,16 @@ type extracter struct {
 	callGraph *callgraph.Graph
 
 	// Calls and other expressions to collect.
-	exprs    map[token.Pos]ast.Expr
+	globals  map[token.Pos]*constData
 	funcs    map[token.Pos]*callData
 	messages []Message
 }
 
 func newExtracter(c *Config) (x *extracter, err error) {
 	x = &extracter{
-		conf:  loader.Config{},
-		exprs: map[token.Pos]ast.Expr{},
-		funcs: map[token.Pos]*callData{},
+		conf:    loader.Config{},
+		globals: map[token.Pos]*constData{},
+		funcs:   map[token.Pos]*callData{},
 	}
 
 	x.iprog, err = loadPackages(&x.conf, c.Packages)
@@ -81,7 +79,7 @@ func newExtracter(c *Config) (x *extracter, err error) {
 		return nil, wrap(err, "")
 	}
 
-	x.prog = ssautil.CreateProgram(x.iprog, 0)
+	x.prog = ssautil.CreateProgram(x.iprog, ssa.GlobalDebug|ssa.BareInits)
 	x.prog.Build()
 
 	x.callGraph = cha.CallGraph(x.prog)
@@ -89,9 +87,20 @@ func newExtracter(c *Config) (x *extracter, err error) {
 	return x, nil
 }
 
+func (x *extracter) globalData(pos token.Pos) *constData {
+	cd := x.globals[pos]
+	if cd == nil {
+		cd = &constData{}
+		x.globals[pos] = cd
+	}
+	return cd
+}
+
 func (x *extracter) seedEndpoints() {
 	pkg := x.prog.Package(x.iprog.Package("golang.org/x/text/message").Pkg)
 	typ := types.NewPointer(pkg.Type("Printer").Type())
+
+	x.processGlobalVars()
 
 	x.handleFunc(x.prog.LookupMethod(typ, pkg.Pkg, "Printf"), &callData{
 		formatPos: 1,
@@ -110,8 +119,66 @@ func (x *extracter) seedEndpoints() {
 	})
 }
 
+// processGlobalVars finds string constants that are assigned to global
+// variables.
+func (x *extracter) processGlobalVars() {
+	for _, p := range x.prog.AllPackages() {
+		m, ok := p.Members["init"]
+		if !ok {
+			continue
+		}
+		for _, b := range m.(*ssa.Function).Blocks {
+			for _, i := range b.Instrs {
+				s, ok := i.(*ssa.Store)
+				if !ok {
+					continue
+				}
+				a, ok := s.Addr.(*ssa.Global)
+				if !ok {
+					continue
+				}
+				t := a.Type()
+				for {
+					p, ok := t.(*types.Pointer)
+					if !ok {
+						break
+					}
+					t = p.Elem()
+				}
+				if b, ok := t.(*types.Basic); !ok || b.Kind() != types.String {
+					continue
+				}
+				x.visitInit(a, s.Val)
+			}
+		}
+	}
+}
+
+type constData struct {
+	call   *callData // to provide a signature for the constants
+	values []constVal
+	others []token.Pos // Assigned to other global data.
+}
+
+func (d *constData) visit(x *extracter, f func(c constant.Value)) {
+	for _, v := range d.values {
+		f(v.value)
+	}
+	for _, p := range d.others {
+		if od, ok := x.globals[p]; ok {
+			od.visit(x, f)
+		}
+	}
+}
+
+type constVal struct {
+	value constant.Value
+	pos   token.Pos
+}
+
 type callData struct {
 	call    ssa.CallInstruction
+	expr    *ast.CallExpr
 	formats []constant.Value
 
 	callee    *callData
@@ -196,6 +263,68 @@ func (x *extracter) debug(v posser, header string, args ...interface{}) {
 	}
 }
 
+// visitInit evaluates and collects values assigned to global variables in an
+// init function.
+func (x *extracter) visitInit(global *ssa.Global, v ssa.Value) {
+	if v == nil {
+		return
+	}
+	x.debug(v, "GLOBAL", v)
+
+	switch v := v.(type) {
+	case *ssa.Phi:
+		for _, e := range v.Edges {
+			x.visitInit(global, e)
+		}
+
+	case *ssa.Const:
+		// Only record strings with letters.
+		if str := constant.StringVal(v.Value); isMsg(str) {
+			cd := x.globalData(global.Pos())
+			cd.values = append(cd.values, constVal{v.Value, v.Pos()})
+		}
+		// TODO: handle %m-directive.
+
+	case *ssa.Global:
+		cd := x.globalData(global.Pos())
+		cd.others = append(cd.others, v.Pos())
+
+	case *ssa.FieldAddr, *ssa.Field:
+		// TODO: mark field index v.Field of v.X.Type() for extraction. extract
+		// an example args as to give parameters for the translator.
+
+	case *ssa.Slice:
+		if v.Low == nil && v.High == nil && v.Max == nil {
+			x.visitInit(global, v.X)
+		}
+
+	case *ssa.Alloc:
+		if ref := v.Referrers(); ref == nil {
+			for _, r := range *ref {
+				values := []ssa.Value{}
+				for _, o := range r.Operands(nil) {
+					if o == nil || *o == v {
+						continue
+					}
+					values = append(values, *o)
+				}
+				// TODO: return something different if we care about multiple
+				// values as well.
+				if len(values) == 1 {
+					x.visitInit(global, values[0])
+				}
+			}
+		}
+
+	case ssa.Instruction:
+		rands := v.Operands(nil)
+		if len(rands) == 1 && rands[0] != nil {
+			x.visitInit(global, *rands[0])
+		}
+	}
+	return
+}
+
 // visitFormats finds the original source of the value. The returned index is
 // position of the argument if originated from a function argument or -1
 // otherwise.
@@ -220,8 +349,7 @@ func (x *extracter) visitFormats(call *callData, v ssa.Value) {
 		// TODO: handle %m-directive.
 
 	case *ssa.Global:
-		// TODO: record value if a string and try to determine a possible
-		// constant value from the ast data.
+		x.globalData(v.Pos()).call = call
 
 	case *ssa.FieldAddr, *ssa.Field:
 		// TODO: mark field index v.Field of v.X.Type() for extraction. extract
@@ -356,6 +484,7 @@ func (x *extracter) print(n ast.Node) string {
 }
 
 type packageExtracter struct {
+	f    *ast.File
 	x    *extracter
 	info *loader.PackageInfo
 	cmap ast.CommentMap
@@ -371,32 +500,72 @@ func (px packageExtracter) getComment(n ast.Node) string {
 
 func (x *extracter) extractMessages() {
 	prog := x.iprog
+	files := []packageExtracter{}
 	for _, info := range x.iprog.AllPackages {
 		for _, f := range info.Files {
 			// Associate comments with nodes.
 			px := packageExtracter{
-				x, info,
+				f, x, info,
 				ast.NewCommentMap(prog.Fset, f, f.Comments),
 			}
-
-			// Find function calls.
-			ast.Inspect(f, func(n ast.Node) bool {
-				switch v := n.(type) {
-				case *ast.CallExpr:
-					return px.handleCall(v)
-				}
-				return true
-			})
+			files = append(files, px)
 		}
 	}
+	for _, px := range files {
+		ast.Inspect(px.f, func(n ast.Node) bool {
+			switch v := n.(type) {
+			case *ast.CallExpr:
+				if d := x.funcs[v.Lparen]; d != nil {
+					d.expr = v
+				}
+			}
+			return true
+		})
+	}
+	for _, px := range files {
+		ast.Inspect(px.f, func(n ast.Node) bool {
+			switch v := n.(type) {
+			case *ast.CallExpr:
+				return px.handleCall(v)
+			case *ast.ValueSpec:
+				return px.handleGlobal(v)
+			}
+			return true
+		})
+	}
+}
+
+func (px packageExtracter) handleGlobal(spec *ast.ValueSpec) bool {
+	comment := px.getComment(spec)
+
+	for _, ident := range spec.Names {
+		data, ok := px.x.globals[ident.Pos()]
+		if !ok {
+			continue
+		}
+		name := ident.Name
+		var arguments []argument
+		if data.call != nil {
+			arguments = px.getArguments(data.call)
+		} else if !strings.HasPrefix(name, "msg") && !strings.HasPrefix(name, "Msg") {
+			continue
+		}
+		data.visit(px.x, func(c constant.Value) {
+			px.addMessage(spec.Pos(), []string{name}, c, comment, arguments)
+		})
+	}
+
+	return true
 }
 
 func (px packageExtracter) handleCall(call *ast.CallExpr) bool {
 	x := px.x
-	info := px.info
 	data := x.funcs[call.Lparen]
 	if data == nil || len(data.formats) == 0 {
 		return true
+	}
+	if data.expr != call {
+		panic("invariant `data.call != call` failed")
 	}
 	x.debug(data.call, "INSERT", data.formats)
 
@@ -405,6 +574,8 @@ func (px packageExtracter) handleCall(call *ast.CallExpr) bool {
 		return true
 	}
 	format := call.Args[argn]
+
+	arguments := px.getArguments(data)
 
 	comment := ""
 	key := []string{}
@@ -415,18 +586,28 @@ func (px packageExtracter) handleCall(call *ast.CallExpr) bool {
 			comment = v.Comment.Text()
 		}
 	}
+	if c := px.getComment(call.Args[0]); c != "" {
+		comment = c
+	}
 
+	formats := data.formats
+	for _, c := range formats {
+		px.addMessage(call.Lparen, key, c, comment, arguments)
+	}
+	return true
+}
+
+func (px packageExtracter) getArguments(data *callData) []argument {
 	arguments := []argument{}
-	simArgs := []interface{}{}
+	x := px.x
+	info := px.info
 	if data.callArgsStart() >= 0 {
-		args := call.Args[data.callArgsStart():]
-		simArgs = make([]interface{}, len(args))
+		args := data.expr.Args[data.callArgsStart():]
 		for i, arg := range args {
 			expr := x.print(arg)
 			val := ""
 			if v := info.Types[arg].Value; v != nil {
 				val = v.ExactString()
-				simArgs[i] = val
 				switch arg.(type) {
 				case *ast.BinaryExpr, *ast.UnaryExpr:
 					expr = val
@@ -446,62 +627,76 @@ func (px packageExtracter) handleCall(call *ast.CallExpr) bool {
 			})
 		}
 	}
+	return arguments
+}
 
-	formats := data.formats
-	for _, c := range formats {
-		key := append([]string{}, key...)
-		fmtMsg := constant.StringVal(c)
-		msg := ""
+func (px packageExtracter) addMessage(
+	pos token.Pos,
+	key []string,
+	c constant.Value,
+	comment string,
+	arguments []argument) {
+	x := px.x
+	fmtMsg := constant.StringVal(c)
 
-		ph := placeholders{index: map[string]string{}}
+	ph := placeholders{index: map[string]string{}}
 
-		trimmed, _, _ := trimWS(fmtMsg)
+	trimmed, _, _ := trimWS(fmtMsg)
 
-		p := fmtparser.Parser{}
-		p.Reset(simArgs)
-		for p.SetFormat(trimmed); p.Scan(); {
-			switch p.Status {
-			case fmtparser.StatusText:
-				msg += p.Text()
-			case fmtparser.StatusSubstitution,
-				fmtparser.StatusBadWidthSubstitution,
-				fmtparser.StatusBadPrecSubstitution:
-				arguments[p.ArgNum-1].used = true
-				arg := arguments[p.ArgNum-1]
-				sub := p.Text()
-				if !p.HasIndex {
-					r, sz := utf8.DecodeLastRuneInString(sub)
-					sub = fmt.Sprintf("%s[%d]%c", sub[:len(sub)-sz], p.ArgNum, r)
-				}
-				msg += fmt.Sprintf("{%s}", ph.addArg(&arg, sub))
-			}
-		}
-		key = append(key, msg)
-
-		// Add additional Placeholders that can be used in translations
-		// that are not present in the string.
-		for _, arg := range arguments {
-			if arg.used {
-				continue
-			}
-			ph.addArg(&arg, fmt.Sprintf("%%[%d]v", arg.ArgNum))
-		}
-
-		if c := px.getComment(call.Args[0]); c != "" {
-			comment = c
-		}
-
-		x.messages = append(x.messages, Message{
-			ID:      key,
-			Key:     fmtMsg,
-			Message: Text{Msg: msg},
-			// TODO(fix): this doesn't get the before comment.
-			Comment:      comment,
-			Placeholders: ph.slice,
-			Position:     posString(&x.conf, info.Pkg, call.Lparen),
-		})
+	p := fmtparser.Parser{}
+	simArgs := make([]interface{}, len(arguments))
+	for i, v := range arguments {
+		simArgs[i] = v
 	}
-	return true
+	msg := ""
+	p.Reset(simArgs)
+	for p.SetFormat(trimmed); p.Scan(); {
+		name := ""
+		var arg *argument
+		switch p.Status {
+		case fmtparser.StatusText:
+			msg += p.Text()
+			continue
+		case fmtparser.StatusSubstitution,
+			fmtparser.StatusBadWidthSubstitution,
+			fmtparser.StatusBadPrecSubstitution:
+			arguments[p.ArgNum-1].used = true
+			arg = &arguments[p.ArgNum-1]
+			name = getID(arg)
+		case fmtparser.StatusBadArgNum, fmtparser.StatusMissingArg:
+			arg = &argument{
+				ArgNum:   p.ArgNum,
+				Position: posString(&x.conf, px.info.Pkg, pos),
+			}
+			name, arg.UnderlyingType = verbToPlaceholder(p.Text(), p.ArgNum)
+		}
+		sub := p.Text()
+		if !p.HasIndex {
+			r, sz := utf8.DecodeLastRuneInString(sub)
+			sub = fmt.Sprintf("%s[%d]%c", sub[:len(sub)-sz], p.ArgNum, r)
+		}
+		msg += fmt.Sprintf("{%s}", ph.addArg(arg, name, sub))
+	}
+	key = append(key, msg)
+
+	// Add additional Placeholders that can be used in translations
+	// that are not present in the string.
+	for _, arg := range arguments {
+		if arg.used {
+			continue
+		}
+		ph.addArg(&arg, getID(&arg), fmt.Sprintf("%%[%d]v", arg.ArgNum))
+	}
+
+	x.messages = append(x.messages, Message{
+		ID:      key,
+		Key:     fmtMsg,
+		Message: Text{Msg: msg},
+		// TODO(fix): this doesn't get the before comment.
+		Comment:      comment,
+		Placeholders: ph.slice,
+		Position:     posString(&x.conf, px.info.Pkg, pos),
+	})
 }
 
 func posString(conf *loader.Config, pkg *types.Package, pos token.Pos) string {
@@ -544,22 +739,45 @@ func strip(s string) string {
 	return s
 }
 
+// verbToPlaceholder gives a name for a placeholder based on the substitution
+// verb. This is only to be used if there is otherwise no other type information
+// available.
+func verbToPlaceholder(sub string, pos int) (name, underlying string) {
+	r, _ := utf8.DecodeLastRuneInString(sub)
+	name = fmt.Sprintf("Arg_%d", pos)
+	switch r {
+	case 's', 'q':
+		underlying = "string"
+	case 'd':
+		name = "Integer"
+		underlying = "int"
+	case 'e', 'f', 'g':
+		name = "Number"
+		underlying = "float64"
+	case 'm':
+		name = "Message"
+		underlying = "string"
+	default:
+		underlying = "interface{}"
+	}
+	return name, underlying
+}
+
 type placeholders struct {
 	index map[string]string
 	slice []Placeholder
 }
 
-func (p *placeholders) addArg(arg *argument, sub string) (id string) {
-	id = getID(arg)
-	id1 := id
-	alt, ok := p.index[id1]
+func (p *placeholders) addArg(arg *argument, name, sub string) (id string) {
+	id = name
+	alt, ok := p.index[id]
 	for i := 1; ok && alt != sub; i++ {
-		id1 = fmt.Sprintf("%s_%d", id, i)
-		alt, ok = p.index[id1]
+		id = fmt.Sprintf("%s_%d", name, i)
+		alt, ok = p.index[id]
 	}
-	p.index[id1] = sub
+	p.index[id] = sub
 	p.slice = append(p.slice, Placeholder{
-		ID:             id1,
+		ID:             id,
 		String:         sub,
 		Type:           arg.Type,
 		UnderlyingType: arg.UnderlyingType,
@@ -567,7 +785,7 @@ func (p *placeholders) addArg(arg *argument, sub string) (id string) {
 		Expr:           arg.Expr,
 		Comment:        arg.Comment,
 	})
-	return id1
+	return id
 }
 
 func getLastComponent(s string) string {

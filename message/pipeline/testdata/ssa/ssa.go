@@ -17,6 +17,8 @@ func main() {
 	gwrapf("global printer used %s", "ARG1")
 
 	w := wrapped{p}
+
+	// Comment about wrapf.
 	w.wrapf("number: %d, string: %s, bool: %v", 2, "STRING ARG", true)
 	w.wrapf("empty string")
 	w.wrap("Lovely weather today!")
@@ -160,6 +162,7 @@ func freeVar(p *message.Printer, str string) {
 }
 
 func freeConst(p *message.Printer) {
+	// str is a message
 	const str = "const str"
 	fn := func(p *message.Printer) {
 		p.Printf(str)
@@ -168,8 +171,32 @@ func freeConst(p *message.Printer) {
 }
 
 func global(p *message.Printer) {
-	// TODO: pick up evaluations of globals to string.
-	p.Printf(globalStr)
+	// city describes the expected next meeting place
+	city := "Amsterdam"
+	// See a person around.
+	p.Printf(globalStr, city)
 }
 
-var globalStr = "global string"
+// globalStr is a global variable with a string constant assigned to it.
+var globalStr = "See you around in %s!"
+
+func global2(p *message.Printer) {
+	const food = "Pastrami"
+	wrapf(p, constFood,
+		food, // the food to be consumed by the subject
+	)
+}
+
+// Comment applying to all constants in a block are ignored.
+var (
+	// Ho ho ho
+	notAMessage, constFood, msgHello = "NOPE!", consume, hello
+)
+
+// A block comment.
+var (
+	// This comment takes precedence.
+	hello = "Hello, %d and %s!"
+
+	consume = "Please eat your %s!"
+)

@@ -66,28 +66,28 @@
                     "expr": "true"
                 }
             ],
-            "position": "testdata/ssa/ssa.go:20:9"
+            "position": "testdata/ssa/ssa.go:22:9"
         },
         {
             "id": "empty string",
             "key": "empty string",
             "message": "empty string",
             "translation": "",
-            "position": "testdata/ssa/ssa.go:21:9"
+            "position": "testdata/ssa/ssa.go:23:9"
         },
         {
             "id": "Lovely weather today!",
             "key": "Lovely weather today!",
             "message": "Lovely weather today!",
             "translation": "",
-            "position": "testdata/ssa/ssa.go:22:8"
+            "position": "testdata/ssa/ssa.go:24:8"
         },
         {
             "id": "number one",
             "key": "number one",
             "message": "number one",
             "translation": "",
-            "position": "testdata/ssa/ssa.go:30:8"
+            "position": "testdata/ssa/ssa.go:32:8"
         },
         {
             "id": [
@@ -107,7 +107,7 @@
                     "expr": "c"
                 }
             ],
-            "position": "testdata/ssa/ssa.go:77:10"
+            "position": "testdata/ssa/ssa.go:79:10"
         },
         {
             "id": [
@@ -127,7 +127,7 @@
                     "expr": "args"
                 }
             ],
-            "position": "testdata/ssa/ssa.go:86:11"
+            "position": "testdata/ssa/ssa.go:88:11"
         },
         {
             "id": [
@@ -155,7 +155,7 @@
                     "expr": "b"
                 }
             ],
-            "position": "testdata/ssa/ssa.go:137:7"
+            "position": "testdata/ssa/ssa.go:139:7"
         },
         {
             "id": [
@@ -183,7 +183,7 @@
                     "expr": "b"
                 }
             ],
-            "position": "testdata/ssa/ssa.go:137:7"
+            "position": "testdata/ssa/ssa.go:139:7"
         },
         {
             "id": [
@@ -193,7 +193,7 @@
             "key": "foo",
             "message": "foo",
             "translation": "",
-            "position": "testdata/ssa/ssa.go:151:8"
+            "position": "testdata/ssa/ssa.go:153:8"
         },
         {
             "id": [
@@ -203,7 +203,7 @@
             "key": "bar",
             "message": "bar",
             "translation": "",
-            "position": "testdata/ssa/ssa.go:151:8"
+            "position": "testdata/ssa/ssa.go:153:8"
         },
         {
             "id": [
@@ -213,7 +213,7 @@
             "key": "baz",
             "message": "baz",
             "translation": "",
-            "position": "testdata/ssa/ssa.go:151:8"
+            "position": "testdata/ssa/ssa.go:153:8"
         },
         {
             "id": [
@@ -223,7 +223,76 @@
             "key": "const str",
             "message": "const str",
             "translation": "",
-            "position": "testdata/ssa/ssa.go:165:11"
+            "position": "testdata/ssa/ssa.go:168:11"
+        },
+        {
+            "id": [
+                "globalStr",
+                "See you around in {City}!"
+            ],
+            "key": "See you around in %s!",
+            "message": "See you around in {City}!",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "City",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "city"
+                }
+            ],
+            "position": "testdata/ssa/ssa.go:181:5"
+        },
+        {
+            "id": [
+                "constFood",
+                "Please eat your {Food}!"
+            ],
+            "key": "Please eat your %s!",
+            "message": "Please eat your {Food}!",
+            "translation": "",
+            "comment": "Ho ho ho",
+            "placeholders": [
+                {
+                    "id": "Food",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "food",
+                    "comment": "the food to be consumed by the subject"
+                }
+            ],
+            "position": "testdata/ssa/ssa.go:193:2"
+        },
+        {
+            "id": [
+                "msgHello",
+                "Hello, {Integer} and {Arg_2}!"
+            ],
+            "key": "Hello, %d and %s!",
+            "message": "Hello, {Integer} and {Arg_2}!",
+            "translation": "",
+            "comment": "Ho ho ho",
+            "placeholders": [
+                {
+                    "id": "Integer",
+                    "string": "%[1]d",
+                    "type": "",
+                    "underlyingType": "int",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]s",
+                    "type": "",
+                    "underlyingType": "string",
+                    "argNum": 2
+                }
+            ],
+            "position": "testdata/ssa/ssa.go:193:2"
         }
     ]
 }
