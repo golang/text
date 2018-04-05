@@ -348,143 +348,160 @@ func (x *extracter) visitArgs(fd *callData, v ssa.Value) {
 	}
 }
 
-func (x *extracter) extractMessages() {
-	// print returns Go syntax for the specified node.
-	print := func(n ast.Node) string {
-		var buf bytes.Buffer
-		format.Node(&buf, x.conf.Fset, n)
-		return buf.String()
+// print returns Go syntax for the specified node.
+func (x *extracter) print(n ast.Node) string {
+	var buf bytes.Buffer
+	format.Node(&buf, x.conf.Fset, n)
+	return buf.String()
+}
+
+type packageExtracter struct {
+	x    *extracter
+	info *loader.PackageInfo
+	cmap ast.CommentMap
+}
+
+func (px packageExtracter) getComment(n ast.Node) string {
+	cs := px.cmap.Filter(n).Comments()
+	if len(cs) > 0 {
+		return strings.TrimSpace(cs[0].Text())
 	}
+	return ""
+}
+
+func (x *extracter) extractMessages() {
 	prog := x.iprog
 	for _, info := range x.iprog.AllPackages {
 		for _, f := range info.Files {
 			// Associate comments with nodes.
-			cmap := ast.NewCommentMap(prog.Fset, f, f.Comments)
-			getComment := func(n ast.Node) string {
-				cs := cmap.Filter(n).Comments()
-				if len(cs) > 0 {
-					return strings.TrimSpace(cs[0].Text())
-				}
-				return ""
+			px := packageExtracter{
+				x, info,
+				ast.NewCommentMap(prog.Fset, f, f.Comments),
 			}
 
 			// Find function calls.
 			ast.Inspect(f, func(n ast.Node) bool {
-				call, ok := n.(*ast.CallExpr)
-				if !ok {
-					return true
-				}
-				data := x.funcs[call.Lparen]
-				if data == nil || len(data.formats) == 0 {
-					return true
-				}
-				x.debug(data.call, "INSERT", data.formats)
-
-				argn := data.callFormatPos()
-				if argn >= len(call.Args) {
-					return true
-				}
-				format := call.Args[argn]
-
-				comment := ""
-				key := []string{}
-				if ident, ok := format.(*ast.Ident); ok {
-					key = append(key, ident.Name)
-					if v, ok := ident.Obj.Decl.(*ast.ValueSpec); ok && v.Comment != nil {
-						// TODO: get comment above ValueSpec as well
-						comment = v.Comment.Text()
-					}
-				}
-
-				arguments := []argument{}
-				simArgs := []interface{}{}
-				if data.callArgsStart() >= 0 {
-					args := call.Args[data.callArgsStart():]
-					simArgs = make([]interface{}, len(args))
-					for i, arg := range args {
-						expr := print(arg)
-						val := ""
-						if v := info.Types[arg].Value; v != nil {
-							val = v.ExactString()
-							simArgs[i] = val
-							switch arg.(type) {
-							case *ast.BinaryExpr, *ast.UnaryExpr:
-								expr = val
-							}
-						}
-						arguments = append(arguments, argument{
-							ArgNum:         i + 1,
-							Type:           info.Types[arg].Type.String(),
-							UnderlyingType: info.Types[arg].Type.Underlying().String(),
-							Expr:           expr,
-							Value:          val,
-							Comment:        getComment(arg),
-							Position:       posString(&x.conf, info.Pkg, arg.Pos()),
-							// TODO report whether it implements
-							// interfaces plural.Interface,
-							// gender.Interface.
-						})
-					}
-				}
-
-				formats := data.formats
-				for _, c := range formats {
-					key := append([]string{}, key...)
-					fmtMsg := constant.StringVal(c)
-					msg := ""
-
-					ph := placeholders{index: map[string]string{}}
-
-					trimmed, _, _ := trimWS(fmtMsg)
-
-					p := fmtparser.Parser{}
-					p.Reset(simArgs)
-					for p.SetFormat(trimmed); p.Scan(); {
-						switch p.Status {
-						case fmtparser.StatusText:
-							msg += p.Text()
-						case fmtparser.StatusSubstitution,
-							fmtparser.StatusBadWidthSubstitution,
-							fmtparser.StatusBadPrecSubstitution:
-							arguments[p.ArgNum-1].used = true
-							arg := arguments[p.ArgNum-1]
-							sub := p.Text()
-							if !p.HasIndex {
-								r, sz := utf8.DecodeLastRuneInString(sub)
-								sub = fmt.Sprintf("%s[%d]%c", sub[:len(sub)-sz], p.ArgNum, r)
-							}
-							msg += fmt.Sprintf("{%s}", ph.addArg(&arg, sub))
-						}
-					}
-					key = append(key, msg)
-
-					// Add additional Placeholders that can be used in translations
-					// that are not present in the string.
-					for _, arg := range arguments {
-						if arg.used {
-							continue
-						}
-						ph.addArg(&arg, fmt.Sprintf("%%[%d]v", arg.ArgNum))
-					}
-
-					if c := getComment(call.Args[0]); c != "" {
-						comment = c
-					}
-
-					x.messages = append(x.messages, Message{
-						ID:      key,
-						Key:     fmtMsg,
-						Message: Text{Msg: msg},
-						// TODO(fix): this doesn't get the before comment.
-						Comment:      comment,
-						Placeholders: ph.slice,
-						Position:     posString(&x.conf, info.Pkg, call.Lparen),
-					})
+				switch v := n.(type) {
+				case *ast.CallExpr:
+					return px.handleCall(v)
 				}
 				return true
 			})
 		}
 	}
+}
+
+func (px packageExtracter) handleCall(call *ast.CallExpr) bool {
+	x := px.x
+	info := px.info
+	data := x.funcs[call.Lparen]
+	if data == nil || len(data.formats) == 0 {
+		return true
+	}
+	x.debug(data.call, "INSERT", data.formats)
+
+	argn := data.callFormatPos()
+	if argn >= len(call.Args) {
+		return true
+	}
+	format := call.Args[argn]
+
+	comment := ""
+	key := []string{}
+	if ident, ok := format.(*ast.Ident); ok {
+		key = append(key, ident.Name)
+		if v, ok := ident.Obj.Decl.(*ast.ValueSpec); ok && v.Comment != nil {
+			// TODO: get comment above ValueSpec as well
+			comment = v.Comment.Text()
+		}
+	}
+
+	arguments := []argument{}
+	simArgs := []interface{}{}
+	if data.callArgsStart() >= 0 {
+		args := call.Args[data.callArgsStart():]
+		simArgs = make([]interface{}, len(args))
+		for i, arg := range args {
+			expr := x.print(arg)
+			val := ""
+			if v := info.Types[arg].Value; v != nil {
+				val = v.ExactString()
+				simArgs[i] = val
+				switch arg.(type) {
+				case *ast.BinaryExpr, *ast.UnaryExpr:
+					expr = val
+				}
+			}
+			arguments = append(arguments, argument{
+				ArgNum:         i + 1,
+				Type:           info.Types[arg].Type.String(),
+				UnderlyingType: info.Types[arg].Type.Underlying().String(),
+				Expr:           expr,
+				Value:          val,
+				Comment:        px.getComment(arg),
+				Position:       posString(&x.conf, info.Pkg, arg.Pos()),
+				// TODO report whether it implements
+				// interfaces plural.Interface,
+				// gender.Interface.
+			})
+		}
+	}
+
+	formats := data.formats
+	for _, c := range formats {
+		key := append([]string{}, key...)
+		fmtMsg := constant.StringVal(c)
+		msg := ""
+
+		ph := placeholders{index: map[string]string{}}
+
+		trimmed, _, _ := trimWS(fmtMsg)
+
+		p := fmtparser.Parser{}
+		p.Reset(simArgs)
+		for p.SetFormat(trimmed); p.Scan(); {
+			switch p.Status {
+			case fmtparser.StatusText:
+				msg += p.Text()
+			case fmtparser.StatusSubstitution,
+				fmtparser.StatusBadWidthSubstitution,
+				fmtparser.StatusBadPrecSubstitution:
+				arguments[p.ArgNum-1].used = true
+				arg := arguments[p.ArgNum-1]
+				sub := p.Text()
+				if !p.HasIndex {
+					r, sz := utf8.DecodeLastRuneInString(sub)
+					sub = fmt.Sprintf("%s[%d]%c", sub[:len(sub)-sz], p.ArgNum, r)
+				}
+				msg += fmt.Sprintf("{%s}", ph.addArg(&arg, sub))
+			}
+		}
+		key = append(key, msg)
+
+		// Add additional Placeholders that can be used in translations
+		// that are not present in the string.
+		for _, arg := range arguments {
+			if arg.used {
+				continue
+			}
+			ph.addArg(&arg, fmt.Sprintf("%%[%d]v", arg.ArgNum))
+		}
+
+		if c := px.getComment(call.Args[0]); c != "" {
+			comment = c
+		}
+
+		x.messages = append(x.messages, Message{
+			ID:      key,
+			Key:     fmtMsg,
+			Message: Text{Msg: msg},
+			// TODO(fix): this doesn't get the before comment.
+			Comment:      comment,
+			Placeholders: ph.slice,
+			Position:     posString(&x.conf, info.Pkg, call.Lparen),
+		})
+	}
+	return true
 }
 
 func posString(conf *loader.Config, pkg *types.Package, pos token.Pos) string {
