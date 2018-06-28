@@ -7,6 +7,9 @@
 package precis
 
 import (
+	"strings"
+
+	"golang.org/x/text/runes"
 	"golang.org/x/text/secure/bidirule"
 )
 
