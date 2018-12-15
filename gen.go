@@ -34,6 +34,7 @@ var (
 	verbose     = flag.Bool("v", false, "verbose output")
 	force       = flag.Bool("force", false, "ignore failing dependencies")
 	doCore      = flag.Bool("core", false, "force an update to core")
+	skipTest    = flag.Bool("skiptest", false, "skip tests")
 	excludeList = flag.String("exclude", "",
 		"comma-separated list of packages to exclude")
 
@@ -206,6 +207,10 @@ func generate(pkg string, deps ...*dependency) *dependency {
 			fmt.Printf("--- FAIL: %s:\n\t%v\n\tError: %v\n", pkg, indent(w), err)
 			hasErrors = true
 			wg.hasErrors = true
+			return
+		}
+
+		if *skipTest {
 			return
 		}
 
