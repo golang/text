@@ -10,21 +10,17 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"unicode"
 
+	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/internal/ucd"
 	"golang.org/x/text/unicode/rangetable"
 )
 
@@ -50,11 +46,6 @@ func defaultVersion() string {
 	return unicode.Version
 }
 
-var dataURL = flag.String("data", "", "full URL for UnicodeData.txt; defaults to --url/UnicodeData.txt")
-var casefoldingURL = flag.String("casefolding", "", "full URL for CaseFolding.txt; defaults to --url/CaseFolding.txt")
-var url = flag.String("url",
-	"http://www.unicode.org/Public/"+defaultVersion()+"/ucd/",
-	"URL of Unicode database directory")
 var tablelist = flag.String("tables",
 	"all",
 	"comma-separated list of which tables to generate; can be letter")
@@ -70,51 +61,18 @@ var cases = flag.Bool("cases",
 var test = flag.Bool("test",
 	false,
 	"test existing tables; can be used to compare web data with package data")
-var localFiles = flag.Bool("local",
-	false,
-	"data files have been copied to current directory; for debugging only")
-var outputFile = flag.String("output",
-	"",
-	"output file for generated tables; default stdout")
 
 var scriptRe = regexp.MustCompile(`^([0-9A-F]+)(\.\.[0-9A-F]+)? *; ([A-Za-z_]+)$`)
 var logger = log.New(os.Stderr, "", log.Lshortfile)
 
-var output *bufio.Writer // points to os.Stdout or to "gofmt > outputFile"
+var output *gen.CodeWriter
 
 func setupOutput() {
-	output = bufio.NewWriter(startGofmt())
-}
-
-// startGofmt connects output to a gofmt process if -output is set.
-func startGofmt() io.Writer {
-	if *outputFile == "" {
-		return os.Stdout
-	}
-	stdout, err := os.Create(*outputFile)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	// Pipe output to gofmt.
-	gofmt := exec.Command("gofmt")
-	fd, err := gofmt.StdinPipe()
-	if err != nil {
-		logger.Fatal(err)
-	}
-	gofmt.Stdout = stdout
-	gofmt.Stderr = os.Stderr
-	err = gofmt.Start()
-	if err != nil {
-		logger.Fatal(err)
-	}
-	return fd
+	output = gen.NewCodeWriter()
 }
 
 func flushOutput() {
-	err := output.Flush()
-	if err != nil {
-		logger.Fatal(err)
-	}
+	output.WriteGoFile("tables.go", "unicode")
 }
 
 func printf(format string, args ...interface{}) {
@@ -129,40 +87,6 @@ func println(args ...interface{}) {
 	fmt.Fprintln(output, args...)
 }
 
-type reader struct {
-	*bufio.Reader
-	fd   *os.File
-	resp *http.Response
-}
-
-func open(url string) *reader {
-	file := filepath.Base(url)
-	if *localFiles {
-		fd, err := os.Open(file)
-		if err != nil {
-			logger.Fatal(err)
-		}
-		return &reader{bufio.NewReader(fd), fd, nil}
-	}
-	resp, err := http.Get(url)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	if resp.StatusCode != 200 {
-		logger.Fatalf("bad GET status for %s: %d", file, resp.Status)
-	}
-	return &reader{bufio.NewReader(resp.Body), nil, resp}
-
-}
-
-func (r *reader) close() {
-	if r.fd != nil {
-		r.fd.Close()
-	} else {
-		r.resp.Body.Close()
-	}
-}
-
 var category = map[string]bool{
 	// Nd Lu etc.
 	// We use one-character names to identify merged categories
@@ -175,54 +99,9 @@ var category = map[string]bool{
 	"C": true, // Cc Cf Cs Co Cn
 }
 
-// UnicodeData.txt has form:
-//	0037;DIGIT SEVEN;Nd;0;EN;;7;7;7;N;;;;;
-//	007A;LATIN SMALL LETTER Z;Ll;0;L;;;;;N;;;005A;;005A
-// See https://www.unicode.org/reports/tr44/ for a full explanation
-// The fields:
-const (
-	FCodePoint = iota
-	FName
-	FGeneralCategory
-	FCanonicalCombiningClass
-	FBidiClass
-	FDecompositionTypeAndMapping
-	FNumericType
-	FNumericDigit // If a decimal digit.
-	FNumericValue // Includes non-decimal, e.g. U+2155=1/5
-	FBidiMirrored
-	FUnicode1Name
-	FISOComment
-	FSimpleUppercaseMapping
-	FSimpleLowercaseMapping
-	FSimpleTitlecaseMapping
-	NumField
-
-	MaxChar = 0x10FFFF // anything above this shouldn't exist
-)
-
-var fieldName = []string{
-	FCodePoint:                   "CodePoint",
-	FName:                        "Name",
-	FGeneralCategory:             "GeneralCategory",
-	FCanonicalCombiningClass:     "CanonicalCombiningClass",
-	FBidiClass:                   "BidiClass",
-	FDecompositionTypeAndMapping: "DecompositionTypeAndMapping",
-	FNumericType:                 "NumericType",
-	FNumericDigit:                "NumericDigit",
-	FNumericValue:                "NumericValue",
-	FBidiMirrored:                "BidiMirrored",
-	FUnicode1Name:                "Unicode1Name",
-	FISOComment:                  "ISOComment",
-	FSimpleUppercaseMapping:      "SimpleUppercaseMapping",
-	FSimpleLowercaseMapping:      "SimpleLowercaseMapping",
-	FSimpleTitlecaseMapping:      "SimpleTitlecaseMapping",
-}
-
 // This contains only the properties we're interested in.
 type Char struct {
-	field     []string // debugging only; could be deleted if we take out char.dump()
-	codePoint rune     // if zero, this index is not a valid code point.
+	codePoint rune // if zero, this index is not a valid code point.
 	category  string
 	upperCase rune
 	lowerCase rune
@@ -231,106 +110,11 @@ type Char struct {
 	caseOrbit rune // next in simple case folding orbit
 }
 
-// Scripts.txt has form:
-//	A673          ; Cyrillic # Po       SLAVONIC ASTERISK
-//	A67C..A67D    ; Cyrillic # Mn   [2] COMBINING CYRILLIC KAVYKA..COMBINING CYRILLIC PAYEROK
-// See https://www.unicode.org/Public/5.1.0/ucd/UCD.html for full explanation
-
-type Script struct {
-	lo, hi uint32 // range of code points
-	script string
-}
+const MaxChar = 0x10FFFF
 
 var chars = make([]Char, MaxChar+1)
-var scripts = make(map[string][]Script)
-var props = make(map[string][]Script) // a property looks like a script; can share the format
-
-var lastChar rune = 0
-
-// In UnicodeData.txt, some ranges are marked like this:
-//	3400;<CJK Ideograph Extension A, First>;Lo;0;L;;;;;N;;;;;
-//	4DB5;<CJK Ideograph Extension A, Last>;Lo;0;L;;;;;N;;;;;
-// parseCategory returns a state variable indicating the weirdness.
-type State int
-
-const (
-	SNormal State = iota // known to be zero for the type
-	SFirst
-	SLast
-	SMissing
-)
-
-func parseCategory(line string) (state State) {
-	field := strings.Split(line, ";")
-	if len(field) != NumField {
-		logger.Fatalf("%5s: %d fields (expected %d)\n", line, len(field), NumField)
-	}
-	point, err := strconv.ParseUint(field[FCodePoint], 16, 64)
-	if err != nil {
-		logger.Fatalf("%.5s...: %s", line, err)
-	}
-	lastChar = rune(point)
-	if point > MaxChar {
-		return
-	}
-	char := &chars[point]
-	char.field = field
-	if char.codePoint != 0 {
-		logger.Fatalf("point %U reused", point)
-	}
-	char.codePoint = lastChar
-	char.category = field[FGeneralCategory]
-	category[char.category] = true
-	switch char.category {
-	case "Nd":
-		// Decimal digit
-		_, err := strconv.Atoi(field[FNumericValue])
-		if err != nil {
-			logger.Fatalf("%U: bad numeric field: %s", point, err)
-		}
-	case "Lu":
-		char.letter(field[FCodePoint], field[FSimpleLowercaseMapping], field[FSimpleTitlecaseMapping])
-	case "Ll":
-		char.letter(field[FSimpleUppercaseMapping], field[FCodePoint], field[FSimpleTitlecaseMapping])
-	case "Lt":
-		char.letter(field[FSimpleUppercaseMapping], field[FSimpleLowercaseMapping], field[FCodePoint])
-	default:
-		char.letter(field[FSimpleUppercaseMapping], field[FSimpleLowercaseMapping], field[FSimpleTitlecaseMapping])
-	}
-	switch {
-	case strings.Index(field[FName], ", First>") > 0:
-		state = SFirst
-	case strings.Index(field[FName], ", Last>") > 0:
-		state = SLast
-	}
-	return
-}
-
-func (char *Char) dump(s string) {
-	print(s, " ")
-	for i := 0; i < len(char.field); i++ {
-		printf("%s:%q ", fieldName[i], char.field[i])
-	}
-	print("\n")
-}
-
-func (char *Char) letter(u, l, t string) {
-	char.upperCase = char.letterValue(u, "U")
-	char.lowerCase = char.letterValue(l, "L")
-	char.titleCase = char.letterValue(t, "T")
-}
-
-func (char *Char) letterValue(s string, cas string) rune {
-	if s == "" {
-		return 0
-	}
-	v, err := strconv.ParseUint(s, 16, 64)
-	if err != nil {
-		char.dump(cas)
-		logger.Fatalf("%U: bad letter(%s): %s", char.codePoint, s, err)
-	}
-	return rune(v)
-}
+var scripts = make(map[string][]rune)
+var props = make(map[string][]rune) // a property looks like a script; can share the format
 
 func allCategories() []string {
 	a := make([]string, 0, len(category))
@@ -341,7 +125,7 @@ func allCategories() []string {
 	return a
 }
 
-func all(scripts map[string][]Script) []string {
+func all(scripts map[string][]rune) []string {
 	a := make([]string, 0, len(scripts))
 	for k := range scripts {
 		a = append(a, k)
@@ -359,104 +143,62 @@ func allCatFold(m map[string]map[rune]bool) []string {
 	return a
 }
 
-// Extract the version number from the URL
-func version() string {
-	// Break on slashes and look for the first numeric field
-	fields := strings.Split(*url, "/")
-	for _, f := range fields {
-		if len(f) > 0 && '0' <= f[0] && f[0] <= '9' {
-			return f
-		}
-	}
-	logger.Fatal("unknown version")
-	return "Unknown"
-}
-
 func categoryOp(code rune, class uint8) bool {
 	category := chars[code].category
 	return len(category) > 0 && category[0] == class
 }
 
 func loadChars() {
-	if *dataURL == "" {
-		flag.Set("data", *url+"UnicodeData.txt")
-	}
-	input := open(*dataURL)
-	defer input.close()
-	scanner := bufio.NewScanner(input)
-	var first rune = 0
-	for scanner.Scan() {
-		switch parseCategory(scanner.Text()) {
-		case SNormal:
-			if first != 0 {
-				logger.Fatalf("bad state normal at %U", lastChar)
+	ucd.Parse(gen.OpenUCDFile("UnicodeData.txt"), func(p *ucd.Parser) {
+		c := Char{codePoint: p.Rune(0)}
+
+		getRune := func(field int) rune {
+			if p.String(field) == "" {
+				return 0
 			}
-		case SFirst:
-			if first != 0 {
-				logger.Fatalf("bad state first at %U", lastChar)
-			}
-			first = lastChar
-		case SLast:
-			if first == 0 {
-				logger.Fatalf("bad state last at %U", lastChar)
-			}
-			for i := first + 1; i <= lastChar; i++ {
-				chars[i] = chars[first]
-				chars[i].codePoint = i
-			}
-			first = 0
+			return p.Rune(field)
 		}
-	}
-	if scanner.Err() != nil {
-		logger.Fatal(scanner.Err())
-	}
+
+		c.category = p.String(ucd.GeneralCategory)
+		category[c.category] = true
+		switch c.category {
+		case "Nd":
+			// Decimal digit
+			p.Int(ucd.NumericValue)
+		case "Lu":
+			c.upperCase = getRune(ucd.CodePoint)
+			c.lowerCase = getRune(ucd.SimpleLowercaseMapping)
+			c.titleCase = getRune(ucd.SimpleTitlecaseMapping)
+		case "Ll":
+			c.upperCase = getRune(ucd.SimpleUppercaseMapping)
+			c.lowerCase = getRune(ucd.CodePoint)
+			c.titleCase = getRune(ucd.SimpleTitlecaseMapping)
+		case "Lt":
+			c.upperCase = getRune(ucd.SimpleUppercaseMapping)
+			c.lowerCase = getRune(ucd.SimpleLowercaseMapping)
+			c.titleCase = getRune(ucd.CodePoint)
+		default:
+			c.upperCase = getRune(ucd.SimpleUppercaseMapping)
+			c.lowerCase = getRune(ucd.SimpleLowercaseMapping)
+			c.titleCase = getRune(ucd.SimpleTitlecaseMapping)
+		}
+
+		chars[c.codePoint] = c
+	})
 }
 
 func loadCasefold() {
-	if *casefoldingURL == "" {
-		flag.Set("casefolding", *url+"CaseFolding.txt")
-	}
-	input := open(*casefoldingURL)
-	defer input.close()
-	scanner := bufio.NewScanner(input)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if len(line) == 0 || line[0] == '#' || len(strings.TrimSpace(line)) == 0 {
-			continue
-		}
-		field := strings.Split(line, "; ")
-		if len(field) != 4 {
-			logger.Fatalf("CaseFolding.txt %.5s...: %d fields (expected %d)\n", line, len(field), 4)
-		}
-		kind := field[1]
+	ucd.Parse(gen.OpenUCDFile("CaseFolding.txt"), func(p *ucd.Parser) {
+		kind := p.String(1)
 		if kind != "C" && kind != "S" {
 			// Only care about 'common' and 'simple' foldings.
-			continue
+			return
 		}
-		p1, err := strconv.ParseUint(field[0], 16, 64)
-		if err != nil {
-			logger.Fatalf("CaseFolding.txt %.5s...: %s", line, err)
-		}
-		p2, err := strconv.ParseUint(field[2], 16, 64)
-		if err != nil {
-			logger.Fatalf("CaseFolding.txt %.5s...: %s", line, err)
-		}
+		p1 := p.Rune(0)
+		p2 := p.Rune(2)
 		chars[p1].foldCase = rune(p2)
-	}
-	if scanner.Err() != nil {
-		logger.Fatal(scanner.Err())
-	}
+	})
 }
-
-const progHeader = `// Copyright 2013 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-// Code generated by go generate; DO NOT EDIT.
-
-package unicode
-
-`
 
 var categoryMapping = map[string]string{
 	"Lu": "Letter, uppercase",
@@ -504,10 +246,9 @@ func printCategories() {
 		fullCategoryTest(list)
 		return
 	}
-	printf(progHeader)
 
 	println("// Version is the Unicode edition from which the tables are derived.")
-	printf("const Version = %q\n\n", version())
+	printf("const Version = %q\n\n", gen.UnicodeVersion())
 
 	if *tablelist == "all" {
 		println("// Categories is the set of Unicode category tables.")
@@ -575,14 +316,12 @@ func printCategories() {
 		decl[ndecl] = varDecl
 		ndecl++
 		if len(name) == 1 { // unified categories
-			decl := fmt.Sprintf("var _%s = &RangeTable{\n", name)
 			dumpRange(
-				decl,
+				"_"+name,
 				func(code rune) bool { return categoryOp(code, name[0]) })
 			continue
 		}
-		dumpRange(
-			fmt.Sprintf("var _%s = &RangeTable{\n", name),
+		dumpRange("_"+name,
 			func(code rune) bool { return chars[code].category == name })
 	}
 	decl.Sort()
@@ -596,7 +335,7 @@ func printCategories() {
 
 type Op func(code rune) bool
 
-func dumpRange(header string, inCategory Op) {
+func dumpRange(name string, inCategory Op) {
 	runes := []rune{}
 	for i := range chars {
 		r := rune(i)
@@ -604,12 +343,12 @@ func dumpRange(header string, inCategory Op) {
 			runes = append(runes, r)
 		}
 	}
-	printRangeTable(header, runes)
+	printRangeTable(name, runes)
 }
 
-func printRangeTable(header string, runes []rune) {
+func printRangeTable(name string, runes []rune) {
 	rt := rangetable.New(runes...)
-	print(header)
+	printf("var %s = &RangeTable{\n", name)
 	println("\tR16: []Range16{")
 	for _, r := range rt.R16 {
 		printf("\t\t{%#04x, %#04x, %d},\n", r.Lo, r.Hi, r.Stride)
@@ -666,39 +405,7 @@ func verifyRange(name string, inCategory Op, table *unicode.RangeTable) {
 	}
 }
 
-func parseScript(line string, scripts map[string][]Script) {
-	comment := strings.Index(line, "#")
-	if comment >= 0 {
-		line = line[0:comment]
-	}
-	line = strings.TrimSpace(line)
-	if len(line) == 0 {
-		return
-	}
-	field := strings.Split(line, ";")
-	if len(field) != 2 {
-		logger.Fatalf("%s: %d fields (expected 2)\n", line, len(field))
-	}
-	matches := scriptRe.FindStringSubmatch(line)
-	if len(matches) != 4 {
-		logger.Fatalf("%s: %d matches (expected 3)\n", line, len(matches))
-	}
-	lo, err := strconv.ParseUint(matches[1], 16, 64)
-	if err != nil {
-		logger.Fatalf("%.5s...: %s", line, err)
-	}
-	hi := lo
-	if len(matches[2]) > 2 { // ignore leading ..
-		hi, err = strconv.ParseUint(matches[2][2:], 16, 64)
-		if err != nil {
-			logger.Fatalf("%.5s...: %s", line, err)
-		}
-	}
-	name := matches[3]
-	scripts[name] = append(scripts[name], Script{uint32(lo), uint32(hi), name})
-}
-
-func fullScriptTest(list []string, installed map[string]*unicode.RangeTable, scripts map[string][]Script) {
+func fullScriptTest(list []string, installed map[string]*unicode.RangeTable, scripts map[string][]rune) {
 	for _, name := range list {
 		if _, ok := scripts[name]; !ok {
 			logger.Fatal("unknown script", name)
@@ -707,11 +414,9 @@ func fullScriptTest(list []string, installed map[string]*unicode.RangeTable, scr
 		if !ok {
 			logger.Fatal("unknown table", name)
 		}
-		for _, script := range scripts[name] {
-			for r := script.lo; r <= script.hi; r++ {
-				if !unicode.Is(installed[name], rune(r)) {
-					fmt.Fprintf(os.Stderr, "%U: not in script %s\n", r, name)
-				}
+		for _, r := range scripts[name] {
+			if !unicode.Is(installed[name], rune(r)) {
+				fmt.Fprintf(os.Stderr, "%U: not in script %s\n", r, name)
 			}
 		}
 	}
@@ -736,16 +441,10 @@ func printScriptOrProperty(doProps bool) {
 	if flaglist == "" {
 		return
 	}
-	input := open(*url + file)
-	scanner := bufio.NewScanner(input)
-	for scanner.Scan() {
-		parseScript(scanner.Text(), table)
-	}
-	if scanner.Err() != nil {
-		logger.Fatal(scanner.Err())
-	}
-	input.close()
-
+	ucd.Parse(gen.OpenUCDFile(file), func(p *ucd.Parser) {
+		name := p.String(1)
+		table[name] = append(table[name], p.Rune(0))
+	})
 	// Find out which scripts to dump
 	list := strings.Split(flaglist, ",")
 	if flaglist == "all" {
@@ -792,14 +491,7 @@ func printScriptOrProperty(doProps bool) {
 				alias, name)
 			ndecl++
 		}
-		decl := fmt.Sprintf("var _%s = &RangeTable {\n", name)
-		runes := []rune{}
-		for _, scr := range table[name] {
-			for r := scr.lo; r <= scr.hi; r++ {
-				runes = append(runes, rune(r))
-			}
-		}
-		printRangeTable(decl, runes)
+		printRangeTable("_"+name, table[name])
 	}
 	decl.Sort()
 	println("// These variables have type *RangeTable.")
@@ -951,9 +643,6 @@ func getCaseState(i rune) (c *caseState) {
 }
 
 func printCases() {
-	if !*cases {
-		return
-	}
 	if *test {
 		fullCaseTest()
 		return
@@ -1144,7 +833,7 @@ func printCasefold() {
 
 	scr := make(map[string]map[rune]bool)
 	for name := range scripts {
-		if x := foldExceptions(inScript(name)); len(x) > 0 {
+		if x := foldExceptions(scripts[name]); len(x) > 0 {
 			scr[name] = x
 		}
 	}
@@ -1161,17 +850,6 @@ func inCategory(name string) []rune {
 		c := &chars[i]
 		if c.category == name || len(name) == 1 && len(c.category) > 1 && c.category[0] == name[0] {
 			x = append(x, i)
-		}
-	}
-	return x
-}
-
-// inScript returns a list of all the runes in the script.
-func inScript(name string) []rune {
-	var x []rune
-	for _, s := range scripts[name] {
-		for c := s.lo; c <= s.hi; c++ {
-			x = append(x, rune(c))
 		}
 	}
 	return x
@@ -1329,9 +1007,7 @@ func printCatFold(name string, m map[string]map[rune]bool) {
 	printf("}\n\n")
 	for _, name := range allCatFold(m) {
 		class := m[name]
-		dumpRange(
-			fmt.Sprintf("var fold%s = &RangeTable{\n", name),
-			func(code rune) bool { return class[code] })
+		dumpRange("fold"+name, func(code rune) bool { return class[code] })
 	}
 }
 

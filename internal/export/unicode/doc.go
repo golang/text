@@ -9,5 +9,5 @@ package unicode
 // standard packages to have non-standard imports, even if imported in files
 // with a build ignore tag.
 
-//go:generate go run gen.go -tables=all -output tables.go
+//go:generate go run gen.go -tables=all
 //go:generate mv tables.go $GOROOT/src/unicode
