@@ -97,7 +97,8 @@ pkg unicode, var <new script or property> *RangeTable
 	var unicode = &dependency{}
 	if updateCore {
 		fmt.Printf("Updating core to version %s...\n", gen.UnicodeVersion())
-		unicode = generate("unicode")
+		unicodeInternal := generate("./internal/export/unicode")
+		unicode = generate("unicode", unicodeInternal)
 
 		// Test some users of the unicode packages, especially the ones that
 		// keep a mirrored table. These may need to be corrected by hand.
