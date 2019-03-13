@@ -11,8 +11,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"go/build"
-	"go/parser"
 	"io/ioutil"
 	"log"
 	"os"
@@ -25,7 +23,7 @@ import (
 	"golang.org/x/text/internal"
 	"golang.org/x/text/language"
 	"golang.org/x/text/runes"
-	"golang.org/x/tools/go/loader"
+	"golang.org/x/tools/go/packages"
 )
 
 const (
@@ -124,8 +122,8 @@ type Config struct {
 type State struct {
 	Config Config
 
-	Package string
-	program *loader.Program
+	Package  string
+	packages []*packages.Package
 
 	Extracted Messages `json:"messages"`
 
@@ -403,20 +401,18 @@ func warnf(format string, args ...interface{}) {
 	log.Printf(format, args...)
 }
 
-func loadPackages(conf *loader.Config, args []string) (*loader.Program, error) {
+func loadPackages(conf *packages.Config, args []string) ([]*packages.Package, error) {
 	if len(args) == 0 {
 		args = []string{"."}
 	}
 
-	conf.Build = &build.Default
-	conf.ParserMode = parser.ParseComments
+	conf.Mode = packages.LoadAllSyntax
 
 	// Use the initial packages from the command line.
-	args, err := conf.FromArgs(args, false)
+	packages, err := packages.Load(conf, args...)
 	if err != nil {
 		return nil, wrap(err, "loading packages failed")
 	}
 
-	// Load, parse and type-check the whole program.
-	return conf.Load()
+	return packages, nil
 }
