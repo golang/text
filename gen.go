@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"go/build"
 	"go/format"
 	"io/ioutil"
 	"os"
@@ -139,10 +138,6 @@ pkg unicode, var <new script or property> *RangeTable
 	// Copy exported packages to the destination golang.org repo.
 	copyExported("golang.org/x/net/idna")
 
-	if updateCore {
-		copyInternal()
-	}
-
 	if hasErrors {
 		fmt.Println("FAIL")
 		os.Exit(1)
@@ -240,32 +235,6 @@ func copyExported(p string) {
 		filepath.Join("..", filepath.FromSlash(p[len("golang.org/x"):])),
 		"golang.org/x/text/internal/export/"+path.Base(p),
 		p)
-}
-
-// copyInternal copies packages used by Go core into the internal directory.
-func copyInternal() {
-	root := filepath.Join(build.Default.GOROOT, filepath.FromSlash("src/internal/x"))
-
-	err := filepath.Walk(root, func(dir string, info os.FileInfo, err error) error {
-		if err != nil || !info.IsDir() || root == dir {
-			return err
-		}
-		src := dir[len(root)+1:]
-		const slash = string(filepath.Separator)
-		if c := strings.Split(src, slash); c[0] == "text" {
-			// Copy a text repo package from its normal location.
-			src = strings.Join(c[1:], slash)
-		} else {
-			// Copy the vendored package if it exists in the export directory.
-			src = filepath.Join("internal", "export", filepath.Base(src))
-		}
-		copyPackage(src, dir, "golang.org", "internal")
-		return nil
-	})
-	if err != nil {
-		fmt.Printf("Seeding directory %s has failed %v:", root, err)
-		os.Exit(1)
-	}
 }
 
 // goGenRE is used to remove go:generate lines.
