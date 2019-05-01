@@ -29,7 +29,7 @@ func Example_http() {
 func ExamplePrinter_numbers() {
 	for _, lang := range []string{"en", "de", "de-CH", "fr", "bn"} {
 		p := message.NewPrinter(language.Make(lang))
-		p.Printf("%-6s %g\n", lang, 123456.78)
+		p.Printf("%-6s %v\n", lang, 123456.78)
 	}
 
 	// Output:
