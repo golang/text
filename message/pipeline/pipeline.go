@@ -11,8 +11,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"go/build"
-	"go/parser"
 	"io/ioutil"
 	"log"
 	"os"
@@ -25,7 +23,9 @@ import (
 	"golang.org/x/text/internal"
 	"golang.org/x/text/language"
 	"golang.org/x/text/runes"
-	"golang.org/x/tools/go/loader"
+	"golang.org/x/tools/go/packages"
+	"golang.org/x/tools/go/ssa"
+	"golang.org/x/tools/go/ssa/ssautil"
 )
 
 const (
@@ -125,7 +125,6 @@ type State struct {
 	Config Config
 
 	Package string
-	program *loader.Program
 
 	Extracted Messages `json:"messages"`
 
@@ -403,20 +402,19 @@ func warnf(format string, args ...interface{}) {
 	log.Printf(format, args...)
 }
 
-func loadPackages(conf *loader.Config, args []string) (*loader.Program, error) {
+func loadPackages(conf *packages.Config, args []string) (*ssa.Program, []*packages.Package, error) {
 	if len(args) == 0 {
 		args = []string{"."}
 	}
 
-	conf.Build = &build.Default
-	conf.ParserMode = parser.ParseComments
-
-	// Use the initial packages from the command line.
-	args, err := conf.FromArgs(args, false)
+	conf.Mode = packages.LoadAllSyntax
+	pkgs, err := packages.Load(conf, args...)
 	if err != nil {
-		return nil, wrap(err, "loading packages failed")
+		packages.PrintErrors(pkgs)
+		return nil, nil, err
 	}
 
-	// Load, parse and type-check the whole program.
-	return conf.Load()
+	prog, _ := ssautil.Packages(pkgs, 0)
+
+	return prog, pkgs, nil
 }
