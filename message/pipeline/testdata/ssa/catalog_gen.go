@@ -33,5 +33,3 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{}
-
-// Total table size 0 bytes (0KiB); checksum: 811C9DC5
