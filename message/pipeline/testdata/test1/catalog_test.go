@@ -23,6 +23,10 @@ func TestCatalog(t *testing.T) {
 		key:  "Hello world!\n",
 		want: "Hello world!\n",
 	}, {
+		lang: "en",
+		key:  "non-existing-key\n",
+		want: "non-existing-key\n",
+	}, {
 		lang: "de",
 		key:  "Hello world!\n",
 		want: "Hallo Welt!\n",

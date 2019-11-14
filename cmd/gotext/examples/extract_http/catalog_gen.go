@@ -14,7 +14,10 @@ type dictionary struct {
 }
 
 func (d *dictionary) Lookup(key string) (data string, ok bool) {
-	p := messageKeyToIndex[key]
+	p, ok := messageKeyToIndex[key]
+	if !ok {
+		return "", false
+	}
 	start, end := d.index[p], d.index[p+1]
 	if start == end {
 		return "", false
