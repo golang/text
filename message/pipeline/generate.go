@@ -271,8 +271,11 @@ func assembleSelect(m *Message, s *Select) (msg catmsg.Message, err error) {
 func sortCases(cases []string) {
 	// TODO: implement full interface.
 	sort.Slice(cases, func(i, j int) bool {
-		if cases[j] == "other" && cases[i] != "other" {
+		switch {
+		case cases[i] != "other" && cases[j] == "other":
 			return true
+		case cases[i] == "other" && cases[j] != "other":
+			return false
 		}
 		// the following code relies on '<' < '=' < any letter.
 		return cmpNumeric(cases[i], cases[j]) == -1
