@@ -13,13 +13,13 @@
 //
 // Text passed to any of the calls in this message does not need to be
 // normalized.
-package search // import "golang.org/x/text/search"
+package search // import "github.com/liquid-dev/text/search"
 
 import (
 	"strings"
 
-	"golang.org/x/text/internal/colltab"
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/internal/colltab"
+	"github.com/liquid-dev/text/language"
 )
 
 // An Option configures a Matcher.

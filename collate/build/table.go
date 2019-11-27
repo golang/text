@@ -9,7 +9,7 @@ import (
 	"io"
 	"reflect"
 
-	"golang.org/x/text/internal/colltab"
+	"github.com/liquid-dev/text/internal/colltab"
 )
 
 // table is an intermediate structure that roughly resembles the table in collate.

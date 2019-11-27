@@ -12,7 +12,7 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/language"
 )
 
 type namer interface {

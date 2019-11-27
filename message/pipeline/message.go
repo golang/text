@@ -9,7 +9,7 @@ import (
 	"errors"
 	"strings"
 
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/language"
 )
 
 // TODO: these definitions should be moved to a package so that the can be used

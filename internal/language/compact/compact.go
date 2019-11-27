@@ -11,13 +11,13 @@
 //
 // It may want to export this functionality at some point, but at this point
 // this is only available for use within x/text.
-package compact // import "golang.org/x/text/internal/language/compact"
+package compact // import "github.com/liquid-dev/text/internal/language/compact"
 
 import (
 	"sort"
 	"strings"
 
-	"golang.org/x/text/internal/language"
+	"github.com/liquid-dev/text/internal/language"
 )
 
 // ID is an integer identifying a single tag.

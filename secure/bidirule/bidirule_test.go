@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
-	"golang.org/x/text/internal/testtext"
-	"golang.org/x/text/unicode/bidi"
+	"github.com/liquid-dev/text/internal/testtext"
+	"github.com/liquid-dev/text/unicode/bidi"
 )
 
 const (

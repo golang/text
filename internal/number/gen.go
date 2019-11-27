@@ -14,12 +14,12 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"golang.org/x/text/internal/gen"
-	"golang.org/x/text/internal/language"
-	"golang.org/x/text/internal/language/compact"
-	"golang.org/x/text/internal/number"
-	"golang.org/x/text/internal/stringset"
-	"golang.org/x/text/unicode/cldr"
+	"github.com/liquid-dev/text/internal/gen"
+	"github.com/liquid-dev/text/internal/language"
+	"github.com/liquid-dev/text/internal/language/compact"
+	"github.com/liquid-dev/text/internal/number"
+	"github.com/liquid-dev/text/internal/stringset"
+	"github.com/liquid-dev/text/unicode/cldr"
 )
 
 var (
@@ -54,7 +54,7 @@ func main() {
 	w := gen.NewCodeWriter()
 	defer w.WriteGoFile(*outputFile, pkg)
 
-	fmt.Fprintln(w, `import "golang.org/x/text/internal/stringset"`)
+	fmt.Fprintln(w, `import "github.com/liquid-dev/text/internal/stringset"`)
 
 	gen.WriteCLDRVersion(w)
 

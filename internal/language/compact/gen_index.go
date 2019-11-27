@@ -14,7 +14,7 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/text/internal/language"
+	"github.com/liquid-dev/text/internal/language"
 )
 
 // Compact indices:

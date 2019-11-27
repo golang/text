@@ -8,14 +8,14 @@
 //
 // NOTE: the formatting functionality is currently under development and may
 // change without notice.
-package currency // import "golang.org/x/text/currency"
+package currency // import "github.com/liquid-dev/text/currency"
 
 import (
 	"errors"
 	"sort"
 
-	"golang.org/x/text/internal/tag"
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/internal/tag"
+	"github.com/liquid-dev/text/language"
 )
 
 // TODO:

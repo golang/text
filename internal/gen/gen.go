@@ -16,7 +16,7 @@
 // IANA data can also optionally be mirrored by putting it in the iana directory
 // rooted at the top of the local mirror. Beware, though, that IANA data is not
 // versioned. So it is up to the developer to use the right version.
-package gen // import "golang.org/x/text/internal/gen"
+package gen // import "github.com/liquid-dev/text/internal/gen"
 
 import (
 	"bytes"
@@ -36,7 +36,7 @@ import (
 	"sync"
 	"unicode"
 
-	"golang.org/x/text/unicode/cldr"
+	"github.com/liquid-dev/text/unicode/cldr"
 )
 
 var (
@@ -153,7 +153,7 @@ var (
 const permissions = 0755
 
 func localReadmeFile() (string, error) {
-	p, err := build.Import("golang.org/x/text", "", build.FindOnly)
+	p, err := build.Import("github.com/liquid-dev/text", "", build.FindOnly)
 	if err != nil {
 		return "", fmt.Errorf("Could not locate package: %v", err)
 	}

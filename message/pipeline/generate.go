@@ -14,12 +14,12 @@ import (
 	"strings"
 	"text/template"
 
-	"golang.org/x/text/collate"
-	"golang.org/x/text/feature/plural"
-	"golang.org/x/text/internal"
-	"golang.org/x/text/internal/catmsg"
-	"golang.org/x/text/internal/gen"
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/collate"
+	"github.com/liquid-dev/text/feature/plural"
+	"github.com/liquid-dev/text/internal"
+	"github.com/liquid-dev/text/internal/catmsg"
+	"github.com/liquid-dev/text/internal/gen"
+	"github.com/liquid-dev/text/language"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -279,9 +279,9 @@ var cmpNumeric = collate.New(language.Und, collate.Numeric).CompareString
 
 var lookup = template.Must(template.New("gen").Parse(`
 import (
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
-	"golang.org/x/text/message/catalog"
+	"github.com/liquid-dev/text/language"
+	"github.com/liquid-dev/text/message"
+	"github.com/liquid-dev/text/message/catalog"
 )
 
 type dictionary struct {

@@ -8,7 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/text/transform"
+	"github.com/liquid-dev/text/transform"
 )
 
 type nickAdditionalMapping struct {

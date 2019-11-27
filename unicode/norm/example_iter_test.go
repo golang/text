@@ -10,7 +10,7 @@ import (
 	"io"
 	"unicode/utf8"
 
-	"golang.org/x/text/unicode/norm"
+	"github.com/liquid-dev/text/unicode/norm"
 )
 
 // EqualSimple uses a norm.Iter to compare two non-normalized

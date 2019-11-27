@@ -2,7 +2,7 @@
 
 package compact
 
-import "golang.org/x/text/internal/language"
+import "github.com/liquid-dev/text/internal/language"
 
 // CLDRVersion is the CLDR version from which the tables in this package are derived.
 const CLDRVersion = "32"

@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"testing"
 
-	"golang.org/x/text/feature/plural"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
+	"github.com/liquid-dev/text/feature/plural"
+	"github.com/liquid-dev/text/language"
+	"github.com/liquid-dev/text/message"
 )
 
 func TestWrongVerb(t *testing.T) {

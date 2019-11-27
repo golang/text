@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"golang.org/x/text/internal/language"
+	"github.com/liquid-dev/text/internal/language"
 )
 
 var errSyntax = language.ErrSyntax

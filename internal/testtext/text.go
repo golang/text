@@ -4,7 +4,7 @@
 
 // Package testtext contains test data that is of common use to the text
 // repository.
-package testtext // import "golang.org/x/text/internal/testtext"
+package testtext // import "github.com/liquid-dev/text/internal/testtext"
 
 const (
 

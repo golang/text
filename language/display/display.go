@@ -12,14 +12,14 @@
 // large. The display package is designed so that users can reduce the linked-in
 // table sizes by cherry picking the languages one wishes to support. There is a
 // Dictionary defined for a selected set of common languages for this purpose.
-package display // import "golang.org/x/text/language/display"
+package display // import "github.com/liquid-dev/text/language/display"
 
 import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/text/internal/format"
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/internal/format"
+	"github.com/liquid-dev/text/language"
 )
 
 /*
@@ -41,7 +41,7 @@ type Formatter struct {
 	x      interface{}
 }
 
-// Format implements "golang.org/x/text/internal/format".Formatter.
+// Format implements "github.com/liquid-dev/text/internal/format".Formatter.
 func (f Formatter) Format(state format.State, verb rune) {
 	// TODO: there are a lot of inefficiencies in this code. Fix it when we
 	// language.Tag has embedded compact tags.

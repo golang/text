@@ -5,7 +5,7 @@
 package main
 
 import (
-	"golang.org/x/text/message/pipeline"
+	"github.com/liquid-dev/text/message/pipeline"
 )
 
 func init() {

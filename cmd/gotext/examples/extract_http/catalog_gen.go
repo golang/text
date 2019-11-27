@@ -3,9 +3,9 @@
 package main
 
 import (
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
-	"golang.org/x/text/message/catalog"
+	"github.com/liquid-dev/text/language"
+	"github.com/liquid-dev/text/message"
+	"github.com/liquid-dev/text/message/catalog"
 )
 
 type dictionary struct {

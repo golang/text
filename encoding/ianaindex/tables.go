@@ -2,7 +2,7 @@
 
 package ianaindex
 
-import "golang.org/x/text/encoding/internal/identifier"
+import "github.com/liquid-dev/text/encoding/internal/identifier"
 
 const (
 	enc3 = iota

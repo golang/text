@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package message // import "golang.org/x/text/message"
+package message // import "github.com/liquid-dev/text/message"
 
 import (
 	"io"
 	"os"
 
 	// Include features to facilitate generated catalogs.
-	_ "golang.org/x/text/feature/plural"
+	_ "github.com/liquid-dev/text/feature/plural"
 
-	"golang.org/x/text/internal/number"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message/catalog"
+	"github.com/liquid-dev/text/internal/number"
+	"github.com/liquid-dev/text/language"
+	"github.com/liquid-dev/text/message/catalog"
 )
 
 // A Printer implements language-specific formatted I/O analogous to the fmt

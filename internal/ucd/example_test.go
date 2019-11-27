@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/text/internal/ucd"
+	"github.com/liquid-dev/text/internal/ucd"
 )
 
 func Example() {

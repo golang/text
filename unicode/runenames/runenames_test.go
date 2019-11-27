@@ -9,9 +9,9 @@ import (
 	"testing"
 	"unicode"
 
-	"golang.org/x/text/internal/gen"
-	"golang.org/x/text/internal/testtext"
-	"golang.org/x/text/internal/ucd"
+	"github.com/liquid-dev/text/internal/gen"
+	"github.com/liquid-dev/text/internal/testtext"
+	"github.com/liquid-dev/text/internal/ucd"
 )
 
 func TestName(t *testing.T) {

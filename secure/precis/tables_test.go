@@ -9,8 +9,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/text/runes"
-	"golang.org/x/text/unicode/rangetable"
+	"github.com/liquid-dev/text/runes"
+	"github.com/liquid-dev/text/unicode/rangetable"
 )
 
 type tableTest struct {

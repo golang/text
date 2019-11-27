@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"golang.org/x/text/encoding"
-	"golang.org/x/text/encoding/internal/identifier"
-	"golang.org/x/text/transform"
+	"github.com/liquid-dev/text/encoding"
+	"github.com/liquid-dev/text/encoding/internal/identifier"
+	"github.com/liquid-dev/text/transform"
 )
 
 // Encoder or Decoder

@@ -4,7 +4,7 @@
 
 //go:generate go run gen.go gen_common.go -output tables.go
 
-package language // import "golang.org/x/text/internal/language"
+package language // import "github.com/liquid-dev/text/internal/language"
 
 // TODO: Remove above NOTE after:
 // - verifying that tables are dropped correctly (most notably matcher tables).

@@ -7,7 +7,7 @@ package norm
 import (
 	"unicode/utf8"
 
-	"golang.org/x/text/transform"
+	"github.com/liquid-dev/text/transform"
 )
 
 // Reset implements the Reset method of the transform.Transformer interface.

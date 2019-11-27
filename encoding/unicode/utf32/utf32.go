@@ -10,15 +10,15 @@
 // (https://www.w3.org/TR/html5/document-metadata.html#charset)
 // while WHATWG directly prohibits supporting it
 // (https://html.spec.whatwg.org/multipage/syntax.html#character-encodings).
-package utf32 // import "golang.org/x/text/encoding/unicode/utf32"
+package utf32 // import "github.com/liquid-dev/text/encoding/unicode/utf32"
 
 import (
 	"errors"
 	"unicode/utf8"
 
-	"golang.org/x/text/encoding"
-	"golang.org/x/text/encoding/internal/identifier"
-	"golang.org/x/text/transform"
+	"github.com/liquid-dev/text/encoding"
+	"github.com/liquid-dev/text/encoding/internal/identifier"
+	"github.com/liquid-dev/text/transform"
 )
 
 // All lists a configuration for each IANA-defined UTF-32 variant.

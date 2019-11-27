@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
-	"golang.org/x/text/collate"
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/collate"
+	"github.com/liquid-dev/text/language"
 )
 
 func ExampleCollator_Strings() {

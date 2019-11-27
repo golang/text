@@ -21,9 +21,9 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/text/internal/gen"
-	"golang.org/x/text/internal/triegen"
-	"golang.org/x/text/internal/ucd"
+	"github.com/liquid-dev/text/internal/gen"
+	"github.com/liquid-dev/text/internal/triegen"
+	"github.com/liquid-dev/text/internal/ucd"
 )
 
 func main() {

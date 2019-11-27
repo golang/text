@@ -13,12 +13,12 @@
 // layout.
 //
 // For more information, see https://unicode.org/reports/tr11/.
-package width // import "golang.org/x/text/width"
+package width // import "github.com/liquid-dev/text/width"
 
 import (
 	"unicode/utf8"
 
-	"golang.org/x/text/transform"
+	"github.com/liquid-dev/text/transform"
 )
 
 // TODO

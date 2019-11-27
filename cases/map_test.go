@@ -12,10 +12,10 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"golang.org/x/text/internal/testtext"
-	"golang.org/x/text/language"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
+	"github.com/liquid-dev/text/internal/testtext"
+	"github.com/liquid-dev/text/language"
+	"github.com/liquid-dev/text/transform"
+	"github.com/liquid-dev/text/unicode/norm"
 )
 
 type testCase struct {

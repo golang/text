@@ -14,16 +14,16 @@
 // UTS #46 is defined in https://www.unicode.org/reports/tr46.
 // See https://unicode.org/cldr/utility/idna.jsp for a visualization of the
 // differences between these two standards.
-package idna // import "golang.org/x/text/internal/export/idna"
+package idna // import "github.com/liquid-dev/text/internal/export/idna"
 
 import (
 	"fmt"
 	"strings"
 	"unicode/utf8"
 
-	"golang.org/x/text/secure/bidirule"
-	"golang.org/x/text/unicode/bidi"
-	"golang.org/x/text/unicode/norm"
+	"github.com/liquid-dev/text/secure/bidirule"
+	"github.com/liquid-dev/text/unicode/bidi"
+	"github.com/liquid-dev/text/unicode/norm"
 )
 
 // NOTE: Unlike common practice in Go APIs, the functions will return a

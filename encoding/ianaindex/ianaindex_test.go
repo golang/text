@@ -7,14 +7,14 @@ package ianaindex
 import (
 	"testing"
 
-	"golang.org/x/text/encoding"
-	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/encoding/internal/identifier"
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/encoding/korean"
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"golang.org/x/text/encoding/traditionalchinese"
-	"golang.org/x/text/encoding/unicode"
+	"github.com/liquid-dev/text/encoding"
+	"github.com/liquid-dev/text/encoding/charmap"
+	"github.com/liquid-dev/text/encoding/internal/identifier"
+	"github.com/liquid-dev/text/encoding/japanese"
+	"github.com/liquid-dev/text/encoding/korean"
+	"github.com/liquid-dev/text/encoding/simplifiedchinese"
+	"github.com/liquid-dev/text/encoding/traditionalchinese"
+	"github.com/liquid-dev/text/encoding/unicode"
 )
 
 var All = [][]encoding.Encoding{

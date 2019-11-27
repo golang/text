@@ -7,7 +7,7 @@
 // https://www.unicode.org/Public/UCD/latest/ucd/ for example files.
 //
 // It currently does not support substitutions of missing fields.
-package ucd // import "golang.org/x/text/internal/ucd"
+package ucd // import "github.com/liquid-dev/text/internal/ucd"
 
 import (
 	"bufio"

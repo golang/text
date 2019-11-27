@@ -2,7 +2,7 @@
 
 package number
 
-import "golang.org/x/text/internal/stringset"
+import "github.com/liquid-dev/text/internal/stringset"
 
 // CLDRVersion is the CLDR version from which the tables in this package are derived.
 const CLDRVersion = "32"

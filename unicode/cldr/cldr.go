@@ -15,7 +15,7 @@
 // old code should keep compiling for newer versions, but data may have moved or
 // changed. CLDR version 22 is the first version supported by this package.
 // Older versions may not work.
-package cldr // import "golang.org/x/text/unicode/cldr"
+package cldr // import "github.com/liquid-dev/text/unicode/cldr"
 
 import (
 	"fmt"

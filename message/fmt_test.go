@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/language"
 )
 
 type (

@@ -15,8 +15,8 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/text/encoding/internal/identifier"
-	"golang.org/x/text/internal/gen"
+	"github.com/liquid-dev/text/encoding/internal/identifier"
+	"github.com/liquid-dev/text/internal/gen"
 )
 
 type registry struct {
@@ -74,7 +74,7 @@ func main() {
 
 	w := gen.NewCodeWriter()
 
-	fmt.Fprintln(w, `import "golang.org/x/text/encoding/internal/identifier"`)
+	fmt.Fprintln(w, `import "github.com/liquid-dev/text/encoding/internal/identifier"`)
 
 	writeIndex(w, x)
 

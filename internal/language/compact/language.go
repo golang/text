@@ -13,7 +13,7 @@ package compact
 import (
 	"strings"
 
-	"golang.org/x/text/internal/language"
+	"github.com/liquid-dev/text/internal/language"
 )
 
 // Tag represents a BCP 47 language tag. It is used to specify an instance of a

@@ -5,7 +5,7 @@ package currency
 import (
 	"time"
 
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/language"
 )
 
 // This file contains code common to gen.go and the package code.

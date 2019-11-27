@@ -19,9 +19,9 @@ import (
 	"strings"
 	"unicode"
 
-	"golang.org/x/text/internal/gen"
-	"golang.org/x/text/internal/ucd"
-	"golang.org/x/text/unicode/rangetable"
+	"github.com/liquid-dev/text/internal/gen"
+	"github.com/liquid-dev/text/internal/ucd"
+	"github.com/liquid-dev/text/unicode/rangetable"
 )
 
 func main() {

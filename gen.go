@@ -24,9 +24,9 @@ import (
 	"sync"
 	"unicode"
 
-	"golang.org/x/text/collate"
-	"golang.org/x/text/internal/gen"
-	"golang.org/x/text/language"
+	"github.com/liquid-dev/text/collatee
+	"github.com/liquid-dev/text/internal/gen"
+	"github.com/liquid-dev/text/language"
 )
 
 var (
@@ -233,7 +233,7 @@ func copyExported(p string) {
 	copyPackage(
 		filepath.Join("internal", "export", path.Base(p)),
 		filepath.Join("..", filepath.FromSlash(p[len("golang.org/x"):])),
-		"golang.org/x/text/internal/export/"+path.Base(p),
+		"github.com/liquid-dev/text/internal/export/"+path.Base(p),
 		p)
 }
 

@@ -7,12 +7,12 @@
 //go:generate go test -tags test
 
 // Package norm contains types and functions for normalizing Unicode strings.
-package norm // import "golang.org/x/text/unicode/norm"
+package norm // import "github.com/liquid-dev/text/unicode/norm"
 
 import (
 	"unicode/utf8"
 
-	"golang.org/x/text/transform"
+	"github.com/liquid-dev/text/transform"
 )
 
 // A Form denotes a canonical representation of Unicode code points.
