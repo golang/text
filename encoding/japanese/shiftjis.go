@@ -152,8 +152,13 @@ loop:
 					goto write2
 				}
 			}
-			err = internal.ErrASCIIReplacement
-			break
+
+			// TODO: ここで処理が落ちてしまうため、落ちないよう強制的にcontinueするよう暫定的に修正する
+			continue
+
+			// 以下のコードはライブラリでもともと実装してあったコード
+			// err = internal.ErrASCIIReplacement
+			// break
 		}
 
 	write1:
