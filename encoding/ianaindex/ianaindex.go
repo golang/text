@@ -154,6 +154,7 @@ func mibName(x int) string {
 }
 
 var encodings = [numIANA]encoding.Encoding{
+	enc3:    asciiEnc,
 	enc106:  unicode.UTF8,
 	enc1015: unicode.UTF16(unicode.BigEndian, unicode.UseBOM),
 	enc1013: unicode.UTF16(unicode.BigEndian, unicode.IgnoreBOM),
