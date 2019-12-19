@@ -69,6 +69,10 @@ var (
 
 // Encoding returns an Encoding for IANA-registered names. Matching is
 // case-insensitive.
+//
+// If the provided name doesn't match a IANA-registered charset, an error is
+// returned. If the name matches a IANA-registered charset but isn't supported,
+// a nil encoding and a nil error are returned.
 func (x *Index) Encoding(name string) (encoding.Encoding, error) {
 	name = strings.TrimSpace(name)
 	// First try without lowercasing (possibly creating an allocation).
