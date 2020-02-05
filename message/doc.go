@@ -63,7 +63,7 @@
 // locales. The first step is to extract strings that need to be translated.
 //
 // 1. Install gotext
-//    go get -u golang.org/x/text/cmd/gotext
+//    go get -u github.com/liquid-dev/text/cmd/gotext
 //    gotext -help
 //
 // 2. Mark strings in your source to be translated by using message.Printer,
@@ -86,7 +86,7 @@
 //
 // Right now this has to be done programmatically with calls to Set or
 // SetString. These functions as well as the methods defined in
-// see also package golang.org/x/text/message/catalog can be used to implement
+// see also package github.com/liquid-dev/text/message/catalog can be used to implement
 // either dynamic or static loading of messages.
 //
 //
@@ -95,7 +95,7 @@
 // Translated messages can vary based on the plural and gender forms of
 // substitution values. In general, it is up to the translators to provide
 // alternative translations for such forms. See the packages in
-// golang.org/x/text/feature and golang.org/x/text/message/catalog for more
+// github.com/liquid-dev/text/feature and github.com/liquid-dev/text/message/catalog for more
 // information.
 //
 package message

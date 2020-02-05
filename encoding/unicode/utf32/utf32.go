@@ -109,7 +109,7 @@ const (
 	// ExpectBOM means that the UTF-32 form must start with a byte order mark,
 	// which will be used to override the default encoding.
 	ExpectBOM BOMPolicy = writeBOM | acceptBOM | requireBOM
-	// Consistent with BOMPolicy definition in golang.org/x/text/encoding/unicode
+	// Consistent with BOMPolicy definition in github.com/liquid-dev/text/encoding/unicode
 )
 
 // Endianness is a UTF-32 encoding's default endianness.

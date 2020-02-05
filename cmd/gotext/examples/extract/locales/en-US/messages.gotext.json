@@ -6,7 +6,7 @@
             "key": "Hello world!\n",
             "message": "Hello world!",
             "translation":  "Hello world!",
-            "position": "golang.org/x/text/cmd/gotext/examples/extract/main.go:27:10"
+            "position": "github.com/liquid-dev/text/cmd/gotext/examples/extract/main.go:27:10"
         },
         {
             "id": "Hello {City}!",

@@ -88,7 +88,7 @@ func Title(t language.Tag, opts ...Option) Caser {
 //
 // Case folding does not normalize the input and may not preserve a normal form.
 // Use the collate or search package for more convenient and linguistically
-// sound comparisons. Use golang.org/x/text/secure/precis for string comparisons
+// sound comparisons. Use github.com/liquid-dev/text/secure/precis for string comparisons
 // where security aspects are a concern.
 func Fold(opts ...Option) Caser {
 	return Caser{makeFold(getOpts(opts...))}

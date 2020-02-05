@@ -100,7 +100,7 @@
                 {
                     "id": "ReferralCode",
                     "string": "%[1]d",
-                    "type": "golang.org/x/text/cmd/gotext/examples/extract.referralCode",
+                    "type": "github.com/liquid-dev/text/cmd/gotext/examples/extract.referralCode",
                     "underlyingType": "int",
                     "argNum": 1,
                     "expr": "c"

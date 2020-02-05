@@ -9,7 +9,7 @@
 // transformations, and locale-specific text handling.
 //
 // There is a 30 minute video, recorded on 2017-11-30, on the "State of
-// golang.org/x/text" at https://www.youtube.com/watch?v=uYrDrMEGu58
+// github.com/liquid-dev/text" at https://www.youtube.com/watch?v=uYrDrMEGu58
 package text
 
 // TODO: more documentation on general concepts, such as Transformers, use

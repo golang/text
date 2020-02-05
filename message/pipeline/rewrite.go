@@ -243,7 +243,7 @@ type rewriteType struct {
 // rewriteFuncs list functions that can be directly mapped to the printer
 // functions of the message package.
 var rewriteFuncs = map[string]map[string]rewriteType{
-	// TODO: Printer -> *golang.org/x/text/message.Printer
+	// TODO: Printer -> *github.com/liquid-dev/text/message.Printer
 	"fmt": {
 		"Print":  rewriteType{methodf: "Printf"},
 		"Sprint": rewriteType{methodf: "Sprintf"},
