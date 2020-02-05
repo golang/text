@@ -14,6 +14,7 @@ import (
 	"go/token"
 	"go/types"
 	"path/filepath"
+	"sort"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -509,8 +510,14 @@ func (px packageExtracter) getComment(n ast.Node) string {
 
 func (x *extracter) extractMessages() {
 	prog := x.iprog
+	keys := make([]*types.Package, 0, len(x.iprog.AllPackages))
+	for k := range x.iprog.AllPackages {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i].Path() < keys[j].Path() })
 	files := []packageExtracter{}
-	for _, info := range x.iprog.AllPackages {
+	for _, k := range keys {
+		info := x.iprog.AllPackages[k]
 		for _, f := range info.Files {
 			// Associate comments with nodes.
 			px := packageExtracter{

@@ -100,7 +100,7 @@
                 {
                     "id": "ReferralCode",
                     "string": "%[1]d",
-                    "type": "./testdata/test1.referralCode",
+                    "type": "testdata/test1.referralCode",
                     "underlyingType": "int",
                     "argNum": 1,
                     "expr": "c"
