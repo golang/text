@@ -53,6 +53,8 @@ func TestNonRepertoire(t *testing.T) {
 		{dec, GB18030, strings.Repeat("\xfe\x30", n), strings.Repeat("\ufffd0", n)},
 
 		{dec, HZGB2312, "~/", "\ufffd"},
+		{dec, HZGB2312, "~", "\ufffd"},
+		{dec, HZGB2312, "~~~", "~\ufffd"},
 		{dec, HZGB2312, "~{a\x80", "\ufffd"},
 		{dec, HZGB2312, "~{a\x80", "\ufffd"},
 		{dec, HZGB2312, "~{" + strings.Repeat("z~", n), strings.Repeat("\ufffd", n)},
