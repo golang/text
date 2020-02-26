@@ -9,7 +9,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -920,6 +925,31 @@ func TestString(t *testing.T) {
 	})
 }
 
+func runNM(code string) (string, error) {
+	// Write the file.
+	tmpdir, err := ioutil.TempDir(os.TempDir(), "normalize_test")
+	if err != nil {
+		return "", fmt.Errorf("failed to create tmpdir: %v", err)
+	}
+	defer os.RemoveAll(tmpdir)
+	goTool := filepath.Join(runtime.GOROOT(), "bin", "go")
+	filename := filepath.Join(tmpdir, "main.go")
+	if err := ioutil.WriteFile(filename, []byte(code), 0644); err != nil {
+		return "", fmt.Errorf("failed to write main.go: %v", err)
+	}
+	outputFile := filepath.Join(tmpdir, "main")
+
+	// Build the binary.
+	out, err := exec.Command(goTool, "build", "-o", outputFile, filename).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to execute command: %v", err)
+	}
+
+	// Get the symbols.
+	out, err = exec.Command(goTool, "tool", "nm", outputFile).CombinedOutput()
+	return string(out), err
+}
+
 func TestLinking(t *testing.T) {
 	const prog = `
 	package main
@@ -927,15 +957,21 @@ func TestLinking(t *testing.T) {
 	import "golang.org/x/text/unicode/norm"
 	func main() { fmt.Println(norm.%s) }
 	`
-	baseline, errB := testtext.CodeSize(fmt.Sprintf(prog, "MaxSegmentSize"))
-	withTables, errT := testtext.CodeSize(fmt.Sprintf(prog, `NFC.String("")`))
+
+	baseline, errB := runNM(fmt.Sprintf(prog, "MaxSegmentSize"))
+	withTables, errT := runNM(fmt.Sprintf(prog, `NFC.String("")`))
 	if errB != nil || errT != nil {
-		t.Skipf("code size failed: %v and %v", errB, errT)
+		t.Skipf("TestLinking failed: %v and %v", errB, errT)
 	}
-	// Tables are at least 50K
-	if d := withTables - baseline; d < 50*1024 {
-		t.Errorf("tables appear not to be dropped: %d - %d = %d",
-			withTables, baseline, d)
+
+	symbols := []string{"norm.formTable", "norm.nfkcValues", "norm.decomps"}
+	for _, symbol := range symbols {
+		if strings.Contains(baseline, symbol) {
+			t.Errorf("found: %q unexpectedly", symbol)
+		}
+		if !strings.Contains(withTables, symbol) {
+			t.Errorf("didn't find: %q unexpectedly", symbol)
+		}
 	}
 }
 
