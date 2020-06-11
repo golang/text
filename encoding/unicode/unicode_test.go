@@ -114,12 +114,39 @@ func TestUTF16(t *testing.T) {
 		err:     ErrMissingBOM,
 		t:       utf16BEEB.NewDecoder(),
 	}, {
+		desc:    "utf-16 dec: Fail on single byte missing BOM when required",
+		src:     "\x00",
+		sizeDst: 4,
+		t:       utf16BEEB.NewDecoder(),
+		err:     ErrMissingBOM,
+	}, {
+		desc:    "utf-16 dec: Fail on short src missing BOM when required",
+		src:     "\x00",
+		notEOF:  true,
+		sizeDst: 4,
+		t:       utf16BEEB.NewDecoder(),
+		err:     transform.ErrShortSrc,
+	}, {
 		desc:    "utf-16 dec: SHOULD interpret text as big-endian when BOM not present (RFC 2781:4.3)",
 		src:     "\xD8\x08\xDF\x45\x00\x3D\x00\x52\x00\x61",
 		sizeDst: 100,
 		want:    "\U00012345=Ra",
 		nSrc:    10,
 		t:       utf16BEUB.NewDecoder(),
+	}, {
+		desc:    "utf-16 dec: incorrect UTF-16: odd bytes",
+		src:     "\x00",
+		sizeDst: 100,
+		want:    "\uFFFD",
+		nSrc:    1,
+		t:       utf16BEUB.NewDecoder(),
+	}, {
+		desc:    "utf-16 dec: Fail on incorrect UTF-16: short source odd bytes",
+		src:     "\x00",
+		notEOF:  true,
+		sizeDst: 100,
+		t:       utf16BEUB.NewDecoder(),
+		err:     transform.ErrShortSrc,
 	}, {
 		// This is an error according to RFC 2781. But errors in RFC 2781 are
 		// open to interpretations, so I guess this is fine.
@@ -273,16 +300,23 @@ func TestUTF16(t *testing.T) {
 		t:       utf16LEUB.NewDecoder(),
 	}}
 	for i, tc := range testCases {
-		b := make([]byte, tc.sizeDst)
-		nDst, nSrc, err := tc.t.Transform(b, []byte(tc.src), !tc.notEOF)
-		if err != tc.err {
-			t.Errorf("%d:%s: error was %v; want %v", i, tc.desc, err, tc.err)
-		}
-		if got := string(b[:nDst]); got != tc.want {
-			t.Errorf("%d:%s: result was %q: want %q", i, tc.desc, got, tc.want)
-		}
-		if nSrc != tc.nSrc {
-			t.Errorf("%d:%s: nSrc was %d; want %d", i, tc.desc, nSrc, tc.nSrc)
+		for j := 0; j < 2; j++ {
+			b := make([]byte, tc.sizeDst)
+			nDst, nSrc, err := tc.t.Transform(b, []byte(tc.src), !tc.notEOF)
+			if err != tc.err {
+				t.Errorf("%d:%s: error was %v; want %v", i, tc.desc, err, tc.err)
+			}
+			if got := string(b[:nDst]); got != tc.want {
+				t.Errorf("%d:%s: result was %q: want %q", i, tc.desc, got, tc.want)
+			}
+			if nSrc != tc.nSrc {
+				t.Errorf("%d:%s: nSrc was %d; want %d", i, tc.desc, nSrc, tc.nSrc)
+			}
+			// Since Transform is stateful, run failures again
+			// to ensure that the same error occurs a second time.
+			if err == nil {
+				break
+			}
 		}
 	}
 }

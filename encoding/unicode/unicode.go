@@ -368,16 +368,13 @@ func (u *utf16Decoder) Reset() {
 }
 
 func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	if len(src) < 2 && atEOF && u.current.bomPolicy&requireBOM != 0 {
+		return 0, 0, ErrMissingBOM
+	}
 	if len(src) == 0 {
-		if atEOF && u.current.bomPolicy&requireBOM != 0 {
-			return 0, 0, ErrMissingBOM
-		}
 		return 0, 0, nil
 	}
-	if u.current.bomPolicy&acceptBOM != 0 {
-		if len(src) < 2 {
-			return 0, 0, transform.ErrShortSrc
-		}
+	if len(src) >= 2 && u.current.bomPolicy&acceptBOM != 0 {
 		switch {
 		case src[0] == 0xfe && src[1] == 0xff:
 			u.current.endianness = BigEndian
