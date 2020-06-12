@@ -5,7 +5,8 @@
 // Package transform provides reader and writer wrappers that transform the
 // bytes passing through as well as various transformations. Example
 // transformations provided by other packages include normalization and
-// conversion between character sets.
+// conversion between character sets
+// It is not recommended to use the package from multiple go routines
 package transform // import "golang.org/x/text/transform"
 
 import (
