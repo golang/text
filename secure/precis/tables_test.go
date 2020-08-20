@@ -45,7 +45,7 @@ func TestTable(t *testing.T) {
 			idDisOrFreePVal,
 		},
 		tableTest{
-			rangetable.New(0x30000, 0x30101, 0xDFFFF),
+			rangetable.New(0xA0000, 0xA0101, 0xDFFFF),
 			unassigned,
 		},
 	}
