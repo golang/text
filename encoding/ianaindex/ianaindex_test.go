@@ -74,6 +74,7 @@ func TestEncoding(t *testing.T) {
 		{MIME, "  l5  ", "ISO-8859-9", nil},
 		{MIME, "latin5 ", "ISO-8859-9", nil},
 		{MIME, "LATIN5 ", "ISO-8859-9", nil},
+		{MIME, "us-ascii", "US-ASCII", nil},
 		{MIME, "latin 5", "", errInvalidName},
 		{MIME, "latin-5", "", errInvalidName},
 
