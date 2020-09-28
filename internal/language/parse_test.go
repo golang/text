@@ -192,6 +192,14 @@ func parseTests() []parseTest {
 		{in: "en-t-nl-abcd", lang: "en", ext: "t-nl", invalid: true},
 		{in: "en-t-nl-latn", lang: "en", ext: "t-nl-latn"},
 		{in: "en-t-t0-abcd-x-a", lang: "en", extList: []string{"t-t0-abcd", "x-a"}},
+		{in: "en_t_pt_MLt", lang: "en", ext: "t-pt-mlt", changed: true},
+		{in: "en-t-fr-est", lang: "en", ext: "t-fr-est", changed: false},
+		{in: "fr-est", lang: "et", changed: false},
+		{in: "fr-est-Cyrl", lang: "et", script: "Cyrl", changed: false},
+		// The same input here is used in both TestParse and TestParseExtensions.
+		// changed should be true for this input in TestParse but changed should be false for this input in TestParseExtensions
+		// because the entire input has been reformatted but the extension part hasn't.
+		// {in: "fr-est-t-fr-est", lang: "et", ext: "t-fr-est", changed: true},
 		// invalid
 		{in: "", lang: "und", invalid: true},
 		{in: "-", lang: "und", invalid: true},
@@ -299,7 +307,7 @@ func TestParseTag(t *testing.T) {
 			return Tag{}, true
 		}
 		scan := makeScannerString(tt.in)
-		id, end := parseTag(&scan)
+		id, end := parseTag(&scan, true)
 		id.str = string(scan.b[:end])
 		tt.ext = ""
 		tt.extList = []string{}

@@ -723,6 +723,8 @@ var (
 		"en-t-t0-abcd",
 		"en-t-nl-latn",
 		"en-t-t0-abcd-x-a",
+		"en_t_pt_MLt",
+		"en-t-fr-est",
 	}
 	// Change, but not memory allocation required.
 	benchSimpleChange = []string{
