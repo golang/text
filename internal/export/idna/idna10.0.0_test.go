@@ -31,6 +31,8 @@ func TestLabelErrors(t *testing.T) {
 	lengthA := kind{"CheckLengthA", p.ToASCII}
 	p = New(MapForLookup(), StrictDomainName(false))
 	std3 := kind{"STD3", p.ToASCII}
+	p = New(MapForLookup(), CheckHyphens(false))
+	hyphens := kind{"CheckHyphens", p.ToASCII}
 
 	testCases := []struct {
 		kind
@@ -84,6 +86,12 @@ func TestLabelErrors(t *testing.T) {
 		// STD3 rules
 		{display, "*.foo.com", "*.foo.com", "P1"},
 		{std3, "*.foo.com", "*.foo.com", ""},
+
+		// Hyphens
+		{display, "r3---sn-apo3qvuoxuxbt-j5pe.googlevideo.com", "r3---sn-apo3qvuoxuxbt-j5pe.googlevideo.com", "V2"},
+		{hyphens, "r3---sn-apo3qvuoxuxbt-j5pe.googlevideo.com", "r3---sn-apo3qvuoxuxbt-j5pe.googlevideo.com", ""},
+		{display, "-label-.com", "-label-.com", "V3"},
+		{hyphens, "-label-.com", "-label-.com", ""},
 
 		// Don't map U+2490 (DIGIT NINE FULL STOP). This is the behavior of
 		// Chrome, Safari, and IE. Firefox will first map ⒐ to 9. and return
