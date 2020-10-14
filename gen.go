@@ -110,7 +110,8 @@ pkg unicode, var <new script or property> *RangeTable
 
 	var (
 		cldr       = generate("./unicode/cldr", unicode)
-		compact    = generate("./internal/language/compact", cldr)
+		intlang    = generate("./internal/language", cldr)
+		compact    = generate("./internal/language/compact", intlang, cldr)
 		language   = generate("./language", cldr, compact)
 		internal   = generate("./internal", unicode, language)
 		norm       = generate("./unicode/norm", unicode)
