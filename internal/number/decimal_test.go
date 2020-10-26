@@ -248,6 +248,10 @@ func TestConvert(t *testing.T) {
 	inc0_05 := RoundingContext{Increment: 5, IncrementScale: 2}
 	inc0_05.SetScale(2)
 	inc50 := RoundingContext{Increment: 50}
+	incScaleEqualToScalesLen := RoundingContext{Increment: 1, IncrementScale: 0}
+	if len(scales) <= math.MaxUint8 {
+		incScaleEqualToScalesLen.IncrementScale = uint8(len(scales))
+	}
 	prec3 := RoundingContext{}
 	prec3.SetPrecision(3)
 	roundShift := RoundingContext{DigitShift: 2, MaxFractionDigits: 2}
@@ -309,6 +313,7 @@ func TestConvert(t *testing.T) {
 		{math.Inf(-1), inc50, "-Inf"},
 		{math.NaN(), inc50, "NaN"},
 		{"clearly not a number", scale2, "NaN"},
+		{0.0, incScaleEqualToScalesLen, "0"},
 	}
 	for _, tc := range testCases {
 		var d Decimal
