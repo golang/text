@@ -55,7 +55,10 @@ func TestBidiCore(t *testing.T) {
 				continue
 			}
 			lev := level(int(i) - 1)
-			par := newParagraph(types, pairTypes, pairValues, lev)
+			par, err := newParagraph(types, pairTypes, pairValues, lev)
+			if err != nil {
+				t.Error(err)
+			}
 
 			if *testLevels {
 				levels := par.getLevels([]int{len(types)})
@@ -142,7 +145,10 @@ func TestBidiCharacters(t *testing.T) {
 				pairValues = append(pairValues, p.reverseBracket(r))
 			}
 		}
-		par := newParagraph(types, pairTypes, pairValues, parLevel)
+		par, err := newParagraph(types, pairTypes, pairValues, parLevel)
+		if err != nil {
+			t.Error(err)
+		}
 
 		// Test results:
 		if got := par.embeddingLevel; got != wantLevel {
