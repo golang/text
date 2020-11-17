@@ -318,6 +318,7 @@ func TestParseAcceptLanguage(t *testing.T) {
 		{nil, "aa;q", false},
 		{nil, "aa;q=", false},
 		{nil, "aa;q=.", false},
+		{nil, "00-t-0o", false},
 
 		// odd fallbacks
 		{
