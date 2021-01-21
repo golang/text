@@ -163,6 +163,7 @@ func TestRegionGroups(t *testing.T) {
 		{"es-AR", "es-MX", 4},
 		{"es-ES", "es-MX", 5},
 		{"es-PT", "es-MX", 5},
+		{"en-ZZ", "es-MX", 0},
 	}
 	for _, tc := range testCases {
 		a := MustParse(tc.a)
