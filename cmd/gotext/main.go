@@ -178,6 +178,8 @@ Additional help topics:
 
 Use "gotext help [topic]" for more information about that topic.
 
+Patched by Flurosat.
+
 `
 
 var helpTemplate = `{{if .Runnable}}usage: gotext {{.UsageLine}}
