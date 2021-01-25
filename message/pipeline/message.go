@@ -85,7 +85,7 @@ func (m *Message) Substitute(msg string) (sub string, err error) {
 		pRight += pLeft
 		id := strings.TrimSpace(msg[pLeft+1 : pRight])
 		i = pRight + 1
-		if id != "" && id[0] == '$' {
+		if id != "" && pLeft > 0 && msg[pLeft-1] == '$' {
 			continue
 		}
 		sub += msg[last:pLeft]
