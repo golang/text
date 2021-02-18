@@ -523,6 +523,13 @@ func TestCanonicalize(t *testing.T) {
 		{"en-GB-u-rg-usz", "en-GB-u-rg-usz", Raw},
 		{"en-GB-u-rg-usz-va-posix", "en-GB-u-rg-usz-va-posix", Raw},
 		{"en-GB-u-rg-usz-co-phonebk", "en-GB-u-co-phonebk-rg-usz", Raw},
+
+		// CVE-2020-28851
+		// invalid key-value pair of -u- extension.
+		{"ES-u-000-00", "es-u-000-00", Raw},
+		{"ES-u-000-00-v-00", "es-u-000-00-v-00", Raw},
+		// reordered and unknown extension.
+		{"ES-v-00-u-000-00", "es-u-000-00-v-00", Raw},
 	}
 	for i, tt := range tests {
 		in, _ := Raw.Parse(tt.in)
@@ -553,6 +560,12 @@ func TestTypeForKey(t *testing.T) {
 		{"rg", "en-u-rg-gbzzzz", "gbzzzz"},
 		{"nu", "en-u-co-phonebk-nu-arabic", "arabic"},
 		{"kc", "cmn-u-co-stroke", ""},
+		{"rg", "cmn-u-rg", ""},
+		{"rg", "cmn-u-rg-co-stroke", ""},
+		{"co", "cmn-u-rg-co-stroke", "stroke"},
+		{"co", "cmn-u-co-rg-gbzzzz", ""},
+		{"rg", "cmn-u-co-rg-gbzzzz", "gbzzzz"},
+		{"rg", "cmn-u-rg-gbzzzz-nlzzzz", "gbzzzz"},
 	}
 	for _, tt := range tests {
 		if v := Make(tt.in).TypeForKey(tt.key); v != tt.out {

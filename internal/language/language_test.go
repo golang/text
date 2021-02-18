@@ -432,7 +432,9 @@ func TestSetTypeForKey(t *testing.T) {
 		{"co", "pinyin", "en-u-co-phonebk-cu-xau", "en-u-co-pinyin-cu-xau", false},
 		{"co", "pinyin", "en-u-co-phonebk-v-xx", "en-u-co-pinyin-v-xx", false},
 		{"co", "pinyin", "en-u-co-phonebk-x-x", "en-u-co-pinyin-x-x", false},
+		{"co", "pinyin", "en-u-co-x-x", "en-u-co-pinyin-x-x", false},
 		{"nu", "arabic", "en-u-co-phonebk-nu-vaai", "en-u-co-phonebk-nu-arabic", false},
+		{"nu", "arabic", "en-u-co-phonebk-nu", "en-u-co-phonebk-nu-arabic", false},
 		// add to existing -u extension
 		{"co", "pinyin", "en-u-ca-gregory", "en-u-ca-gregory-co-pinyin", false},
 		{"co", "pinyin", "en-u-ca-gregory-nu-vaai", "en-u-ca-gregory-co-pinyin-nu-vaai", false},
@@ -441,8 +443,12 @@ func TestSetTypeForKey(t *testing.T) {
 		{"ca", "gregory", "en-u-co-pinyin", "en-u-ca-gregory-co-pinyin", false},
 		// remove pair
 		{"co", "", "en-u-co-phonebk", "en", false},
+		{"co", "", "en-u-co", "en", false},
+		{"co", "", "en-u-co-v", "en", false},
+		{"co", "", "en-u-co-v-", "en", false},
 		{"co", "", "en-u-ca-gregory-co-phonebk", "en-u-ca-gregory", false},
 		{"co", "", "en-u-co-phonebk-nu-arabic", "en-u-nu-arabic", false},
+		{"co", "", "en-u-co-nu-arabic", "en-u-nu-arabic", false},
 		{"co", "", "en", "en", false},
 		// add -u extension
 		{"co", "pinyin", "en", "en-u-co-pinyin", false},
@@ -504,6 +510,8 @@ func TestFindKeyAndType(t *testing.T) {
 		{"cu", false, "en-a-va-v-va", "en-a-va"},
 		{"cu", false, "en-x-a", "en"},
 		// Tags with the -u extension.
+		{"nu", true, "en-u-cu-nu", "en-u-cu"},
+		{"cu", true, "en-u-cu-nu", "en-u"},
 		{"co", true, "en-u-co-standard", "standard"},
 		{"co", true, "yue-u-co-pinyin", "pinyin"},
 		{"co", true, "en-u-co-abc", "abc"},
@@ -519,9 +527,9 @@ func TestFindKeyAndType(t *testing.T) {
 		{"cu", true, "en-u-co-abc-def-nu-arabic", "en-u-co-abc-def"},
 	}
 	for i, tt := range tests {
-		start, end, hasExt := Make(tt.in).findTypeForKey(tt.key)
-		if start != end {
-			res := tt.in[start:end]
+		start, sep, end, hasExt := Make(tt.in).findTypeForKey(tt.key)
+		if sep != end {
+			res := tt.in[sep:end]
 			if res != tt.out {
 				t.Errorf("%d:%s: was %q; want %q", i, tt.in, res, tt.out)
 			}
