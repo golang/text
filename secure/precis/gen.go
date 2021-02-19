@@ -5,6 +5,7 @@
 // Unicode table generator.
 // Data read from the web.
 
+//go:build ignore
 // +build ignore
 
 package main

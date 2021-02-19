@@ -5,8 +5,8 @@
 package ianaindex
 
 import (
-	"unicode"
 	"testing"
+	"unicode"
 
 	"golang.org/x/text/encoding"
 )
