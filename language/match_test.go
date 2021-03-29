@@ -224,6 +224,20 @@ func (t haveTag) String() string {
 	return fmt.Sprintf("%v:%d:%v:%v-%v|%v", t.tag, t.index, t.conf, t.maxRegion, t.maxScript, t.altScript)
 }
 
+func TestIssue43834(t *testing.T) {
+	matcher := NewMatcher([]Tag{English})
+
+	// ZZ is the largest region code and should not cause overflow.
+	desired, _, err := ParseAcceptLanguage("en-ZZ")
+	if err != nil {
+		t.Error(err)
+	}
+	_, i, _ := matcher.Match(desired...)
+	if i != 0 {
+		t.Errorf("got %v; want 0", i)
+	}
+}
+
 func TestBestMatchAlloc(t *testing.T) {
 	m := NewMatcher(makeTagList("en sr nl"))
 	// Go allocates when creating a list of tags from a single tag!

@@ -150,7 +150,9 @@ func (b *builder) writeMatchData() {
 		regions := strings.Split(g.Contains, " ")
 		regionHierarchy[g.Type] = append(regionHierarchy[g.Type], regions...)
 	}
-	regionToGroups := make([]uint8, language.NumRegions)
+	// Regions start at 1, so the slice must be one larger than the number of
+	// regions.
+	regionToGroups := make([]uint8, language.NumRegions+1)
 
 	idToIndex := map[string]uint8{}
 	for i, mv := range lm[0].MatchVariable {
