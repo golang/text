@@ -19,7 +19,7 @@
 //
 //    p := message.NewPrinter(language.Dutch)
 //
-//    p.Printf("There are %v bikes per household.", number.Decimal(1.2))
+//    p.Printf("Er zijn %v fietsen per huishouden.", number.Decimal(1.2))
 //    // Prints: Er zijn 1,2 fietsen per huishouden.
 //
 //
