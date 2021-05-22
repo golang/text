@@ -242,7 +242,7 @@ func TestBestMatchAlloc(t *testing.T) {
 	m := NewMatcher(makeTagList("en sr nl"))
 	// Go allocates when creating a list of tags from a single tag!
 	list := []Tag{English}
-	avg := testtext.AllocsPerRun(1, func() {
+	avg := testtext.AllocsPerRun(100, func() {
 		m.Match(list...)
 	})
 	if avg > 0 {
