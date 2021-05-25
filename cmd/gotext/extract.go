@@ -15,7 +15,7 @@ import (
 // - message rewriting
 
 func init() {
-	lang = cmdExtract.Flag.String("lang", "en-US", "comma-separated list of languages to process")
+	cmdExtract.Flag.StringVar(&lang, "lang", lang, "comma-separated list of languages to process")
 }
 
 var cmdExtract = &Command{

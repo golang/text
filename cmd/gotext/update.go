@@ -14,14 +14,9 @@ import (
 // - handle features (gender, plural)
 // - message rewriting
 
-var (
-	lang *string
-	out  *string
-)
-
 func init() {
-	lang = cmdUpdate.Flag.String("lang", "en-US", "comma-separated list of languages to process")
-	out = cmdUpdate.Flag.String("out", "", "output file to write to")
+	cmdUpdate.Flag.StringVar(&lang, "lang", lang, "comma-separated list of languages to process")
+	cmdUpdate.Flag.StringVar(&out, "out", out, "output file to write to")
 }
 
 var cmdUpdate = &Command{
@@ -45,7 +40,7 @@ func runUpdate(cmd *Command, config *pipeline.Config, args []string) error {
 	if err := state.Export(); err != nil {
 		return wrap(err, "export failed")
 	}
-	if *out != "" {
+	if out != "" {
 		return wrap(state.Generate(), "generation failed")
 	}
 	return nil
