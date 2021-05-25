@@ -8,10 +8,6 @@ import (
 	"golang.org/x/text/message/pipeline"
 )
 
-func init() {
-	out = cmdGenerate.Flag.String("out", "", "output file to write to")
-}
-
 var cmdGenerate = &Command{
 	Run:       runGenerate,
 	UsageLine: "generate <package>",
