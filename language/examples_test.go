@@ -247,24 +247,28 @@ func ExampleMatcher() {
 	// This is the set of tags from which we want to pick the best match. These
 	// can be, for example, the supported languages for some package.
 	tags := []language.Tag{
-		language.English,
-		language.BritishEnglish,
-		language.French,
-		language.Afrikaans,
-		language.BrazilianPortuguese,
-		language.EuropeanPortuguese,
-		language.Croatian,
-		language.SimplifiedChinese,
-		language.Raw.Make("iw-IL"),
-		language.Raw.Make("iw"),
-		language.Raw.Make("he"),
+		language.English,             // en
+		language.BritishEnglish,      // en-GB
+		language.French,              // fr
+		language.Afrikaans,           // af
+		language.BrazilianPortuguese, // pt-BR
+		language.EuropeanPortuguese,  // pt-PT
+		language.SimplifiedChinese,   // zh-Hans
+		language.Raw.Make("iw-IL"),   // Hebrew from Israel
+		language.Raw.Make("iw"),      // Hebrew
+		language.Raw.Make("he"),      // Hebrew
 	}
 	m := language.NewMatcher(tags)
 
 	// A simple match.
 	fmt.Println(m.Match(language.Make("fr")))
 
-	// Australian English is closer to British than American English.
+	// Australian English is closer to British English than American English.
+	// The resulting match is "en-GB-u-rg-auzzzz". The first language listed,
+	// "en-GB", is the matched language. Next is the region override prefix
+	// "-u-rg-", the region override "au", and the region override suffix "zzzz".
+	// The region override is for things like currency, dates, and measurement
+	// systems.
 	fmt.Println(m.Match(language.Make("en-AU")))
 
 	// Default to the first tag passed to the Matcher if there is no match.
@@ -275,15 +279,12 @@ func ExampleMatcher() {
 
 	fmt.Println("----")
 
-	// Someone specifying sr-Latn is probably fine with getting Croatian.
-	fmt.Println(m.Match(language.Make("sr-Latn")))
-
 	// We match SimplifiedChinese, but with Low confidence.
 	fmt.Println(m.Match(language.TraditionalChinese))
 
-	// Serbian in Latin script is a closer match to Croatian than Traditional
-	// Chinese to Simplified Chinese.
-	fmt.Println(m.Match(language.TraditionalChinese, language.Make("sr-Latn")))
+	// British English is closer to Australian English than Traditional Chinese
+	// to Simplified Chinese.
+	fmt.Println(m.Match(language.TraditionalChinese, language.Make("en-AU")))
 
 	fmt.Println("----")
 
@@ -297,7 +298,7 @@ func ExampleMatcher() {
 
 	fmt.Println("----")
 
-	// If a Matcher is initialized with a language and it's deprecated version,
+	// If a Matcher is initialized with a language and its deprecated version,
 	// it will distinguish between them.
 	fmt.Println(m.Match(language.Raw.Make("iw")))
 
@@ -319,26 +320,23 @@ func ExampleMatcher() {
 
 	// Output:
 	// fr 2 Exact
-	// en-GB 1 High
+	// en-GB-u-rg-auzzzz 1 High
 	// en 0 No
 	// en 0 No
 	// ----
-	// hr 6 High
-	// zh-Hans 7 Low
-	// hr 6 High
+	// zh-Hans 6 Low
+	// en-GB-u-rg-auzzzz 1 High
 	// ----
-	// pt-BR 4 High
-	// fr 2 High
-	// af 3 High
+	// pt-BR 4 Exact
+	// fr-u-rg-bezzzz 2 High
+	// af-u-rg-nazzzz 3 High
 	// ----
-	// iw 9 Exact
-	// he 10 Exact
+	// iw-IL 7 Exact
+	// he-u-rg-ilzzzz 9 Exact
 	// ----
 	// fr-u-cu-frf 2 Exact
 	// fr-u-cu-frf 2 High
 	// en-u-co-phonebk 0 No
-
-	// TODO: "he" should be "he-u-rg-IL High"
 }
 
 func ExampleMatchStrings() {
