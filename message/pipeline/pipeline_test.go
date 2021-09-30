@@ -139,16 +139,42 @@ func initTestdataModule(t *testing.T, dst string) {
 	}
 
 	goMod := fmt.Sprintf(`module testdata
-go 1.11
-require golang.org/x/text v0.0.0-00010101000000-000000000000
-replace golang.org/x/text v0.0.0-00010101000000-000000000000 => %s
+
+replace golang.org/x/text => %s
 `, xTextDir)
 	if err := ioutil.WriteFile(filepath.Join(dst, "go.mod"), []byte(goMod), 0644); err != nil {
 		t.Fatal(err)
 	}
 
+	// Copy in the checksums from the parent module so that we won't
+	// need to re-fetch them from the checksum database.
 	data, err := ioutil.ReadFile(filepath.Join(xTextDir, "go.sum"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := ioutil.WriteFile(filepath.Join(dst, "go.sum"), data, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// We've added a replacement for the parent version of x/text,
+	// but now we need to populate the correct version.
+	// (We can't just replace the zero-version because x/text
+	// may indirectly depend on some nonzero version of itself.)
+	//
+	// We use 'go get' instead of 'go mod tidy' to avoid the old-release
+	// compatibility check when graph pruning is enabled, and to avoid doing
+	// more work than necessary for test dependencies of imported packages
+	// (we're not going to run those tests here anyway).
+	//
+	// We 'go get' the packages in the testdata module — not specific dependencies
+	// of those packages — so that they will resolve to whatever version is
+	// already required in the (replaced) x/text go.mod file.
+
+	getCmd := exec.Command("go", "get", "-d", "./...")
+	getCmd.Dir = dst
+	getCmd.Env = append(os.Environ(), "PWD="+dst, "GOPROXY=off", "GOCACHE=off")
+	if out, err := getCmd.CombinedOutput(); err != nil {
+		t.Logf("%s", out)
 		t.Fatal(err)
 	}
 }
