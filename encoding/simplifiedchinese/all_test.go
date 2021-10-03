@@ -40,6 +40,9 @@ func TestNonRepertoire(t *testing.T) {
 		{enc, HZGB2312, "a갂", "a"},
 		{enc, HZGB2312, "\u6cf5갂", "~{1C~}"},
 
+		{dec, GBK, "\xa2\xe3", "€"},
+		{dec, GB18030, "\x80", "€"},
+
 		{dec, GB18030, "\x81", "\ufffd"},
 		{dec, GB18030, "\x81\x20", "\ufffd "},
 		{dec, GB18030, "\xfe\xfe", "\ufffd"},

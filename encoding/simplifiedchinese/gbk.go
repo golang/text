@@ -55,7 +55,9 @@ loop:
 		// Microsoft's Code Page 936 extends GBK 1.0 to encode the euro sign U+20AC
 		// as 0x80. The HTML5 specification at http://encoding.spec.whatwg.org/#gbk
 		// says to treat "gbk" as Code Page 936.
-		case !d.gb18030 && c0 == 0x80:
+		// GBK’s decoder is gb18030’s decoder. https://encoding.spec.whatwg.org/#gbk-decoder
+		// If byte is 0x80, return code point U+20AC. https://encoding.spec.whatwg.org/#gb18030-decoder
+		case c0 == 0x80:
 			r, size = '€', 1
 
 		case c0 < 0xff:
@@ -180,6 +182,8 @@ func (e gbkEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err 
 				// Microsoft's Code Page 936 extends GBK 1.0 to encode the euro sign U+20AC
 				// as 0x80. The HTML5 specification at http://encoding.spec.whatwg.org/#gbk
 				// says to treat "gbk" as Code Page 936.
+				// GBK’s encoder is gb18030’s encoder with its _is GBK_ set to true. https://encoding.spec.whatwg.org/#gbk-encoder
+				// If _is GBK_ is true and code point is U+20AC, return byte 0x80. https://encoding.spec.whatwg.org/#gb18030-encoder
 				if !e.gb18030 && r == '€' {
 					r = 0x80
 					goto write1
