@@ -40,7 +40,9 @@ func TestNonRepertoire(t *testing.T) {
 		{enc, HZGB2312, "a갂", "a"},
 		{enc, HZGB2312, "\u6cf5갂", "~{1C~}"},
 
+		{dec, GBK, "\xa2\xe3", "€"},
 		{dec, GB18030, "\x80", "€"},
+
 		{dec, GB18030, "\x81", "\ufffd"},
 		{dec, GB18030, "\x81\x20", "\ufffd "},
 		{dec, GB18030, "\xfe\xfe", "\ufffd"},
@@ -125,6 +127,14 @@ func TestBasics(t *testing.T) {
 		encPrefix: "~{",
 		encoded:   ";(<dR;:x>F#,6@WCN^O`GW!#",
 		utf8:      "花间一壶酒，独酌无相亲。",
+	}, {
+		e:       GBK,
+		encoded: "\x80",
+		utf8:    "€",
+	}, {
+		e:       GB18030,
+		encoded: "\xa2\xe3",
+		utf8:    "€",
 	}}
 
 	for _, tc := range testCases {
