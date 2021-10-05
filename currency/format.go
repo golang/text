@@ -6,11 +6,13 @@ package currency
 
 import (
 	"fmt"
-	"io"
 	"sort"
 
 	"golang.org/x/text/internal/format"
 	"golang.org/x/text/internal/language/compact"
+	"golang.org/x/text/internal/number"
+
+	"golang.org/x/text/language"
 )
 
 // Amount is an amount-currency unit pair.
@@ -34,8 +36,6 @@ func (a Amount) Currency() Unit { return a.currency }
 //
 // Add/Sub/Div/Mul/Round.
 
-var space = []byte(" ")
-
 // Format implements fmt.Formatter. It accepts format.State for
 // language-specific rendering.
 func (a Amount) Format(s fmt.State, verb rune) {
@@ -58,9 +58,11 @@ type formattedValue struct {
 // Format implements fmt.Formatter. It accepts format.State for
 // language-specific rendering.
 func (v formattedValue) Format(s fmt.State, verb rune) {
+	var tag language.Tag
 	var lang compact.ID
 	if state, ok := s.(format.State); ok {
-		lang, _ = compact.RegionalID(compact.Tag(state.Language()))
+		tag = state.Language()
+		lang, _ = compact.RegionalID(compact.Tag(tag))
 	}
 
 	// Get the options. Use DefaultFormat if not present.
@@ -73,18 +75,22 @@ func (v formattedValue) Format(s fmt.State, verb rune) {
 		cur = opt.currency
 	}
 
-	// TODO: use pattern.
-	io.WriteString(s, opt.symbol(lang, cur))
+	sym := opt.symbol(lang, cur)
 	if v.amount != nil {
-		s.Write(space)
+		var f number.Formatter
+		f.InitDecimal(tag)
 
-		// TODO: apply currency-specific rounding
-		scale, _ := opt.kind.Rounding(cur)
-		if _, ok := s.Precision(); !ok {
-			fmt.Fprintf(s, "%.*f", scale, v.amount)
-		} else {
-			fmt.Fprint(s, v.amount)
-		}
+		scale, increment := opt.kind.Rounding(cur)
+		f.RoundingContext.SetScale(scale)
+		f.RoundingContext.Increment = uint32(increment)
+		f.RoundingContext.IncrementScale = uint8(scale)
+		f.RoundingContext.Mode = number.ToNearestAway
+
+		d := f.Append(nil, v.amount)
+
+		fmt.Fprint(s, sym, " ", string(d))
+	} else {
+		fmt.Fprint(s, sym)
 	}
 }
 
