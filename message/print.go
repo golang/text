@@ -961,12 +961,16 @@ func (p *printer) doPrintf(fmt string) {
 func (p *printer) doPrint(a []interface{}) {
 	prevString := false
 	for argNum, arg := range a {
-		isString := arg != nil && reflect.TypeOf(arg).Kind() == reflect.String
+		_, isString := arg.(string)
 		// Add a space between two non-string arguments.
 		if argNum > 0 && !isString && !prevString {
 			p.WriteByte(' ')
 		}
-		p.printArg(arg, 'v')
+		if isString {
+			p.printArg(arg, 'm')
+		} else {
+			p.printArg(arg, 'v')
+		}
 		prevString = isString
 	}
 }
@@ -978,7 +982,11 @@ func (p *printer) doPrintln(a []interface{}) {
 		if argNum > 0 {
 			p.WriteByte(' ')
 		}
-		p.printArg(arg, 'v')
+		if _, isString := arg.(string); isString {
+			p.printArg(arg, 'm')
+		} else {
+			p.printArg(arg, 'v')
+		}
 	}
 	p.WriteByte('\n')
 }

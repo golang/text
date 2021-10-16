@@ -7,6 +7,7 @@ package message_test
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -67,4 +68,26 @@ func ExamplePrinter_mVerb() {
 	// en     You have chosen to play hockey.
 	// en-GB  You have chosen to play hockey.
 	// nl     U heeft ervoor gekozen om ijshockey te spelen.
+}
+
+// Issue 41781
+func ExamplePrinter_Print() {
+	message.SetString(language.French, "Book Now", "Réserver Maintenant")
+
+	p := message.NewPrinter(language.French)
+
+	fmt.Print(p.Sprint("Sprint: ", "Book Now", "\n"))
+	p.Fprint(os.Stdout, "Fprint: ", "Book Now", "\n")
+	p.Print("Print: ", "Book Now", "\n")
+	fmt.Print(p.Sprintln("Sprintln:", "Book Now"))
+	p.Fprintln(os.Stdout, "Fprintln:", "Book Now")
+	p.Println("Println:", "Book Now")
+
+	// Output:
+	// Sprint: Réserver Maintenant
+	// Fprint: Réserver Maintenant
+	// Print: Réserver Maintenant
+	// Sprintln: Réserver Maintenant
+	// Fprintln: Réserver Maintenant
+	// Println: Réserver Maintenant
 }
