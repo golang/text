@@ -48,7 +48,7 @@ func config() (*pipeline.Config, error) {
 	return &pipeline.Config{
 		SourceLanguage:      tag,
 		Supported:           getLangs(),
-		TranslationsPattern: `messages\.(.*)\.json`,
+		TranslationsPattern: `messages\.(.*)\.json$`,
 		GenFile:             *out,
 	}, nil
 }
