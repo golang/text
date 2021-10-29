@@ -45,7 +45,7 @@ func TestProfiles(t *testing.T) {
 			VerifyDNSLength(true),
 			BidiRule(),
 		)},
-		{"Lookup", lookup, New(MapForLookup(), BidiRule(), Transitional(true))},
+		{"Lookup", lookup, New(MapForLookup(), BidiRule(), Transitional(transitionalLookup))},
 		{"Display", display, New(MapForLookup(), BidiRule())},
 	}
 	for _, tc := range testCases {

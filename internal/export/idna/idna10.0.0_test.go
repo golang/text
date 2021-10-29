@@ -102,7 +102,7 @@ func TestLabelErrors(t *testing.T) {
 		// Chrome, modern Firefox, Safari, and IE.
 		{resolve, "lab⒐be", "xn--labbe-zh9b", "P1"}, // encode("lab⒐be")
 		{display, "lab⒐be", "lab⒐be", "P1"},
-		{resolve, "plan⒐faß.de", "xn--planfass-c31e.de", "P1"}, // encode("plan⒐fass") + ".de"
+		{transitional, "plan⒐faß.de", "xn--planfass-c31e.de", "P1"}, // encode("plan⒐fass") + ".de"
 		{display, "Plan⒐faß.de", "plan⒐faß.de", "P1"},
 
 		// Transitional vs Nontransitional processing
@@ -115,10 +115,10 @@ func TestLabelErrors(t *testing.T) {
 		// punycode on the result using transitional mapping.
 		// Firefox 49.0.1 goes haywire on this string and prints a bunch of what
 		// seems to be nested punycode encodings.
-		{resolve, "日本⒈co.ßßß.de", "xn--co-wuw5954azlb.ssssss.de", "P1"},
+		{transitional, "日本⒈co.ßßß.de", "xn--co-wuw5954azlb.ssssss.de", "P1"},
 		{display, "日本⒈co.ßßß.de", "日本⒈co.ßßß.de", "P1"},
 
-		{resolve, "a\u200Cb", "ab", ""},
+		{transitional, "a\u200Cb", "ab", ""},
 		{display, "a\u200Cb", "a\u200Cb", "C"},
 
 		{resolve, encode("a\u200Cb"), encode("a\u200Cb"), "C"},
@@ -152,4 +152,12 @@ func TestLabelErrors(t *testing.T) {
 	for _, tc := range testCases {
 		doTest(t, tc.f, tc.name, tc.input, tc.want, tc.wantErr)
 	}
+}
+
+func TestTransitionalDefault(t *testing.T) {
+	want := "xn--strae-oqa.de"
+	if transitionalLookup {
+		want = "strasse.de"
+	}
+	doTest(t, Lookup.ToASCII, "Lookup", "straße.de", want, "")
 }

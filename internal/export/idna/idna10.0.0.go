@@ -284,7 +284,7 @@ var (
 
 	punycode = &Profile{}
 	lookup   = &Profile{options{
-		transitional: true,
+		transitional: transitionalLookup,
 		useSTD3Rules: true,
 		checkHyphens: true,
 		checkJoiners: true,
