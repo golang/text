@@ -5,7 +5,9 @@
 package idna
 
 import (
+	"encoding/hex"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -99,12 +101,14 @@ func doTest(t *testing.T, f func(string) (string, error), name, input, want, err
 	})
 }
 
+var unescapeRE = regexp.MustCompile(`\\u([0-9a-zA-Z]{4})`)
+
 func unescape(s string) string {
-	s, err := strconv.Unquote(`"` + s + `"`)
-	if err != nil {
-		panic(err)
-	}
-	return s
+	return unescapeRE.ReplaceAllStringFunc(s, func(v string) string {
+		var d [2]byte
+		hex.Decode(d[:], []byte(v[2:]))
+		return string(rune(d[0])<<8 | rune(d[1]))
+	})
 }
 
 func BenchmarkProfile(b *testing.B) {
