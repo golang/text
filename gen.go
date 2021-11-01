@@ -256,12 +256,6 @@ func copyPackage(dirSrc, dirDst, search, replace string) {
 			filepath.Dir(file) != dirSrc {
 			return nil
 		}
-		if strings.HasPrefix(base, "tables") {
-			if !strings.HasSuffix(base, gen.UnicodeVersion()+".go") {
-				return nil
-			}
-			base = "tables.go"
-		}
 		b, err := ioutil.ReadFile(file)
 		if err != nil || bytes.Contains(b, []byte("\n// +build ignore")) {
 			return err
