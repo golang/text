@@ -38,6 +38,8 @@ func init() {
 var (
 	srcLang = flag.String("srclang", "en-US", "the source-code language")
 	dir     = flag.String("dir", "locales", "default subdirectory to store translation files")
+	lang    = "en-US"
+	out     string
 )
 
 func config() (*pipeline.Config, error) {
@@ -46,10 +48,11 @@ func config() (*pipeline.Config, error) {
 		return nil, wrap(err, "invalid srclang")
 	}
 	return &pipeline.Config{
+		Dir:                 *dir,
 		SourceLanguage:      tag,
 		Supported:           getLangs(),
 		TranslationsPattern: `messages\.(.*)\.json`,
-		GenFile:             *out,
+		GenFile:             out,
 	}, nil
 }
 
@@ -332,7 +335,7 @@ func help(args []string) {
 }
 
 func getLangs() (tags []language.Tag) {
-	for _, t := range strings.Split(*lang, ",") {
+	for _, t := range strings.Split(lang, ",") {
 		if t == "" {
 			continue
 		}
