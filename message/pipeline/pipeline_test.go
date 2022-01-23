@@ -33,6 +33,9 @@ func TestFullCycle(t *testing.T) {
 	if runtime.GOOS == "android" {
 		t.Skip("cannot load outside packages on android")
 	}
+	if b := os.Getenv("GO_BUILDER_NAME"); b == "plan9-arm" {
+		t.Skipf("skipping: test frequently times out on %s", b)
+	}
 	if _, err := exec.LookPath("go"); err != nil {
 		t.Skipf("skipping because 'go' command is unavailable: %v", err)
 	}
