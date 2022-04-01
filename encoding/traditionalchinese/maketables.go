@@ -23,7 +23,8 @@ import (
 
 func main() {
 	isHK := false
-	if len(os.Args) >= 2 && os.Args[1] == "HK" {
+
+	if len(os.Args) >= 2 && strings.ToUpper(os.Args[1]) == "HK" {
 		isHK = true
 	}
 
