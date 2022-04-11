@@ -56,19 +56,22 @@ const (
 // entry might still resemble a completed suffix.
 // Examples:
 // The suffix strings "ab" and "ac" can be represented as:
-// []ctEntry{
-//     {'a', 1, 1, noIndex},  // 'a' by itself does not match, so i is 0xFF.
-//     {'b', 'c', 0, 1},   // "ab" -> 1, "ac" -> 2
-// }
+//
+//	[]ctEntry{
+//		{'a', 1, 1, noIndex},  // 'a' by itself does not match, so i is 0xFF.
+//		{'b', 'c', 0, 1},   // "ab" -> 1, "ac" -> 2
+//	}
 //
 // The suffix strings "ab", "abc", "abd", and "abcd" can be represented as:
-// []ctEntry{
-//     {'a', 1, 1, noIndex}, // 'a' must be followed by 'b'.
-//     {'b', 1, 2, 1},    // "ab" -> 1, may be followed by 'c' or 'd'.
-//     {'d', 'd', final, 3},  // "abd" -> 3
-//     {'c', 4, 1, 2},    // "abc" -> 2, may be followed by 'd'.
-//     {'d', 'd', final, 4},  // "abcd" -> 4
-// }
+//
+//	[]ctEntry{
+//		{'a', 1, 1, noIndex}, // 'a' must be followed by 'b'.
+//		{'b', 1, 2, 1},    // "ab" -> 1, may be followed by 'c' or 'd'.
+//		{'d', 'd', final, 3},  // "abd" -> 3
+//		{'c', 4, 1, 2},    // "abc" -> 2, may be followed by 'd'.
+//		{'d', 'd', final, 4},  // "abcd" -> 4
+//	}
+//
 // See genStateTests in contract_test.go for more examples.
 type ctEntry struct {
 	L uint8 // non-final: byte value to match; final: lowest match in range.

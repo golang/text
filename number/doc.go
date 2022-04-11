@@ -9,19 +9,18 @@
 // builtin Go types and anything that implements the Convert interface
 // (currently internal).
 //
-//    p := message.NewPrinter(language.English)
+//	p := message.NewPrinter(language.English)
 //
-//    p.Printf("%v bottles of beer on the wall.", number.Decimal(1234))
-//    // Prints: 1,234 bottles of beer on the wall.
+//	p.Printf("%v bottles of beer on the wall.", number.Decimal(1234))
+//	// Prints: 1,234 bottles of beer on the wall.
 //
-//    p.Printf("%v of gophers lose too much fur", number.Percent(0.12))
-//    // Prints: 12% of gophers lose too much fur.
+//	p.Printf("%v of gophers lose too much fur", number.Percent(0.12))
+//	// Prints: 12% of gophers lose too much fur.
 //
-//    p := message.NewPrinter(language.Dutch)
+//	p := message.NewPrinter(language.Dutch)
 //
-//    p.Printf("There are %v bikes per household.", number.Decimal(1.2))
-//    // Prints: Er zijn 1,2 fietsen per huishouden.
-//
+//	p.Printf("There are %v bikes per household.", number.Decimal(1.2))
+//	// Prints: Er zijn 1,2 fietsen per huishouden.
 //
 // The width and scale specified in the formatting directives override the
 // configuration of the formatter.

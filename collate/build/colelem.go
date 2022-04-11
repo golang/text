@@ -51,6 +51,7 @@ func makeCE(ce rawCE) (uint32, error) {
 //   - n* is the size of the first node in the contraction trie.
 //   - i* is the index of the first node in the contraction trie.
 //   - b* is the offset into the contraction collation element table.
+//
 // See contract.go for details on the contraction trie.
 const (
 	contractID            = 0xC0000000
@@ -103,7 +104,8 @@ func makeExpansionHeader(n int) (uint32, error) {
 // The collation element, in this case, is of the form
 // 11110000 00000000 wwwwwwww vvvvvvvv, where
 //   - v* is the replacement tertiary weight for the first rune,
-//   - w* is the replacement tertiary weight for the second rune,
+//   - w* is the replacement tertiary weight for the second rune.
+//
 // Tertiary weights of subsequent runes should be replaced with maxTertiary.
 // See https://www.unicode.org/reports/tr10/#Compatibility_Decompositions for more details.
 const (
@@ -162,7 +164,9 @@ func implicitPrimary(r rune) int {
 // primaries (either double primaries or for illegal runes)
 // to our own representation.
 // A CJK character C is represented in the DUCET as
-//   [.FBxx.0020.0002.C][.BBBB.0000.0000.C]
+//
+//	[.FBxx.0020.0002.C][.BBBB.0000.0000.C]
+//
 // We will rewrite these characters to a single CE.
 // We assume the CJK values start at 0x8000.
 // See https://unicode.org/reports/tr10/#Implicit_Weights
