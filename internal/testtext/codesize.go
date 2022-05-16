@@ -16,11 +16,13 @@ import (
 
 // CodeSize builds the given code sample and returns the binary size or en error
 // if an error occurred. The code sample typically will look like this:
-//     package main
-//     import "golang.org/x/text/somepackage"
-//     func main() {
-//         somepackage.Func() // reference Func to cause it to be linked in.
-//     }
+//
+//	package main
+//	import "golang.org/x/text/somepackage"
+//	func main() {
+//	    somepackage.Func() // reference Func to cause it to be linked in.
+//	}
+//
 // See dict_test.go in the display package for an example.
 func CodeSize(s string) (int, error) {
 	// Write the file.

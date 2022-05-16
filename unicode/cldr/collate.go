@@ -98,9 +98,13 @@ func processRules(p RuleProcessor, s string) (err error) {
 }
 
 // parseSpecialAnchor parses the anchor syntax which is either of the form
-//    ['before' <level>] <anchor>
+//
+//	['before' <level>] <anchor>
+//
 // or
-//    [<label>]
+//
+//	[<label>]
+//
 // The starting should already be consumed.
 func parseSpecialAnchor(p RuleProcessor, s string) (tail string, err error) {
 	i := strings.IndexByte(s, ']')

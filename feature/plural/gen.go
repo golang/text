@@ -359,15 +359,16 @@ var operandIndex = map[string]opID{
 // the resulting or conditions to conds.
 //
 // Example rules:
-//   // Category "one" in English: only allow 1 with no visible fraction
-//   i = 1 and v = 0 @integer 1
 //
-//   // Category "few" in Czech: all numbers with visible fractions
-//   v != 0   @decimal ...
+//	// Category "one" in English: only allow 1 with no visible fraction
+//	i = 1 and v = 0 @integer 1
 //
-//   // Category "zero" in Latvian: all multiples of 10 or the numbers 11-19 or
-//   // numbers with a fraction 11..19 and no trailing zeros.
-//   n % 10 = 0 or n % 100 = 11..19 or v = 2 and f % 100 = 11..19 @integer ...
+//	// Category "few" in Czech: all numbers with visible fractions
+//	v != 0   @decimal ...
+//
+//	// Category "zero" in Latvian: all multiples of 10 or the numbers 11-19 or
+//	// numbers with a fraction 11..19 and no trailing zeros.
+//	n % 10 = 0 or n % 100 = 11..19 or v = 2 and f % 100 = 11..19 @integer ...
 //
 // @integer and @decimal are followed by examples and are not relevant for the
 // rule itself. The are used here to signal the termination of the rule.

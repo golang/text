@@ -4,7 +4,6 @@
 
 // Package cldrtree builds and generates a CLDR index file, including all
 // inheritance.
-//
 package cldrtree
 
 //go:generate go test -gen

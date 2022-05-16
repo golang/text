@@ -225,26 +225,37 @@ func (t *Tailoring) SetAnchorBefore(anchor string) error {
 //
 // Examples: create a tailoring for Swedish, where "ä" is ordered after "z"
 // at the primary sorting level:
-//      t := b.Tailoring("se")
-// 		t.SetAnchor("z")
-// 		t.Insert(colltab.Primary, "ä", "")
+//
+//	t := b.Tailoring("se")
+//	t.SetAnchor("z")
+//	t.Insert(colltab.Primary, "ä", "")
+//
 // Order "ü" after "ue" at the secondary sorting level:
-//		t.SetAnchor("ue")
-//		t.Insert(colltab.Secondary, "ü","")
+//
+//	t.SetAnchor("ue")
+//	t.Insert(colltab.Secondary, "ü","")
+//
 // or
-//		t.SetAnchor("u")
-//		t.Insert(colltab.Secondary, "ü", "e")
+//
+//	t.SetAnchor("u")
+//	t.Insert(colltab.Secondary, "ü", "e")
+//
 // Order "q" afer "ab" at the secondary level and "Q" after "q"
 // at the tertiary level:
-// 		t.SetAnchor("ab")
-// 		t.Insert(colltab.Secondary, "q", "")
-// 		t.Insert(colltab.Tertiary, "Q", "")
+//
+//	t.SetAnchor("ab")
+//	t.Insert(colltab.Secondary, "q", "")
+//	t.Insert(colltab.Tertiary, "Q", "")
+//
 // Order "b" before "a":
-//      t.SetAnchorBefore("a")
-//      t.Insert(colltab.Primary, "b", "")
+//
+//	t.SetAnchorBefore("a")
+//	t.Insert(colltab.Primary, "b", "")
+//
 // Order "0" after the last primary ignorable:
-//      t.SetAnchor("<last_primary_ignorable/>")
-//      t.Insert(colltab.Primary, "0", "")
+//
+//	t.SetAnchor("<last_primary_ignorable/>")
+//	t.Insert(colltab.Primary, "0", "")
 func (t *Tailoring) Insert(level colltab.Level, str, extend string) error {
 	if t.anchor == nil {
 		return fmt.Errorf("%s:Insert: no anchor point set for tailoring of %s", t.id, str)
