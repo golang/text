@@ -394,3 +394,16 @@ func TestParseAcceptLanguage(t *testing.T) {
 		}
 	}
 }
+
+func TestParseAcceptLanguageTooBig(t *testing.T) {
+	s := strings.Repeat("en-x-a-", 333)
+	_, _, err := ParseAcceptLanguage(s)
+	if err != language.ErrSyntax {
+		t.Errorf("ParseAcceptLanguage() unexpected error: got %v, want %v", err, language.ErrSyntax)
+	}
+	s += "en-x-a"
+	_, _, err = ParseAcceptLanguage(s)
+	if err != errTagListTooLarge {
+		t.Errorf("ParseAcceptLanguage() unexpected error: got %v, want %v", err, errTagListTooLarge)
+	}
+}
