@@ -66,7 +66,7 @@ func TestEncoding(t *testing.T, e encoding.Encoding, encoded, utf8, prefix, suff
 					// regardless of whatever wPrefix is.
 					continue
 				}
-				got1, want1 := string(g), wPrefix+strings.Repeat(want, n)+wSuffix
+				got1, want1 := g, wPrefix+strings.Repeat(want, n)+wSuffix
 				if got1 != want1 {
 					t.Fatalf("ReadAll: n=%d\ngot  %q\nwant %q",
 						n, trim(got1), trim(want1))

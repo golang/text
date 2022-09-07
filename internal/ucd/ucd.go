@@ -317,28 +317,28 @@ func (p *Parser) Bool(i int) bool {
 
 // Int parses and returns field i as an integer value.
 func (p *Parser) Int(i int) int {
-	x, err := strconv.ParseInt(string(p.getField(i)), 10, 64)
+	x, err := strconv.ParseInt(p.getField(i), 10, 64)
 	p.setError(err, "error parsing int")
 	return int(x)
 }
 
 // Uint parses and returns field i as an unsigned integer value.
 func (p *Parser) Uint(i int) uint {
-	x, err := strconv.ParseUint(string(p.getField(i)), 10, 64)
+	x, err := strconv.ParseUint(p.getField(i), 10, 64)
 	p.setError(err, "error parsing uint")
 	return uint(x)
 }
 
 // Float parses and returns field i as a decimal value.
 func (p *Parser) Float(i int) float64 {
-	x, err := strconv.ParseFloat(string(p.getField(i)), 64)
+	x, err := strconv.ParseFloat(p.getField(i), 64)
 	p.setError(err, "error parsing float")
 	return x
 }
 
 // String parses and returns field i as a string value.
 func (p *Parser) String(i int) string {
-	return string(p.getField(i))
+	return p.getField(i)
 }
 
 // Strings parses and returns field i as a space-separated list of strings.
