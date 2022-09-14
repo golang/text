@@ -10,7 +10,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -160,7 +159,7 @@ func (zl zipLoader) Reader(i int) (io.ReadCloser, error) {
 
 // DecodeZip loads CLDR data from the zip archive for which r is the source.
 func (d *Decoder) DecodeZip(r io.Reader) (cldr *CLDR, err error) {
-	buffer, err := ioutil.ReadAll(r)
+	buffer, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

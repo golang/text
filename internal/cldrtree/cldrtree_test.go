@@ -7,9 +7,9 @@ package cldrtree
 import (
 	"bytes"
 	"flag"
-	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -303,11 +303,11 @@ func TestGen(t *testing.T) {
 
 			file := filepath.Join("testdata", tc, "output.go")
 			if *genOutput {
-				ioutil.WriteFile(file, got, 0700)
+				os.WriteFile(file, got, 0700)
 				t.SkipNow()
 			}
 
-			b, err := ioutil.ReadFile(file)
+			b, err := os.ReadFile(file)
 			if err != nil {
 				t.Fatalf("failed to open file: %v", err)
 			}

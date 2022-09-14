@@ -15,7 +15,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -30,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	r := gen.OpenCLDRCoreZip()
-	buffer, err := ioutil.ReadAll(r)
+	buffer, err := io.ReadAll(r)
 	if err != nil {
 		log.Fatal("Could not read zip file")
 	}

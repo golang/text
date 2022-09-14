@@ -16,7 +16,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"reflect"
 	"strconv"
@@ -635,9 +634,9 @@ func genTablesTest() {
 
 	// We discard the output as we know we have perfect functions. We run them
 	// just to verify the properties are correct.
-	n := printProperties(ioutil.Discard, "DerivedCoreProperties.txt", "Cased", verifyCased)
-	n += printProperties(ioutil.Discard, "DerivedCoreProperties.txt", "Lowercase", verifyLower)
-	n += printProperties(ioutil.Discard, "DerivedCoreProperties.txt", "Uppercase", verifyUpper)
+	n := printProperties(io.Discard, "DerivedCoreProperties.txt", "Cased", verifyCased)
+	n += printProperties(io.Discard, "DerivedCoreProperties.txt", "Lowercase", verifyLower)
+	n += printProperties(io.Discard, "DerivedCoreProperties.txt", "Uppercase", verifyUpper)
 	if n > 0 {
 		log.Fatalf("One of the discarded properties does not have a perfect filter.")
 	}

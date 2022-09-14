@@ -17,7 +17,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -187,7 +186,7 @@ func failOnError(e error) {
 
 func openArchive() *zip.Reader {
 	f := gen.OpenCLDRCoreZip()
-	buffer, err := ioutil.ReadAll(f)
+	buffer, err := io.ReadAll(f)
 	f.Close()
 	failOnError(err)
 	archive, err := zip.NewReader(bytes.NewReader(buffer), int64(len(buffer)))
