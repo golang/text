@@ -55,7 +55,7 @@ func (t *sparseBlocks) lookup(n uint32, b byte) uint16 {
 	lo := offset + 1
 	hi := lo + uint16(header.lo)
 	for lo < hi {
-		m := lo + (hi-lo)/2
+		m := lo + (hi-lo)>>1
 		r := t.values[m]
 		if r.lo <= b && b <= r.hi {
 			return r.value + uint16(b-r.lo)*header.value

@@ -203,7 +203,7 @@ func (s *sparseBlocks) lookup(n uint32, b byte) uint16 {
 	lo := s.offsets[n]
 	hi := s.offsets[n+1]
 	for lo < hi {
-		m := lo + (hi-lo)/2
+		m := lo + (hi-lo)>>1
 		r := s.values[m]
 		if r.lo <= b && b <= r.hi {
 			return r.value

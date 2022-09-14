@@ -43,7 +43,7 @@ func hasBreakProp(r rune) bool {
 	lo := 0
 	hi := len(breakProp)
 	for lo < hi {
-		m := lo + (hi-lo)/2
+		m := lo + (hi-lo)>>1
 		bp := &breakProp[m]
 		if bp.lo <= r && r <= bp.hi {
 			return true
