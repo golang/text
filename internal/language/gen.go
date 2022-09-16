@@ -15,7 +15,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"reflect"
@@ -921,7 +920,7 @@ func (b *builder) writeRegion() {
 	r := gen.OpenIANAFile("domains/root/db")
 	defer r.Close()
 
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	failOnError(err)
 	re := regexp.MustCompile(`"/domains/root/db/([a-z]{2}).html"`)
 	for _, m := range re.FindAllSubmatch(buf, -1) {

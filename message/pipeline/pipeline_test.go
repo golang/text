@@ -11,7 +11,6 @@ import (
 	"flag"
 	"fmt"
 	"go/build"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -40,7 +39,7 @@ func TestFullCycle(t *testing.T) {
 		t.Skipf("skipping because 'go' command is unavailable: %v", err)
 	}
 
-	GOPATH, err := ioutil.TempDir("", "pipeline_test")
+	GOPATH, err := os.MkdirTemp("", "pipeline_test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +65,7 @@ func TestFullCycle(t *testing.T) {
 	wd, _ := os.Getwd()
 	defer os.Chdir(wd)
 
-	dirs, err := ioutil.ReadDir(testdata)
+	dirs, err := os.ReadDir(testdata)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,11 +123,11 @@ func copyTestdata(t *testing.T, dst string) {
 			return os.MkdirAll(filepath.Join(dst, rel), 0755)
 		}
 
-		data, err := ioutil.ReadFile(p)
+		data, err := os.ReadFile(p)
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(filepath.Join(dst, rel), data, 0644)
+		return os.WriteFile(filepath.Join(dst, rel), data, 0644)
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -145,17 +144,17 @@ func initTestdataModule(t *testing.T, dst string) {
 
 replace golang.org/x/text => %s
 `, xTextDir)
-	if err := ioutil.WriteFile(filepath.Join(dst, "go.mod"), []byte(goMod), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dst, "go.mod"), []byte(goMod), 0644); err != nil {
 		t.Fatal(err)
 	}
 
 	// Copy in the checksums from the parent module so that we won't
 	// need to re-fetch them from the checksum database.
-	data, err := ioutil.ReadFile(filepath.Join(xTextDir, "go.sum"))
+	data, err := os.ReadFile(filepath.Join(xTextDir, "go.sum"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := ioutil.WriteFile(filepath.Join(dst, "go.sum"), data, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dst, "go.sum"), data, 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -194,17 +193,17 @@ func checkOutput(t *testing.T, gen string, testdataDir string) {
 			return nil
 		}
 
-		got, err := ioutil.ReadFile(gotFile)
+		got, err := os.ReadFile(gotFile)
 		if err != nil {
 			t.Errorf("failed to read %q", gotFile)
 			return nil
 		}
 		if *genFiles {
-			if err := ioutil.WriteFile(wantFile, got, 0644); err != nil {
+			if err := os.WriteFile(wantFile, got, 0644); err != nil {
 				t.Fatal(err)
 			}
 		}
-		want, err := ioutil.ReadFile(wantFile)
+		want, err := os.ReadFile(wantFile)
 		if err != nil {
 			t.Errorf("failed to read %q", wantFile)
 		} else {
@@ -242,7 +241,7 @@ func writeJSON(t *testing.T, path string, x interface{}) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := ioutil.WriteFile(path, data, 0644); err != nil {
+	if err := os.WriteFile(path, data, 0644); err != nil {
 		t.Fatal(err)
 	}
 }

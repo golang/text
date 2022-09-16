@@ -7,7 +7,7 @@ package bitfield
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -222,7 +222,7 @@ func (t test1) Baz() int8 {
 `
 
 func mustRead(filename string) string {
-	b, err := ioutil.ReadFile(filename)
+	b, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}

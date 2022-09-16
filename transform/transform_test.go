@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strconv"
 	"strings"
 	"testing"
@@ -648,7 +648,7 @@ func TestReader(t *testing.T) {
 			// exported API. We override them manually.
 			r.dst = make([]byte, tc.dstSize)
 			r.src = make([]byte, tc.srcSize)
-			got, err := ioutil.ReadAll(r)
+			got, err := io.ReadAll(r)
 			str := string(got)
 			if str != tc.wantStr || err != tc.wantErr {
 				t.Errorf("\ngot  %q, %v\nwant %q, %v", str, err, tc.wantStr, tc.wantErr)

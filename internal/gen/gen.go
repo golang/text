@@ -25,7 +25,6 @@ import (
 	"go/build"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -175,7 +174,7 @@ func getLocalDir() string {
 		if err := os.MkdirAll(dir, permissions); err != nil {
 			log.Fatalf("Could not create directory: %v", err)
 		}
-		ioutil.WriteFile(readme, []byte(readmeTxt), permissions)
+		os.WriteFile(readme, []byte(readmeTxt), permissions)
 	}
 	return dir
 }
@@ -213,15 +212,15 @@ func open(file, urlRoot, path string) io.ReadCloser {
 	}
 	r := get(urlRoot, path)
 	defer r.Close()
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		log.Fatalf("Could not download file: %v", err)
 	}
 	os.MkdirAll(filepath.Dir(file), permissions)
-	if err := ioutil.WriteFile(file, b, permissions); err != nil {
+	if err := os.WriteFile(file, b, permissions); err != nil {
 		log.Fatalf("Could not create file: %v", err)
 	}
-	return ioutil.NopCloser(bytes.NewReader(b))
+	return io.NopCloser(bytes.NewReader(b))
 }
 
 func get(root, path string) io.ReadCloser {
@@ -280,13 +279,13 @@ func fileToPattern(filename string) string {
 func updateBuildTags(pattern string) {
 	for _, t := range tags {
 		oldFile := fmt.Sprintf(pattern, t.version)
-		b, err := ioutil.ReadFile(oldFile)
+		b, err := os.ReadFile(oldFile)
 		if err != nil {
 			continue
 		}
 		build := fmt.Sprintf("// +build %s", t.buildTags)
 		b = regexp.MustCompile(`// \+build .*`).ReplaceAll(b, []byte(build))
-		err = ioutil.WriteFile(oldFile, b, 0644)
+		err = os.WriteFile(oldFile, b, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -334,7 +333,7 @@ func WriteGo(w io.Writer, pkg, tags string, b []byte) (n int, err error) {
 // Repackage rewrites a Go file from belonging to package main to belonging to
 // the given package.
 func Repackage(inFile, outFile, pkg string) {
-	src, err := ioutil.ReadFile(inFile)
+	src, err := os.ReadFile(inFile)
 	if err != nil {
 		log.Fatalf("reading %s: %v", inFile, err)
 	}
