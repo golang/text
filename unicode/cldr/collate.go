@@ -229,7 +229,7 @@ func skipSpace(s string) string {
 	return strings.TrimLeftFunc(s, unicode.IsSpace)
 }
 
-// consumes returns whether the next byte is ch. If so, it gobbles it by
+// consume returns whether the next byte is ch. If so, it gobbles it by
 // updating s.
 func consume(s *string, ch byte) (ok bool) {
 	if *s == "" || (*s)[0] != ch {
