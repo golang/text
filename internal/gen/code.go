@@ -64,18 +64,15 @@ func (w *CodeWriter) WriteGoFile(filename, pkg string) {
 // structures and writes it as a Go file to the given file with the given
 // package name and build tags for the current Unicode version,
 func (w *CodeWriter) WriteVersionedGoFile(filename, pkg string) {
-	tags := buildTags()
-	if tags != "" {
-		pattern := fileToPattern(filename)
-		updateBuildTags(pattern)
-		filename = fmt.Sprintf(pattern, UnicodeVersion())
-	}
+	pattern := fileToPattern(filename)
+	updateBuildTags(pattern)
+	filename = fmt.Sprintf(pattern, UnicodeVersion())
 	f, err := os.Create(filename)
 	if err != nil {
 		log.Fatalf("Could not create file %s: %v", filename, err)
 	}
 	defer f.Close()
-	if _, err = w.WriteGo(f, pkg, tags); err != nil {
+	if _, err = w.WriteGo(f, pkg, buildTags()); err != nil {
 		log.Fatalf("Error writing file %s: %v", filename, err)
 	}
 }

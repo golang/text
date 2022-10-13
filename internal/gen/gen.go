@@ -83,7 +83,7 @@ func CLDRVersion() string {
 }
 
 var tags = []struct{ version, buildTags string }{
-	{"13.0.0", "go1.16"},
+	{"13.0.0", ""},
 }
 
 // buildTags reports the build tags used for the current Unicode version.
