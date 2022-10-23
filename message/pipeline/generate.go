@@ -14,13 +14,14 @@ import (
 	"strings"
 	"text/template"
 
+	"golang.org/x/tools/go/packages"
+
 	"golang.org/x/text/collate"
 	"golang.org/x/text/feature/plural"
 	"golang.org/x/text/internal"
 	"golang.org/x/text/internal/catmsg"
 	"golang.org/x/text/internal/gen"
 	"golang.org/x/text/language"
-	"golang.org/x/tools/go/loader"
 )
 
 var transRe = regexp.MustCompile(`messages\.(.*)\.json`)
@@ -34,15 +35,13 @@ func (s *State) Generate() error {
 		path = "."
 	}
 	isDir := path[0] == '.'
-	prog, err := loadPackages(&loader.Config{}, []string{path})
+	_, pkgs, err := loadPackages(&packages.Config{}, []string{path})
 	if err != nil {
 		return wrap(err, "could not load package")
 	}
-	pkgs := prog.InitialPackages()
 	if len(pkgs) != 1 {
 		return errorf("more than one package selected: %v", pkgs)
 	}
-	pkg := pkgs[0].Pkg.Name()
 
 	cw, err := s.generate()
 	if err != nil {
@@ -50,14 +49,14 @@ func (s *State) Generate() error {
 	}
 	if !isDir {
 		gopath := filepath.SplitList(build.Default.GOPATH)[0]
-		path = filepath.Join(gopath, "src", filepath.FromSlash(pkgs[0].Pkg.Path()))
+		path = filepath.Join(gopath, "src", filepath.FromSlash(pkgs[0].PkgPath))
 	}
 	if filepath.IsAbs(s.Config.GenFile) {
 		path = s.Config.GenFile
 	} else {
 		path = filepath.Join(path, s.Config.GenFile)
 	}
-	cw.WriteGoFile(path, pkg) // TODO: WriteGoFile should return error.
+	cw.WriteGoFile(path, pkgs[0].Name) // TODO: WriteGoFile should return error.
 	return err
 }
 
