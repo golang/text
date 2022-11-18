@@ -46,5 +46,5 @@
 //
 // Usage:
 //
-//	gotext generate <package>
+//	gotext generate <package> [-out <gofile>]
 package main

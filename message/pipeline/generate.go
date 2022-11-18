@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go/build"
 	"io"
+	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -51,6 +52,10 @@ func (s *State) Generate() error {
 	if !isDir {
 		gopath := filepath.SplitList(build.Default.GOPATH)[0]
 		path = filepath.Join(gopath, "src", filepath.FromSlash(pkgs[0].Pkg.Path()))
+	}
+	if len(s.Config.GenFile) == 0 {
+		cw.WriteGo(os.Stdout, pkg, "")
+		return nil
 	}
 	if filepath.IsAbs(s.Config.GenFile) {
 		path = s.Config.GenFile
