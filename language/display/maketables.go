@@ -528,7 +528,7 @@ func (h *header) writeSingle(w *gen.CodeWriter, name string) {
 	}
 }
 
-// WriteTable writes an entry for a single Namer.
+// writeTable writes an entry for a single Namer.
 func (g *group) writeTable(w *gen.CodeWriter, name string) {
 	start := w.Size
 	writeKeys(w, name, g.toTags)

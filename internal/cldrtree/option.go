@@ -29,7 +29,7 @@ func (o *options) fill(opt []Option) {
 	}
 }
 
-// aliasOpt sets an alias from the given node, if the node defines one.
+// setAlias sets an alias from the given node, if the node defines one.
 func (o *options) setAlias(n Element) {
 	if n != nil && !reflect.ValueOf(n).IsNil() {
 		o.alias = n.GetCommon()

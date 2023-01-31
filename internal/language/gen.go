@@ -1080,7 +1080,7 @@ func find(list []string, s string) int {
 	return -1
 }
 
-// writeVariants generates per-variant information and creates a map from variant
+// writeVariant generates per-variant information and creates a map from variant
 // name to index value. We assign index values such that sorting multiple
 // variants by index value will result in the correct order.
 // There are two types of variants: specialized and general. Specialized variants
