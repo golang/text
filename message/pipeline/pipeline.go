@@ -90,7 +90,7 @@ type Config struct {
 	// file. If not specified it is relative to the current directory.
 	GenPackage string
 
-	// DeclareVar defines a variable to which to assing the generated Catalog.
+	// DeclareVar defines a variable to which to assign the generated Catalog.
 	DeclareVar string
 
 	// SetDefault determines whether to assign the generated Catalog to

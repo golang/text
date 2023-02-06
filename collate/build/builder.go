@@ -240,7 +240,7 @@ func (t *Tailoring) SetAnchorBefore(anchor string) error {
 //	t.SetAnchor("u")
 //	t.Insert(colltab.Secondary, "ü", "e")
 //
-// Order "q" afer "ab" at the secondary level and "Q" after "q"
+// Order "q" after "ab" at the secondary level and "Q" after "q"
 // at the tertiary level:
 //
 //	t.SetAnchor("ab")

@@ -13,7 +13,7 @@ import (
 // Compile-time regression test to ensure that Class is a Set
 var _ runes.Set = (*class)(nil)
 
-// Ensure that certain characters are (or are not) in the identifer class.
+// Ensure that certain characters are (or are not) in the identifier class.
 func TestClassContains(t *testing.T) {
 	tests := []struct {
 		name       string

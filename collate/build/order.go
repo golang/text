@@ -308,7 +308,7 @@ func makeRootOrdering() ordering {
 	return o
 }
 
-// patchForInsert eleminates entries from the list with more than one collation element.
+// patchForInsert eliminates entries from the list with more than one collation element.
 // The next and prev fields of the eliminated entries still point to appropriate
 // values in the newly created list.
 // It requires that sort has been called.
