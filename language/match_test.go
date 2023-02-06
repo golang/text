@@ -99,7 +99,7 @@ func makeTagList(s string) (tags []Tag) {
 func TestMatchStrings(t *testing.T) {
 	testCases := []struct {
 		supported string
-		desired   string // strings separted by |
+		desired   string // strings separated by |
 		tag       string
 		index     int
 	}{{
