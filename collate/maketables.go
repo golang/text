@@ -286,7 +286,7 @@ var tagRe = regexp.MustCompile(`<([a-z_]*)  */>`)
 
 var mainLocales = []string{}
 
-// charsets holds a list of exemplar characters per category.
+// charSets holds a list of exemplar characters per category.
 type charSets map[string][]string
 
 func (p charSets) fprint(w io.Writer) {

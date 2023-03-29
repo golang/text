@@ -36,7 +36,7 @@ func (o *options) setAlias(n Element) {
 	}
 }
 
-// Enum defines a enumeration type. The resulting option may be passed for the
+// Enum defines an enumeration type. The resulting option may be passed for the
 // construction of multiple Indexes, which they will share the same enum values.
 // Calling Gen on a Builder will generate the Enum for the given name. The
 // optional values fix the values for the given identifier to the argument
