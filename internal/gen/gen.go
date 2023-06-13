@@ -87,7 +87,8 @@ var tags = []struct{ version, buildTags string }{
 	{"10.0.0", "go1.10,!go1.13"},
 	{"11.0.0", "go1.13,!go1.14"},
 	{"12.0.0", "go1.14,!go1.16"},
-	{"13.0.0", "go1.16"},
+	{"13.0.0", "go1.16,!go1.21"},
+	{"15.0.0", "go1.21"},
 }
 
 // buildTags reports the build tags used for the current Unicode version.
@@ -276,6 +277,13 @@ func fileToPattern(filename string) string {
 	return fmt.Sprint(prefix, "%s", suffix)
 }
 
+// tagLines returns the //go:build and // +build lines to add to the file.
+func tagLines(tags string) string {
+	newTags := strings.ReplaceAll(tags, ",", " && ")
+	return "//go:build " + newTags + "\n" +
+		"// +build " + tags + "\n"
+}
+
 func updateBuildTags(pattern string) {
 	for _, t := range tags {
 		oldFile := fmt.Sprintf(pattern, t.version)
@@ -283,8 +291,7 @@ func updateBuildTags(pattern string) {
 		if err != nil {
 			continue
 		}
-		build := fmt.Sprintf("// +build %s", t.buildTags)
-		b = regexp.MustCompile(`// \+build .*`).ReplaceAll(b, []byte(build))
+		b = regexp.MustCompile(`((//go:build|// \+build).*\n)+`).ReplaceAll(b, []byte(tagLines(t.buildTags)))
 		err = os.WriteFile(oldFile, b, 0644)
 		if err != nil {
 			log.Fatal(err)
@@ -316,7 +323,8 @@ func WriteVersionedGoFile(filename, pkg string, b []byte) {
 func WriteGo(w io.Writer, pkg, tags string, b []byte) (n int, err error) {
 	src := []byte(header)
 	if tags != "" {
-		src = append(src, fmt.Sprintf("// +build %s\n\n", tags)...)
+		src = append(src, tagLines(tags)...)
+		src = append(src, '\n')
 	}
 	src = append(src, fmt.Sprintf("package %s\n\n", pkg)...)
 	src = append(src, b...)
