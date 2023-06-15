@@ -67,7 +67,8 @@ func TestLabelErrors(t *testing.T) {
 		{lengthA, ".b", ".b", "A4"},
 		{lengthA, "\u3002b", ".b", "A4"},
 		{lengthA, "..b", "..b", "A4"},
-		{lengthA, "b..", "b..", ""},
+		{lengthA, "b..", "b..", "A4"},
+		{lengthA, "ƀ..", "xn--lha..", "A4"},
 
 		// Sharpened Bidi rules for Unicode 10.0.0. Apply for ALL labels in ANY
 		// of the labels is RTL.
@@ -81,6 +82,7 @@ func TestLabelErrors(t *testing.T) {
 		{resolve, "\u3002b", ".b", ""},
 		{resolve, "..b", "..b", ""},
 		{resolve, "b..", "b..", ""},
+		{resolve, "ƀ..", "xn--lha..", ""},
 		{resolve, "\xed", "", "P1"},
 
 		// Raw punycode
