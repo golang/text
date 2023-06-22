@@ -348,10 +348,10 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 	// TODO: allow for a quick check of the tables data.
 	// It seems like we should only create this error on ToASCII, but the
 	// UTS 46 conformance tests suggests we should always check this.
-	if err == nil && p.verifyDNSLength && s == "" {
+	if err == nil && p.verifyDNSLength && (s == "" || s[len(s)-1] == '.') {
 		err = &labelError{s, "A4"}
 	}
-	labels := labelIter{orig: s, verifyDNSLength: p.verifyDNSLength}
+	labels := labelIter{orig: s}
 	for ; !labels.done(); labels.next() {
 		label := labels.label()
 		if label == "" {
@@ -413,12 +413,9 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 	}
 	s = labels.result()
 	if toASCII && p.verifyDNSLength && err == nil {
-		// Compute the length of the domain name minus the root label and its dot.
+		// Compute the length of the domain name.
 		n := len(s)
-		if n > 0 && s[n-1] == '.' {
-			n--
-		}
-		if len(s) < 1 || n > 253 {
+		if n < 1 || n > 253 {
 			err = &labelError{s, "A4"}
 		}
 	}
@@ -538,12 +535,11 @@ func validateAndMap(p *Profile, s string) (vm string, bidi bool, err error) {
 
 // A labelIter allows iterating over domain name labels.
 type labelIter struct {
-	orig            string
-	slice           []string
-	curStart        int
-	curEnd          int
-	i               int
-	verifyDNSLength bool
+	orig     string
+	slice    []string
+	curStart int
+	curEnd   int
+	i        int
 }
 
 func (l *labelIter) reset() {
@@ -575,8 +571,7 @@ func (l *labelIter) label() string {
 	return l.orig[l.curStart:l.curEnd]
 }
 
-// next sets the value to the next label. It skips the last label if it is empty
-// and l.verifyDNSLength is false.
+// next sets the value to the next label. It skips the last label if it is empty.
 func (l *labelIter) next() {
 	l.i++
 	if l.slice != nil {
@@ -585,7 +580,7 @@ func (l *labelIter) next() {
 		}
 	} else {
 		l.curStart = l.curEnd + 1
-		if !l.verifyDNSLength && l.curStart == len(l.orig)-1 && l.orig[l.curStart] == '.' {
+		if l.curStart == len(l.orig)-1 && l.orig[l.curStart] == '.' {
 			l.curStart = len(l.orig)
 		}
 	}

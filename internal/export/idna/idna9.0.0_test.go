@@ -71,15 +71,23 @@ func TestLabelErrors(t *testing.T) {
 		{lengthA, ".b", "b", ""},
 		{lengthA, "\u3002b", "b", ""},
 		{lengthA, "..b", "b", ""},
+		{lengthA, "b.", "b.", "A4"},
+		{lengthA, "ƀ.", "xn--lha.", "A4"},
 		{lengthA, "b..", "b..", "A4"},
 		{lengthA, "ƀ..", "xn--lha..", "A4"},
+		{lengthA, "b...", "b...", "A4"},
+		{lengthA, "ƀ...", "xn--lha...", "A4"},
 
 		{resolve, "a..b", "a..b", ""},
 		{resolve, ".b", "b", ""},
 		{resolve, "\u3002b", "b", ""},
 		{resolve, "..b", "b", ""},
+		{resolve, "b.", "b.", ""},
+		{resolve, "ƀ.", "xn--lha.", ""},
 		{resolve, "b..", "b..", ""},
 		{resolve, "ƀ..", "xn--lha..", ""},
+		{resolve, "b...", "b...", ""},
+		{resolve, "ƀ...", "xn--lha...", ""},
 		{resolve, "\xed", "", "P1"},
 
 		// Raw punycode
