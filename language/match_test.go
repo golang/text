@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/internal/ucd"
@@ -30,11 +31,11 @@ func TestCompliance(t *testing.T) {
 			t.Fatal(err)
 		}
 		ucd.Parse(r, func(p *ucd.Parser) {
-			name := strings.Replace(path.Join(p.String(0), p.String(1)), " ", "", -1)
+			name := strings.ReplaceAll(path.Join(p.String(0), p.String(1)), " ", "")
 			if skip[name] {
 				return
 			}
-			t.Run(info.Name()+"/"+name, func(t *testing.T) {
+			t.Run(info.Name()+"/"+short(name), func(t *testing.T) {
 				supported := makeTagList(p.String(0))
 				desired := makeTagList(p.String(1))
 				gotCombined, index, conf := NewMatcher(supported).Match(desired...)
@@ -54,6 +55,16 @@ func TestCompliance(t *testing.T) {
 		})
 		return nil
 	})
+}
+
+func short(s string) string {
+	if len(s) <= 50 {
+		return s
+	}
+	var i int
+	for i = 1; i < utf8.UTFMax && !utf8.RuneStart(s[50-i]); i++ {
+	}
+	return s[:50-i] + "…"
 }
 
 var skip = map[string]bool{
