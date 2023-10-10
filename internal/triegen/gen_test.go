@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build generate
-// +build generate
 
 package triegen_test
 
@@ -51,7 +50,7 @@ func init() {
 }
 
 const header = `// This file is generated with "go test -tags generate". DO NOT EDIT!
-// +build !generate
+//go:build !generate
 
 package triegen_test
 `
