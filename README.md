@@ -13,8 +13,8 @@ moment this is supported for Go compilers from version 1.7.
 
 ## Download/Install
 
-The easiest way to install is to run `go get -u golang.org/x/text`. You can
-also manually git clone the repository to `$GOPATH/src/golang.org/x/text`.
+The easiest way to install is to run `go install golang.org/x/text/cmd/gotext@latest`.
+You can also manually git clone the repository to `$GOPATH/src/golang.org/x/text`.
 
 ## Contribute
 To submit changes to this repository, see http://golang.org/doc/contribute.html.
