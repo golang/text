@@ -48,11 +48,18 @@ func config() (*pipeline.Config, error) {
 	if err != nil {
 		return nil, wrap(err, "invalid srclang")
 	}
+
+	// Use a default value since rewrite and extract don't have an out flag.
+	genFile := ""
+	if out != nil {
+		genFile = *out
+	}
+
 	return &pipeline.Config{
 		SourceLanguage:      tag,
 		Supported:           getLangs(),
 		TranslationsPattern: `messages\.(.*)\.json$`,
-		GenFile:             *out,
+		GenFile:             genFile,
 		Dir:                 *dir,
 	}, nil
 }
