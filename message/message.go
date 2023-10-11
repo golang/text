@@ -65,7 +65,9 @@ func NewPrinter(t language.Tag, opts ...Option) *Printer {
 // Sprint is like fmt.Sprint, but using language-specific formatting.
 func (p *Printer) Sprint(a ...interface{}) string {
 	pp := newPrinter(p)
-	pp.doPrint(a)
+	for _, item := range a {
+		lookupAndFormat(pp, item.(Reference), nil)
+	}
 	s := pp.String()
 	pp.free()
 	return s
@@ -74,7 +76,9 @@ func (p *Printer) Sprint(a ...interface{}) string {
 // Fprint is like fmt.Fprint, but using language-specific formatting.
 func (p *Printer) Fprint(w io.Writer, a ...interface{}) (n int, err error) {
 	pp := newPrinter(p)
-	pp.doPrint(a)
+	for _, item := range a {
+		lookupAndFormat(pp, item.(Reference), nil)
+	}
 	n64, err := io.Copy(w, &pp.Buffer)
 	pp.free()
 	return int(n64), err
@@ -88,7 +92,10 @@ func (p *Printer) Print(a ...interface{}) (n int, err error) {
 // Sprintln is like fmt.Sprintln, but using language-specific formatting.
 func (p *Printer) Sprintln(a ...interface{}) string {
 	pp := newPrinter(p)
-	pp.doPrintln(a)
+	for _, item := range a {
+		lookupAndFormat(pp, item.(Reference), nil)
+		pp.doPrintln(nil)
+	}
 	s := pp.String()
 	pp.free()
 	return s
@@ -97,7 +104,10 @@ func (p *Printer) Sprintln(a ...interface{}) string {
 // Fprintln is like fmt.Fprintln, but using language-specific formatting.
 func (p *Printer) Fprintln(w io.Writer, a ...interface{}) (n int, err error) {
 	pp := newPrinter(p)
-	pp.doPrintln(a)
+	for _, item := range a {
+		lookupAndFormat(pp, item.(Reference), nil)
+		pp.doPrintln(nil)
+	}
 	n64, err := io.Copy(w, &pp.Buffer)
 	pp.free()
 	return int(n64), err
