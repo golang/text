@@ -19,7 +19,7 @@ import (
 func TestConformance(t *testing.T) {
 	testtext.SkipIfNotLong(t)
 
-	r := gen.OpenUnicodeFile("idna", "10.0.0", "IdnaTest.txt")
+	r := gen.OpenUnicodeFile("idna", "15.1.0", "IdnaTestV2.txt")
 	defer r.Close()
 
 	section := "main"
