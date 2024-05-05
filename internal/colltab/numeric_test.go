@@ -78,26 +78,28 @@ func TestNumericAppendNext(t *testing.T) {
 		{"a", p(5)},
 		{"klm", p(99)},
 		{"aa", p(5, 5)},
-		{"1", p(120, 1, 101)},
-		{"0", p(120, 0)},
-		{"01", p(120, 1, 101)},
-		{"0001", p(120, 1, 101)},
-		{"10", p(120, 2, 101, 100)},
-		{"99", p(120, 2, 119, 119)},
-		{"9999", p(120, 4, 119, 119, 119, 119)},
-		{"1a", p(120, 1, 101, 5)},
-		{"0b", p(120, 0, 6)},
-		{"01c", p(120, 1, 101, 8, 2)},
-		{"10x", p(120, 2, 101, 100, 200)},
-		{"99y", p(120, 2, 119, 119, 201)},
-		{"9999nop", p(120, 4, 119, 119, 119, 119, 121)},
+		{"1", p(120, 2, 101)},
+		{"0", p(120, 1)},
+		{"00", p(120, 1)},
+		{"01", p(120, 2, 101)},
+		{"0001", p(120, 2, 101)},
+		{"02", p(120, 2, 102)},
+		{"10", p(120, 3, 101, 100)},
+		{"99", p(120, 3, 119, 119)},
+		{"9999", p(120, 5, 119, 119, 119, 119)},
+		{"1a", p(120, 2, 101, 5)},
+		{"0b", p(120, 1, 6)},
+		{"01c", p(120, 2, 101, 8, 2)},
+		{"10x", p(120, 3, 101, 100, 200)},
+		{"99y", p(120, 3, 119, 119, 201)},
+		{"9999nop", p(120, 5, 119, 119, 119, 119, 121)},
 
 		// Allow follow-up collation elements if they have a zero non-primary.
-		{"١٢٩", []Elem{e(120), e(3), e(101), tPlus3, e(102), tPlus3, e(119), tPlus3}},
+		{"١٢٩", []Elem{e(120), e(4), e(101), tPlus3, e(102), tPlus3, e(119), tPlus3}},
 		{
 			"１２９",
 			[]Elem{
-				e(120), e(3),
+				e(120), e(4),
 				e(101, digSec, digTert+1),
 				e(102, digSec, digTert+3),
 				e(119, digSec, digTert+1),
@@ -105,7 +107,7 @@ func TestNumericAppendNext(t *testing.T) {
 		},
 
 		// Ensure AppendNext* adds to the given buffer.
-		{"a10", p(5, 120, 2, 101, 100)},
+		{"a10", p(5, 120, 3, 101, 100)},
 	} {
 		nw := NewNumericWeighter(numWeighter)
 
@@ -137,12 +139,12 @@ func TestNumericOverflow(t *testing.T) {
 
 	got, n := nw.AppendNextString(nil, manyDigits)
 
-	if n != maxDigits {
-		t.Errorf("n: got %d; want %d", n, maxDigits)
+	if n != maxDigits-1 { // A digit is lost because elem.Primary() == 0 has odd ordering properties and is skipped
+		t.Errorf("n: got %d; want %d", n, maxDigits-1)
 	}
 
 	if got[1].Primary() != maxDigits {
-		t.Errorf("primary(e[1]): got %d; want %d", n, maxDigits)
+		t.Errorf("primary(e[1]): got %d; want %d", got[1].Primary(), maxDigits)
 	}
 }
 
