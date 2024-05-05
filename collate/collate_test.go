@@ -6,6 +6,7 @@ package collate
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"golang.org/x/text/internal/colltab"
@@ -474,6 +475,19 @@ func TestNumeric(t *testing.T) {
 		{"A-2", "A-12", -1},
 		{"A-12", "A-2", 1},
 		{"A-0001", "A-1", 0},
+		{"0000-", "1-", -1},
+		{"00001", "1", 0},
+		{"00", "00", 0},
+		{"0", "00", 0},
+		{"00", "0", 0},
+		{"01", "001", 0},
+		{"01", "1", 0},
+		{"1", "01", 0},
+		{"9-A", "0-A", 1},
+		{"99-A", "0-A", 1},
+		{"9-A", "1-A", 1},
+		{"99-A", "1-A", 1},
+		{strings.Repeat("9", 270)+"-A", "1-A", 1},
 	} {
 		if got := c.CompareString(tt.a, tt.b); got != tt.want {
 			t.Errorf("%d: CompareString(%s, %s) = %d; want %d", i, tt.a, tt.b, got, tt.want)

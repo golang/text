@@ -224,13 +224,13 @@ func (nc *numberConverter) update(elems []Elem) bool {
 		return false
 	}
 	nc.nDigits++
-	return nc.nDigits < maxDigits
+	return nc.nDigits+1 < maxDigits
 }
 
 // result fills in the length element for the digit sequence and returns the
 // completed collation elements.
 func (nc *numberConverter) result() []Elem {
-	e, _ := MakeElem(nc.nDigits, defaultSecondary, defaultTertiary, 0)
+	e, _ := MakeElem(nc.nDigits+1, defaultSecondary, defaultTertiary, 0)
 	nc.elems[nc.lenIndex] = e
 	return nc.elems
 }
