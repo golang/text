@@ -78,24 +78,24 @@ func TestNumericAppendNext(t *testing.T) {
 		{"a", p(5)},
 		{"klm", p(99)},
 		{"aa", p(5, 5)},
-		{"1", p(120, 2, 101)},
-		{"0", p(120, 1)},
-		{"00", p(120, 1)},
-		{"01", p(120, 2, 101)},
-		{"0001", p(120, 2, 101)},
-		{"02", p(120, 2, 102)},
-		{"10", p(120, 3, 101, 100)},
-		{"99", p(120, 3, 119, 119)},
-		{"9999", p(120, 5, 119, 119, 119, 119)},
-		{"1a", p(120, 2, 101, 5)},
-		{"0b", p(120, 1, 6)},
-		{"01c", p(120, 2, 101, 8, 2)},
-		{"10x", p(120, 3, 101, 100, 200)},
-		{"99y", p(120, 3, 119, 119, 201)},
-		{"9999nop", p(120, 5, 119, 119, 119, 119, 121)},
+		{"1", p(120, 2, 101, 1)},
+		{"0", p(120, 1, 2)},
+		{"00", p(120, 1, 3)},
+		{"01", p(120, 2, 101, 2)},
+		{"0001", p(120, 2, 101, 4)},
+		{"02", p(120, 2, 102, 2)},
+		{"10", p(120, 3, 101, 100, 1)},
+		{"99", p(120, 3, 119, 119, 1)},
+		{"9999", p(120, 5, 119, 119, 119, 119, 1)},
+		{"1a", p(120, 2, 101, 1, 5)},
+		{"0b", p(120, 1, 2, 6)},
+		{"01c", p(120, 2, 101, 2, 8, 2)},
+		{"10x", p(120, 3, 101, 100, 1, 200)},
+		{"99y", p(120, 3, 119, 119, 1, 201)},
+		{"9999nop", p(120, 5, 119, 119, 119, 119, 1, 121)},
 
 		// Allow follow-up collation elements if they have a zero non-primary.
-		{"١٢٩", []Elem{e(120), e(4), e(101), tPlus3, e(102), tPlus3, e(119), tPlus3}},
+		{"١٢٩", []Elem{e(120), e(4), e(101), tPlus3, e(102), tPlus3, e(119), tPlus3, e(1)}},
 		{
 			"１２９",
 			[]Elem{
@@ -103,11 +103,12 @@ func TestNumericAppendNext(t *testing.T) {
 				e(101, digSec, digTert+1),
 				e(102, digSec, digTert+3),
 				e(119, digSec, digTert+1),
+				e(1),
 			},
 		},
 
 		// Ensure AppendNext* adds to the given buffer.
-		{"a10", p(5, 120, 3, 101, 100)},
+		{"a10", p(5, 120, 3, 101, 100, 1)},
 	} {
 		nw := NewNumericWeighter(numWeighter)
 
@@ -145,6 +146,22 @@ func TestNumericOverflow(t *testing.T) {
 
 	if got[1].Primary() != maxDigits {
 		t.Errorf("primary(e[1]): got %d; want %d", got[1].Primary(), maxDigits)
+	}
+}
+
+func TestNumericZeroOverflow(t *testing.T) {
+	manyDigits := strings.Repeat("0", maxDigits+1) + "a"
+
+	nw := NewNumericWeighter(numWeighter)
+
+	got, n := nw.AppendNextString(nil, manyDigits)
+
+	if n != maxDigits+2 { // Zeros after maxDigits-1 are ignored but are still consumed so that a number with leading zeros is ordered after a number with less leading zeros
+		t.Errorf("n: got %d; want %d", n, maxDigits+2)
+	}
+
+	if got[2].Primary() != maxDigits {
+		t.Errorf("primary(e[2]): got %d; want %d", got[1].Primary(), maxDigits)
 	}
 }
 
