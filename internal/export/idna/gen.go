@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // This program generates the trie for idna operations. The Unicode casing
 // algorithm requires the lookup of various properties and mappings for each

@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // This tool generates types for the various XML formats of CLDR.
 package main

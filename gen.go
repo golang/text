@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // gen runs go generate on Unicode- and CLDR-related package in the text
 // repositories, taking into account dependencies and versions.
@@ -256,7 +255,7 @@ func copyPackage(dirSrc, dirDst, search, replace string) {
 			return nil
 		}
 		b, err := os.ReadFile(file)
-		if err != nil || bytes.Contains(b, []byte("\n// +build ignore")) {
+		if err != nil || bytes.Contains(b, []byte("\n//go:build ignore")) {
 			return err
 		}
 		// Fix paths.

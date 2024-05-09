@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // Unicode table generator.
 // Data read from the web.

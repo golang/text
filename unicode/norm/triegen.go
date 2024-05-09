@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // Trie table generator.
 // Used by make*tables tools to generate a go file with trie data structures

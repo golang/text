@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 package main
 
@@ -40,7 +39,7 @@ var encodings = []struct {
 		"",
 		"CodePage037",
 		0x3f,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM037-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM037-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 437",
@@ -48,7 +47,7 @@ var encodings = []struct {
 		"",
 		"CodePage437",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM437-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM437-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 850",
@@ -56,7 +55,7 @@ var encodings = []struct {
 		"",
 		"CodePage850",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM850-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM850-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 852",
@@ -64,7 +63,7 @@ var encodings = []struct {
 		"",
 		"CodePage852",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM852-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM852-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 855",
@@ -72,7 +71,7 @@ var encodings = []struct {
 		"",
 		"CodePage855",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM855-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM855-2.1.2.ucm",
 	},
 	{
 		"Windows Code Page 858", // PC latin1 with Euro
@@ -80,7 +79,7 @@ var encodings = []struct {
 		"",
 		"CodePage858",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/windows-858-2000.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/windows-858-2000.ucm",
 	},
 	{
 		"IBM Code Page 860",
@@ -88,7 +87,7 @@ var encodings = []struct {
 		"",
 		"CodePage860",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM860-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM860-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 862",
@@ -96,7 +95,7 @@ var encodings = []struct {
 		"",
 		"CodePage862",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM862-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM862-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 863",
@@ -104,7 +103,7 @@ var encodings = []struct {
 		"",
 		"CodePage863",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM863-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM863-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 865",
@@ -112,7 +111,7 @@ var encodings = []struct {
 		"",
 		"CodePage865",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM865-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM865-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 866",
@@ -128,7 +127,7 @@ var encodings = []struct {
 		"",
 		"CodePage1047",
 		0x3f,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/glibc-IBM1047-2.1.2.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM1047-2.1.2.ucm",
 	},
 	{
 		"IBM Code Page 1140",
@@ -136,7 +135,7 @@ var encodings = []struct {
 		"",
 		"CodePage1140",
 		0x3f,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/ibm-1140_P100-1997.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/ibm-1140_P100-1997.ucm",
 	},
 	{
 		"ISO 8859-1",
@@ -144,7 +143,7 @@ var encodings = []struct {
 		"",
 		"ISO8859_1",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/iso-8859_1-1998.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/iso-8859_1-1998.ucm",
 	},
 	{
 		"ISO 8859-2",
@@ -208,7 +207,7 @@ var encodings = []struct {
 		"",
 		"ISO8859_9",
 		encoding.ASCIISub,
-		"http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/iso-8859_9-1999.ucm",
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/iso-8859_9-1999.ucm",
 	},
 	{
 		"ISO 8859-10",
@@ -478,7 +477,7 @@ func main() {
 		switch {
 		case strings.HasPrefix(e.mapping, "http://encoding.spec.whatwg.org/"):
 			e.mapping = getWHATWG(e.mapping)
-		case strings.HasPrefix(e.mapping, "http://source.icu-project.org/repos/icu/data/trunk/charset/data/ucm/"):
+		case strings.HasPrefix(e.mapping, "https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/"):
 			e.mapping = getUCM(e.mapping)
 		}
 

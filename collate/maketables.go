@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // Collation table generator.
 // Data read from the web.
@@ -38,7 +37,7 @@ var (
 		"test existing tables; can be used to compare web data with package data.")
 	short = flag.Bool("short", false, `Use "short" alternatives, when available.`)
 	draft = flag.Bool("draft", false, `Use draft versions, when available.`)
-	tags  = flag.String("tags", "", "build tags to be included after +build directive")
+	tags  = flag.String("tags", "", "build tags to be included after go:build directive")
 	pkg   = flag.String("package", "collate",
 		"the name of the package in which the generated file is to be included")
 
