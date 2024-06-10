@@ -4,3 +4,4 @@ last-change
 # This file is rather large and the tests really only need to be run
 # after generation.
 /unicode/norm/data_test.go
+.idea
