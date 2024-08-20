@@ -10,7 +10,7 @@ import (
 	"golang.org/x/text/message"
 )
 
-func ExampleSelect() {
+func ExampleSelectf() {
 	// Manually set some translations. This is typically done programmatically.
 	message.Set(language.English, "%d files remaining",
 		plural.Selectf(1, "%d",
