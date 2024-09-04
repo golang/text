@@ -21,7 +21,7 @@ func generate(b *Builder, t *Tree, w *gen.CodeWriter) error {
 
 	fmt.Fprintf(w, "var tree = &cldrtree.Tree{locales, indices, buckets}\n\n")
 
-	w.WriteComment("Path values:\n" + b.stats())
+	w.WriteComment("Path values:\n%s", b.stats())
 	fmt.Fprintln(w)
 
 	// Generate enum types.
