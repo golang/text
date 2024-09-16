@@ -7,7 +7,6 @@ package triegen_test
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"golang.org/x/text/internal/triegen"
 )
@@ -17,12 +16,12 @@ func ExampleCompacter() {
 	for r := rune(0); r < 10000; r += 64 {
 		t.Insert(r, 0x9015BADA55^uint64(r))
 	}
-	sz, _ := t.Gen(ioutil.Discard)
+	sz, _ := t.Gen(io.Discard)
 
 	fmt.Printf("Size normal:    %5d\n", sz)
 
 	var c myCompacter
-	sz, _ = t.Gen(ioutil.Discard, triegen.Compact(&c))
+	sz, _ = t.Gen(io.Discard, triegen.Compact(&c))
 
 	fmt.Printf("Size compacted: %5d\n", sz)
 

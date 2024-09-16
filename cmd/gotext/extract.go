@@ -14,14 +14,15 @@ import (
 // - handle features (gender, plural)
 // - message rewriting
 
-func init() {
-	lang = cmdExtract.Flag.String("lang", "en-US", "comma-separated list of languages to process")
-}
-
 var cmdExtract = &Command{
+	Init:      initExtract,
 	Run:       runExtract,
 	UsageLine: "extract <package>*",
 	Short:     "extracts strings to be translated from code",
+}
+
+func initExtract(cmd *Command) {
+	lang = cmd.Flag.String("lang", "en-US", "comma-separated list of languages to process")
 }
 
 func runExtract(cmd *Command, config *pipeline.Config, args []string) error {

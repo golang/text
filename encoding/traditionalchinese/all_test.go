@@ -6,7 +6,7 @@ package traditionalchinese
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -103,7 +103,7 @@ func TestBig5CircumflexAndMacron(t *testing.T) {
 		"\x88\xa2\x88\xa3\x88\xa4\x88\xa5\x88\xa6"
 	want := "ÓǑÒ\u00ca\u0304Ế\u00ca\u030cỀÊ " +
 		"ü\u00ea\u0304ế\u00ea\u030cề"
-	dst, err := ioutil.ReadAll(transform.NewReader(
+	dst, err := io.ReadAll(transform.NewReader(
 		strings.NewReader(src), Big5.NewDecoder()))
 	if err != nil {
 		t.Fatal(err)

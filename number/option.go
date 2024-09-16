@@ -172,6 +172,6 @@ func Pad(r rune) Option {
 // - FormatPosition (using type aliasing?)
 // - Multiplier: find a better way to represent and figure out what to do
 //   with clashes with percent/permille.
-// - NumberingSystem(nu string): not accessable in number.Info now. Also, should
+// - NumberingSystem(nu string): not accessible in number.Info now. Also, should
 //      this be keyed by language or generic?
 // - SymbolOverrides(symbols map[string]map[number.SymbolType]string) Option

@@ -6,7 +6,6 @@
 // Data read from the web.
 
 //go:build ignore
-// +build ignore
 
 package main
 
@@ -221,12 +220,12 @@ func isLetterDigits(r rune) bool {
 func isIdDisAndFreePVal(r rune) bool {
 	return unicode.In(r,
 		// OtherLetterDigits: https://tools.ietf.org/html/rfc7564#section-9.18
-		// r in in {Lt, Nl, No, Me}
+		// r in {Lt, Nl, No, Me}
 		unicode.Lt, unicode.Nl, unicode.No, // Other letters / numbers
 		unicode.Me, // Modifiers
 
 		// Spaces: https://tools.ietf.org/html/rfc7564#section-9.14
-		// r in in {Zs}
+		// r in {Zs}
 		unicode.Zs,
 
 		// Symbols: https://tools.ietf.org/html/rfc7564#section-9.15

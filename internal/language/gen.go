@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // Language tag table generator.
 // Data read from the web.
@@ -15,7 +14,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"reflect"
@@ -921,7 +919,7 @@ func (b *builder) writeRegion() {
 	r := gen.OpenIANAFile("domains/root/db")
 	defer r.Close()
 
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	failOnError(err)
 	re := regexp.MustCompile(`"/domains/root/db/([a-z]{2}).html"`)
 	for _, m := range re.FindAllSubmatch(buf, -1) {
@@ -1081,7 +1079,7 @@ func find(list []string, s string) int {
 	return -1
 }
 
-// writeVariants generates per-variant information and creates a map from variant
+// writeVariant generates per-variant information and creates a map from variant
 // name to index value. We assign index values such that sorting multiple
 // variants by index value will result in the correct order.
 // There are two types of variants: specialized and general. Specialized variants
@@ -1209,12 +1207,12 @@ func (b *builder) writeLikelyData() {
 	type ( // generated types
 		likelyScriptRegion struct {
 			region uint16
-			script uint8
+			script uint16
 			flags  uint8
 		}
 		likelyLangScript struct {
 			lang   uint16
-			script uint8
+			script uint16
 			flags  uint8
 		}
 		likelyLangRegion struct {
@@ -1226,7 +1224,7 @@ func (b *builder) writeLikelyData() {
 		likelyTag struct {
 			lang   uint16
 			region uint16
-			script uint8
+			script uint16
 		}
 	)
 	var ( // generated variables
@@ -1279,7 +1277,7 @@ func (b *builder) writeLikelyData() {
 					log.Fatalf("region changed unexpectedly: %s -> %s", from, to)
 				}
 				likelyRegionGroup[id].lang = uint16(b.langIndex(to[0]))
-				likelyRegionGroup[id].script = uint8(b.script.index(to[1]))
+				likelyRegionGroup[id].script = uint16(b.script.index(to[1]))
 				likelyRegionGroup[id].region = uint16(b.region.index(to[2]))
 			} else {
 				regionToOther[r] = append(regionToOther[r], fromTo{from, to})
@@ -1293,11 +1291,11 @@ func (b *builder) writeLikelyData() {
 		list := langToOther[id]
 		if len(list) == 1 {
 			likelyLang[id].region = uint16(b.region.index(list[0].to[2]))
-			likelyLang[id].script = uint8(b.script.index(list[0].to[1]))
+			likelyLang[id].script = uint16(b.script.index(list[0].to[1]))
 		} else if len(list) > 1 {
 			likelyLang[id].flags = isList
 			likelyLang[id].region = uint16(len(likelyLangList))
-			likelyLang[id].script = uint8(len(list))
+			likelyLang[id].script = uint16(len(list))
 			for _, x := range list {
 				flags := uint8(0)
 				if len(x.from) > 1 {
@@ -1309,7 +1307,7 @@ func (b *builder) writeLikelyData() {
 				}
 				likelyLangList = append(likelyLangList, likelyScriptRegion{
 					region: uint16(b.region.index(x.to[2])),
-					script: uint8(b.script.index(x.to[1])),
+					script: uint16(b.script.index(x.to[1])),
 					flags:  flags,
 				})
 			}
@@ -1324,21 +1322,21 @@ func (b *builder) writeLikelyData() {
 		list := regionToOther[id]
 		if len(list) == 1 {
 			likelyRegion[id].lang = uint16(b.langIndex(list[0].to[0]))
-			likelyRegion[id].script = uint8(b.script.index(list[0].to[1]))
+			likelyRegion[id].script = uint16(b.script.index(list[0].to[1]))
 			if len(list[0].from) > 2 {
 				likelyRegion[id].flags = scriptInFrom
 			}
 		} else if len(list) > 1 {
 			likelyRegion[id].flags = isList
 			likelyRegion[id].lang = uint16(len(likelyRegionList))
-			likelyRegion[id].script = uint8(len(list))
+			likelyRegion[id].script = uint16(len(list))
 			for i, x := range list {
 				if len(x.from) == 2 && i != 0 || i > 0 && len(x.from) != 3 {
 					log.Fatalf("unspecified script must be first in list: %v at %d", x.from, i)
 				}
 				x := likelyLangScript{
 					lang:   uint16(b.langIndex(x.to[0])),
-					script: uint8(b.script.index(x.to[1])),
+					script: uint16(b.script.index(x.to[1])),
 				}
 				if len(list[0].from) > 2 {
 					x.flags = scriptInFrom
@@ -1453,8 +1451,8 @@ func (b *builder) writeRegionInclusionData() {
 
 type parentRel struct {
 	lang       uint16
-	script     uint8
-	maxScript  uint8
+	script     uint16
+	maxScript  uint16
 	toRegion   uint16
 	fromRegion []uint16
 }
@@ -1477,10 +1475,10 @@ func (b *builder) writeParents() {
 		if len(sub) == 2 {
 			// TODO: check that all undefined scripts are indeed Latn in these
 			// cases.
-			parent.maxScript = uint8(b.script.index("Latn"))
+			parent.maxScript = uint16(b.script.index("Latn"))
 			parent.toRegion = uint16(b.region.index(sub[1]))
 		} else {
-			parent.script = uint8(b.script.index(sub[1]))
+			parent.script = uint16(b.script.index(sub[1]))
 			parent.maxScript = parent.script
 			parent.toRegion = uint16(b.region.index(sub[2]))
 		}

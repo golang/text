@@ -29,7 +29,7 @@ func makeTestTrie(t *testing.T) trie {
 	idx.addTrie(n)
 	tr, err := idx.generate()
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 	return *tr
 }

@@ -16,7 +16,7 @@ import (
 	"golang.org/x/text/transform"
 )
 
-func ExampleDecodeWindows1252() {
+func Example_decodeWindows1252() {
 	sr := strings.NewReader("Gar\xe7on !")
 	tr := charmap.Windows1252.NewDecoder().Reader(sr)
 	io.Copy(os.Stdout, tr)

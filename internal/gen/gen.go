@@ -25,7 +25,6 @@ import (
 	"go/build"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -88,7 +87,8 @@ var tags = []struct{ version, buildTags string }{
 	{"10.0.0", "go1.10,!go1.13"},
 	{"11.0.0", "go1.13,!go1.14"},
 	{"12.0.0", "go1.14,!go1.16"},
-	{"13.0.0", "go1.16"},
+	{"13.0.0", "go1.16,!go1.21"},
+	{"15.0.0", "go1.21"},
 }
 
 // buildTags reports the build tags used for the current Unicode version.
@@ -175,7 +175,7 @@ func getLocalDir() string {
 		if err := os.MkdirAll(dir, permissions); err != nil {
 			log.Fatalf("Could not create directory: %v", err)
 		}
-		ioutil.WriteFile(readme, []byte(readmeTxt), permissions)
+		os.WriteFile(readme, []byte(readmeTxt), permissions)
 	}
 	return dir
 }
@@ -213,15 +213,15 @@ func open(file, urlRoot, path string) io.ReadCloser {
 	}
 	r := get(urlRoot, path)
 	defer r.Close()
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		log.Fatalf("Could not download file: %v", err)
 	}
 	os.MkdirAll(filepath.Dir(file), permissions)
-	if err := ioutil.WriteFile(file, b, permissions); err != nil {
+	if err := os.WriteFile(file, b, permissions); err != nil {
 		log.Fatalf("Could not create file: %v", err)
 	}
-	return ioutil.NopCloser(bytes.NewReader(b))
+	return io.NopCloser(bytes.NewReader(b))
 }
 
 func get(root, path string) io.ReadCloser {
@@ -277,16 +277,20 @@ func fileToPattern(filename string) string {
 	return fmt.Sprint(prefix, "%s", suffix)
 }
 
+// tagLines returns the //go:build lines to add to the file.
+func tagLines(tags string) string {
+	return "//go:build " + strings.ReplaceAll(tags, ",", " && ") + "\n"
+}
+
 func updateBuildTags(pattern string) {
 	for _, t := range tags {
 		oldFile := fmt.Sprintf(pattern, t.version)
-		b, err := ioutil.ReadFile(oldFile)
+		b, err := os.ReadFile(oldFile)
 		if err != nil {
 			continue
 		}
-		build := fmt.Sprintf("// +build %s", t.buildTags)
-		b = regexp.MustCompile(`// \+build .*`).ReplaceAll(b, []byte(build))
-		err = ioutil.WriteFile(oldFile, b, 0644)
+		b = regexp.MustCompile(`//go:build.*\n`).ReplaceAll(b, []byte(tagLines(t.buildTags)))
+		err = os.WriteFile(oldFile, b, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -317,7 +321,8 @@ func WriteVersionedGoFile(filename, pkg string, b []byte) {
 func WriteGo(w io.Writer, pkg, tags string, b []byte) (n int, err error) {
 	src := []byte(header)
 	if tags != "" {
-		src = append(src, fmt.Sprintf("// +build %s\n\n", tags)...)
+		src = append(src, tagLines(tags)...)
+		src = append(src, '\n')
 	}
 	src = append(src, fmt.Sprintf("package %s\n\n", pkg)...)
 	src = append(src, b...)
@@ -334,7 +339,7 @@ func WriteGo(w io.Writer, pkg, tags string, b []byte) (n int, err error) {
 // Repackage rewrites a Go file from belonging to package main to belonging to
 // the given package.
 func Repackage(inFile, outFile, pkg string) {
-	src, err := ioutil.ReadFile(inFile)
+	src, err := os.ReadFile(inFile)
 	if err != nil {
 		log.Fatalf("reading %s: %v", inFile, err)
 	}

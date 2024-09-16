@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build !go1.10
-// +build !go1.10
 
 package idna
 
@@ -78,6 +77,7 @@ func TestLabelErrors(t *testing.T) {
 		{resolve, "\u3002b", "b", ""},
 		{resolve, "..b", "b", ""},
 		{resolve, "b..", "b..", ""},
+		{resolve, "\xed", "", "P1"},
 
 		// Raw punycode
 		{punyA, "", "", ""},

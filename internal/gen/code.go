@@ -342,8 +342,7 @@ func (w *CodeWriter) writeSlice(x interface{}, isArray bool) {
 			if !reflect.DeepEqual(zero, x) {
 				line := fmt.Sprintf("%#v,\n", x)
 				line = line[strings.IndexByte(line, '{'):]
-				w.printf("%d: ", i)
-				w.printf(line)
+				w.printf("%d: %s", i, line)
 			}
 		}
 	case reflect.Array:

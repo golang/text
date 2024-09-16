@@ -92,7 +92,7 @@ func TestRemove(t *testing.T) {
 
 // nextPerm generates the next permutation of the array.  The starting
 // permutation is assumed to be a list of integers sorted in increasing order.
-// It returns false if there are no more permuations left.
+// It returns false if there are no more permutations left.
 func nextPerm(a []int) bool {
 	i := len(a) - 2
 	for ; i >= 0; i-- {

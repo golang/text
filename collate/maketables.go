@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // Collation table generator.
 // Data read from the web.
@@ -17,7 +16,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -39,7 +37,7 @@ var (
 		"test existing tables; can be used to compare web data with package data.")
 	short = flag.Bool("short", false, `Use "short" alternatives, when available.`)
 	draft = flag.Bool("draft", false, `Use draft versions, when available.`)
-	tags  = flag.String("tags", "", "build tags to be included after +build directive")
+	tags  = flag.String("tags", "", "build tags to be included after go:build directive")
 	pkg   = flag.String("package", "collate",
 		"the name of the package in which the generated file is to be included")
 
@@ -187,7 +185,7 @@ func failOnError(e error) {
 
 func openArchive() *zip.Reader {
 	f := gen.OpenCLDRCoreZip()
-	buffer, err := ioutil.ReadAll(f)
+	buffer, err := io.ReadAll(f)
 	f.Close()
 	failOnError(err)
 	archive, err := zip.NewReader(bytes.NewReader(buffer), int64(len(buffer)))
@@ -287,7 +285,7 @@ var tagRe = regexp.MustCompile(`<([a-z_]*)  */>`)
 
 var mainLocales = []string{}
 
-// charsets holds a list of exemplar characters per category.
+// charSets holds a list of exemplar characters per category.
 type charSets map[string][]string
 
 func (p charSets) fprint(w io.Writer) {

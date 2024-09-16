@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // gen runs go generate on Unicode- and CLDR-related package in the text
 // repositories, taking into account dependencies and versions.
@@ -14,7 +13,6 @@ import (
 	"flag"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -256,8 +254,8 @@ func copyPackage(dirSrc, dirDst, search, replace string) {
 			filepath.Dir(file) != dirSrc {
 			return nil
 		}
-		b, err := ioutil.ReadFile(file)
-		if err != nil || bytes.Contains(b, []byte("\n// +build ignore")) {
+		b, err := os.ReadFile(file)
+		if err != nil || bytes.Contains(b, []byte("\n//go:build ignore")) {
 			return err
 		}
 		// Fix paths.
@@ -275,7 +273,7 @@ func copyPackage(dirSrc, dirDst, search, replace string) {
 		}
 		file = filepath.Join(dirDst, base)
 		vprintf("=== COPY %s\n", file)
-		return ioutil.WriteFile(file, b, 0666)
+		return os.WriteFile(file, b, 0666)
 	})
 	if err != nil {
 		fmt.Println("Copying exported files failed:", err)

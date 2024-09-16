@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -66,7 +66,7 @@ func TestEncoding(t *testing.T, e encoding.Encoding, encoded, utf8, prefix, suff
 					// regardless of whatever wPrefix is.
 					continue
 				}
-				got1, want1 := string(g), wPrefix+strings.Repeat(want, n)+wSuffix
+				got1, want1 := g, wPrefix+strings.Repeat(want, n)+wSuffix
 				if got1 != want1 {
 					t.Fatalf("ReadAll: n=%d\ngot  %q\nwant %q",
 						n, trim(got1), trim(want1))
@@ -105,7 +105,7 @@ func Benchmark(b *testing.B, enc encoding.Encoding) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				r := transform.NewReader(bytes.NewReader(src), transformer)
-				io.Copy(ioutil.Discard, r)
+				io.Copy(io.Discard, r)
 			}
 		})
 	}
@@ -157,15 +157,15 @@ func load(direction string, enc encoding.Encoding) ([]byte, []byte, Transcoder, 
 		dstFile, srcFile = srcFile, dstFile
 		coder = enc.NewDecoder()
 	}
-	dst, err := ioutil.ReadFile(dstFile)
+	dst, err := os.ReadFile(dstFile)
 	if err != nil {
-		if dst, err = ioutil.ReadFile("../" + dstFile); err != nil {
+		if dst, err = os.ReadFile("../" + dstFile); err != nil {
 			return nil, nil, nil, err
 		}
 	}
-	src, err := ioutil.ReadFile(srcFile)
+	src, err := os.ReadFile(srcFile)
 	if err != nil {
-		if src, err = ioutil.ReadFile("../" + srcFile); err != nil {
+		if src, err = os.ReadFile("../" + srcFile); err != nil {
 			return nil, nil, nil, err
 		}
 	}

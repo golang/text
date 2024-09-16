@@ -19,15 +19,8 @@ const printerType = "golang.org/x/text/message.Printer"
 // - handle features (gender, plural)
 // - message rewriting
 
-func init() {
-	overwrite = cmdRewrite.Flag.Bool("w", false, "write files in place")
-}
-
-var (
-	overwrite *bool
-)
-
 var cmdRewrite = &Command{
+	Init:      initRewrite,
 	Run:       runRewrite,
 	UsageLine: "rewrite <package>",
 	Short:     "rewrites fmt functions to use a message Printer",
@@ -37,6 +30,10 @@ fmt to use x/text's message package whenever a message.Printer is in scope.
 It rewrites Print and Println calls with constant strings to the equivalent
 using Printf to allow translators to reorder arguments.
 `,
+}
+
+func initRewrite(cmd *Command) {
+	overwrite = cmd.Flag.Bool("w", false, "write files in place")
 }
 
 func runRewrite(cmd *Command, _ *pipeline.Config, args []string) error {

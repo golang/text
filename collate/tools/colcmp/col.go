@@ -73,7 +73,7 @@ func getCollator(name, locale string) Collator {
 	return nil
 }
 
-// goCollator is an implemention of Collator using go's own collator.
+// goCollator is an implementation of Collator using go's own collator.
 type goCollator struct {
 	c   *collate.Collator
 	buf collate.Buffer

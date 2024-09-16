@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build !go1.10
-// +build !go1.10
 
 //go:generate go run gen.go gen_trieval.go gen_common.go
 
@@ -121,7 +120,7 @@ func CheckJoiners(enable bool) Option {
 	}
 }
 
-// StrictDomainName limits the set of permissable ASCII characters to those
+// StrictDomainName limits the set of permissible ASCII characters to those
 // allowed in domain names as defined in RFC 1034 (A-Z, a-z, 0-9 and the
 // hyphen). This is set by default for MapForLookup and ValidateForRegistration,
 // but is only useful if ValidateLabels is set.
@@ -197,7 +196,7 @@ type options struct {
 	bidirule func(s string) bool
 }
 
-// A Profile defines the configuration of a IDNA mapper.
+// A Profile defines the configuration of an IDNA mapper.
 type Profile struct {
 	options
 }
@@ -426,6 +425,9 @@ func validateRegistration(p *Profile, s string) (string, error) {
 	}
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
+		if sz == 0 {
+			return s, runeError(utf8.RuneError)
+		}
 		// Copy bytes not copied so far.
 		switch p.simplify(info(v).category()) {
 		// TODO: handle the NV8 defined in the Unicode idna data set to allow
@@ -448,6 +450,15 @@ func validateAndMap(p *Profile, s string) (string, error) {
 	)
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
+		if sz == 0 {
+			b = append(b, s[k:i]...)
+			b = append(b, "\ufffd"...)
+			k = len(s)
+			if err == nil {
+				err = runeError(utf8.RuneError)
+			}
+			break
+		}
 		start := i
 		i += sz
 		// Copy bytes not copied so far.
@@ -580,6 +591,9 @@ func validateFromPunycode(p *Profile, s string) error {
 	}
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
+		if sz == 0 {
+			return runeError(utf8.RuneError)
+		}
 		if c := p.simplify(info(v).category()); c != valid && c != deviation {
 			return &labelError{s, "V6"}
 		}

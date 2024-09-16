@@ -29,14 +29,14 @@ func (o *options) fill(opt []Option) {
 	}
 }
 
-// aliasOpt sets an alias from the given node, if the node defines one.
+// setAlias sets an alias from the given node, if the node defines one.
 func (o *options) setAlias(n Element) {
 	if n != nil && !reflect.ValueOf(n).IsNil() {
 		o.alias = n.GetCommon()
 	}
 }
 
-// Enum defines a enumeration type. The resulting option may be passed for the
+// Enum defines an enumeration type. The resulting option may be passed for the
 // construction of multiple Indexes, which they will share the same enum values.
 // Calling Gen on a Builder will generate the Enum for the given name. The
 // optional values fix the values for the given identifier to the argument

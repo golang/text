@@ -2626,4 +2626,4 @@ var narrowSymIndex = []curToIndex{ // 491 elements
 	490: {cur: 0xf6, idx: 0xc7},
 } // Size: 1988 bytes
 
-// Total table size 18885 bytes (18KiB); checksum: 323F41F3
+// Total table size 18885 bytes (18KiB); checksum: BE08FD0B

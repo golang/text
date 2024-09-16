@@ -9,7 +9,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -927,14 +926,14 @@ func TestString(t *testing.T) {
 
 func runNM(code string) (string, error) {
 	// Write the file.
-	tmpdir, err := ioutil.TempDir(os.TempDir(), "normalize_test")
+	tmpdir, err := os.MkdirTemp(os.TempDir(), "normalize_test")
 	if err != nil {
 		return "", fmt.Errorf("failed to create tmpdir: %v", err)
 	}
 	defer os.RemoveAll(tmpdir)
 	goTool := filepath.Join(runtime.GOROOT(), "bin", "go")
 	filename := filepath.Join(tmpdir, "main.go")
-	if err := ioutil.WriteFile(filename, []byte(code), 0644); err != nil {
+	if err := os.WriteFile(filename, []byte(code), 0644); err != nil {
 		return "", fmt.Errorf("failed to write main.go: %v", err)
 	}
 	outputFile := filepath.Join(tmpdir, "main")

@@ -6,7 +6,7 @@ package triegen_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"unicode"
 
@@ -15,7 +15,7 @@ import (
 
 const seed = 0x12345
 
-var genWriter = ioutil.Discard
+var genWriter = io.Discard
 
 func randomRunes() map[rune]uint8 {
 	rnd := rand.New(rand.NewSource(seed))

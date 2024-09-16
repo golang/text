@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/internal"
@@ -126,7 +127,7 @@ func TestNonRepertoire(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		dir, tr, wantErr := tc.init(tc.e)
-		t.Run(fmt.Sprintf("%s/%v/%q", dir, tc.e, tc.src), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s/%v/%q", dir, tc.e, short(tc.src)), func(t *testing.T) {
 			dst := make([]byte, 100000)
 			src := []byte(tc.src)
 			for i := 0; i <= len(tc.src); i++ {
@@ -145,6 +146,16 @@ func TestNonRepertoire(t *testing.T) {
 			}
 		})
 	}
+}
+
+func short(s string) string {
+	if len(s) <= 50 {
+		return s
+	}
+	var i int
+	for i = 1; i < utf8.UTFMax && !utf8.RuneStart(s[50-i]); i++ {
+	}
+	return s[:50-i] + "…"
 }
 
 func TestCorrect(t *testing.T) {

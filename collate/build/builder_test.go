@@ -65,7 +65,7 @@ func newBuilder(t *testing.T, ducet []ducetElem) *Builder {
 			ces = append(ces, ce.w)
 		}
 		if err := b.Add([]rune(e.str), ces, nil); err != nil {
-			t.Errorf(err.Error())
+			t.Error(err)
 		}
 	}
 	b.t = &table{}

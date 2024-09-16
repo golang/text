@@ -5,7 +5,7 @@
 package encoding_test
 
 import (
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -62,7 +62,7 @@ func TestReplacement(t *testing.T) {
 			want = "AB\x00CD\ufffdYZ"
 		}
 		sr := strings.NewReader("AB\x00CD\x80YZ")
-		g, err := ioutil.ReadAll(transform.NewReader(sr, enc))
+		g, err := io.ReadAll(transform.NewReader(sr, enc))
 		if err != nil {
 			t.Errorf("%s: ReadAll: %v", direction, err)
 			continue

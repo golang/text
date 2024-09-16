@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // This program generates the trie for idna operations. The Unicode casing
 // algorithm requires the lookup of various properties and mappings for each
@@ -106,6 +105,7 @@ func genTables() {
 	gen.WriteUnicodeVersion(w)
 
 	w.WriteVar("mappings", string(mappings))
+	w.WriteVar("mappingIndex", mappingIndex)
 	w.WriteVar("xorData", string(xorData))
 
 	sz, err := t.Gen(w, triegen.Compact(&normCompacter{}))
@@ -116,10 +116,14 @@ func genTables() {
 }
 
 var (
-	// mappings contains replacement strings for mapped runes, each prefixed
-	// with a byte containing the length of the following string.
+	// mappings contains replacement strings for mapped runes.
 	mappings = []byte{}
-	mapCache = map[string]int{}
+
+	// mappingIndex contains an offset in mappingBytes representing the start
+	// of a mapping. Then next entry in mappingIndex points past the end of the
+	// string.
+	mappingIndex = []uint16{0}
+	mapCache     = map[string]int{}
 
 	// xorData is like mappings, except that it contains XOR data.
 	// We split these two tables so that we don't get an overflow.
@@ -133,13 +137,13 @@ func makeEntry(r rune, mapped string) info {
 
 	if len(orig) != len(mapped) {
 		// Store the mapped value as is in the mappings table.
-		index := len(mappings)
+		index := len(mappingIndex) - 1
 		if x, ok := mapCache[mapped]; ok {
 			index = x
 		} else {
 			mapCache[mapped] = index
-			mappings = append(mappings, byte(len(mapped)))
 			mappings = append(mappings, mapped...)
+			mappingIndex = append(mappingIndex, uint16(len(mappings)))
 		}
 		return info(index) << indexShift
 	}

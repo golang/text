@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"flag"
 	"io"
-	"io/ioutil"
 	"log"
 	"path"
 	"regexp"
@@ -133,7 +132,7 @@ func convHex(line int, s string) int {
 
 func loadTestData() []Test {
 	f := gen.OpenUnicodeFile("UCA", "", "CollationTest.zip")
-	buffer, err := ioutil.ReadAll(f)
+	buffer, err := io.ReadAll(f)
 	f.Close()
 	Error(err)
 	archive, err := zip.NewReader(bytes.NewReader(buffer), int64(len(buffer)))

@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // Generator for display name tables.
 
@@ -528,7 +527,7 @@ func (h *header) writeSingle(w *gen.CodeWriter, name string) {
 	}
 }
 
-// WriteTable writes an entry for a single Namer.
+// writeTable writes an entry for a single Namer.
 func (g *group) writeTable(w *gen.CodeWriter, name string) {
 	start := w.Size
 	writeKeys(w, name, g.toTags)

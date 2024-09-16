@@ -14,20 +14,16 @@ import (
 // - handle features (gender, plural)
 // - message rewriting
 
-var (
-	lang *string
-	out  *string
-)
-
-func init() {
-	lang = cmdUpdate.Flag.String("lang", "en-US", "comma-separated list of languages to process")
-	out = cmdUpdate.Flag.String("out", "", "output file to write to")
-}
-
 var cmdUpdate = &Command{
+	Init:      initUpdate,
 	Run:       runUpdate,
 	UsageLine: "update <package>* [-out <gofile>]",
 	Short:     "merge translations and generate catalog",
+}
+
+func initUpdate(cmd *Command) {
+	lang = cmd.Flag.String("lang", "en-US", "comma-separated list of languages to process")
+	out = cmd.Flag.String("out", "", "output file to write to")
 }
 
 func runUpdate(cmd *Command, config *pipeline.Config, args []string) error {

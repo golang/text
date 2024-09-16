@@ -12,7 +12,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-func ExampleCollator_Strings() {
+func ExampleCollator_strings() {
 	c := collate.New(language.Und)
 	strings := []string{
 		"ad",

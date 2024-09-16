@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 // This program generates the trie for width operations. The generated table
 // includes width category information as well as the normalization mappings.

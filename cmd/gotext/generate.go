@@ -8,14 +8,15 @@ import (
 	"golang.org/x/text/message/pipeline"
 )
 
-func init() {
-	out = cmdGenerate.Flag.String("out", "", "output file to write to")
+var cmdGenerate = &Command{
+	Init:      initGenerate,
+	Run:       runGenerate,
+	UsageLine: "generate <package> [-out <gofile>]",
+	Short:     "generates code to insert translated messages",
 }
 
-var cmdGenerate = &Command{
-	Run:       runGenerate,
-	UsageLine: "generate <package>",
-	Short:     "generates code to insert translated messages",
+func initGenerate(cmd *Command) {
+	out = cmd.Flag.String("out", "", "output file to write to")
 }
 
 func runGenerate(cmd *Command, config *pipeline.Config, args []string) error {
@@ -26,6 +27,9 @@ func runGenerate(cmd *Command, config *pipeline.Config, args []string) error {
 	}
 	if err := s.Import(); err != nil {
 		return wrap(err, "import failed")
+	}
+	if err := s.Merge(); err != nil {
+		return wrap(err, "merge failed")
 	}
 	return wrap(s.Generate(), "generation failed")
 }

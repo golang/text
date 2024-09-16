@@ -194,4 +194,4 @@ var cardinalTests = []pluralTest{ // 113 elements
 	112: {locales: "cy", form: 0, integer: []string{"4", "5", "7~20", "100", "1000", "10000", "100000", "1000000"}, decimal: []string{"0.1~0.9", "1.1~1.7", "10.0", "100.0", "1000.0", "10000.0", "100000.0", "1000000.0"}},
 } // Size: 8160 bytes
 
-// Total table size 12936 bytes (12KiB); checksum: 8456DC5D
+// Total table size 12936 bytes (12KiB); checksum: B3D2F6AF

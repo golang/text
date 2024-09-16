@@ -58,7 +58,7 @@ type Config struct {
 	//   1. From the Language field in the file.
 	//   2. If not present, from a valid language tag in the filename, separated
 	//      by dots (e.g. "en-US.json" or "incoming.pt_PT.xmb").
-	//   3. If not present, from a the closest subdirectory in which the file
+	//   3. If not present, from the closest subdirectory in which the file
 	//      is contained that parses as a valid language tag.
 	TranslationsPattern string
 
@@ -90,7 +90,7 @@ type Config struct {
 	// file. If not specified it is relative to the current directory.
 	GenPackage string
 
-	// DeclareVar defines a variable to which to assing the generated Catalog.
+	// DeclareVar defines a variable to which to assign the generated Catalog.
 	DeclareVar string
 
 	// SetDefault determines whether to assign the generated Catalog to
