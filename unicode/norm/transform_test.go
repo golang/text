@@ -69,7 +69,7 @@ func TestTransform(t *testing.T) {
 	}
 	b := make([]byte, 100)
 	for i, tt := range tests {
-		t.Run(fmt.Sprintf("%d:%s", i, tt.in), func(t *testing.T) {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			nDst, _, err := tt.f.Transform(b[:tt.dstSize], []byte(tt.in), tt.eof)
 			out := string(b[:nDst])
 			if out != tt.out || err != tt.err {

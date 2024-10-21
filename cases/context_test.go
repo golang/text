@@ -213,7 +213,8 @@ func TestCCC(t *testing.T) {
 
 func TestWordBreaks(t *testing.T) {
 	for _, tt := range breakTest {
-		testtext.Run(t, tt, func(t *testing.T) {
+		desc := norm.NFC.String(tt)
+		testtext.Run(t, desc, func(t *testing.T) {
 			parts := strings.Split(tt, "|")
 			want := ""
 			for _, s := range parts {
