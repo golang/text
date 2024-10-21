@@ -65,7 +65,7 @@ type transformTest struct {
 }
 
 func (tc *transformTest) doTest(t *testing.T, tr Transformer) {
-	testtext.Run(t, tc.desc, func(t *testing.T) {
+	t.Run(tc.desc, func(t *testing.T) {
 		b := make([]byte, tc.nBuf)
 		nDst, nSrc, err := tr.Transform(b, []byte(tc.src), tc.atEOF)
 		if got := string(b[:nDst]); got != tc.dst[:nDst] {

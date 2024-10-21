@@ -10,7 +10,6 @@ import (
 	"testing"
 	"unicode"
 
-	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/transform"
 )
 
@@ -114,7 +113,7 @@ func doCompareTests(t *testing.T, fn func(t *testing.T, p *Profile, tc compareTe
 	for _, g := range compareTestCases {
 		for i, tc := range g.cases {
 			name := fmt.Sprintf("%s:%d:%+q", g.name, i, tc.a)
-			testtext.Run(t, name, func(t *testing.T) {
+			t.Run(name, func(t *testing.T) {
 				fn(t, g.p, tc)
 			})
 		}

@@ -6,8 +6,6 @@ package bidirule
 
 import (
 	"testing"
-
-	"golang.org/x/text/internal/testtext"
 )
 
 var benchData = []struct{ name, data string }{
@@ -18,7 +16,7 @@ var benchData = []struct{ name, data string }{
 
 func doBench(b *testing.B, fn func(b *testing.B, data string)) {
 	for _, d := range benchData {
-		testtext.Bench(b, d.name, func(b *testing.B) { fn(b, d.data) })
+		b.Run(d.name, func(b *testing.B) { fn(b, d.data) })
 	}
 }
 

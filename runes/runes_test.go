@@ -626,7 +626,7 @@ func doBench(b *testing.B, t Transformer) {
 		dst := make([]byte, 2*len(bc.data))
 		src := []byte(bc.data)
 
-		testtext.Bench(b, bc.name+"/transform", func(b *testing.B) {
+		b.Run(bc.name+"/transform", func(b *testing.B) {
 			b.SetBytes(int64(len(src)))
 			for i := 0; i < b.N; i++ {
 				t.Transform(dst, src, true)
@@ -634,7 +634,7 @@ func doBench(b *testing.B, t Transformer) {
 		})
 		src = t.Bytes(src)
 		t.Reset()
-		testtext.Bench(b, bc.name+"/span", func(b *testing.B) {
+		b.Run(bc.name+"/span", func(b *testing.B) {
 			b.SetBytes(int64(len(src)))
 			for i := 0; i < b.N; i++ {
 				t.Span(src, true)

@@ -9,7 +9,6 @@ import (
 	"testing"
 	"unicode"
 
-	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -214,7 +213,7 @@ func TestCCC(t *testing.T) {
 func TestWordBreaks(t *testing.T) {
 	for _, tt := range breakTest {
 		desc := norm.NFC.String(tt)
-		testtext.Run(t, desc, func(t *testing.T) {
+		t.Run(desc, func(t *testing.T) {
 			parts := strings.Split(tt, "|")
 			want := ""
 			for _, s := range parts {

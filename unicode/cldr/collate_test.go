@@ -164,13 +164,13 @@ func TestRuleProcessor(t *testing.T) {
 		},
 		{
 			desc: "err empty anchor",
-			in: " &			",
-			out: "E:1: missing string",
+			in:   " &			",
+			out:  "E:1: missing string",
 		},
 		{
 			desc: "err anchor invalid special 1",
-			in: " &	[ foo ",
-			out: "E:1: unmatched bracket",
+			in:   " &	[ foo ",
+			out:  "E:1: unmatched bracket",
 		},
 		{
 			desc: "err anchor invalid special 2",
