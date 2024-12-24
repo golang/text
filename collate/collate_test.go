@@ -450,6 +450,24 @@ func TestCompare(t *testing.T) {
 			t.Errorf("%d: CompareString(%q, %q) == %d; want %d", i, tt.a, tt.b, res, tt.res)
 		}
 	}
+
+	c = New(language.MustParse("en-us-u-ka-posix-ks-level4"))
+	if c.CompareString("deluge", "de luge") != -1 {
+		t.Errorf("CompareString for 'deluge' vs 'de luge' in Shift-Trimmed mode should return -1 but returned %v", c.CompareString("deluge", "de luge"))
+	}
+}
+
+func TestKeyFromStringCompareForShiftTrimmed(t *testing.T) {
+	var (
+		c   = New(language.MustParse("en-us-u-ka-posix-ks-level4"))
+		buf Buffer
+		kA  = c.KeyFromString(&buf, "deluge")
+		kB  = c.KeyFromString(&buf, "de luge")
+	)
+
+	if bytes.Compare(kA, kB) != -1 {
+		t.Errorf("The Keys for 'deluge' should sort before the key for 'de luge' in Shift-Trimmed mode, but it compares as %v", bytes.Compare(kA, kB))
+	}
 }
 
 func TestNumeric(t *testing.T) {

@@ -102,90 +102,28 @@ func (b *Buffer) Reset() {
 
 // Compare returns an integer comparing the two byte slices.
 // The result will be 0 if a==b, -1 if a < b, and +1 if a > b.
+// Note that this is less performant than calling c.Sort() because
+// a new buffer will be allocated for each call.
 func (c *Collator) Compare(a, b []byte) int {
-	// TODO: skip identical prefixes once we have a fast way to detect if a rune is
-	// part of a contraction. This would lead to roughly a 10% speedup for the colcmp regtest.
-	c.iter(0).SetInput(a)
-	c.iter(1).SetInput(b)
-	if res := c.compare(); res != 0 {
-		return res
-	}
-	if !c.ignore[colltab.Identity] {
-		return bytes.Compare(a, b)
-	}
-	return 0
+	var (
+		buf Buffer
+		kA  = c.Key(&buf, a)
+		kB  = c.Key(&buf, b)
+	)
+	return bytes.Compare(kA, kB)
 }
 
 // CompareString returns an integer comparing the two strings.
 // The result will be 0 if a==b, -1 if a < b, and +1 if a > b.
+// Note that this is less performant than calling c.Sort() because
+// a new buffer will be allocated for each call.
 func (c *Collator) CompareString(a, b string) int {
-	// TODO: skip identical prefixes once we have a fast way to detect if a rune is
-	// part of a contraction. This would lead to roughly a 10% speedup for the colcmp regtest.
-	c.iter(0).SetInputString(a)
-	c.iter(1).SetInputString(b)
-	if res := c.compare(); res != 0 {
-		return res
-	}
-	if !c.ignore[colltab.Identity] {
-		if a < b {
-			return -1
-		} else if a > b {
-			return 1
-		}
-	}
-	return 0
-}
-
-func compareLevel(f func(i *iter) int, a, b *iter) int {
-	a.pce = 0
-	b.pce = 0
-	for {
-		va := f(a)
-		vb := f(b)
-		if va != vb {
-			if va < vb {
-				return -1
-			}
-			return 1
-		} else if va == 0 {
-			break
-		}
-	}
-	return 0
-}
-
-func (c *Collator) compare() int {
-	ia, ib := c.iter(0), c.iter(1)
-	// Process primary level
-	if c.alternate != altShifted {
-		// TODO: implement script reordering
-		if res := compareLevel((*iter).nextPrimary, ia, ib); res != 0 {
-			return res
-		}
-	} else {
-		// TODO: handle shifted
-	}
-	if !c.ignore[colltab.Secondary] {
-		f := (*iter).nextSecondary
-		if c.backwards {
-			f = (*iter).prevSecondary
-		}
-		if res := compareLevel(f, ia, ib); res != 0 {
-			return res
-		}
-	}
-	// TODO: special case handling (Danish?)
-	if !c.ignore[colltab.Tertiary] || c.caseLevel {
-		if res := compareLevel((*iter).nextTertiary, ia, ib); res != 0 {
-			return res
-		}
-		if !c.ignore[colltab.Quaternary] {
-			if res := compareLevel((*iter).nextQuaternary, ia, ib); res != 0 {
-				return res
-			}
-		}
-	}
-	return 0
+	var (
+		buf Buffer
+		kA  = c.KeyFromString(&buf, a)
+		kB  = c.KeyFromString(&buf, b)
+	)
+	return bytes.Compare(kA, kB)
 }
 
 // Key returns the collation key for str.
