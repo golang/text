@@ -19,11 +19,13 @@ import (
 )
 
 // Collator provides functionality for comparing strings for a given
-// collation order.
+// collation order.  A given Collator is not safe to use concurrently.
 type Collator struct {
 	options
 
 	sorter sorter
+
+	buf Buffer
 
 	_iter [2]iter
 }
@@ -106,9 +108,8 @@ func (b *Buffer) Reset() {
 // a new buffer will be allocated for each call.
 func (c *Collator) Compare(a, b []byte) int {
 	var (
-		buf Buffer
-		kA  = c.Key(&buf, a)
-		kB  = c.Key(&buf, b)
+		kA = c.Key(&c.buf, a)
+		kB = c.Key(&c.buf, b)
 	)
 	return bytes.Compare(kA, kB)
 }
@@ -119,9 +120,8 @@ func (c *Collator) Compare(a, b []byte) int {
 // a new buffer will be allocated for each call.
 func (c *Collator) CompareString(a, b string) int {
 	var (
-		buf Buffer
-		kA  = c.KeyFromString(&buf, a)
-		kB  = c.KeyFromString(&buf, b)
+		kA = c.KeyFromString(&c.buf, a)
+		kB = c.KeyFromString(&c.buf, b)
 	)
 	return bytes.Compare(kA, kB)
 }
