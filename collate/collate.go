@@ -108,10 +108,12 @@ func (b *Buffer) Reset() {
 // a new buffer will be allocated for each call.
 func (c *Collator) Compare(a, b []byte) int {
 	var (
-		kA = c.Key(&c.buf, a)
-		kB = c.Key(&c.buf, b)
+		kA  = c.Key(&c.buf, a)
+		kB  = c.Key(&c.buf, b)
+		ret = bytes.Compare(kA, kB)
 	)
-	return bytes.Compare(kA, kB)
+	c.buf.Reset()
+	return ret
 }
 
 // CompareString returns an integer comparing the two strings.
@@ -120,10 +122,12 @@ func (c *Collator) Compare(a, b []byte) int {
 // a new buffer will be allocated for each call.
 func (c *Collator) CompareString(a, b string) int {
 	var (
-		kA = c.KeyFromString(&c.buf, a)
-		kB = c.KeyFromString(&c.buf, b)
+		kA  = c.KeyFromString(&c.buf, a)
+		kB  = c.KeyFromString(&c.buf, b)
+		ret = bytes.Compare(kA, kB)
 	)
-	return bytes.Compare(kA, kB)
+	c.buf.Reset()
+	return ret
 }
 
 // Key returns the collation key for str.
