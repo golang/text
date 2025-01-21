@@ -107,11 +107,9 @@ func (b *Buffer) Reset() {
 // Note that this is less performant than calling c.Sort() because
 // a new buffer will be allocated for each call.
 func (c *Collator) Compare(a, b []byte) int {
-	var (
-		kA  = c.Key(&c.buf, a)
-		kB  = c.Key(&c.buf, b)
-		ret = bytes.Compare(kA, kB)
-	)
+	kA := c.Key(&c.buf, a)
+	kB := c.Key(&c.buf, b)
+	ret := bytes.Compare(kA, kB)
 	c.buf.Reset()
 	return ret
 }
@@ -121,11 +119,9 @@ func (c *Collator) Compare(a, b []byte) int {
 // Note that this is less performant than calling c.Sort() because
 // a new buffer will be allocated for each call.
 func (c *Collator) CompareString(a, b string) int {
-	var (
-		kA  = c.KeyFromString(&c.buf, a)
-		kB  = c.KeyFromString(&c.buf, b)
-		ret = bytes.Compare(kA, kB)
-	)
+	kA := c.KeyFromString(&c.buf, a)
+	kB := c.KeyFromString(&c.buf, b)
+	ret := bytes.Compare(kA, kB)
 	c.buf.Reset()
 	return ret
 }
