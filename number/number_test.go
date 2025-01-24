@@ -129,31 +129,31 @@ func TestFormatter(t *testing.T) {
 	}, {
 		desc: "scientific",
 		f:    Scientific(3.00),
-		want: "3\u202f×\u202f10⁰",
+		want: "3×10⁰",
 	}, {
 		desc: "scientific",
 		f:    Scientific(1234),
-		want: "1.234\u202f×\u202f10³",
+		want: "1.234×10³",
 	}, {
 		desc: "scientific",
 		f:    Scientific(1234, Scale(2)),
-		want: "1.23\u202f×\u202f10³",
+		want: "1.23×10³",
 	}, {
 		desc: "engineering",
 		f:    Engineering(12345),
-		want: "12.345\u202f×\u202f10³",
+		want: "12.345×10³",
 	}, {
 		desc: "engineering scale",
 		f:    Engineering(12345, Scale(2)),
-		want: "12.34\u202f×\u202f10³",
+		want: "12.34×10³",
 	}, {
 		desc: "engineering precision(4)",
 		f:    Engineering(12345, Precision(4)),
-		want: "12.34\u202f×\u202f10³",
+		want: "12.34×10³",
 	}, {
 		desc: "engineering precision(2)",
 		f:    Engineering(1234.5, Precision(2)),
-		want: "1.2\u202f×\u202f10³",
+		want: "1.2×10³",
 	}, {
 		desc: "percent",
 		f:    Percent(0.12),
