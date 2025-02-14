@@ -43,6 +43,9 @@ type Parser struct {
 	// goodArgNum records whether the most recent reordering directive was valid.
 	goodArgNum bool
 
+	// WrappedErrs records the targets of the %w verb.
+	WrappedErrs []int
+
 	// position info
 	format   string
 	startPos int
@@ -55,6 +58,7 @@ func (p *Parser) Reset(args []interface{}) {
 	p.Args = args
 	p.ArgNum = 0
 	p.startPos = 0
+	p.WrappedErrs = p.WrappedErrs[:0]
 	p.Reordered = false
 }
 
@@ -148,7 +152,11 @@ simpleFormat:
 			// Fast path for common case of ascii lower case simple verbs
 			// without precision or width or argument indices.
 			if 'a' <= c && c <= 'z' && p.ArgNum < len(p.Args) {
-				if c == 'v' {
+				switch c {
+				case 'w':
+					p.WrappedErrs = append(p.WrappedErrs, p.ArgNum)
+					fallthrough
+				case 'v':
 					// Go syntax
 					p.SharpV = p.Sharp
 					p.Sharp = false
@@ -245,6 +253,9 @@ simpleFormat:
 	case p.ArgNum >= len(p.Args): // No argument left over to print for the current verb.
 		p.Status = StatusMissingArg
 		p.ArgNum++
+	case verb == 'w':
+		p.WrappedErrs = append(p.WrappedErrs, p.ArgNum)
+		fallthrough
 	case verb == 'v':
 		// Go syntax
 		p.SharpV = p.Sharp
