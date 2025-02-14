@@ -6,6 +6,7 @@ package collate
 
 import (
 	"bytes"
+	"runtime"
 	"testing"
 
 	"golang.org/x/text/internal/colltab"
@@ -449,6 +450,50 @@ func TestCompare(t *testing.T) {
 		if res := c.CompareString(tt.a, tt.b); res != tt.res {
 			t.Errorf("%d: CompareString(%q, %q) == %d; want %d", i, tt.a, tt.b, res, tt.res)
 		}
+	}
+
+	c = New(language.MustParse("en-us-u-ka-posix-ks-level4"))
+	if c.CompareString("deluge", "de luge") != -1 {
+		t.Errorf("CompareString for 'deluge' vs 'de luge' in Shift-Trimmed mode should return -1 but returned %v", c.CompareString("deluge", "de luge"))
+	}
+}
+
+func TestKeyFromStringCompareForShiftTrimmed(t *testing.T) {
+	var (
+		c   = New(language.MustParse("en-us-u-ka-posix-ks-level4"))
+		buf Buffer
+		kA  = c.KeyFromString(&buf, "deluge")
+		kB  = c.KeyFromString(&buf, "de luge")
+	)
+
+	if bytes.Compare(kA, kB) != -1 {
+		t.Errorf("The Keys for 'deluge' should sort before the key for 'de luge' in Shift-Trimmed mode, but it compares as %v", bytes.Compare(kA, kB))
+	}
+}
+
+func totalAllocs() uint64 {
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+	return mem.TotalAlloc
+}
+
+func TestNoAllocationsForCompares(t *testing.T) {
+	var a = []byte("foo")
+	var b = []byte("bar")
+	var c = New(language.MustParse("en-us-u-ka-posix-ks-level4"))
+	var before = totalAllocs()
+
+	for i := 0; i < 100; i++ {
+		c.CompareString("foo", "bar")
+		c.Compare(a, b)
+	}
+
+	var bytesAllocated = totalAllocs() - before
+
+	// We should allocate zero additional bytes b/c the Buffer has 4k of memory pre-allocated that
+	// we should re-use for each/every key we generate for the comparisons.
+	if bytesAllocated != 0 {
+		t.Errorf("Expected CompareStrings to not allocate memory but it allocated %v", bytesAllocated)
 	}
 }
 
