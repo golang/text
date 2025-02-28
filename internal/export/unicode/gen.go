@@ -281,7 +281,7 @@ func printCategories() {
 		varDecl := ""
 		switch name {
 		case "C":
-			varDecl = "\tOther = _C;	// Other/C is the set of Unicode control and special characters, category C.\n"
+			varDecl = "\tOther = _C;	// Other/C is the set of Unicode control, special, and unassigned code points, category C.\n"
 			varDecl += "\tC = _C\n"
 		case "L":
 			varDecl = "\tLetter = _L;	// Letter/L is the set of Unicode letters, category L.\n"
