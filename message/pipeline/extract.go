@@ -14,17 +14,16 @@ import (
 	"go/token"
 	"go/types"
 	"path/filepath"
-	"sort"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
-	fmtparser "golang.org/x/text/internal/format"
 	"golang.org/x/tools/go/callgraph"
 	"golang.org/x/tools/go/callgraph/cha"
-	"golang.org/x/tools/go/loader"
+	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/go/ssa"
-	"golang.org/x/tools/go/ssa/ssautil"
+
+	fmtparser "golang.org/x/text/internal/format"
 )
 
 const debug = false
@@ -50,8 +49,7 @@ func Extract(c *Config) (*State, error) {
 	x.extractMessages()
 
 	return &State{
-		Config:  *c,
-		program: x.iprog,
+		Config: *c,
 		Extracted: Messages{
 			Language: c.SourceLanguage,
 			Messages: x.messages,
@@ -60,8 +58,8 @@ func Extract(c *Config) (*State, error) {
 }
 
 type extracter struct {
-	conf      loader.Config
-	iprog     *loader.Program
+	conf      packages.Config
+	pkgs      []*packages.Package
 	prog      *ssa.Program
 	callGraph *callgraph.Graph
 
@@ -73,17 +71,20 @@ type extracter struct {
 
 func newExtracter(c *Config) (x *extracter, err error) {
 	x = &extracter{
-		conf:    loader.Config{},
+		conf: packages.Config{
+			Fset: token.NewFileSet(),
+		},
 		globals: map[token.Pos]*constData{},
 		funcs:   map[token.Pos]*callData{},
 	}
 
-	x.iprog, err = loadPackages(&x.conf, c.Packages)
+	prog, pkgs, err := loadPackages(&x.conf, c.Packages)
 	if err != nil {
 		return nil, wrap(err, "")
 	}
+	x.prog = prog
+	x.pkgs = pkgs
 
-	x.prog = ssautil.CreateProgram(x.iprog, ssa.GlobalDebug|ssa.BareInits)
 	x.prog.Build()
 
 	x.callGraph = cha.CallGraph(x.prog)
@@ -101,26 +102,46 @@ func (x *extracter) globalData(pos token.Pos) *constData {
 }
 
 func (x *extracter) seedEndpoints() error {
-	pkgInfo := x.iprog.Package("golang.org/x/text/message")
-	if pkgInfo == nil {
-		return errors.New("pipeline: golang.org/x/text/message is not imported")
+	var pkg *packages.Package
+	imports := ""
+	for _, p := range x.pkgs {
+		for k := range p.Imports {
+			imports = imports + k + "\n"
+		}
+		if p2, ok := p.Imports["golang.org/x/text/message"]; ok {
+			pkg = p2
+			break
+		}
 	}
-	pkg := x.prog.Package(pkgInfo.Pkg)
-	typ := types.NewPointer(pkg.Type("Printer").Type())
+	if pkg == nil {
+		return errors.New("pipeline: golang.org/x/text/message is not imported.\n" + imports)
+	}
+
+	var typ *types.Pointer
+	for _, typeAndVal := range pkg.TypesInfo.Types {
+		if typeAndVal.Type.String() == "golang.org/x/text/message.Printer" {
+			typ = types.NewPointer(typeAndVal.Type)
+			break
+		}
+	}
+
+	if typ == nil {
+		return errors.New("pipeline: golang.org/x/text/message.Printer was not found")
+	}
 
 	x.processGlobalVars()
 
-	x.handleFunc(x.prog.LookupMethod(typ, pkg.Pkg, "Printf"), &callData{
+	x.handleFunc(x.prog.LookupMethod(typ, pkg.Types, "Printf"), &callData{
 		formatPos: 1,
 		argPos:    2,
 		isMethod:  true,
 	})
-	x.handleFunc(x.prog.LookupMethod(typ, pkg.Pkg, "Sprintf"), &callData{
+	x.handleFunc(x.prog.LookupMethod(typ, pkg.Types, "Sprintf"), &callData{
 		formatPos: 1,
 		argPos:    2,
 		isMethod:  true,
 	})
-	x.handleFunc(x.prog.LookupMethod(typ, pkg.Pkg, "Fprintf"), &callData{
+	x.handleFunc(x.prog.LookupMethod(typ, pkg.Types, "Fprintf"), &callData{
 		formatPos: 2,
 		argPos:    3,
 		isMethod:  true,
@@ -489,14 +510,14 @@ func (x *extracter) visitArgs(fd *callData, v ssa.Value) {
 // print returns Go syntax for the specified node.
 func (x *extracter) print(n ast.Node) string {
 	var buf bytes.Buffer
-	format.Node(&buf, x.conf.Fset, n)
+	_ = format.Node(&buf, x.conf.Fset, n)
 	return buf.String()
 }
 
 type packageExtracter struct {
 	f    *ast.File
 	x    *extracter
-	info *loader.PackageInfo
+	pkg  *packages.Package
 	cmap ast.CommentMap
 }
 
@@ -509,20 +530,13 @@ func (px packageExtracter) getComment(n ast.Node) string {
 }
 
 func (x *extracter) extractMessages() {
-	prog := x.iprog
-	keys := make([]*types.Package, 0, len(x.iprog.AllPackages))
-	for k := range x.iprog.AllPackages {
-		keys = append(keys, k)
-	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i].Path() < keys[j].Path() })
 	files := []packageExtracter{}
-	for _, k := range keys {
-		info := x.iprog.AllPackages[k]
-		for _, f := range info.Files {
+	for _, pkg := range x.pkgs {
+		for _, f := range pkg.Syntax {
 			// Associate comments with nodes.
 			px := packageExtracter{
-				f, x, info,
-				ast.NewCommentMap(prog.Fset, f, f.Comments),
+				f, x, pkg,
+				ast.NewCommentMap(pkg.Fset, f, f.Comments),
 			}
 			files = append(files, px)
 		}
@@ -616,13 +630,13 @@ func (px packageExtracter) handleCall(call *ast.CallExpr) bool {
 func (px packageExtracter) getArguments(data *callData) []argument {
 	arguments := []argument{}
 	x := px.x
-	info := px.info
+	pkg := px.pkg
 	if data.callArgsStart() >= 0 {
 		args := data.expr.Args[data.callArgsStart():]
 		for i, arg := range args {
 			expr := x.print(arg)
 			val := ""
-			if v := info.Types[arg].Value; v != nil {
+			if v := pkg.TypesInfo.Types[arg].Value; v != nil {
 				val = v.ExactString()
 				switch arg.(type) {
 				case *ast.BinaryExpr, *ast.UnaryExpr:
@@ -631,12 +645,12 @@ func (px packageExtracter) getArguments(data *callData) []argument {
 			}
 			arguments = append(arguments, argument{
 				ArgNum:         i + 1,
-				Type:           info.Types[arg].Type.String(),
-				UnderlyingType: info.Types[arg].Type.Underlying().String(),
+				Type:           pkg.TypesInfo.Types[arg].Type.String(),
+				UnderlyingType: pkg.TypesInfo.Types[arg].Type.Underlying().String(),
 				Expr:           expr,
 				Value:          val,
 				Comment:        px.getComment(arg),
-				Position:       posString(&x.conf, info.Pkg, arg.Pos()),
+				Position:       posString(&x.conf, pkg.Types, arg.Pos()),
 				// TODO report whether it implements
 				// interfaces plural.Interface,
 				// gender.Interface.
@@ -682,7 +696,7 @@ func (px packageExtracter) addMessage(
 		case fmtparser.StatusBadArgNum, fmtparser.StatusMissingArg:
 			arg = &argument{
 				ArgNum:   p.ArgNum,
-				Position: posString(&x.conf, px.info.Pkg, pos),
+				Position: posString(&x.conf, px.pkg.Types, pos),
 			}
 			name, arg.UnderlyingType = verbToPlaceholder(p.Text(), p.ArgNum)
 		}
@@ -711,11 +725,11 @@ func (px packageExtracter) addMessage(
 		// TODO(fix): this doesn't get the before comment.
 		Comment:      comment,
 		Placeholders: ph.slice,
-		Position:     posString(&x.conf, px.info.Pkg, pos),
+		Position:     posString(&x.conf, px.pkg.Types, pos),
 	})
 }
 
-func posString(conf *loader.Config, pkg *types.Package, pos token.Pos) string {
+func posString(conf *packages.Config, pkg *types.Package, pos token.Pos) string {
 	p := conf.Fset.Position(pos)
 	file := fmt.Sprintf("%s:%d:%d", filepath.Base(p.Filename), p.Line, p.Column)
 	return filepath.Join(pkg.Path(), file)
