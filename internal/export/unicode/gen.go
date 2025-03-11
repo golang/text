@@ -13,8 +13,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"unicode"
@@ -90,13 +92,15 @@ func println(args ...interface{}) {
 var category = map[string]bool{
 	// Nd Lu etc.
 	// We use one-character names to identify merged categories
-	"L": true, // Lu Ll Lt Lm Lo
-	"P": true, // Pc Pd Ps Pe Pu Pf Po
-	"M": true, // Mn Mc Me
-	"N": true, // Nd Nl No
-	"S": true, // Sm Sc Sk So
-	"Z": true, // Zs Zl Zp
-	"C": true, // Cc Cf Cs Co Cn
+	"L":  true, // Lu Ll Lt Lm Lo
+	"LC": true, // Lu Ll Lt
+	"P":  true, // Pc Pd Ps Pe Pu Pf Po
+	"M":  true, // Mn Mc Me
+	"N":  true, // Nd Nl No
+	"S":  true, // Sm Sc Sk So
+	"Z":  true, // Zs Zl Zp
+	"C":  true, // Cc Cf Cs Co Cn
+	"Cn": true, // unassigned
 }
 
 // This contains only the properties we're interested in.
@@ -149,6 +153,9 @@ func categoryOp(code rune, class uint8) bool {
 }
 
 func loadChars() {
+	for code := range chars {
+		chars[code].category = "Cn" // unassigned
+	}
 	ucd.Parse(gen.OpenUCDFile("UnicodeData.txt"), func(p *ucd.Parser) {
 		c := Char{codePoint: p.Rune(0)}
 
@@ -201,6 +208,7 @@ func loadCasefold() {
 }
 
 var categoryMapping = map[string]string{
+	"LC": "Letter, cased: Ll | Lt | Lu",
 	"Lu": "Letter, uppercase",
 	"Ll": "Letter, lowercase",
 	"Lt": "Letter, titlecase",
@@ -257,6 +265,7 @@ func printCategories() {
 			printf("\t%q: %s,\n", k, k)
 		}
 		print("}\n\n")
+		printCategoryAliases()
 	}
 
 	decl := make(sort.StringSlice, len(list))
@@ -272,7 +281,7 @@ func printCategories() {
 		varDecl := ""
 		switch name {
 		case "C":
-			varDecl = "\tOther = _C;	// Other/C is the set of Unicode control and special characters, category C.\n"
+			varDecl = "\tOther = _C;	// Other/C is the set of Unicode control, special, and unassigned code points, category C.\n"
 			varDecl += "\tC = _C\n"
 		case "L":
 			varDecl = "\tLetter = _L;	// Letter/L is the set of Unicode letters, category L.\n"
@@ -315,14 +324,14 @@ func printCategories() {
 		}
 		decl[ndecl] = varDecl
 		ndecl++
+		match := func(cat string) bool { return cat == name }
 		if len(name) == 1 { // unified categories
-			dumpRange(
-				"_"+name,
-				func(code rune) bool { return categoryOp(code, name[0]) })
-			continue
+			match = func(cat string) bool { return strings.HasPrefix(cat, name) }
 		}
-		dumpRange("_"+name,
-			func(code rune) bool { return chars[code].category == name })
+		if name == "LC" { // special unified category
+			match = func(cat string) bool { return cat == "Ll" || cat == "Lt" || cat == "Lu" }
+		}
+		dumpRange("_"+name, func(code rune) bool { return match(chars[code].category) })
 	}
 	decl.Sort()
 	println("// These variables have type *RangeTable.")
@@ -331,6 +340,35 @@ func printCategories() {
 		print(d)
 	}
 	print(")\n\n")
+}
+
+func printCategoryAliases() {
+	known := make(map[string]bool)
+	for _, name := range allCategories() {
+		known[name] = true
+	}
+
+	table := make(map[string]string)
+	ucd.Parse(gen.OpenUCDFile("PropertyValueAliases.txt"), func(p *ucd.Parser) {
+		if p.String(0) != "gc" {
+			return
+		}
+		name := p.String(1)
+		if !known[name] {
+			logger.Print("unknown category: ", name)
+		}
+		table[p.String(2)] = name
+		if a := p.String(3); a != "" {
+			table[a] = name
+		}
+	})
+
+	println("// CategoryAliases maps category aliases to standard category names.")
+	println("var CategoryAliases = map[string]string{")
+	for _, name := range slices.Sorted(maps.Keys(table)) {
+		printf("\t%q: %q,\n", name, table[name])
+	}
+	print("}\n\n")
 }
 
 type Op func(code rune) bool

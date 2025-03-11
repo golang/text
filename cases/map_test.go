@@ -205,7 +205,7 @@ func TestAlloc(t *testing.T) {
 		// func() Caser { return Title(language.Und) },
 		// func() Caser { return Title(language.Und, HandleFinalSigma(false)) },
 	} {
-		testtext.Run(t, "", func(t *testing.T) {
+		t.Run("", func(t *testing.T) {
 			var c Caser
 			v := testtext.AllocsPerRun(10, func() {
 				c = f()
@@ -234,7 +234,7 @@ func testHandover(t *testing.T, c Caser, src string) {
 
 	// Test handover for each substring of the prefix.
 	for i := 0; i < pSrc; i++ {
-		testtext.Run(t, fmt.Sprint("interleave/", i), func(t *testing.T) {
+		t.Run(fmt.Sprint("interleave/", i), func(t *testing.T) {
 			dst := make([]byte, 4*len(src))
 			c.Reset()
 			nSpan, _ := c.Span([]byte(src[:i]), false)
@@ -299,7 +299,7 @@ func TestHandover(t *testing.T) {
 		"'", "n bietje",
 	}}
 	for _, tc := range testCases {
-		testtext.Run(t, tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(t *testing.T) {
 			src := tc.first + tc.second
 			want := tc.t.String(src)
 			tc.t.Reset()
@@ -601,7 +601,7 @@ func init() {
 
 func TestShortBuffersAndOverflow(t *testing.T) {
 	for i, tt := range bufferTests {
-		testtext.Run(t, tt.desc, func(t *testing.T) {
+		t.Run(tt.desc, func(t *testing.T) {
 			buf := make([]byte, tt.dstSize)
 			got := []byte{}
 			var nSrc, nDst int
@@ -827,7 +827,7 @@ func TestSpan(t *testing.T) {
 		err:  transform.ErrEndOfSpan,
 		t:    Title(language.Afrikaans),
 	}} {
-		testtext.Run(t, tt.desc, func(t *testing.T) {
+		t.Run(tt.desc, func(t *testing.T) {
 			for p := 0; p < len(tt.want); p += utf8.RuneLen([]rune(tt.src[p:])[0]) {
 				tt.t.Reset()
 				n, err := tt.t.Span([]byte(tt.src[:p]), false)
@@ -901,7 +901,7 @@ func BenchmarkCasers(b *testing.B) {
 			{"title", bytes.ToTitle},
 			{"upper", bytes.ToUpper},
 		} {
-			testtext.Bench(b, path.Join(s.name, "bytes", f.name), func(b *testing.B) {
+			b.Run(path.Join(s.name, "bytes", f.name), func(b *testing.B) {
 				b.SetBytes(int64(len(src)))
 				for i := 0; i < b.N; i++ {
 					f.fn(src)
@@ -921,7 +921,7 @@ func BenchmarkCasers(b *testing.B) {
 		} {
 			c := Caser{t.caser}
 			dst := make([]byte, len(src))
-			testtext.Bench(b, path.Join(s.name, t.name, "transform"), func(b *testing.B) {
+			b.Run(path.Join(s.name, t.name, "transform"), func(b *testing.B) {
 				b.SetBytes(int64(len(src)))
 				for i := 0; i < b.N; i++ {
 					c.Reset()
@@ -934,7 +934,7 @@ func BenchmarkCasers(b *testing.B) {
 				continue
 			}
 			spanSrc := c.Bytes(src)
-			testtext.Bench(b, path.Join(s.name, t.name, "span"), func(b *testing.B) {
+			b.Run(path.Join(s.name, t.name, "span"), func(b *testing.B) {
 				c.Reset()
 				if n, _ := c.Span(spanSrc, true); n < len(spanSrc) {
 					b.Fatalf("spanner is not recognizing text %q as done (at %d)", spanSrc, n)

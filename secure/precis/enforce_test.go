@@ -24,7 +24,7 @@ func doTests(t *testing.T, fn func(t *testing.T, p *Profile, tc testCase)) {
 	for _, g := range enforceTestCases {
 		for i, tc := range g.cases {
 			name := fmt.Sprintf("%s:%d:%+q", g.name, i, tc.input)
-			testtext.Run(t, name, func(t *testing.T) {
+			t.Run(name, func(t *testing.T) {
 				fn(t, g.p, tc)
 			})
 		}

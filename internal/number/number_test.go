@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
 )
 
@@ -93,7 +92,7 @@ func TestFormats(t *testing.T) {
 		{"zgh", "#,##0 %", tagToPercent},
 	}
 	for _, tc := range testCases {
-		testtext.Run(t, tc.lang, func(t *testing.T) {
+		t.Run(tc.lang, func(t *testing.T) {
 			got := formatForLang(language.MustParse(tc.lang), tc.index)
 			want, _ := ParsePattern(tc.pattern)
 			if *got != *want {

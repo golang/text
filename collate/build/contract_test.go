@@ -247,7 +247,6 @@ func TestPrintContractionTrieSet(t *testing.T) {
 	print(&testdata, buf, "test")
 	if contractTrieOutput != buf.String() {
 		t.Errorf("output differs; found\n%s", buf.String())
-		println(string(buf.Bytes()))
 	}
 }
 

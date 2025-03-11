@@ -18,7 +18,6 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/transform"
 )
 
@@ -467,7 +466,7 @@ var quickSpanNFCTests = []spanTest{
 func runSpanTests(t *testing.T, name string, f Form, testCases []spanTest) {
 	for i, tc := range testCases {
 		s := fmt.Sprintf("Bytes/%s/%d=%+q/atEOF=%v", name, i, pc(tc.input), tc.atEOF)
-		ok := testtext.Run(t, s, func(t *testing.T) {
+		ok := t.Run(s, func(t *testing.T) {
 			n, err := f.Span([]byte(tc.input), tc.atEOF)
 			if n != tc.n || err != tc.err {
 				t.Errorf("\n got %d, %v;\nwant %d, %v", n, err, tc.n, tc.err)
@@ -477,7 +476,7 @@ func runSpanTests(t *testing.T, name string, f Form, testCases []spanTest) {
 			continue // Don't do the String variant if the Bytes variant failed.
 		}
 		s = fmt.Sprintf("String/%s/%d=%+q/atEOF=%v", name, i, pc(tc.input), tc.atEOF)
-		testtext.Run(t, s, func(t *testing.T) {
+		t.Run(s, func(t *testing.T) {
 			n, err := f.SpanString(tc.input, tc.atEOF)
 			if n != tc.n || err != tc.err {
 				t.Errorf("\n got %d, %v;\nwant %d, %v", n, err, tc.n, tc.err)

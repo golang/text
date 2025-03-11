@@ -81,7 +81,7 @@ func doTest(t *testing.T, f func(string) (string, error), name, input, want, err
 	in = strings.Replace(in, `\U`, "#", -1)
 	name = fmt.Sprintf("%s/%s/%s", name, in, test)
 
-	testtext.Run(t, name, func(t *testing.T) {
+	t.Run(name, func(t *testing.T) {
 		got, err := f(input)
 
 		if err != nil {

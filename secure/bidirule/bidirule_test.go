@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
-	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/unicode/bidi"
+	"golang.org/x/text/unicode/norm"
 )
 
 const (
@@ -55,8 +55,8 @@ func init() {
 func doTests(t *testing.T, fn func(t *testing.T, tc ruleTest)) {
 	for rule, cases := range testCases {
 		for i, tc := range cases {
-			name := fmt.Sprintf("%d/%d:%+q:%s", rule, i, tc.in, tc.in)
-			testtext.Run(t, name, func(t *testing.T) {
+			name := fmt.Sprintf("%d/%d:%+q:%[3]s", rule, i, norm.NFC.String(tc.in))
+			t.Run(name, func(t *testing.T) {
 				fn(t, tc)
 			})
 		}

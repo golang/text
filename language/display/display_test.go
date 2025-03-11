@@ -11,7 +11,6 @@ import (
 	"testing"
 	"unicode"
 
-	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -40,7 +39,7 @@ func TestValues(t *testing.T) {
 	// checkDefined checks that a value exists in a Namer.
 	checkDefined := func(x interface{}, namers []testcase) {
 		for _, n := range namers {
-			testtext.Run(t, fmt.Sprintf("%s.Name(%s)", n.kind, x), func(t *testing.T) {
+			t.Run(fmt.Sprintf("%s.Name(%s)", n.kind, x), func(t *testing.T) {
 				if n.n.Name(x) == "" {
 					// As of version 28 there is no data for az-Arab in English,
 					// although there is useful data in other languages.
@@ -449,7 +448,7 @@ func TestLanguage(t *testing.T) {
 		{"en", "sr-Latn-ME", "Serbo-Croatian"}, // See comments in TestTag.
 	}
 	for _, tt := range tests {
-		testtext.Run(t, tt.dict+"/"+tt.tag, func(t *testing.T) {
+		t.Run(tt.dict+"/"+tt.tag, func(t *testing.T) {
 			name, fmtName := splitName(tt.name)
 			dict := language.MustParse(tt.dict)
 			tag := language.Raw.MustParse(tt.tag)

@@ -148,13 +148,13 @@ func (x *extracter) processGlobalVars() {
 				}
 				t := a.Type()
 				for {
-					p, ok := t.(*types.Pointer)
+					p, ok := types.Unalias(t).(*types.Pointer)
 					if !ok {
 						break
 					}
 					t = p.Elem()
 				}
-				if b, ok := t.(*types.Basic); !ok || b.Kind() != types.String {
+				if b, ok := types.Unalias(t).(*types.Basic); !ok || b.Kind() != types.String {
 					continue
 				}
 				x.visitInit(a, s.Val)
