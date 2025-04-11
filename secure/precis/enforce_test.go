@@ -92,13 +92,6 @@ func TestTransformMallocs(t *testing.T) {
 	}
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // TestTransformerShortBuffers tests that the precis.Transformer implements the
 // spirit, not just the letter (the method signatures), of the
 // transform.Transformer interface.
