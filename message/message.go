@@ -5,8 +5,10 @@
 package message // import "golang.org/x/text/message"
 
 import (
+	"errors"
 	"io"
 	"os"
+	"slices"
 
 	// Include features to facilitate generated catalogs.
 	_ "golang.org/x/text/feature/plural"
@@ -134,6 +136,65 @@ func (p *Printer) Printf(key Reference, a ...interface{}) (n int, err error) {
 	n, err = os.Stdout.Write(pp.Bytes())
 	pp.free()
 	return n, err
+}
+
+// Errorf is like fmt.Errorf, but using language-specific formatting.
+func (p *Printer) Errorf(key Reference, a ...interface{}) error {
+	pp := newPrinter(p)
+	pp.wrapErrs = true
+	lookupAndFormat(pp, key, a)
+	s := pp.String()
+	var err error
+	switch len(pp.fmt.WrappedErrs) {
+	case 0:
+		err = errors.New(s)
+	case 1:
+		w := &wrapError{msg: s}
+		w.err, _ = a[pp.fmt.WrappedErrs[0]].(error)
+		err = w
+	default:
+		if pp.fmt.Reordered {
+			slices.Sort(pp.fmt.WrappedErrs)
+		}
+		var errs []error
+		for i, argNum := range pp.fmt.WrappedErrs {
+			if i > 0 && pp.fmt.WrappedErrs[i-1] == argNum {
+				continue
+			}
+			if e, ok := a[argNum].(error); ok {
+				errs = append(errs, e)
+			}
+		}
+		err = &wrapErrors{s, errs}
+	}
+	pp.free()
+	return err
+}
+
+type wrapError struct {
+	msg string
+	err error
+}
+
+func (e *wrapError) Error() string {
+	return e.msg
+}
+
+func (e *wrapError) Unwrap() error {
+	return e.err
+}
+
+type wrapErrors struct {
+	msg  string
+	errs []error
+}
+
+func (e *wrapErrors) Error() string {
+	return e.msg
+}
+
+func (e *wrapErrors) Unwrap() []error {
+	return e.errs
 }
 
 func lookupAndFormat(p *printer, r Reference, a []interface{}) {
