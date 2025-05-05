@@ -105,6 +105,21 @@ func TestEncoding(t *testing.T) {
 		if got, err := tc.index.Name(enc); got != tc.canonical {
 			t.Errorf("%d: Name(Encoding(%q)) = %q; want %q (%v)", i, tc.name, got, tc.canonical, err)
 		}
+
+		id, ok := enc.(identifier.Interface)
+		if !ok {
+			t.Errorf("%d: encoding %q has no ID", i, tc.name)
+		}
+		mib, _ := id.ID()
+		if mib == 0 {
+			t.Errorf("%d: encoding %q returned 0 MIB enum", i, tc.name)
+		}
+		mibEnc, err := tc.index.FindMIB(mib)
+		if err != nil {
+			t.Errorf("%d: FindMIB error %q", i, err)
+		} else if mibEnc != enc {
+			t.Errorf("%d: FindMIB did not match encoding", i)
+		}
 	}
 }
 
