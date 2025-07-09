@@ -109,17 +109,17 @@ func (p *Paragraph) prepareInput() (n int, err error) {
 			return bytecount, nil
 		}
 		p.types = append(p.types, cls)
-		if props.IsOpeningBracket() {
-			p.pairTypes = append(p.pairTypes, bpOpen)
-			p.pairValues = append(p.pairValues, r)
-		} else if props.IsBracket() {
-			// this must be a closing bracket,
-			// since IsOpeningBracket is not true
-			p.pairTypes = append(p.pairTypes, bpClose)
-			p.pairValues = append(p.pairValues, r)
-		} else {
+
+		switch {
+		case !props.IsBracket():
 			p.pairTypes = append(p.pairTypes, bpNone)
 			p.pairValues = append(p.pairValues, 0)
+		case props.IsOpeningBracket():
+			p.pairTypes = append(p.pairTypes, bpOpen)
+			p.pairValues = append(p.pairValues, r)
+		default:
+			p.pairTypes = append(p.pairTypes, bpClose)
+			p.pairValues = append(p.pairValues, props.reverseBracket(r))
 		}
 	}
 	return bytecount, nil
