@@ -80,6 +80,7 @@ var (
 	Telugu               Tag = Tag{language: teIndex, locale: teIndex}
 	Thai                 Tag = Tag{language: thIndex, locale: thIndex}
 	Turkish              Tag = Tag{language: trIndex, locale: trIndex}
+	Turkmen              Tag = Tag{language: tkIndex, locale: tkIndex}
 	Ukrainian            Tag = Tag{language: ukIndex, locale: ukIndex}
 	Urdu                 Tag = Tag{language: urIndex, locale: urIndex}
 	Uzbek                Tag = Tag{language: uzIndex, locale: uzIndex}
