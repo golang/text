@@ -60,6 +60,7 @@ func (p *printer) free() {
 	p.Buffer.Reset()
 	p.arg = nil
 	p.value = reflect.Value{}
+	p.fmt.WrappedErrs = p.fmt.WrappedErrs[:0]
 	printerPool.Put(p)
 }
 
@@ -81,6 +82,9 @@ type printer struct {
 
 	// fmt is used to format basic items such as integers or strings.
 	fmt formatInfo
+
+	// wrapErrs is set when the format string may contain a %w verb.
+	wrapErrs bool
 
 	// panicking is set by catchPanic to avoid infinite panic, recover, panic, ... recursion.
 	panicking bool
@@ -593,6 +597,16 @@ func (p *printer) catchPanic(arg interface{}, verb rune) {
 func (p *printer) handleMethods(verb rune) (handled bool) {
 	if p.erroring {
 		return
+	}
+	if verb == 'w' {
+		// It is invalid to use %w other than with Errorf or with a non-error arg.
+		_, ok := p.arg.(error)
+		if !ok || !p.wrapErrs {
+			p.badVerb(verb)
+			return true
+		}
+		// If the arg is an error, pass 'v' as the verb to it.
+		verb = 'v'
 	}
 	// Is it a Formatter?
 	if formatter, ok := p.arg.(format.Formatter); ok {
