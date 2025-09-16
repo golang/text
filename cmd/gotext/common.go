@@ -6,16 +6,6 @@ package main
 
 import (
 	"fmt"
-	"go/build"
-	"go/parser"
-
-	"golang.org/x/tools/go/loader"
-)
-
-const (
-	extractFile  = "extracted.gotext.json"
-	outFile      = "out.gotext.json"
-	gotextSuffix = ".gotext.json"
 )
 
 // NOTE: The command line tool already prefixes with "gotext:".
@@ -28,22 +18,3 @@ var (
 	}
 	errorf = fmt.Errorf
 )
-
-// TODO: still used. Remove when possible.
-func loadPackages(conf *loader.Config, args []string) (*loader.Program, error) {
-	if len(args) == 0 {
-		args = []string{"."}
-	}
-
-	conf.Build = &build.Default
-	conf.ParserMode = parser.ParseComments
-
-	// Use the initial packages from the command line.
-	args, err := conf.FromArgs(args, false)
-	if err != nil {
-		return nil, wrap(err, "loading packages failed")
-	}
-
-	// Load, parse and type-check the whole program.
-	return conf.Load()
-}
