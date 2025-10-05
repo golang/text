@@ -64,7 +64,7 @@ func printColElems(w io.Writer, a []uint32, name string) (n, sz int, err error) 
 			err = e
 		}
 	}
-	sz = len(a) * int(reflect.TypeOf(uint32(0)).Size())
+	sz = len(a) * int(reflect.TypeFor[uint32]().Size())
 	p("// %s: %d entries, %d bytes\n", name, len(a), sz)
 	p("var %s = [%d]uint32 {", name, len(a))
 	for i, c := range a {

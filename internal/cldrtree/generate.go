@@ -50,7 +50,7 @@ func generate(b *Builder, t *Tree, w *gen.CodeWriter) error {
 		fmt.Fprintf(w, "bucket%d,\n", i)
 	}
 	fmt.Fprint(w, "}\n\n")
-	w.Size += int(reflect.TypeOf("").Size()) * len(t.Buckets)
+	w.Size += int(reflect.TypeFor[string]().Size()) * len(t.Buckets)
 
 	// Generate string buckets.
 	for i, bucket := range t.Buckets {

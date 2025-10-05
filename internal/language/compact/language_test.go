@@ -20,15 +20,14 @@ func mustParse(s string) Tag {
 }
 
 func TestTagSize(t *testing.T) {
-	id := Tag{}
-	typ := reflect.TypeOf(id)
+	typ := reflect.TypeFor[Tag]()
 	if typ.Size() > 24 {
 		t.Errorf("size of Tag was %d; want 24", typ.Size())
 	}
 }
 
 func TestNoPublic(t *testing.T) {
-	noExportedField(t, reflect.TypeOf(Tag{}))
+	noExportedField(t, reflect.TypeFor[Tag]())
 }
 
 func noExportedField(t *testing.T, typ reflect.Type) {

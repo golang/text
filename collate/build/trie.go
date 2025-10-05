@@ -285,6 +285,6 @@ func (t *trie) printArrays(w io.Writer, name string) (n, size int, err error) {
 func (t *trie) printStruct(w io.Writer, handle *trieHandle, name string) (n, sz int, err error) {
 	const msg = "trie{ %sLookup[%d:], %sValues[%d:], %sLookup[:], %sValues[:]}"
 	n, err = fmt.Fprintf(w, msg, name, handle.lookupStart*blockSize, name, handle.valueStart*blockSize, name, name)
-	sz += int(reflect.TypeOf(trie{}).Size())
+	sz += int(reflect.TypeFor[trie]().Size())
 	return
 }

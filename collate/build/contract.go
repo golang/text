@@ -282,7 +282,7 @@ func print(t *colltab.ContractTrieSet, w io.Writer, name string) (n, size int, e
 
 	update3(printArray(*t, w, name))
 	update2(fmt.Fprintf(w, "var %sContractTrieSet = ", name))
-	update3(printStruct(*t, w, name))
+	update3(printStruct(w, name))
 	update2(fmt.Fprintln(w))
 	return
 }
@@ -305,8 +305,8 @@ func printArray(ct colltab.ContractTrieSet, w io.Writer, name string) (n, size i
 	return
 }
 
-func printStruct(ct colltab.ContractTrieSet, w io.Writer, name string) (n, size int, err error) {
+func printStruct(w io.Writer, name string) (n, size int, err error) {
 	n, err = fmt.Fprintf(w, "colltab.ContractTrieSet( %sCTEntries[:] )", name)
-	size = int(reflect.TypeOf(ct).Size())
+	size = int(reflect.TypeFor[colltab.ContractTrieSet]().Size())
 	return
 }

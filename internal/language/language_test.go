@@ -12,8 +12,7 @@ import (
 )
 
 func TestTagSize(t *testing.T) {
-	id := Tag{}
-	typ := reflect.TypeOf(id)
+	typ := reflect.TypeFor[Tag]()
 	if typ.Size() > 32 {
 		t.Errorf("size of Tag was %d; want <= 32", typ.Size())
 	}
