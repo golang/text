@@ -1432,7 +1432,7 @@ func TestCountMallocs(t *testing.T) {
 		t.Skip("skipping malloc count in short mode")
 	case runtime.GOMAXPROCS(0) > 1:
 		t.Skip("skipping; GOMAXPROCS>1")
-		// TODO: detect race detecter enabled.
+		// TODO: detect race detector enabled.
 		// case race.Enabled:
 		// 	t.Skip("skipping malloc count under race detector")
 	}
