@@ -166,7 +166,7 @@ func getSize(t *testing.T, main string) int {
 }
 
 func BenchmarkString(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		USD.String()
+	for b.Loop() {
+		_ = USD.String()
 	}
 }

@@ -4,7 +4,7 @@ package test
 
 import "golang.org/x/text/internal/cldrtree"
 
-var tree = &cldrtree.Tree{locales, indices, buckets}
+var tree = &cldrtree.Tree{Locales: locales, Indices: indices, Buckets: buckets}
 
 // Path values:
 // <context>

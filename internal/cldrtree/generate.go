@@ -19,7 +19,7 @@ func generate(b *Builder, t *Tree, w *gen.CodeWriter) error {
 	fmt.Fprintln(w, `import "golang.org/x/text/internal/cldrtree"`)
 	fmt.Fprintln(w)
 
-	fmt.Fprintf(w, "var tree = &cldrtree.Tree{locales, indices, buckets}\n\n")
+	fmt.Fprintf(w, "var tree = &cldrtree.Tree{Locales: locales, Indices: indices, Buckets: buckets}\n\n")
 
 	w.WriteComment("Path values:\n%s", b.stats())
 	fmt.Fprintln(w)
