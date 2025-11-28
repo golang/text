@@ -733,7 +733,7 @@ func TestDiscard(t *testing.T) {
 	for i, tc := range testCases {
 		nDst, nSrc, err := Discard.Transform(make([]byte, tc.dstSize), []byte(tc.str), true)
 		if nDst != 0 || nSrc != len(tc.str) || err != nil {
-			t.Errorf("%d:\ngot %q, %d, %v\nwant 0, %d, nil", i, nDst, nSrc, err, len(tc.str))
+			t.Errorf("%d:\ngot %d, %d, %v\nwant 0, %d, nil", i, nDst, nSrc, err, len(tc.str))
 		}
 	}
 }
