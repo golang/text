@@ -347,7 +347,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 	// TODO: allow for a quick check of the tables data.
 	// It seems like we should only create this error on ToASCII, but the
 	// UTS 46 conformance tests suggests we should always check this.
-	if err == nil && p.verifyDNSLength && s == "" {
+	if err == nil && p.verifyDNSLength && (s == "" || s[len(s)-1] == '.') {
 		err = &labelError{s, "A4"}
 	}
 	labels := labelIter{orig: s}
@@ -412,12 +412,9 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 	}
 	s = labels.result()
 	if toASCII && p.verifyDNSLength && err == nil {
-		// Compute the length of the domain name minus the root label and its dot.
+		// Compute the length of the domain name.
 		n := len(s)
-		if n > 0 && s[n-1] == '.' {
-			n--
-		}
-		if len(s) < 1 || n > 253 {
+		if n < 1 || n > 253 {
 			err = &labelError{s, "A4"}
 		}
 	}
