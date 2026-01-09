@@ -256,12 +256,18 @@ func compInfo(v uint16, sz int) Properties {
 		return p
 	}
 	// has decomposition
-	h := decomps[v]
+	h, ok := decompsVal(v)
+	if !ok {
+		return Properties{size: uint8(sz)}
+	}
 	f := (qcInfo(h&headerFlagsMask) >> 2) | 0x4
 	p := Properties{size: uint8(sz), flags: f, index: v}
 	if v >= firstCCC {
 		v += uint16(h&headerLenMask) + 1
-		c := decomps[v]
+		c, ok := decompsVal(v)
+		if !ok {
+			return Properties{size: uint8(sz)}
+		}
 		p.tccc = c >> 2
 		p.flags |= qcInfo(c & 0x3)
 		if v >= firstLeadingCCC {
@@ -272,8 +278,19 @@ func compInfo(v uint16, sz int) Properties {
 				p.index = 0
 				return p
 			}
-			p.ccc = decomps[v+1]
+			ccc, ok := decompsVal(v + 1)
+			if !ok {
+				return Properties{size: uint8(sz)}
+			}
+			p.ccc = ccc
 		}
 	}
 	return p
+}
+
+func decompsVal(v uint16) (byte, bool) {
+	if int(v) >= len(decomps) {
+		return 0, false
+	}
+	return decomps[v], true
 }
