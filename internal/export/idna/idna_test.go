@@ -96,7 +96,7 @@ func doTest(t *testing.T, f func(string) (string, error), name, input, want, err
 		}
 
 		if want != "" && got != want {
-			t.Errorf(`string: got %+q; want %+q`, got, want)
+			t.Errorf(`input=%+q string: got %+q; want %+q`, input, got, want)
 		}
 	})
 }
@@ -153,13 +153,13 @@ func TestLabelErrors(t *testing.T) {
 		want    string
 		wantErr string
 	}{
-		{lengthU, "", "", "A4"}, // From UTS 46 conformance test.
+		{lengthU, "", "", code16("A4", "X4_2")}, // From UTS 46 conformance test.
 		{lengthA, "", "", "A4"},
 
-		{lengthU, "xn--", "", "A4"},
-		{lengthU, "foo.xn--", "foo.", "A4"}, // TODO: is dropping xn-- correct?
-		{lengthU, "xn--.foo", ".foo", "A4"},
-		{lengthU, "foo.xn--.bar", "foo..bar", "A4"},
+		{lengthU, "xn--", "", code16("A4", "X4_2")},
+		{lengthU, "foo.xn--", "foo.", code16("A4", "X4_2")}, // TODO: is dropping xn-- correct?
+		{lengthU, "xn--.foo", ".foo", code16("A4", "X4_2")},
+		{lengthU, "foo.xn--.bar", "foo..bar", code16("A4", "X4_2")},
 
 		{display, "xn--", "", ""},
 		{display, "foo.xn--", "foo.", ""}, // TODO: is dropping xn-- correct?
@@ -175,7 +175,7 @@ func TestLabelErrors(t *testing.T) {
 		{lengthA, ".b", ".b", "A4"},
 		{lengthA, "\u3002b", ".b", "A4"},
 		{lengthA, "..b", "..b", "A4"},
-		{lengthA, "b..", "b..", ""},
+		{lengthA, "b..", "b..", code16("", "A4")},
 
 		// Sharpened Bidi rules for Unicode 10.0.0. Apply for ALL labels in ANY
 		// of the labels is RTL.
@@ -197,7 +197,7 @@ func TestLabelErrors(t *testing.T) {
 		{punyA, "Foo.com", "Foo.com", ""},
 
 		// STD3 rules
-		{display, "*.foo.com", "*.foo.com", "P1"},
+		{display, "*.foo.com", "*.foo.com", code16("P1", "U1")},
 		{std3, "*.foo.com", "*.foo.com", ""},
 
 		// Hyphens
@@ -208,10 +208,10 @@ func TestLabelErrors(t *testing.T) {
 
 		// Don't map U+2490 (DIGIT NINE FULL STOP). This is the behavior of
 		// Chrome, modern Firefox, Safari, and IE.
-		{resolve, "lab⒐be", "xn--labbe-zh9b", "P1"}, // encode("lab⒐be")
-		{display, "lab⒐be", "lab⒐be", "P1"},
-		{transitional, "plan⒐faß.de", "xn--planfass-c31e.de", "P1"}, // encode("plan⒐fass") + ".de"
-		{display, "Plan⒐faß.de", "plan⒐faß.de", "P1"},
+		{resolve, "lab⒐be", "xn--labbe-zh9b", code16("P1", "V7")}, // encode("lab⒐be")
+		{display, "lab⒐be", "lab⒐be", code16("P1", "V7")},
+		{transitional, "plan⒐faß.de", "xn--planfass-c31e.de", code16("P1", "V7")}, // encode("plan⒐fass") + ".de"
+		{display, "Plan⒐faß.de", "plan⒐faß.de", code16("P1", "V7")},
 
 		// Transitional vs Nontransitional processing
 		{transitional, "Plan9faß.de", "plan9fass.de", ""},
@@ -223,8 +223,8 @@ func TestLabelErrors(t *testing.T) {
 		// punycode on the result using transitional mapping.
 		// Firefox 49.0.1 goes haywire on this string and prints a bunch of what
 		// seems to be nested punycode encodings.
-		{transitional, "日本⒈co.ßßß.de", "xn--co-wuw5954azlb.ssssss.de", "P1"},
-		{display, "日本⒈co.ßßß.de", "日本⒈co.ßßß.de", "P1"},
+		{transitional, "日本⒈co.ßßß.de", "xn--co-wuw5954azlb.ssssss.de", code16("P1", "V7")},
+		{display, "日本⒈co.ßßß.de", "日本⒈co.ßßß.de", code16("P1", "V7")},
 
 		{transitional, "a\u200Cb", "ab", ""},
 		{display, "a\u200Cb", "a\u200Cb", "C"},

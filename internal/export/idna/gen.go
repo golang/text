@@ -279,3 +279,7 @@ func (c *normCompacter) Print(w io.Writer) (retErr error) {
 	p("\n}\n\n")
 	return
 }
+
+func allowedSTD3(r rune) bool {
+	return r >= 0x80 || '0' <= r && r <= '9' || 'a' <= r && r <= 'z' || r == '-' || r == '.'
+}
