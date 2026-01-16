@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build !go1.10
-
 //go:generate go run gen.go gen_trieval.go gen_common.go
 
 // Package idna implements IDNA2008 using the compatibility processing
@@ -23,6 +21,7 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/text/secure/bidirule"
+	"golang.org/x/text/unicode/bidi"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -170,7 +169,6 @@ func MapForLookup() Option {
 		o.mapping = validateAndMap
 		StrictDomainName(true)(o)
 		ValidateLabels(true)(o)
-		RemoveLeadingDots(true)(o)
 	}
 }
 
@@ -189,7 +187,7 @@ type options struct {
 
 	// mapping implements a validation and mapping step as defined in RFC 5895
 	// or UTS 46, tailored to, for example, domain registration or lookup.
-	mapping func(p *Profile, s string) (string, error)
+	mapping func(p *Profile, s string) (mapped string, isBidi bool, err error)
 
 	// bidirule, if specified, checks whether s conforms to the Bidi Rule
 	// defined in RFC 5893.
@@ -263,6 +261,10 @@ func (p *Profile) String() string {
 	return s
 }
 
+// Transitional processing is disabled by default as of Go 1.18.
+// https://golang.org/issue/47510
+const transitionalLookup = false
+
 var (
 	// Punycode is a Profile that does raw punycode processing with a minimum
 	// of validation.
@@ -283,25 +285,23 @@ var (
 
 	punycode = &Profile{}
 	lookup   = &Profile{options{
-		transitional:      true,
-		removeLeadingDots: true,
-		useSTD3Rules:      true,
-		checkHyphens:      true,
-		checkJoiners:      true,
-		trie:              trie,
-		fromPuny:          validateFromPunycode,
-		mapping:           validateAndMap,
-		bidirule:          bidirule.ValidString,
+		transitional: transitionalLookup,
+		useSTD3Rules: true,
+		checkHyphens: true,
+		checkJoiners: true,
+		trie:         trie,
+		fromPuny:     validateFromPunycode,
+		mapping:      validateAndMap,
+		bidirule:     bidirule.ValidString,
 	}}
 	display = &Profile{options{
-		useSTD3Rules:      true,
-		removeLeadingDots: true,
-		checkHyphens:      true,
-		checkJoiners:      true,
-		trie:              trie,
-		fromPuny:          validateFromPunycode,
-		mapping:           validateAndMap,
-		bidirule:          bidirule.ValidString,
+		useSTD3Rules: true,
+		checkHyphens: true,
+		checkJoiners: true,
+		trie:         trie,
+		fromPuny:     validateFromPunycode,
+		mapping:      validateAndMap,
+		bidirule:     bidirule.ValidString,
 	}}
 	registration = &Profile{options{
 		useSTD3Rules:    true,
@@ -337,14 +337,16 @@ func (e runeError) Error() string {
 // see https://www.unicode.org/reports/tr46.
 func (p *Profile) process(s string, toASCII bool) (string, error) {
 	var err error
+	var isBidi bool
 	if p.mapping != nil {
-		s, err = p.mapping(p, s)
+		s, isBidi, err = p.mapping(p, s)
 	}
 	// Remove leading empty labels.
 	if p.removeLeadingDots {
 		for ; len(s) > 0 && s[0] == '.'; s = s[1:] {
 		}
 	}
+	// TODO: allow for a quick check of the tables data.
 	// It seems like we should only create this error on ToASCII, but the
 	// UTS 46 conformance tests suggests we should always check this.
 	if err == nil && p.verifyDNSLength && s == "" {
@@ -370,6 +372,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				// Spec says keep the old label.
 				continue
 			}
+			isBidi = isBidi || bidirule.DirectionString(u) != bidi.LeftToRight
 			labels.set(u)
 			if err == nil && p.fromPuny != nil {
 				err = p.fromPuny(p, u)
@@ -382,6 +385,14 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 			}
 		} else if err == nil {
 			err = p.validateLabel(label)
+		}
+	}
+	if isBidi && p.bidirule != nil && err == nil {
+		for labels.reset(); !labels.done(); labels.next() {
+			if !p.bidirule(labels.label()) {
+				err = &labelError{s, "B"}
+				break
+			}
 		}
 	}
 	if toASCII {
@@ -415,19 +426,26 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 	return s, err
 }
 
-func normalize(p *Profile, s string) (string, error) {
-	return norm.NFC.String(s), nil
+func normalize(p *Profile, s string) (mapped string, isBidi bool, err error) {
+	// TODO: consider first doing a quick check to see if any of these checks
+	// need to be done. This will make it slower in the general case, but
+	// faster in the common case.
+	mapped = norm.NFC.String(s)
+	isBidi = bidirule.DirectionString(mapped) == bidi.RightToLeft
+	return mapped, isBidi, nil
 }
 
-func validateRegistration(p *Profile, s string) (string, error) {
+func validateRegistration(p *Profile, s string) (idem string, bidi bool, err error) {
+	// TODO: filter need for normalization in loop below.
 	if !norm.NFC.IsNormalString(s) {
-		return s, &labelError{s, "V1"}
+		return s, false, &labelError{s, "V1"}
 	}
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
 		if sz == 0 {
-			return s, runeError(utf8.RuneError)
+			return s, bidi, runeError(utf8.RuneError)
 		}
+		bidi = bidi || info(v).isBidi(s[i:])
 		// Copy bytes not copied so far.
 		switch p.simplify(info(v).category()) {
 		// TODO: handle the NV8 defined in the Unicode idna data set to allow
@@ -435,19 +453,37 @@ func validateRegistration(p *Profile, s string) (string, error) {
 		case valid, deviation:
 		case disallowed, mapped, unknown, ignored:
 			r, _ := utf8.DecodeRuneInString(s[i:])
-			return s, runeError(r)
+			return s, bidi, runeError(r)
 		}
 		i += sz
 	}
-	return s, nil
+	return s, bidi, nil
 }
 
-func validateAndMap(p *Profile, s string) (string, error) {
+func (c info) isBidi(s string) bool {
+	if !c.isMapped() {
+		return c&attributesMask == rtl
+	}
+	// TODO: also store bidi info for mapped data. This is possible, but a bit
+	// cumbersome and not for the common case.
+	p, _ := bidi.LookupString(s)
+	switch p.Class() {
+	case bidi.R, bidi.AL, bidi.AN:
+		return true
+	}
+	return false
+}
+
+func validateAndMap(p *Profile, s string) (vm string, bidi bool, err error) {
 	var (
-		err error
-		b   []byte
-		k   int
+		b []byte
+		k int
 	)
+	// combinedInfoBits contains the or-ed bits of all runes. We use this
+	// to derive the mayNeedNorm bit later. This may trigger normalization
+	// overeagerly, but it will not do so in the common case. The end result
+	// is another 10% saving on BenchmarkProfile for the common case.
+	var combinedInfoBits info
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
 		if sz == 0 {
@@ -459,6 +495,8 @@ func validateAndMap(p *Profile, s string) (string, error) {
 			}
 			break
 		}
+		combinedInfoBits |= info(v)
+		bidi = bidi || info(v).isBidi(s[i:])
 		start := i
 		i += sz
 		// Copy bytes not copied so far.
@@ -485,7 +523,9 @@ func validateAndMap(p *Profile, s string) (string, error) {
 	}
 	if k == 0 {
 		// No changes so far.
-		s = norm.NFC.String(s)
+		if combinedInfoBits&mayNeedNorm != 0 {
+			s = norm.NFC.String(s)
+		}
 	} else {
 		b = append(b, s[k:]...)
 		if norm.NFC.QuickSpan(b) != len(b) {
@@ -494,7 +534,7 @@ func validateAndMap(p *Profile, s string) (string, error) {
 		// TODO: the punycode converters require strings as input.
 		s = string(b)
 	}
-	return s, err
+	return s, bidi, err
 }
 
 // A labelIter allows iterating over domain name labels.
@@ -589,6 +629,8 @@ func validateFromPunycode(p *Profile, s string) error {
 	if !norm.NFC.IsNormalString(s) {
 		return &labelError{s, "V1"}
 	}
+	// TODO: detect whether string may have to be normalized in the following
+	// loop.
 	for i := 0; i < len(s); {
 		v, sz := trie.lookupString(s[i:])
 		if sz == 0 {
@@ -666,15 +708,12 @@ var joinStates = [][numJoinTypes]joinState{
 
 // validateLabel validates the criteria from Section 4.1. Item 1, 4, and 6 are
 // already implicitly satisfied by the overall implementation.
-func (p *Profile) validateLabel(s string) error {
+func (p *Profile) validateLabel(s string) (err error) {
 	if s == "" {
 		if p.verifyDNSLength {
 			return &labelError{s, "A4"}
 		}
 		return nil
-	}
-	if p.bidirule != nil && !p.bidirule(s) {
-		return &labelError{s, "B"}
 	}
 	if p.checkHyphens {
 		if len(s) > 4 && s[2] == '-' && s[3] == '-' {
