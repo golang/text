@@ -21,7 +21,7 @@ func TestTables(t *testing.T) {
 		return info(v)
 	}
 
-	ucd.Parse(gen.OpenUnicodeFile("idna", "", "IdnaMappingTable.txt"), func(p *ucd.Parser) {
+	ucd.Parse(gen.OpenUnicodeFile("", "", "idna/IdnaMappingTable.txt"), func(p *ucd.Parser) {
 		r := p.Rune(0)
 		x := lookup(r)
 		if got, want := x.category(), catFromEntry(p); got != want {

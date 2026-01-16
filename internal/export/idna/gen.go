@@ -72,7 +72,7 @@ func genTables() {
 		}
 	})
 
-	ucd.Parse(gen.OpenUnicodeFile("idna", "", "IdnaMappingTable.txt"), func(p *ucd.Parser) {
+	ucd.Parse(gen.OpenUnicodeFile("", "", "idna/IdnaMappingTable.txt"), func(p *ucd.Parser) {
 		r := p.Rune(0)
 
 		// The mappings table explicitly defines surrogates as invalid.

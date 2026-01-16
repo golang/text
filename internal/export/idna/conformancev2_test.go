@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build go1.26
+//go:build go1.27
 
 package idna
 
@@ -17,7 +17,7 @@ import (
 func TestConformance(t *testing.T) {
 	testtext.SkipIfNotLong(t)
 
-	r := gen.OpenUnicodeFile("idna", "", "IdnaTestV2.txt")
+	r := gen.OpenUnicodeFile("", "", "idna/IdnaTestV2.txt")
 	defer r.Close()
 
 	section := "main"
