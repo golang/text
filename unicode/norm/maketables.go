@@ -159,6 +159,7 @@ type FormInfo struct {
 	combinesBackward bool // May combine with rune on the left
 	isOneWay         bool // Never appears in result
 	inDecomp         bool // Some decompositions result in this char.
+	suffixDecomp     bool // Appears after first rune of a decomposition
 	decomp           Decomposition
 	expandedDecomp   Decomposition
 }
@@ -397,8 +398,11 @@ func completeCharFields(form int) {
 			f.isOneWay = f.isOneWay || hasCompatDecomp(c.codePoint)
 		}
 
-		for _, r := range f.decomp {
+		for i, r := range f.decomp {
 			chars[r].forms[form].inDecomp = true
+			if i > 0 {
+				chars[r].forms[form].suffixDecomp = true
+			}
 		}
 	}
 
@@ -420,6 +424,35 @@ func completeCharFields(form int) {
 		if isHangulWithoutJamoT(rune(i)) {
 			f.combinesForward = true
 		}
+		if (i & 0xffff00) == JamoLBase {
+			if JamoLBase <= i && i < JamoLEnd {
+				f.combinesForward = true
+			}
+			if JamoVBase <= i && i < JamoVEnd {
+				f.combinesBackward = true
+				f.combinesForward = true
+			}
+			if JamoTBase <= i && i < JamoTEnd {
+				f.combinesBackward = true
+			}
+		}
+	}
+
+	// Phase 2½: backward combining propagation.
+	for i := range chars {
+		c := &chars[i]
+		f := &c.forms[form]
+
+		// If the first rune of f's decomposition combines backward,
+		// then f itself must be considered to combine backward.
+		// This handles the "MaybeNo" runes introduced in Unicode 16.
+		// https://www.unicode.org/reports/tr15/tr15-56.html#Contexts_Care
+		if !f.isOneWay && len(f.decomp) > 0 {
+			f0 := &chars[f.decomp[0]].forms[form]
+			if f0.combinesBackward {
+				f.combinesBackward = true
+			}
+		}
 	}
 
 	// Phase 3: quick check values.
@@ -438,20 +471,6 @@ func completeCharFields(form int) {
 		switch {
 		case f.isOneWay:
 			f.quickCheck[MComposed] = QCNo
-		case (i & 0xffff00) == JamoLBase:
-			f.quickCheck[MComposed] = QCYes
-			if JamoLBase <= i && i < JamoLEnd {
-				f.combinesForward = true
-			}
-			if JamoVBase <= i && i < JamoVEnd {
-				f.quickCheck[MComposed] = QCMaybe
-				f.combinesBackward = true
-				f.combinesForward = true
-			}
-			if JamoTBase <= i && i < JamoTEnd {
-				f.quickCheck[MComposed] = QCMaybe
-				f.combinesBackward = true
-			}
 		case !f.combinesBackward:
 			f.quickCheck[MComposed] = QCYes
 		default:
@@ -574,20 +593,17 @@ func (m *decompSet) insert(key int, s string) {
 }
 
 func printCharInfoTables(w io.Writer) int {
-	mkstr := func(r rune, f *FormInfo) (int, string) {
+	mkstr := func(r rune, f *FormInfo, c *Char) (int, string) {
 		d := f.expandedDecomp
 		s := string([]rune(d))
-		if max := 1 << 6; len(s) >= max {
-			const msg = "%U: too many bytes in decomposition: %d >= %d"
-			log.Fatalf(msg, r, len(s), max)
+		slen := len(s)
+		if slen == 31 || slen == 32 || slen > 33 {
+			log.Fatalf("%U: too many bytes in decomposition: %d", slen)
 		}
-		head := uint8(len(s))
-		if f.quickCheck[MComposed] != QCYes {
-			head |= 0x40
+		if slen == 33 {
+			slen = 31
 		}
-		if f.combinesForward {
-			head |= 0x80
-		}
+		head := uint8(slen) | uint8(makeEntry(f, c)>>3<<5)
 		s = string([]byte{head}) + s
 
 		lccc := ccc(d[0])
@@ -609,7 +625,7 @@ func printCharInfoTables(w io.Writer) int {
 			s += string([]byte{tccc})
 			index = endMulti
 			for _, r := range d[1:] {
-				if ccc(r) == 0 {
+				if ccc(r) == 0 && !chars[r].forms[FCanonical].combinesBackward {
 					index = firstCCC
 				}
 			}
@@ -643,10 +659,7 @@ func printCharInfoTables(w io.Writer) int {
 			if len(f.expandedDecomp) == 0 {
 				continue
 			}
-			if f.combinesBackward {
-				log.Fatalf("%U: combinesBackward and decompose", c.codePoint)
-			}
-			index, s := mkstr(c.codePoint, &f)
+			index, s := mkstr(c.codePoint, &f, &c)
 			decompSet.insert(index, s)
 		}
 	}
@@ -685,7 +698,7 @@ func printCharInfoTables(w io.Writer) int {
 			f := c.forms[i]
 			d := f.expandedDecomp
 			if len(d) != 0 {
-				_, key := mkstr(c.codePoint, &f)
+				_, key := mkstr(c.codePoint, &f, &c)
 				trie.Insert(rune(r), uint64(positionMap[key]))
 				if c.ccc != ccc(d[0]) {
 					// We assume the lead ccc of a decomposition !=0 in this case.
@@ -833,9 +846,6 @@ func verifyComputed() {
 			isMaybe := f.quickCheck[MComposed] == QCMaybe
 			if f.combinesBackward != isMaybe {
 				log.Fatalf("%U: NF*C QC must be Maybe if combinesBackward", i)
-			}
-			if len(f.decomp) > 0 && f.combinesForward && isMaybe {
-				log.Fatalf("%U: NF*C QC must be Yes or No if combinesForward and decomposes", i)
 			}
 
 			if len(f.expandedDecomp) != 0 {
