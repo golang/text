@@ -205,7 +205,7 @@ func initCatalog(t *testing.T, tc testCase) Catalog {
 		case Message:
 			msg = x
 		case []Message:
-			msg = firstInSequence(x)
+			msg = catmsg.FirstOf(x)
 		}
 		data, _ := catmsg.Compile(language.MustParse(e.tag), nil, msg)
 		m[e.tag].(dictionary)[e.key] = data

@@ -25,9 +25,6 @@ import (
 
 var genFiles = flag.Bool("gen", false, "generate output files instead of comparing")
 
-// setHelper is testing.T.Helper on Go 1.9+, overridden by go19_test.go.
-var setHelper = func(t *testing.T) {}
-
 func TestFullCycle(t *testing.T) {
 	if runtime.GOOS == "android" {
 		t.Skip("cannot load outside packages on android")
@@ -75,7 +72,7 @@ func TestFullCycle(t *testing.T) {
 		}
 		t.Run(f.Name(), func(t *testing.T) {
 			chk := func(t *testing.T, err error) {
-				setHelper(t)
+				t.Helper()
 				if err != nil {
 					t.Fatal(err)
 				}
