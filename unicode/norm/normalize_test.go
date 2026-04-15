@@ -664,6 +664,11 @@ var appendTestsNFC = []AppendTest{
 		"a" + rep(0x0305, maxNonStarters+4) + "\u0316",
 		"a" + rep(0x0305, maxNonStarters) + cgj + "\u0316" + rep(0x305, 4),
 	},
+	{ // illegal rune
+		"",
+		"\xf3\xcc\x80",
+		"\xf3\xcc\x80",
+	},
 
 	{ // Combine across non-blocking non-starters.
 		// U+0327 COMBINING CEDILLA;Mn;202;NSM;;;;;N;NON-SPACING CEDILLA;;;;
