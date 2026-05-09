@@ -17,6 +17,7 @@ moment this is supported for Go compilers from version 1.7.
 To submit changes to this repository, see http://go.dev/doc/contribute.
 
 The git repository is https://go.googlesource.com/text.
+<!-- codex minimal verification marker -->
 
 To generate the tables in this repository (except for the encoding tables),
 run go generate from this directory. By default tables are generated for the
