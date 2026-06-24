@@ -67,6 +67,7 @@ func (f Form) transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error)
 		nSrc = end
 
 		// Next quickSpan.
+		var err error
 		end = rb.nsrc
 		eof := atEOF
 		if n := nSrc + len(dst) - nDst; n < end {
