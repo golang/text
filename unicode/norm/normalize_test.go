@@ -106,7 +106,7 @@ var cgj = GraphemeJoiner
 
 var decomposeSegmentTests = []PositionTest{
 	// illegal runes
-	{"\xC2", 0, ""},
+	{"\xC2", 1, ""},
 	{"\xC0", 1, "\xC0"},
 	{"\u00E0\x80", 2, "\u0061\u0300"},
 	// starter
@@ -141,7 +141,7 @@ var decomposeSegmentTests = []PositionTest{
 	// U+FF9E is a starter, but decomposes to U+3099, which is not.
 	{grave(30) + "\uff9e", 60, grave(30) + cgj},
 	// ends with incomplete UTF-8 encoding
-	{"\xCC", 0, ""},
+	{"\xCC", 1, ""},
 	{"\u0300\xCC", 2, "\u0300"},
 }
 
