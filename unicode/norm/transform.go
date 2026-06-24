@@ -33,7 +33,7 @@ func (f Form) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error)
 		return nDst + n, nSrc + n, err
 	}
 
-	if err == nil && n < len(src) && !atEOF {
+	if err == nil && n < len(src) {
 		err = transform.ErrShortSrc
 	}
 	return n, n, err
@@ -79,7 +79,7 @@ func (f Form) transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error)
 		nSrc += n
 		nDst += n
 		if ok {
-			if err == nil && n < rb.nsrc && !atEOF {
+			if err == nil && nSrc < rb.nsrc {
 				err = transform.ErrShortSrc
 			}
 			return nDst, nSrc, err
