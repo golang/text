@@ -254,6 +254,38 @@ func TestMixedSimple(t *testing.T) {
 	}
 }
 
+func TestDirectionLTR(t *testing.T) {
+	str := "ع a"
+	p := Paragraph{}
+	p.SetString(str, DefaultDirection(LeftToRight))
+	order, err := p.Order()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	expectedRuns := []runInformation{
+		{"ع", RightToLeft, 0, 0},
+		{" a", LeftToRight, 1, 2},
+	}
+
+	if nr, want := order.NumRuns(), len(expectedRuns); nr != want {
+		t.Errorf("order.NumRuns() = %d; want %d", nr, want)
+	}
+
+	for i, want := range expectedRuns {
+		r := order.Run(i)
+		if got := r.String(); got != want.str {
+			t.Errorf("Run(%d) = %q; want %q", i, got, want.str)
+		}
+		if s, e := r.Pos(); s != want.start || e != want.end {
+			t.Errorf("Run(%d).start = %d, .end = %d; want start = %d, end = %d", i, s, e, want.start, want.end)
+		}
+		if d := r.Direction(); d != want.dir {
+			t.Errorf("Run(%d).Direction = %d; want %d", i, d, want.dir)
+		}
+	}
+}
+
 func TestDefaultDirection(t *testing.T) {
 	str := "+"
 	p := Paragraph{}
