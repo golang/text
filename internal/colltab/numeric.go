@@ -230,6 +230,13 @@ func (nc *numberConverter) update(elems []Elem) bool {
 // result fills in the length element for the digit sequence and returns the
 // completed collation elements.
 func (nc *numberConverter) result() []Elem {
+	// Insert single zero digit if only zeros.
+	if nc.nDigits == 0 {
+		nc.nDigits = 1
+		nc.elems = append(nc.elems, 0)
+		copy(nc.elems[nc.lenIndex+2:], nc.elems[nc.lenIndex+1:])
+		nc.elems[nc.lenIndex+1] = nc.w.zero
+	}
 	e, _ := MakeElem(nc.nDigits, defaultSecondary, defaultTertiary, 0)
 	nc.elems[nc.lenIndex] = e
 	return nc.elems
