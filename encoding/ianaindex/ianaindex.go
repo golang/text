@@ -104,6 +104,15 @@ func (x *Index) Name(e encoding.Encoding) (string, error) {
 	return x.names(v), nil
 }
 
+// FindMIB searches encoding by MIBenum identifier
+func (x *Index) FindMIB(mib identifier.MIB) (encoding.Encoding, error) {
+	v := findMIB(x.toMIB, mib)
+	if v == -1 {
+		return nil, errUnsupported
+	}
+	return x.enc[v], nil
+}
+
 // TODO: the coverage of this index is rather spotty. Allowing users to set
 // encodings would allow:
 // - users to increase coverage
