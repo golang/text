@@ -166,7 +166,12 @@ func ParseAcceptLanguage(s string) (tag []Tag, q []float32, err error) {
 		}
 	}()
 
-	if strings.Count(s, "-") > 1000 {
+	// Reject excessively large input to avoid quadratic behavior in the
+	// scanner (see Go issue 56152). Underscores are treated as separators
+	// equivalent to dashes (they are normalized to '-' during scanning), so
+	// they must be counted here as well; otherwise an underscore-separated
+	// value bypasses this limit.
+	if strings.Count(s, "-")+strings.Count(s, "_") > 1000 {
 		return nil, nil, errTagListTooLarge
 	}
 

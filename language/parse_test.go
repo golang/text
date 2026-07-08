@@ -406,4 +406,11 @@ func TestParseAcceptLanguageTooBig(t *testing.T) {
 	if err != errTagListTooLarge {
 		t.Errorf("ParseAcceptLanguage() unexpected error: got %v, want %v", err, errTagListTooLarge)
 	}
+
+	// Underscores are normalized to dashes by the scanner, so they are
+	// separators too and must be subject to the same limit.
+	u := strings.Repeat("en_x_a_", 333) + "en_x_a"
+	if _, _, err = ParseAcceptLanguage(u); err != errTagListTooLarge {
+		t.Errorf("ParseAcceptLanguage(underscores) unexpected error: got %v, want %v", err, errTagListTooLarge)
+	}
 }
