@@ -164,7 +164,12 @@ func (t Tag) MarshalText() (text []byte, err error) {
 
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (t *Tag) UnmarshalText(text []byte) error {
-	tag, err := Parse(string(text))
+	s := string(text)
+	if strings.Count(s, "-")+strings.Count(s, "_") > 1000 {
+		*t = Und
+		return ErrSyntax
+	}
+	tag, err := Parse(s)
 	*t = tag
 	return err
 }
