@@ -6,6 +6,7 @@ package idna
 
 import (
 	"io"
+	"strings"
 	"testing"
 
 	"golang.org/x/text/internal/gen"
@@ -26,8 +27,13 @@ func TestConformance(t *testing.T) {
 
 	section := "main"
 	p := ucd.New(r)
+	// Strict profiles with all optional validation enabled.
 	transitional := New(Transitional(true), VerifyDNSLength(true), BidiRule(), MapForLookup())
 	nonTransitional := New(VerifyDNSLength(true), BidiRule(), MapForLookup())
+	// Lax profiles with all optional validation disabled,
+	// to verify we always perform required validation.
+	transitionalLax := New(Transitional(true), MapForLookup(), VerifyDNSLength(false), CheckHyphens(false), CheckJoiners(false), StrictDomainName(false))
+	nonTransitionalLax := New(MapForLookup(), VerifyDNSLength(false), CheckHyphens(false), CheckJoiners(false), StrictDomainName(false))
 	for p.Next() {
 		var (
 			src          = def(unescape(p.String(0)), "")
@@ -49,7 +55,39 @@ func TestConformance(t *testing.T) {
 		doTest(t, nonTransitional.ToUnicode, section+":ToUnicode", src, toUnicode, toUnicodeErr)
 		doTest(t, nonTransitional.ToASCII, section+":ToASCII:N", src, toASCIIN, toASCIINErr)
 		doTest(t, transitional.ToASCII, section+":ToASCII:T", src, toASCIIT, toASCIITErr)
+
+		if UnicodeVersion == "15.0.0" {
+			continue
+		}
+		doTest(t, nonTransitionalLax.ToUnicode, section+":ToUnicode:lax", src, toUnicode, filterErr(toUnicodeErr))
+		doTest(t, nonTransitionalLax.ToASCII, section+":ToASCII:N:lax", src, toASCIIN, filterErr(toASCIINErr))
+		doTest(t, transitionalLax.ToASCII, section+":ToASCII:T:lax", src, toASCIIT, filterErr(toASCIITErr))
 	}
+}
+
+func filterErr(errors string) string {
+	errors = strings.Trim(errors, "[]")
+	if errors == "" {
+		return ""
+	}
+	var remaining []string
+	for s := range strings.FieldsSeq(strings.ReplaceAll(errors, ",", " ")) {
+		// As described in IdnaTestV2.txt, ignore these error codes when testing for
+		// errors with optional validation disabled.
+		switch {
+		case s == "A4_1" || s == "A4_2" || s == "X4_2": // VerifyDnsLength
+		case s == "V2" || s == "V3": // CheckHyphens
+		case s[0] == 'C': // CheckJoiners
+		case s[0] == 'B': // CheckBidi
+		case s == "U1": // UseSTD3ASCIIRules
+		default:
+			remaining = append(remaining, s)
+		}
+	}
+	if len(remaining) == 0 {
+		return ""
+	}
+	return "[" + strings.Join(remaining, ", ") + "]"
 }
 
 func def(field, fallback string) string {

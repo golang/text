@@ -393,8 +393,8 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				// Spec says keep the old label.
 				continue
 			}
-			if err == nil && len(u) > 0 && isASCII(u) {
-				// UTS 43 pre-revision 33 doesn't classify a xn-- label
+			if err == nil && isASCII(u) {
+				// UTS #46 pre-revision 33 doesn't classify a xn-- label
 				// which contains only ASCII characters as an error,
 				// but that's a specification bug and a security issue.
 				// Always return an error in this case.
@@ -770,7 +770,7 @@ func allowedSTD3(r rune) bool {
 	return r >= 0x80 || 'a' <= r && r <= 'z' || '0' <= r && r <= '9' || r == '-' || r == '.'
 }
 
-// validateLabel validates the criteria from Section 4.1. Item 1, 4, and 6 are
+// validateLabel validates the criteria from Section 4.1. Item 1 is
 // already implicitly satisfied by the overall implementation.
 func (p *Profile) validateLabel(s string, labelCode string) (err error) {
 	if s == "" {
@@ -785,6 +785,10 @@ func (p *Profile) validateLabel(s string, labelCode string) (err error) {
 		}
 		if s[0] == '-' || s[len(s)-1] == '-' {
 			return labelError{s, "V3"}
+		}
+	} else {
+		if strings.HasPrefix(s, acePrefix) {
+			return labelError{s, "V4"}
 		}
 	}
 
@@ -807,13 +811,14 @@ func (p *Profile) validateLabel(s string, labelCode string) (err error) {
 		}
 	}
 
-	if !p.checkJoiners {
-		return nil
-	}
 	v, sz := trie.lookupString(s)
 	x := info(v)
 	if x.isModifier() {
 		return labelError{s, code16("V5", "V6")}
+	}
+
+	if !p.checkJoiners {
+		return nil
 	}
 	// Quickly return in the absence of zero-width (non) joiners.
 	if strings.Index(s, zwj) == -1 && strings.Index(s, zwnj) == -1 {
