@@ -91,7 +91,6 @@ func ValidateLabels(enable bool) Option {
 		if o.mapping == nil && enable {
 			o.mapping = normalize
 		}
-		o.trie = trie
 		o.checkJoiners = enable
 		o.checkHyphens = enable
 		if enable {
@@ -122,7 +121,6 @@ func CheckHyphens(enable bool) Option {
 // This option corresponds to the CheckJoiners flag in UTS #46.
 func CheckJoiners(enable bool) Option {
 	return func(o *options) {
-		o.trie = trie
 		o.checkJoiners = enable
 	}
 }
@@ -187,8 +185,6 @@ type options struct {
 	checkJoiners      bool
 	verifyDNSLength   bool
 	removeLeadingDots bool
-
-	trie *idnaTrie
 
 	// fromPuny calls validation rules when converting A-labels to U-labels.
 	fromPuny func(p *Profile, s string) error
@@ -297,7 +293,6 @@ var (
 		useSTD3Rules: true,
 		checkHyphens: true,
 		checkJoiners: true,
-		trie:         trie,
 		fromPuny:     validateFromPunycode,
 		mapping:      validateAndMap,
 		bidirule:     bidirule.ValidString,
@@ -306,7 +301,6 @@ var (
 		useSTD3Rules: true,
 		checkHyphens: true,
 		checkJoiners: true,
-		trie:         trie,
 		fromPuny:     validateFromPunycode,
 		mapping:      validateAndMap,
 		bidirule:     bidirule.ValidString,
@@ -316,7 +310,6 @@ var (
 		verifyDNSLength: true,
 		checkHyphens:    true,
 		checkJoiners:    true,
-		trie:            trie,
 		fromPuny:        validateFromPunycode,
 		mapping:         validateRegistration,
 		bidirule:        bidirule.ValidString,
@@ -817,8 +810,6 @@ func (p *Profile) validateLabel(s string, labelCode string) (err error) {
 	if !p.checkJoiners {
 		return nil
 	}
-	trie := p.trie // p.checkJoiners is only set if trie is set.
-	// TODO: merge the use of this in the trie.
 	v, sz := trie.lookupString(s)
 	x := info(v)
 	if x.isModifier() {
