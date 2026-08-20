@@ -373,7 +373,7 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 	// It seems like we should only create this error on ToASCII, but the
 	// UTS 46 conformance tests suggests we should always check this.
 	labelCode := "X4_2"
-	if !unicode16 || toASCII {
+	if toASCII {
 		labelCode = "A4"
 	}
 	if err == nil && p.verifyDNSLength && s == "" {
