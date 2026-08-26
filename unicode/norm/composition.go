@@ -449,6 +449,16 @@ func (rb *reorderBuffer) combineHangul(s, i, k int) {
 				// ACxx plus 11Ax to LVT
 				rb.assignRune(s, l+v-jamoTBase)
 			default:
+				// Not a Hangul composition. The segment may still
+				// contain regular canonical compositions, such as
+				// combining marks following a Hangul syllable, so
+				// fall back to the composition table.
+				if b[i].combinesBackward() {
+					if combined := combine(l, v); combined != 0 {
+						rb.assignRune(s, combined)
+						continue
+					}
+				}
 				b[k] = b[i]
 				k++
 			}

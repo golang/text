@@ -4,7 +4,11 @@
 
 package norm
 
-import "testing"
+import (
+	"testing"
+	"unicode"
+	"unicode/utf8"
+)
 
 // TestCase is used for most tests.
 type TestCase struct {
@@ -127,4 +131,50 @@ var compositionTest = []TestCase{
 
 func TestComposition(t *testing.T) {
 	runTests(t, "TestComposition", NFC, compositionTest)
+}
+
+// TestCompositionAfterHangul tests that a Hangul syllable at the start of a
+// segment does not disable regular canonical composition for the rest of the
+// segment. The reorderBuffer switches to Hangul mode as soon as it sees a Jamo,
+// and used to drop every non-Hangul composition after it. See go.dev/issue/81021.
+func TestCompositionAfterHangul(t *testing.T) {
+	prefixes := []string{
+		"\u1100\u1161",       // Jamo L V
+		"\u1100\u1161\u11a8", // Jamo L V T
+		"\uac00",             // Hangul syllable LV
+		"\uac01",             // Hangul syllable LVT
+		"\ud7a3",             // last Hangul syllable
+	}
+	forms := []struct {
+		name string
+		c, d Form
+	}{
+		{"NFC", NFC, NFD},
+		{"NFKC", NFKC, NFKD},
+	}
+	for _, p := range prefixes {
+		for _, f := range forms {
+			for r := rune(0); r <= unicode.MaxRune; r++ {
+				s := string(r)
+				if !utf8.ValidString(s) {
+					continue
+				}
+				want := f.c.String(s)
+				in := f.d.String(s)
+				if in == want {
+					continue // nothing to recompose
+				}
+				// Skip characters that may legitimately merge with the
+				// Hangul prefix rather than recompose among themselves.
+				if c, _ := utf8.DecodeRuneInString(in); c >= jamoLBase && c <= 0x11ff ||
+					c >= hangulBase && c < hangulEnd {
+					continue
+				}
+				in, want = p+in, f.c.String(p)+want
+				if got := f.c.String(in); got != want {
+					t.Errorf("%s(%+q) = %+q; want %+q", f.name, in, got, want)
+				}
+			}
+		}
+	}
 }
