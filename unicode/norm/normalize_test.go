@@ -653,6 +653,21 @@ var appendTestsNFC = []AppendTest{
 	{"\uff9e", grave(30), "\uff9e" + grave(29) + cgj + grave(1)},
 	{grave(30), "\uff9e", grave(30) + cgj + "\uff9e"},
 
+	{ // A ccc=0 character blocks composition (UAX #15, D115) even when
+		// it combines backward and so cannot end its segment. U+09BE
+		// composes with U+09C7, but here it only stands between the
+		// starter and U+0300, which must therefore not compose with "i".
+		"",
+		"i\u09be\u0300\u0316",
+		"i\u09be\u0316\u0300",
+	},
+	{ // the same shape with a ccc=0 character that does not combine
+		// backward, which has always been handled correctly
+		"",
+		"i\u0903\u0300\u0316",
+		"i\u0903\u0316\u0300",
+	},
+
 	// Tests designed for Iter.
 	{ // ordering of non-composing combining characters
 		"",

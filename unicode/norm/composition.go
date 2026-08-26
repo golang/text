@@ -506,6 +506,16 @@ func (rb *reorderBuffer) compose() {
 			}
 		}
 		b[k] = b[i]
+		if b[k].ccc == 0 {
+			// b[i] is itself a starter, so it becomes the base for what
+			// follows and blocks any later mark from an earlier starter
+			// (D115). Updating s only in the combinesBackward branch above
+			// misses this: a ccc-0 character that combines backward does not
+			// end the segment, so it reaches here with s still pointing at
+			// the previous starter, and a following mark then composes
+			// across it.
+			s = k
+		}
 		k++
 	}
 	rb.nrune = k
