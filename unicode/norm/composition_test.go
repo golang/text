@@ -202,3 +202,27 @@ func TestCompositionBlockedByStarter(t *testing.T) {
 		}
 	}
 }
+
+// TestCompositionSupplementaryPlane tests that the recomposition map
+// distinguishes runes outside the BMP. The map key used to truncate both
+// runes to 16 bits, so supplementary-plane runes aliased BMP entries and
+// composition invented characters unrelated to the input.
+func TestCompositionSupplementaryPlane(t *testing.T) {
+	for r := rune(0); r <= unicode.MaxRune; r++ {
+		if !utf8.ValidRune(r) {
+			continue
+		}
+		for _, m := range []rune{0x0300, 0x0307, 0x093C, 0x11F41, 0x16D67} {
+			in := string(r) + string(m)
+			for _, f := range []struct {
+				name string
+				c, d Form
+			}{{"NFC", NFC, NFD}, {"NFKC", NFKC, NFKD}} {
+				// Normalization must preserve equivalence.
+				if got := f.c.String(in); f.d.String(got) != f.d.String(in) {
+					t.Errorf("%s(%+q) = %+q; not equivalent to input", f.name, in, got)
+				}
+			}
+		}
+	}
+}

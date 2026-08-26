@@ -781,13 +781,13 @@ func makeTables() {
 	}
 
 	if contains(list, "recomp") {
-		// Note that we use 32 bit keys, instead of 64 bit.
-		// This clips the bits of three entries, but we know
-		// this won't cause a collision. The compiler will catch
-		// any changes made to UnicodeData.txt that introduces
-		// a collision.
+		// Each entry packs the two runes of the key and the
+		// composed rune of the value into a big-endian uint64
+		// as three 21-bit fields, which is wide enough for any
+		// rune. See combine in forminfo.go.
 		// Note that the recomposition map for NFC and NFKC
 		// are identical.
+		const recompShift = 21
 
 		// Recomposition map
 		nrentries := 0
@@ -800,7 +800,7 @@ func makeTables() {
 		sz := nrentries * 8
 		size += sz
 		fmt.Fprintf(w, "// recompMap: %d bytes (entries only)\n", sz)
-		fmt.Fprintln(w, "var recompMap map[uint32]rune")
+		fmt.Fprintln(w, "var recompMap map[uint64]rune")
 		fmt.Fprintln(w, "var recompMapOnce sync.Once\n")
 		fmt.Fprintln(w, `const recompMapPacked = "" +`)
 		var buf [8]byte
@@ -808,10 +808,9 @@ func makeTables() {
 			f := c.forms[FCanonical]
 			d := f.decomp
 			if !f.isOneWay && len(d) > 0 {
-				key := uint32(uint16(d[0]))<<16 + uint32(uint16(d[1]))
-				binary.BigEndian.PutUint32(buf[:4], key)
-				binary.BigEndian.PutUint32(buf[4:], uint32(i))
-				fmt.Fprintf(w, "\t\t%q + // 0x%.8X: 0x%.8X\n", string(buf[:]), key, uint32(i))
+				key := uint64(d[0])<<recompShift | uint64(d[1])
+				binary.BigEndian.PutUint64(buf[:], key<<recompShift|uint64(i))
+				fmt.Fprintf(w, "\t\t%q + // 0x%.5X 0x%.5X: 0x%.5X\n", string(buf[:]), d[0], d[1], i)
 			}
 		}
 		// hack so we don't have to special case the trailing plus sign
