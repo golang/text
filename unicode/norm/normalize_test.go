@@ -653,6 +653,22 @@ var appendTestsNFC = []AppendTest{
 	{"\uff9e", grave(30), "\uff9e" + grave(29) + cgj + grave(1)},
 	{grave(30), "\uff9e", grave(30) + cgj + "\uff9e"},
 
+	{ // A composition that follows a Hangul syllable still has to
+		// happen. U+113C5 decomposes to <U+113C2, U+113C2>, and U+113C2
+		// combines backward, so it does not start a new segment and the
+		// pair has to recompose inside the Hangul buffer. Under table
+		// sets where U+113C5 is unassigned the expectation is the same,
+		// since it then has no decomposition to undo.
+		"",
+		"\uac00\U000113c5",
+		"\uac00\U000113c5",
+	},
+	{ // the same, reached through the jamo rather than the syllable
+		"",
+		"\u1100\u1161\U000113c5",
+		"\uac00\U000113c5",
+	},
+
 	// Tests designed for Iter.
 	{ // ordering of non-composing combining characters
 		"",

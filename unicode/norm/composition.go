@@ -449,6 +449,14 @@ func (rb *reorderBuffer) combineHangul(s, i, k int) {
 				// ACxx plus 11Ax to LVT
 				rb.assignRune(s, l+v-jamoTBase)
 			default:
+				// Not a Hangul pair. The buffer is in Hangul mode only
+				// because some character in it is a V or T jamo; whatever
+				// else it holds still has to compose normally, so consult
+				// the ordinary table rather than copying through.
+				if x := combine(l, v); x != 0 {
+					rb.assignRune(s, x)
+					break
+				}
 				b[k] = b[i]
 				k++
 			}
