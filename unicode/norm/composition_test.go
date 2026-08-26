@@ -178,3 +178,27 @@ func TestCompositionAfterHangul(t *testing.T) {
 		}
 	}
 }
+
+// TestCompositionBlockedByStarter tests that a starter blocks composition
+// across it even when the starter itself takes no part in any composition and
+// the runes between it and the following mark never combine backward.
+// See go.dev/issue/81001.
+func TestCompositionBlockedByStarter(t *testing.T) {
+	tests := []struct {
+		name    string
+		f       Form
+		in, out string
+	}{
+		// U+113C2 is a starter (ccc 0), so it blocks U+0300 from
+		// composing with the "i" of the U+FB01 expansion.
+		{"NFKC", NFKC, "\U00016d68\ufb01\U000113c2\u0300\u0316", "\U00016d68fi\U000113c2\u0316\u0300"},
+		{"NFC", NFC, "i\U000113c2\u0300\u0316", "i\U000113c2\u0316\u0300"},
+		// Without the intervening starter the composition must still happen.
+		{"NFC", NFC, "i\u0300\u0316", "\u00ec\u0316"},
+	}
+	for _, test := range tests {
+		if got := test.f.String(test.in); got != test.out {
+			t.Errorf("%s.String(%+q) = %+q; want %+q", test.name, test.in, got, test.out)
+		}
+	}
+}
