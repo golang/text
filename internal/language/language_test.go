@@ -6,6 +6,7 @@ package language
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"golang.org/x/text/internal/testtext"
@@ -101,6 +102,19 @@ func TestMarshal(t *testing.T) {
 		}
 		if got := string(b); got != tc {
 			t.Errorf("%s: got %q; want %q", tc, got, tc)
+		}
+	}
+}
+
+func TestUnmarshalTextTooBig(t *testing.T) {
+	for _, separator := range []string{"-", "_"} {
+		text := []byte("en" + strings.Repeat(separator+"abcdefghi", 1001))
+		tag := Tag{LangID: _fr}
+		if err := tag.UnmarshalText(text); err != ErrSyntax {
+			t.Errorf("UnmarshalText with %q separators: got error %v; want %v", separator, err, ErrSyntax)
+		}
+		if got := tag.String(); got != "und" {
+			t.Errorf("UnmarshalText with %q separators: got tag %q; want und", separator, got)
 		}
 	}
 }
