@@ -407,3 +407,18 @@ func TestParseAcceptLanguageTooBig(t *testing.T) {
 		t.Errorf("ParseAcceptLanguage() unexpected error: got %v, want %v", err, errTagListTooLarge)
 	}
 }
+
+func TestParseAcceptLanguageUnderscoreGuard(t *testing.T) {
+	// Build a payload that would trigger the quadratic path with
+	// '_' but is blocked by the dash-count guard. Verify the guard
+	// now also counts '_'.
+	parts := make([]string, 0, 1002)
+	parts = append(parts, "en")
+	for i := 0; i < 1001; i++ {
+		parts = append(parts, "abcdefghi")
+	}
+	s := strings.Join(parts, "_")
+	if _, _, err := ParseAcceptLanguage(s); err != errTagListTooLarge {
+		t.Errorf("ParseAcceptLanguage with 1001 '_' separators: got err=%v, want errTagListTooLarge", err)
+	}
+}
