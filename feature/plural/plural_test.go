@@ -110,6 +110,7 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 				for n := from; n <= to; n++ {
 					t.Run(fmt.Sprintf("%s/int(%d)", loc, n), func(t *testing.T) {
 						if f := p.matchComponents(tag, n, 0, 0); f != Form(tc.form) {
+                                                        t.Errorf("Tag %v, n: %v", tag, n)
 							t.Errorf("matchComponents: got %v; want %v", f, Form(tc.form))
 						}
 						digits := []byte(fmt.Sprint(n))
@@ -117,6 +118,7 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 							digits[i] -= '0'
 						}
 						if f := p.MatchDigits(tag, digits, len(digits), 0); f != Form(tc.form) {
+                                                        t.Errorf("Tag: %v digits: %v", tag, digits)
 							t.Errorf("MatchDigits: got %v; want %v", f, Form(tc.form))
 						}
 					})
@@ -149,9 +151,11 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 							tt /= 10
 						}
 						if f := p.MatchPlural(tag, n/m, scale, w, ff, tt); f != Form(tc.form) {
+						        t.Errorf("Tag: %v n: %v m: %v scale: %v w: %v ff: %v tt: %v", tag, n, m, scale, w, ff, tt)
 							t.Errorf("MatchPlural: got %v; want %v", f, Form(tc.form))
 						}
 						if f := p.matchComponents(tag, n/m, n%m, scale); f != Form(tc.form) {
+						        t.Errorf("Tag: %v n: %v m: %v scale: %v", tag, n, m, scale)
 							t.Errorf("matchComponents: got %v; want %v", f, Form(tc.form))
 						}
 						exp := strings.IndexByte(num, '.')
@@ -160,6 +164,7 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 							digits[i] -= '0'
 						}
 						if f := p.MatchDigits(tag, digits, exp, scale); f != Form(tc.form) {
+						        t.Errorf("Tag: %v, exp: %v digits: %v scale: %v", tag, exp, digits, scale)
 							t.Errorf("MatchDigits: got %v; want %v", f, Form(tc.form))
 						}
 					})

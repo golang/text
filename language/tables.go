@@ -35,16 +35,16 @@ const (
 	_XK  = 334
 )
 const (
-	_Latn = 91
-	_Hani = 57
-	_Hans = 59
-	_Hant = 60
-	_Qaaa = 149
-	_Qaai = 157
-	_Qabx = 198
-	_Zinh = 255
-	_Zyyy = 260
-	_Zzzz = 261
+	_Latn = 97
+	_Hani = 61
+	_Hans = 63
+	_Hant = 64
+	_Qaaa = 156
+	_Qaai = 164
+	_Qabx = 205
+	_Zinh = 268
+	_Zyyy = 273
+	_Zzzz = 274
 )
 
 var regionToGroups = []uint8{ // 359 elements
@@ -249,32 +249,32 @@ var matchLang = []mutualIntelligibility{ // 113 elements
 // matchScript holds pairs of scriptIDs where readers of one script
 // can typically also read the other. Each is associated with a confidence.
 var matchScript = []scriptIntelligibility{ // 26 elements
-	0:  {wantLang: 0x432, haveLang: 0x432, wantScript: 0x5b, haveScript: 0x20, distance: 0x5},
-	1:  {wantLang: 0x432, haveLang: 0x432, wantScript: 0x20, haveScript: 0x5b, distance: 0x5},
-	2:  {wantLang: 0x58, haveLang: 0x3e2, wantScript: 0x5b, haveScript: 0x20, distance: 0xa},
-	3:  {wantLang: 0xa5, haveLang: 0x139, wantScript: 0xe, haveScript: 0x5b, distance: 0xa},
-	4:  {wantLang: 0x1d7, haveLang: 0x3e2, wantScript: 0x8, haveScript: 0x20, distance: 0xa},
-	5:  {wantLang: 0x210, haveLang: 0x139, wantScript: 0x2e, haveScript: 0x5b, distance: 0xa},
-	6:  {wantLang: 0x24a, haveLang: 0x139, wantScript: 0x4f, haveScript: 0x5b, distance: 0xa},
-	7:  {wantLang: 0x251, haveLang: 0x139, wantScript: 0x53, haveScript: 0x5b, distance: 0xa},
-	8:  {wantLang: 0x2b8, haveLang: 0x139, wantScript: 0x58, haveScript: 0x5b, distance: 0xa},
-	9:  {wantLang: 0x304, haveLang: 0x139, wantScript: 0x6f, haveScript: 0x5b, distance: 0xa},
-	10: {wantLang: 0x331, haveLang: 0x139, wantScript: 0x76, haveScript: 0x5b, distance: 0xa},
-	11: {wantLang: 0x351, haveLang: 0x139, wantScript: 0x22, haveScript: 0x5b, distance: 0xa},
-	12: {wantLang: 0x395, haveLang: 0x139, wantScript: 0x83, haveScript: 0x5b, distance: 0xa},
-	13: {wantLang: 0x39d, haveLang: 0x139, wantScript: 0x36, haveScript: 0x5b, distance: 0xa},
-	14: {wantLang: 0x3be, haveLang: 0x139, wantScript: 0x5, haveScript: 0x5b, distance: 0xa},
-	15: {wantLang: 0x3fa, haveLang: 0x139, wantScript: 0x5, haveScript: 0x5b, distance: 0xa},
-	16: {wantLang: 0x40c, haveLang: 0x139, wantScript: 0xd6, haveScript: 0x5b, distance: 0xa},
-	17: {wantLang: 0x450, haveLang: 0x139, wantScript: 0xe6, haveScript: 0x5b, distance: 0xa},
-	18: {wantLang: 0x461, haveLang: 0x139, wantScript: 0xe9, haveScript: 0x5b, distance: 0xa},
-	19: {wantLang: 0x46f, haveLang: 0x139, wantScript: 0x2c, haveScript: 0x5b, distance: 0xa},
-	20: {wantLang: 0x476, haveLang: 0x3e2, wantScript: 0x5b, haveScript: 0x20, distance: 0xa},
-	21: {wantLang: 0x4b4, haveLang: 0x139, wantScript: 0x5, haveScript: 0x5b, distance: 0xa},
-	22: {wantLang: 0x4bc, haveLang: 0x3e2, wantScript: 0x5b, haveScript: 0x20, distance: 0xa},
-	23: {wantLang: 0x512, haveLang: 0x139, wantScript: 0x3e, haveScript: 0x5b, distance: 0xa},
-	24: {wantLang: 0x529, haveLang: 0x529, wantScript: 0x3b, haveScript: 0x3c, distance: 0xf},
-	25: {wantLang: 0x529, haveLang: 0x529, wantScript: 0x3c, haveScript: 0x3b, distance: 0x13},
+	0:  {wantLang: 0x432, haveLang: 0x432, wantScript: 0x61, haveScript: 0x22, distance: 0x5},
+	1:  {wantLang: 0x432, haveLang: 0x432, wantScript: 0x22, haveScript: 0x61, distance: 0x5},
+	2:  {wantLang: 0x58, haveLang: 0x3e2, wantScript: 0x61, haveScript: 0x22, distance: 0xa},
+	3:  {wantLang: 0xa5, haveLang: 0x139, wantScript: 0xe, haveScript: 0x61, distance: 0xa},
+	4:  {wantLang: 0x1d7, haveLang: 0x3e2, wantScript: 0x8, haveScript: 0x22, distance: 0xa},
+	5:  {wantLang: 0x210, haveLang: 0x139, wantScript: 0x31, haveScript: 0x61, distance: 0xa},
+	6:  {wantLang: 0x24a, haveLang: 0x139, wantScript: 0x54, haveScript: 0x61, distance: 0xa},
+	7:  {wantLang: 0x251, haveLang: 0x139, wantScript: 0x58, haveScript: 0x61, distance: 0xa},
+	8:  {wantLang: 0x2b8, haveLang: 0x139, wantScript: 0x5e, haveScript: 0x61, distance: 0xa},
+	9:  {wantLang: 0x304, haveLang: 0x139, wantScript: 0x75, haveScript: 0x61, distance: 0xa},
+	10: {wantLang: 0x331, haveLang: 0x139, wantScript: 0x7c, haveScript: 0x61, distance: 0xa},
+	11: {wantLang: 0x351, haveLang: 0x139, wantScript: 0x24, haveScript: 0x61, distance: 0xa},
+	12: {wantLang: 0x395, haveLang: 0x139, wantScript: 0x8a, haveScript: 0x61, distance: 0xa},
+	13: {wantLang: 0x39d, haveLang: 0x139, wantScript: 0x3a, haveScript: 0x61, distance: 0xa},
+	14: {wantLang: 0x3be, haveLang: 0x139, wantScript: 0x5, haveScript: 0x61, distance: 0xa},
+	15: {wantLang: 0x3fa, haveLang: 0x139, wantScript: 0x5, haveScript: 0x61, distance: 0xa},
+	16: {wantLang: 0x40c, haveLang: 0x139, wantScript: 0xdf, haveScript: 0x61, distance: 0xa},
+	17: {wantLang: 0x450, haveLang: 0x139, wantScript: 0xef, haveScript: 0x61, distance: 0xa},
+	18: {wantLang: 0x461, haveLang: 0x139, wantScript: 0xf3, haveScript: 0x61, distance: 0xa},
+	19: {wantLang: 0x46f, haveLang: 0x139, wantScript: 0x2e, haveScript: 0x61, distance: 0xa},
+	20: {wantLang: 0x476, haveLang: 0x3e2, wantScript: 0x61, haveScript: 0x22, distance: 0xa},
+	21: {wantLang: 0x4b4, haveLang: 0x139, wantScript: 0x5, haveScript: 0x61, distance: 0xa},
+	22: {wantLang: 0x4bc, haveLang: 0x3e2, wantScript: 0x61, haveScript: 0x22, distance: 0xa},
+	23: {wantLang: 0x512, haveLang: 0x139, wantScript: 0x42, haveScript: 0x61, distance: 0xa},
+	24: {wantLang: 0x529, haveLang: 0x529, wantScript: 0x3f, haveScript: 0x40, distance: 0xf},
+	25: {wantLang: 0x529, haveLang: 0x529, wantScript: 0x40, haveScript: 0x3f, distance: 0x13},
 } // Size: 232 bytes
 
 var matchRegion = []regionIntelligibility{ // 15 elements
@@ -286,13 +286,13 @@ var matchRegion = []regionIntelligibility{ // 15 elements
 	5:  {lang: 0x13e, script: 0x0, group: 0x83, distance: 0x4},
 	6:  {lang: 0x3c0, script: 0x0, group: 0x3, distance: 0x4},
 	7:  {lang: 0x3c0, script: 0x0, group: 0x83, distance: 0x4},
-	8:  {lang: 0x529, script: 0x3c, group: 0x2, distance: 0x4},
-	9:  {lang: 0x529, script: 0x3c, group: 0x82, distance: 0x4},
+	8:  {lang: 0x529, script: 0x40, group: 0x2, distance: 0x4},
+	9:  {lang: 0x529, script: 0x40, group: 0x82, distance: 0x4},
 	10: {lang: 0x3a, script: 0x0, group: 0x80, distance: 0x5},
 	11: {lang: 0x139, script: 0x0, group: 0x80, distance: 0x5},
 	12: {lang: 0x13e, script: 0x0, group: 0x80, distance: 0x5},
 	13: {lang: 0x3c0, script: 0x0, group: 0x80, distance: 0x5},
-	14: {lang: 0x529, script: 0x3c, group: 0x80, distance: 0x5},
+	14: {lang: 0x529, script: 0x40, group: 0x80, distance: 0x5},
 } // Size: 114 bytes
 
 // Total table size 1473 bytes (1KiB); checksum: 7BB90B5C
