@@ -187,6 +187,8 @@ func (t Tag) RegionalTag() Tag {
 	}
 	return t
 }
+var bihLangID = language.MustParseBase("bih")
+var bhLangID = coreTags[bhIndex].Tag().LangID
 
 // FromTag reports closest matching ID for an internal language Tag.
 func FromTag(t language.Tag) (id ID, exact bool) {
@@ -196,6 +198,11 @@ func FromTag(t language.Tag) (id ID, exact bool) {
 	exact = true
 
 	b, s, r := t.Raw()
+	if b == bihLangID {
+		t.LangID = bhLangID
+		b = bhLangID
+		exact = false
+	}
 	if t.HasString() {
 		if t.IsPrivateUse() {
 			// We have no entries for user-defined tags.
