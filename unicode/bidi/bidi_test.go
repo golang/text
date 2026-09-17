@@ -1,7 +1,9 @@
 package bidi
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"testing"
 )
 
@@ -344,4 +346,30 @@ func TestAppendReverse(t *testing.T) {
 		}
 	}
 
+}
+
+func BenchmarkOrder(b *testing.B) {
+	for _, bc := range []struct {
+		name string
+		char string
+	}{
+		{"UnmatchedIsolateInitiator", "\u2066"},
+		{"EuropeanNumber", "1"},
+		{"EuropeanTerminator", "$"},
+	} {
+		for _, n := range []int{1000, 10000, 100000} {
+			text := strings.Repeat(bc.char, n)
+			b.Run(fmt.Sprintf("%s/%d", bc.name, n), func(b *testing.B) {
+				var p Paragraph
+				for b.Loop() {
+					if _, err := p.SetString(text); err != nil {
+						b.Fatal(err)
+					}
+					if _, err := p.Order(); err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		}
+	}
 }
