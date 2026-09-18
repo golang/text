@@ -93,6 +93,11 @@ func TestEncoding(t *testing.T) {
 		{MIB, "LATIN5 ", "ISOLatin5", nil},
 		{MIB, "latin 5", "", errInvalidName},
 		{MIB, "latin-5", "", errInvalidName},
+
+		// GB2312 is a registered IANA charset (MIB 2025); golang/go#24636.
+		{MIME, "gb2312", "GB2312", nil},
+		{IANA, "GB2312", "GB2312", nil},
+		{MIB, "csGB2312", "GB2312", nil},
 	}
 	for i, tc := range testCases {
 		enc, err := tc.index.Encoding(tc.name)
@@ -105,6 +110,26 @@ func TestEncoding(t *testing.T) {
 		if got, err := tc.index.Name(enc); got != tc.canonical {
 			t.Errorf("%d: Name(Encoding(%q)) = %q; want %q (%v)", i, tc.name, got, tc.canonical, err)
 		}
+	}
+}
+
+// TestGB2312 verifies that the IANA-registered GB2312 charset (MIB 2025)
+// resolves to a usable encoding rather than nil. Regression test for
+// golang/go#24636.
+func TestGB2312(t *testing.T) {
+	enc, err := MIME.Encoding("gb2312")
+	if err != nil {
+		t.Fatalf("MIME.Encoding(%q): unexpected error %v", "gb2312", err)
+	}
+	if enc == nil {
+		t.Fatalf("MIME.Encoding(%q) = nil; want a GB2312 encoding", "gb2312")
+	}
+	got, err := enc.NewDecoder().Bytes([]byte{0xc4, 0xe3, 0xba, 0xc3})
+	if err != nil {
+		t.Fatalf("decoding GB2312 bytes: %v", err)
+	}
+	if want := "你好"; string(got) != want {
+		t.Errorf("decoded GB2312 bytes = %q; want %q", got, want)
 	}
 }
 
