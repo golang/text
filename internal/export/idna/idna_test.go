@@ -161,6 +161,9 @@ func TestLabelErrors(t *testing.T) {
 		{lengthU, "xn--.foo", ".foo", "P4"},
 		{lengthU, "foo.xn--.bar", "foo..bar", "P4"},
 
+		{display, "xn--が-", "xn--が-", "P4"},
+		{resolve, "xn--が-", encode("xn--が-"), "P4"},
+
 		{display, "xn--", "", "P4"},
 		{display, "foo.xn--", "foo.", "P4"},
 		{display, "xn--.foo", ".foo", "P4"},

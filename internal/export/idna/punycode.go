@@ -33,6 +33,9 @@ func decode(encoded string) (string, error) {
 	if encoded == "" {
 		return "", nil
 	}
+	if !isASCII(encoded) {
+		return "", punyError(encoded)
+	}
 	pos := 1 + strings.LastIndex(encoded, "-")
 	if pos == 1 {
 		return "", punyError(encoded)
