@@ -26,6 +26,10 @@ const (
 	tmin        int32 = 1
 )
 
+// maxPunycodeLen is the maximum number of runes allowed in a Punycode-encoded
+// or decoded label, preventing quadratic behavior on large inputs.
+const maxPunycodeLen = 256
+
 func punyError(s string) error { return &labelError{s, "P4"} }
 
 // decode decodes a string as specified in section 6.2.
@@ -38,11 +42,20 @@ func decode(encoded string) (string, error) {
 		return "", punyError(encoded)
 	}
 	if pos == len(encoded) {
+		if utf8.RuneCountInString(encoded[:len(encoded)-1]) > maxPunycodeLen {
+			return "", punyError(encoded)
+		}
 		return encoded[:len(encoded)-1], nil
 	}
-	output := make([]rune, 0, len(encoded))
+	// [64]rune is enough to hold any DNS-valid label, and will live on the stack.
+	// Longer, invalid labels may move the buffer to the heap on append.
+	var outputBuf [64]rune
+	output := outputBuf[:0]
 	if pos != 0 {
 		for _, r := range encoded[:pos-1] {
+			if len(output) >= maxPunycodeLen {
+				return "", punyError(encoded)
+			}
 			output = append(output, r)
 		}
 	}
@@ -77,7 +90,7 @@ func decode(encoded string) (string, error) {
 				return "", punyError(encoded)
 			}
 		}
-		if len(output) >= 1024 {
+		if len(output) >= maxPunycodeLen {
 			return "", punyError(encoded)
 		}
 		x := int32(len(output) + 1)
@@ -101,14 +114,22 @@ func decode(encoded string) (string, error) {
 // The "while h < length(input)" line in the specification becomes "for
 // remaining != 0" in the Go code, because len(s) in Go is in bytes, not runes.
 func encode(prefix, s string) (string, error) {
-	output := make([]byte, len(prefix), len(prefix)+1+2*len(s))
+	output := make([]byte, len(prefix), min(len(prefix)+1+2*len(s), maxPunycodeLen))
 	copy(output, prefix)
 	delta, n, bias := int32(0), initialN, initialBias
 	b, remaining := int32(0), int32(0)
+	// [64]rune is enough to hold any DNS-valid label, and will live on the stack.
+	// Longer, invalid labels may move the buffer to the heap on append.
+	var inputBuf [64]rune
+	input := inputBuf[:0]
 	for _, r := range s {
 		if unicode16 && r == 0xfffd {
 			return s, &labelError{s, "A3"}
 		}
+		if len(input) >= maxPunycodeLen {
+			return "", punyError(s)
+		}
+		input = append(input, r)
 		if r < 0x80 {
 			b++
 			output = append(output, byte(r))
@@ -123,7 +144,7 @@ func encode(prefix, s string) (string, error) {
 	overflow := false
 	for remaining != 0 {
 		m := int32(0x7fffffff)
-		for _, r := range s {
+		for _, r := range input {
 			if m > r && r >= n {
 				m = r
 			}
@@ -133,7 +154,7 @@ func encode(prefix, s string) (string, error) {
 			return "", punyError(s)
 		}
 		n = m
-		for _, r := range s {
+		for _, r := range input {
 			if r < n {
 				delta++
 				if delta < 0 {

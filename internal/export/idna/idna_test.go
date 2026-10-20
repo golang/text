@@ -112,8 +112,36 @@ func unescape(s string) string {
 }
 
 func BenchmarkProfile(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Lookup.ToASCII("www.yahoogle.com")
+	cjk := func(n int) string {
+		runes := make([]rune, n)
+		for i := range runes {
+			runes[i] = 0x4e00 + rune(n-1-i)
+		}
+		return string(runes)
+	}
+	for _, tc := range []struct {
+		name  string
+		input string
+	}{
+		{"ASCII", "www.yahoogle.com"},
+		{"IDN", "www.bücher.de"},
+		{"MaxDNS", cjk(37)},
+		{"MaxPunycode", cjk(256)},
+	} {
+		ascii, err := Lookup.ToASCII(tc.input)
+		if err != nil {
+			b.Fatalf("Lookup.ToASCII(%s): %v", tc.name, err)
+		}
+		b.Run("ToASCII/"+tc.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				Lookup.ToASCII(tc.input)
+			}
+		})
+		b.Run("ToUnicode/"+tc.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				Lookup.ToUnicode(ascii)
+			}
+		})
 	}
 }
 

@@ -175,7 +175,11 @@ var punycodeErrorTestCases = [...]string{
 	"decode 9",            // "9a" decodes to codepoint \u00A3; "9" is truncated.
 	"decode 99999a",       // "99999a" decodes to codepoint \U0048A3C1, which is > \U0010FFFF.
 	"decode 9999999999a",  // "9999999999a" overflows the int32 calculation.
+	"decode " + strings.Repeat("a", 1025) + "-",
+	"decode " + strings.Repeat("a", 1025) + "-a",
 
+	"encode " + strings.Repeat("a", 1024) + "\uff00",
+	"encode " + strings.Repeat("\uff00", 1025),
 	"encode " + strings.Repeat("x", 65536) + "\uff00", // int32 overflow.
 	"encode " + strings.Repeat("x", 65666) + "\uffff", // int32 overflow. issue #28233
 }
