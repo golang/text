@@ -18,6 +18,7 @@ package bidi // import "golang.org/x/text/unicode/bidi"
 
 import (
 	"bytes"
+	"unicode"
 )
 
 // This API tries to avoid dealing with embedding levels for now. Under the hood
@@ -321,23 +322,36 @@ func (r *Run) Pos() (start, end int) {
 // and returns the result. Modifiers will still follow the runes they modify.
 // Brackets are replaced with their counterparts.
 func AppendReverse(out, in []byte) []byte {
-	ret := make([]byte, len(in)+len(out))
-	copy(ret, out)
 	inRunes := bytes.Runes(in)
-
+	li := len(inRunes)
+	ret := make([]rune, li)
+	modifiers := make([]rune, 0, li)
 	for i, r := range inRunes {
+		if unicode.In(r, unicode.M, unicode.Sk) {
+			modifiers = append(modifiers, r)
+			continue
+		}
+		if len(modifiers) > 0 {
+			ret[li-i] = ret[li-i+len(modifiers)]
+			copy(ret[li-i+1:li-i+1+len(modifiers)], modifiers)
+			modifiers = nil
+		}
 		prop, _ := LookupRune(r)
 		if prop.IsBracket() {
-			inRunes[i] = prop.reverseBracket(r)
+			ret[li-i-1] = prop.reverseBracket(r)
+		} else {
+			ret[li-i-1] = r
 		}
 	}
-
-	for i, j := 0, len(inRunes)-1; i < j; i, j = i+1, j-1 {
-		inRunes[i], inRunes[j] = inRunes[j], inRunes[i]
+	if len(modifiers) > 0 {
+		ret[0] = ret[len(modifiers)]
+		copy(ret[1:1+len(modifiers)], modifiers)
 	}
-	copy(ret[len(out):], string(inRunes))
 
-	return ret
+	res := make([]byte, len(in)+len(out))
+	copy(res, out)
+	copy(res[len(out):], string(ret))
+	return res
 }
 
 // ReverseString reverses the order of characters in s and returns a new string.
@@ -347,13 +361,27 @@ func ReverseString(s string) string {
 	input := []rune(s)
 	li := len(input)
 	ret := make([]rune, li)
+	modifiers := make([]rune, 0, li)
 	for i, r := range input {
+		if unicode.In(r, unicode.M, unicode.Sk) {
+			modifiers = append(modifiers, r)
+			continue
+		}
+		if len(modifiers) > 0 {
+			ret[li-i] = ret[li-i+len(modifiers)]
+			copy(ret[li-i+1:li-i+1+len(modifiers)], modifiers)
+			modifiers = nil
+		}
 		prop, _ := LookupRune(r)
 		if prop.IsBracket() {
 			ret[li-i-1] = prop.reverseBracket(r)
 		} else {
 			ret[li-i-1] = r
 		}
+	}
+	if len(modifiers) > 0 {
+		ret[0] = ret[len(modifiers)]
+		copy(ret[1:1+len(modifiers)], modifiers)
 	}
 	return string(ret)
 }

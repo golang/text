@@ -323,10 +323,22 @@ func TestDoubleSetString(t *testing.T) {
 }
 
 func TestReverseString(t *testing.T) {
-	input := "(Hello)"
-	want := "(olleH)"
-	if str := ReverseString(input); str != want {
-		t.Errorf("ReverseString(%s) = %q; want %q", input, str, want)
+	testcase := []struct {
+		input string
+		want  string
+	}{
+		{"(Hello)", "(olleH)"},
+		{"nice (world) placé́́", "é́́calp (dlrow) ecin"},
+		{"äu", "uä"},
+		{"uä", "äu"},
+		{"é́́abé́́é́́", "é́́é́́baé́́"},
+		{"é́́é́́baé́́", "é́́abé́́é́́"},
+		{"✍🏾✍🏾ab✍🏾✍🏾", "✍🏾✍🏾ba✍🏾✍🏾"},
+	}
+	for _, tc := range testcase {
+		if str := ReverseString(tc.input); str != tc.want {
+			t.Errorf("ReverseString(%s) = %q; want %q", tc.input, str, tc.want)
+		}
 	}
 }
 
@@ -337,8 +349,9 @@ func TestAppendReverse(t *testing.T) {
 		want      string
 	}{
 		{"", "Hëllo", "Hëllo"},
-		{"nice (wörld)", "", "(dlröw) ecin"},
-		{"nice (wörld)", "Hëllo", "Hëllo(dlröw) ecin"},
+		{"nice (wörld) placé́́", "", "é́́calp (dlröw) ecin"},
+		{"nice (wörld) placé́́", "Hëllo", "Hëlloé́́calp (dlröw) ecin"},
+		{"✍🏾✍🏾ab✍🏾✍🏾", "✍🏾✍🏾ba✍🏾✍🏾", "✍🏾✍🏾ba✍🏾✍🏾✍🏾✍🏾ba✍🏾✍🏾"},
 	}
 	for _, tc := range testcase {
 		if r := AppendReverse([]byte(tc.outString), []byte(tc.inString)); string(r) != tc.want {
