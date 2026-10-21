@@ -315,7 +315,7 @@ func (s *State) Merge() error {
 		for _, orig := range filtered {
 			m := *orig
 			m.Key = ""
-			m.Position = ""
+			// m.Position = ""
 
 			for _, id := range m.ID {
 				if t, ok := translations[tag][id]; ok {
