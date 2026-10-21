@@ -29,7 +29,7 @@ tables. This directory will also serve as a cache.
 
 ## Testing
 
-Run
+Run:
 
     go test ./...
 
@@ -38,7 +38,7 @@ ICU conformance tests (if available). This requires that you have the correct
 ICU version installed on your system.
 
 TODO:
-- updating unversioned source files.
+- Updating unversioned source files.
 
 ## Generating Tables
 
@@ -53,7 +53,7 @@ tables. This directory will also serve as a cache.
 
 ## Versions
 
-To update a Unicode version run
+To update a Unicode version run:
 
     UNICODE_VERSION=x.x.x go generate
 
@@ -61,7 +61,7 @@ where `x.x.x` must correspond to a directory in https://www.unicode.org/Public/.
 If this version is newer than the version in core it will also update the
 relevant packages there. The idna package in x/net will always be updated.
 
-To update a CLDR version run
+To update a CLDR version run:
 
     CLDR_VERSION=version go generate
 
