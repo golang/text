@@ -270,13 +270,13 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 		if x := x.Index(ldml.Dates.TimeZoneNames); x != nil {
 			format := x.IndexWithName("zoneFormat")
 			for _, h := range ldml.Dates.TimeZoneNames.HourFormat {
-				format.SetValue(h.Element(), h)
+				format.IndexWithName(h.Element()).SetValue(h.Alt, h)
 			}
 			for _, g := range ldml.Dates.TimeZoneNames.GmtFormat {
-				format.SetValue(g.Element(), g)
+				format.IndexWithName(g.Element()).SetValue(g.Alt, g)
 			}
 			for _, g := range ldml.Dates.TimeZoneNames.GmtZeroFormat {
-				format.SetValue(g.Element(), g)
+				format.IndexWithName(g.Element()).SetValue(g.Alt, g)
 			}
 			for _, r := range ldml.Dates.TimeZoneNames.RegionFormat {
 				x.Index(r).SetValue(r.Type, r, timeType)

@@ -198,13 +198,13 @@ func TestTables(t *testing.T) {
 		}
 		if ldml.Dates.TimeZoneNames != nil {
 			for _, h := range ldml.Dates.TimeZoneNames.HourFormat {
-				test(h, "timeZoneNames", "zoneFormat", h.Element())
+				test(h, "timeZoneNames", "zoneFormat", h.Element(), h.Alt)
 			}
 			for _, g := range ldml.Dates.TimeZoneNames.GmtFormat {
-				test(g, "timeZoneNames", "zoneFormat", g.Element())
+				test(g, "timeZoneNames", "zoneFormat", g.Element(), g.Alt)
 			}
 			for _, g := range ldml.Dates.TimeZoneNames.GmtZeroFormat {
-				test(g, "timeZoneNames", "zoneFormat", g.Element())
+				test(g, "timeZoneNames", "zoneFormat", g.Element(), g.Alt)
 			}
 			for _, r := range ldml.Dates.TimeZoneNames.RegionFormat {
 				s := r.Type
