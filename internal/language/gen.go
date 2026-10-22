@@ -1464,30 +1464,36 @@ func (b *builder) writeParents() {
 
 	// Construct parent overrides.
 	n := 0
-	for _, p := range b.data.Supplemental().ParentLocales.ParentLocale {
-		// Skipping non-standard scripts to root is implemented using addTags.
-		if p.Parent == "root" {
+	for _, group := range b.data.Supplemental().ParentLocales {
+		// Component-specific parents do not apply to general language inheritance.
+		if group.Component != "" {
 			continue
 		}
+		for _, p := range group.ParentLocale {
+			// Skipping non-standard scripts to root is implemented using addTags.
+			if p.Parent == "root" {
+				continue
+			}
 
-		sub := strings.Split(p.Parent, "_")
-		parent := parentRel{lang: b.langIndex(sub[0])}
-		if len(sub) == 2 {
-			// TODO: check that all undefined scripts are indeed Latn in these
-			// cases.
-			parent.maxScript = uint16(b.script.index("Latn"))
-			parent.toRegion = uint16(b.region.index(sub[1]))
-		} else {
-			parent.script = uint16(b.script.index(sub[1]))
-			parent.maxScript = parent.script
-			parent.toRegion = uint16(b.region.index(sub[2]))
+			sub := strings.Split(p.Parent, "_")
+			parent := parentRel{lang: b.langIndex(sub[0])}
+			if len(sub) == 2 {
+				// TODO: check that all undefined scripts are indeed Latn in these
+				// cases.
+				parent.maxScript = uint16(b.script.index("Latn"))
+				parent.toRegion = uint16(b.region.index(sub[1]))
+			} else {
+				parent.script = uint16(b.script.index(sub[1]))
+				parent.maxScript = parent.script
+				parent.toRegion = uint16(b.region.index(sub[2]))
+			}
+			for _, c := range strings.Split(p.Locales, " ") {
+				region := b.region.index(c[strings.LastIndex(c, "_")+1:])
+				parent.fromRegion = append(parent.fromRegion, uint16(region))
+			}
+			parents = append(parents, parent)
+			n += len(parent.fromRegion)
 		}
-		for _, c := range strings.Split(p.Locales, " ") {
-			region := b.region.index(c[strings.LastIndex(c, "_")+1:])
-			parent.fromRegion = append(parent.fromRegion, uint16(region))
-		}
-		parents = append(parents, parent)
-		n += len(parent.fromRegion)
 	}
 	b.writeSliceAddSize("parents", n*2, parents)
 }
