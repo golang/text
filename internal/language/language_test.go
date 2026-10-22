@@ -584,10 +584,12 @@ func TestParent(t *testing.T) {
 		// extra
 		{"nl-Cyrl", "und"},
 
+		// European English inherits through en-150 in CLDR 49.
+		{"en-BE", "en-150"},
+
 		// World english inherits from en-001.
 		{"en-150", "en-001"},
 		{"en-AU", "en-001"},
-		{"en-BE", "en-001"},
 		{"en-GG", "en-001"},
 		{"en-GI", "en-001"},
 		{"en-HK", "en-001"},
