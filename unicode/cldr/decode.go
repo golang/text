@@ -47,12 +47,17 @@ type Loader interface {
 }
 
 var fileRe = regexp.MustCompile(`.*[/\\](.*)[/\\](.*)\.xml`)
+var keyboardPathRe = regexp.MustCompile(`(^|[/\\])keyboards[/\\]`)
 
 // Decode loads and decodes the files represented by l.
 func (d *Decoder) Decode(l Loader) (cldr *CLDR, err error) {
 	d.cldr = makeCLDR()
 	for i := 0; i < l.Len(); i++ {
 		fname := l.Path(i)
+		// Keyboard definitions and tests are not LDML locale data.
+		if keyboardPathRe.MatchString(fname) {
+			continue
+		}
 		if m := fileRe.FindStringSubmatch(fname); m != nil {
 			if len(d.dirFilter) > 0 && !in(d.dirFilter, m[1]) {
 				continue
