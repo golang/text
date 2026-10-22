@@ -82,6 +82,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 	length := cldrtree.Enum("length", "short", "long")
 	month := cldrtree.Enum("month", "leap7")
 	alt := cldrtree.Enum("alt", "", "variant", "ascii")
+	zoneID := cldrtree.Enum("zoneID")
 	relTime := cldrtree.EnumFunc("relTime", func(s string) string {
 		x, err := strconv.ParseInt(s, 10, 8)
 		if err != nil {
@@ -285,7 +286,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 
 			set := func(x *cldrtree.Index, e []*cldr.Common, zone string) {
 				for _, n := range e {
-					x.Index(n, zoneType...).SetValue(zone, n)
+					x.Index(n, zoneType...).SetValue(zone, n, zoneID)
 				}
 			}
 			zoneWidth := []cldrtree.Option{length, cldrtree.SharedType()}
@@ -306,7 +307,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 			}
 			set = func(x *cldrtree.Index, e []*cldr.Common, zone string) {
 				for _, n := range e {
-					x.Index(n, metaZoneType...).SetValue(zone, n)
+					x.Index(n, metaZoneType...).SetValue(zone, n, zoneID)
 				}
 			}
 			zoneWidth = []cldrtree.Option{length, cldrtree.SharedType()}
