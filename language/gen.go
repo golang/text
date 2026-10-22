@@ -36,13 +36,13 @@ func main() {
 	gen.Init()
 
 	w := gen.NewCodeWriter()
-	defer w.WriteGoFile("tables.go", "language")
 
 	b := newBuilder(w)
 	gen.WriteCLDRVersion(w)
 
 	b.writeConstants()
 	b.writeMatchData()
+	w.WriteGoFile(*outputFile, "language")
 }
 
 type builder struct {
@@ -173,11 +173,15 @@ func (b *builder) writeMatchData() {
 
 	// maps language id to in- and out-of-group region.
 	paradigmLocales := [][3]uint16{}
-	locales := strings.Split(lm[0].ParadigmLocales[0].Locales, " ")
+	locales := strings.Fields(lm[0].ParadigmLocales[0].Locales)
+	if len(locales)%2 != 0 {
+		log.Fatalf("paradigm locales must occur in pairs: %v", locales)
+	}
 	for i := 0; i < len(locales); i += 2 {
 		x := [3]uint16{}
 		for j := 0; j < 2; j++ {
-			pc := strings.SplitN(locales[i+j], "-", 2)
+			// CLDR uses underscores in newer releases and hyphens in older ones.
+			pc := strings.SplitN(strings.ReplaceAll(locales[i+j], "_", "-"), "-", 2)
 			x[0] = b.langIndex(pc[0])
 			if len(pc) == 2 {
 				x[1+j] = uint16(b.regionIndex(pc[1]))
@@ -235,7 +239,8 @@ func (b *builder) writeMatchData() {
 			if distance == 1 {
 				// nb == no is already handled by macro mapping. Check there
 				// really is only this case.
-				if d[0] != "no" || s[0] != "nb" {
+				if m.Oneway == "true" || !((d[0] == "no" && s[0] == "nb") ||
+					(d[0] == "nb" && s[0] == "no")) {
 					log.Fatalf("unhandled equivalence %s == %s", s[0], d[0])
 				}
 				continue
