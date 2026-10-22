@@ -255,8 +255,7 @@ func FromTag(t language.Tag) (id ID, exact bool) {
 	}
 	for t = t.Parent(); t != root; t = t.Parent() {
 		// No variants specified: just compare core components.
-		// The key has the form lllssrrr, where l, s, and r are nibbles for
-		// respectively the langID, scriptID, and regionID.
+		// The key packs the language, script, and region IDs.
 		if x, ok := getCoreIndex(t); ok {
 			return x, exact
 		}

@@ -31,7 +31,6 @@ func main() {
 	gen.Init()
 
 	w := gen.NewCodeWriter()
-	defer w.WriteGoFile("tables.go", "compact")
 
 	fmt.Fprintln(w, `import "golang.org/x/text/internal/language"`)
 
@@ -39,6 +38,7 @@ func main() {
 	gen.WriteCLDRVersion(w)
 
 	b.writeCompactIndex()
+	w.WriteGoFile(*outputFile, "compact")
 }
 
 type builder struct {
