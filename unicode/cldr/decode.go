@@ -83,6 +83,9 @@ func (d *Decoder) decode(dir, id string, r io.Reader) error {
 	switch {
 	case dir == "supplemental":
 		v = cldr.supp
+	case dir == "supplemental-temp":
+		// Auxiliary supplemental data is not part of the locale hierarchy.
+		return nil
 	case dir == "transforms":
 		return nil
 	case dir == "bcp47":
