@@ -174,6 +174,8 @@ func TestLabelErrors(t *testing.T) {
 	transitional := kind{"Transitional", p.ToASCII}
 	p = New(MapForLookup(), Transitional(false))
 	nontransitional := kind{"Nontransitional", p.ToASCII}
+	p = New(CheckJoiners(true))
+	joiners := kind{"CheckJoiners", p.ToASCII}
 
 	testCases := []struct {
 		kind
@@ -283,6 +285,11 @@ func TestLabelErrors(t *testing.T) {
 		// to look up the input punycode.
 		{resolve, encode("a\u0323\u0322") + ".com", "xn--a-tdbc.com", "V1"},
 		{display, encode("a\u0323\u0322") + ".com", "a\u0323\u0322.com", "V1"},
+
+		// CheckJoiners
+		{joiners, "\u200d\xe2\x80", "", "P1"},
+		{joiners, "\u200c\xe2\x80", "", "P1"},
+		{joiners, "\u200d\xed", "", "P1"},
 	}
 
 	for _, tc := range testCases {

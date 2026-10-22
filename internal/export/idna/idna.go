@@ -840,6 +840,9 @@ func (p *Profile) validateLabel(s string, labelCode string) (err error) {
 			break
 		}
 		v, sz = trie.lookupString(s[i:])
+		if sz == 0 {
+			return runeError{utf8.RuneError, "P1"}
+		}
 		x = info(v)
 	}
 	if st == stateFAIL || st == stateAfter {
