@@ -81,6 +81,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 	width := cldrtree.EnumFunc("width", widthMap, "abbreviated", "narrow", "wide")
 	length := cldrtree.Enum("length", "short", "long")
 	month := cldrtree.Enum("month", "leap7")
+	alt := cldrtree.Enum("alt", "", "variant", "ascii")
 	relTime := cldrtree.EnumFunc("relTime", func(s string) string {
 		x, err := strconv.ParseInt(s, 10, 8)
 		if err != nil {
@@ -187,7 +188,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 						for _, dw := range dc.DayPeriodWidth {
 							x := x.IndexFromType(dw, width)
 							for _, d := range dw.DayPeriod {
-								x.IndexFromType(d).SetValue(d.Alt, d)
+								x.IndexFromType(d).SetValue(d.Alt, d, alt)
 							}
 						}
 					}
@@ -196,17 +197,17 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 					opts := []cldrtree.Option{width, cldrtree.SharedType()}
 					if x := x.Index(cal.Eras.EraNames, opts...); x != nil {
 						for _, e := range cal.Eras.EraNames.Era {
-							x.IndexFromAlt(e).SetValue(e.Type, e)
+							x.IndexFromAlt(e, alt).SetValue(e.Type, e)
 						}
 					}
 					if x := x.Index(cal.Eras.EraAbbr, opts...); x != nil {
 						for _, e := range cal.Eras.EraAbbr.Era {
-							x.IndexFromAlt(e).SetValue(e.Type, e)
+							x.IndexFromAlt(e, alt).SetValue(e.Type, e)
 						}
 					}
 					if x := x.Index(cal.Eras.EraNarrow, opts...); x != nil {
 						for _, e := range cal.Eras.EraNarrow.Era {
-							x.IndexFromAlt(e).SetValue(e.Type, e)
+							x.IndexFromAlt(e, alt).SetValue(e.Type, e)
 						}
 					}
 				}
@@ -215,7 +216,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 						x := x.IndexFromType(dfl, length)
 						for _, df := range dfl.DateFormat {
 							for _, p := range df.Pattern {
-								x.SetValue(p.Alt, p)
+								x.SetValue(p.Alt, p, alt)
 							}
 						}
 					}
@@ -225,7 +226,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 						x := x.IndexFromType(tfl, length)
 						for _, tf := range tfl.TimeFormat {
 							for _, p := range tf.Pattern {
-								x.SetValue(p.Alt, p)
+								x.SetValue(p.Alt, p, alt)
 							}
 						}
 					}
@@ -235,7 +236,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 						x := x.IndexFromType(dtfl, length)
 						for _, dtf := range dtfl.DateTimeFormat {
 							for _, p := range dtf.Pattern {
-								x.SetValue(p.Alt, p)
+								x.SetValue(p.Alt, p, alt)
 							}
 						}
 					}
@@ -251,7 +252,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 			for _, f := range ldml.Dates.Fields.Field {
 				x := x.IndexFromType(f, field)
 				for _, d := range f.DisplayName {
-					x.Index(d).SetValue(d.Alt, d)
+					x.Index(d).SetValue(d.Alt, d, alt)
 				}
 				for _, r := range f.Relative {
 					x.Index(r).SetValue(r.Type, r, relTime)
@@ -263,20 +264,20 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 					}
 				}
 				for _, rp := range f.RelativePeriod {
-					x.Index(rp).SetValue(rp.Alt, rp)
+					x.Index(rp).SetValue(rp.Alt, rp, alt)
 				}
 			}
 		}
 		if x := x.Index(ldml.Dates.TimeZoneNames); x != nil {
 			format := x.IndexWithName("zoneFormat")
 			for _, h := range ldml.Dates.TimeZoneNames.HourFormat {
-				format.IndexWithName(h.Element()).SetValue(h.Alt, h)
+				format.IndexWithName(h.Element()).SetValue(h.Alt, h, alt)
 			}
 			for _, g := range ldml.Dates.TimeZoneNames.GmtFormat {
-				format.IndexWithName(g.Element()).SetValue(g.Alt, g)
+				format.IndexWithName(g.Element()).SetValue(g.Alt, g, alt)
 			}
 			for _, g := range ldml.Dates.TimeZoneNames.GmtZeroFormat {
-				format.IndexWithName(g.Element()).SetValue(g.Alt, g)
+				format.IndexWithName(g.Element()).SetValue(g.Alt, g, alt)
 			}
 			for _, r := range ldml.Dates.TimeZoneNames.RegionFormat {
 				x.Index(r).SetValue(r.Type, r, timeType)
