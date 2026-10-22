@@ -192,6 +192,16 @@ func (t Tag) HasString() bool {
 	return t.str != ""
 }
 
+// parentOverride records an exact locale parent that cannot be represented by
+// the same-language, region-based parentRel table.
+type parentOverride struct {
+	fromLang, fromScript, fromRegion uint16
+	toLang, toScript, toRegion       uint16
+}
+
+// Filled by generated tables. Older tables leave this empty during bootstrapping.
+var parentOverrides []parentOverride
+
 // Parent returns the CLDR parent of t. In CLDR, missing fields in data for a
 // specific language are substituted with fields from the parent language.
 // The parent for a language may change for newer versions of CLDR.
@@ -208,6 +218,16 @@ func (t Tag) Parent() Tag {
 		}
 		return t
 	}
+	for _, p := range parentOverrides {
+		if t.LangID == Language(p.fromLang) &&
+			t.ScriptID == Script(p.fromScript) && t.RegionID == Region(p.fromRegion) {
+			return Tag{
+				LangID: Language(p.toLang), ScriptID: Script(p.toScript),
+				RegionID: Region(p.toRegion),
+			}
+		}
+	}
+
 	if t.LangID != 0 {
 		if t.RegionID != 0 {
 			maxScript := t.ScriptID
