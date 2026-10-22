@@ -1504,7 +1504,6 @@ func main() {
 	gen.Repackage("gen_common.go", "common.go", "language")
 
 	w := gen.NewCodeWriter()
-	defer w.WriteGoFile("tables.go", "language")
 
 	fmt.Fprintln(w, `import "golang.org/x/text/internal/tag"`)
 
@@ -1522,4 +1521,7 @@ func main() {
 	b.writeLikelyData()
 	b.writeRegionInclusionData()
 	b.writeParents()
+
+	// Preserve the existing tables if generation panics.
+	w.WriteGoFile("tables.go", "language")
 }
