@@ -96,6 +96,27 @@ func TestCLDR49MillionRules(t *testing.T) {
 	}
 }
 
+func TestCLDR49LigurianOrdinals(t *testing.T) {
+	for _, loc := range []string{"lij", "scn"} {
+		for _, tt := range []struct {
+			n    int
+			want Form
+		}{
+			{799, Other},
+			{800, Many},
+			{801, Many},
+			{803, Many},
+			{899, Many},
+			{900, Other},
+		} {
+			tag := language.MustParse(loc)
+			if got := Ordinal.matchComponents(tag, tt.n, 0, 0); got != tt.want {
+				t.Errorf("%s(%d) = %v; want %v", loc, tt.n, got, tt.want)
+			}
+		}
+	}
+}
+
 func TestGetPluralInteger(t *testing.T) {
 	for _, tt := range []struct {
 		digits string
@@ -148,7 +169,7 @@ func TestValidForms(t *testing.T) {
 		want []Form
 	}{
 		{language.AmericanEnglish, []Form{Other, One}},
-		{language.Portuguese, []Form{Other, One}},
+		{language.Portuguese, []Form{Other, One, Many}},
 		{language.Latvian, []Form{Other, Zero, One}},
 		{language.Arabic, []Form{Other, Zero, One, Two, Few, Many}},
 		{language.Russian, []Form{Other, One, Few, Many}},
@@ -249,7 +270,7 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 }
 
 func parseUint(t *testing.T, s string) int {
-	val, err := strconv.ParseUint(s, 10, 32)
+	val, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -259,7 +280,7 @@ func parseUint(t *testing.T, s string) int {
 func parseFixedPoint(t *testing.T, s string) (val, scale int) {
 	p := strings.Index(s, ".")
 	s = strings.Replace(s, ".", "", 1)
-	v, err := strconv.ParseUint(s, 10, 32)
+	v, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
 		t.Fatal(err)
 	}
