@@ -11,15 +11,15 @@ import (
 // This file contains code common to gen.go and the package code.
 
 const (
-	cashShift = 3
-	roundMask = 0x7
+	cashShift = 4
+	roundMask = 0xf
 
 	nonTenderBit = 0x8000
 )
 
 // currencyInfo contains information about a currency.
-// bits 0..2: index into roundings for standard rounding
-// bits 3..5: index into roundings for cash rounding
+// bits 0..3: index into roundings for standard rounding
+// bits 4..7: index into roundings for cash rounding
 type currencyInfo byte
 
 // roundingType defines the scale (number of fractional decimals) and increments
@@ -40,6 +40,7 @@ var roundings = [...]roundingType{
 	{2, 5}, // cash rounding alternative
 	{2, 50},
 	{0, 5}, // cash rounding in five whole currency units
+	{2, 20}, // MRU: cash rounding in increments of 0.20
 }
 
 // regionToCode returns a 16-bit region code. Only two-letter codes are
