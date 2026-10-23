@@ -124,6 +124,8 @@ func TestKindRounding(t *testing.T) {
 		{Cash, CHF, 2, 5},
 		{Standard, MustParseISO("HUF"), 0, 1},
 		{Cash, MustParseISO("HUF"), 0, 5},
+		{Standard, MustParseISO("MRU"), 2, 1},
+		{Cash, MustParseISO("MRU"), 2, 20},
 		{Standard, TWD, 2, 1},
 		{Cash, TWD, 0, 1},
 		{Standard, czk, 2, 1},
