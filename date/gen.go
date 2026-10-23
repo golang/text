@@ -82,6 +82,12 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 	length := cldrtree.Enum("length", "short", "long")
 	month := cldrtree.Enum("month", "leap7")
 	alt := cldrtree.Enum("alt", "", "variant", "ascii")
+	dateTimeFormatType := cldrtree.EnumFunc("dateTimeFormatType", func(s string) string {
+		if s == "" {
+			return "defaultDateTimeFormat"
+		}
+		return s + "DateTimeFormat"
+	}, "", "atTime", "relative")
 	zoneID := cldrtree.EnumFunc("zoneID", func(s string) string { return "zoneID" + s })
 	relTime := cldrtree.EnumFunc("relTime", func(s string) string {
 		x, err := strconv.ParseInt(s, 10, 8)
@@ -236,6 +242,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 					for _, dtfl := range cal.DateTimeFormats.DateTimeFormatLength {
 						x := x.IndexFromType(dtfl, length)
 						for _, dtf := range dtfl.DateTimeFormat {
+							x := x.IndexFromType(dtf, dateTimeFormatType)
 							for _, p := range dtf.Pattern {
 								x.SetValue(p.Alt, p, alt)
 							}

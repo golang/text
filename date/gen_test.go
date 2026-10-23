@@ -162,8 +162,12 @@ func TestTables(t *testing.T) {
 				if cal.DateTimeFormats != nil {
 					for _, dtfl := range cal.DateTimeFormats.DateTimeFormatLength {
 						for _, dtf := range dtfl.DateTimeFormat {
+							formatType := dtf.Type
+							if formatType == "" {
+								formatType = "default"
+							}
 							for _, p := range dtf.Pattern {
-								test(p, "calendars", cal.Type, "dateTimeFormats", dtfl.Type, p.Alt)
+								test(p, "calendars", cal.Type, "dateTimeFormats", dtfl.Type, formatType+"DateTimeFormat", p.Alt)
 							}
 						}
 					}
