@@ -481,6 +481,7 @@ func TestScript(t *testing.T) {
 	}{
 		{"nl", "Arab", "Arabisch"},
 		{"en", "Arab", "Arabic"},
+		{"en", "Qaag", "Zawgyi"},
 		{"en", "Zzzz", "Unknown Script"},
 		{"zh-Hant", "Hang", "韓文字"},
 		{"zh-Hant-HK", "Hang", "韓文字"},
