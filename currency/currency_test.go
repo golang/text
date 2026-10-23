@@ -131,7 +131,7 @@ func TestKindRounding(t *testing.T) {
 		{Standard, czk, 2, 1},
 		{Cash, czk, 0, 1},
 		{Standard, zwr, 2, 1},
-		{Cash, zwr, 0, 1},
+		{Cash, zwr, 2, 1} // ZWR has no CLDR 49 fraction override; use default,
 		{Standard, KRW, 0, 1},
 		{Cash, KRW, 0, 1}, // Cash defaults to standard.
 	}
