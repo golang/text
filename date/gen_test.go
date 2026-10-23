@@ -217,7 +217,7 @@ func TestTables(t *testing.T) {
 			testZone := func(zoneType, zoneWidth, zone string, a ...[]*cldr.Common) {
 				for _, e := range a {
 					for _, n := range e {
-						test(n, "timeZoneNames", zoneType, zoneWidth, n.Element()+"Time", zone)
+						test(n, "timeZoneNames", zoneType, zoneWidth, n.Element()+"Time", "zoneID"+zone)
 					}
 				}
 			}

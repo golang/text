@@ -82,7 +82,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 	length := cldrtree.Enum("length", "short", "long")
 	month := cldrtree.Enum("month", "leap7")
 	alt := cldrtree.Enum("alt", "", "variant", "ascii")
-	zoneID := cldrtree.Enum("zoneID")
+	zoneID := cldrtree.EnumFunc("zoneID", func(s string) string { return "zoneID" + s })
 	relTime := cldrtree.EnumFunc("relTime", func(s string) string {
 		x, err := strconv.ParseInt(s, 10, 8)
 		if err != nil {

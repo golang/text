@@ -161,8 +161,8 @@ func printEnumValues(w io.Writer, e *enum, indent int, info *typeInfo) {
 }
 
 func getEnumData(b *Builder) (*enumData, error) {
-	d := &enumData{m: map[string]int{}, origins: map[string]string{}}
-	if errStr := d.insert(b.rootMeta.typeInfo, ""); errStr != "" {
+	d := &enumData{m: map[string]int{}}
+	if errStr := d.insert(b.rootMeta.typeInfo); errStr != "" {
 		// TODO: consider returning the error.
 		return nil, fmt.Errorf("cldrtree: %s", errStr)
 	}
@@ -170,30 +170,27 @@ func getEnumData(b *Builder) (*enumData, error) {
 }
 
 type enumData struct {
-	m       map[string]int
-	origins map[string]string
-	keys    []string
+	m     map[string]int
+	keys  []string
 	enums []string
 }
 
-func (d *enumData) insert(t *typeInfo, path string) (errStr string) {
+func (d *enumData) insert(t *typeInfo) (errStr string) {
 	e := t.enum
 	if e == nil {
 		return ""
 	}
 	for i, k := range e.keys {
-		location := strings.TrimPrefix(path+">"+k, ">")
 		if _, err := strconv.ParseUint(k, 10, 16); err == nil {
 			// We don't include any enum that has integer values.
 			break
 		}
 		if v, ok := d.m[k]; ok {
 			if v != i {
-				return fmt.Sprintf("%q has value %d at %s (enum %q) and %d at %s", k, i, location, e.name, v, d.origins[k])
+				return fmt.Sprintf("%q has value %d and %d", k, i, v)
 			}
 		} else {
 			d.m[k] = i
-			d.origins[k] = fmt.Sprintf("%s (enum %q)", location, e.name)
 			if k != "" {
 				d.keys = append(d.keys, k)
 				d.enums = append(d.enums, e.name)
@@ -202,7 +199,7 @@ func (d *enumData) insert(t *typeInfo, path string) (errStr string) {
 	}
 	for i := range t.enum.keys {
 		if e := t.entries[enumIndex(i)]; e != nil {
-			if errStr := d.insert(e, strings.TrimPrefix(path+">"+t.enum.keys[i], ">")); errStr != "" {
+			if errStr := d.insert(e); errStr != "" {
 				return fmt.Sprintf("%q>%v", t.enum.keys[i], errStr)
 			}
 		}
