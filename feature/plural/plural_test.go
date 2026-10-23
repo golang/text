@@ -68,6 +68,32 @@ func mkDigits(s string) []byte {
 	return b
 }
 
+func TestIcelandicFractionalOperands(t *testing.T) {
+	cases := []struct {
+		fraction string
+		want     Form
+	}{
+		{"1", One},       // 0.1: t = 1
+		{"10", One},      // 0.10: t = 1
+		{"0010", One},    // 0.0010: t = 1
+		{"11", Other},    // 0.11: t = 11
+		{"110", Other},   // 0.110: t = 11
+		{"101", One},     // 0.101: t % 100 = 1
+		{"1010", One},    // 0.1010: t % 100 = 1
+		{"111", Other},   // 0.111: t % 100 = 11
+		{"1231", One},    // 0.1231: t % 100 = 31
+		{"12311", Other}, // 0.12311: t % 100 = 11
+	}
+	for _, tc := range cases {
+		t.Run(tc.fraction, func(t *testing.T) {
+			digits := mkDigits(tc.fraction)
+			if got := Cardinal.MatchDigits(language.Icelandic, digits, 0, len(digits)); got != tc.want {
+				t.Errorf("MatchDigits(0.%s) = %v; want %v", tc.fraction, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestValidForms(t *testing.T) {
 	testCases := []struct {
 		tag  language.Tag
@@ -197,12 +223,12 @@ func BenchmarkPluralSimpleCases(b *testing.B) {
 	en := tagToID(language.English)
 	zh := tagToID(language.Chinese)
 	for i := 0; i < b.N; i++ {
-		matchPlural(p, en, 0, 0, 0)  // 0
-		matchPlural(p, en, 1, 0, 0)  // 1
-		matchPlural(p, en, 2, 12, 3) // 2.120
-		matchPlural(p, zh, 0, 0, 0)  // 0
-		matchPlural(p, zh, 1, 0, 0)  // 1
-		matchPlural(p, zh, 2, 12, 3) // 2.120
+		matchPlural(p, en, 0, 0, 0, 0)  // 0
+		matchPlural(p, en, 1, 0, 0, 0)  // 1
+		matchPlural(p, en, 2, 12, 3, 12) // 2.120
+		matchPlural(p, zh, 0, 0, 0, 0)  // 0
+		matchPlural(p, zh, 1, 0, 0, 0)  // 1
+		matchPlural(p, zh, 2, 12, 3, 12) // 2.120
 	}
 }
 
@@ -211,11 +237,11 @@ func BenchmarkPluralComplexCases(b *testing.B) {
 	ar := tagToID(language.Arabic)
 	lv := tagToID(language.Latvian)
 	for i := 0; i < b.N; i++ {
-		matchPlural(p, lv, 0, 19, 2)    // 0.19
-		matchPlural(p, lv, 11, 0, 3)    // 11.000
-		matchPlural(p, lv, 100, 123, 4) // 0.1230
-		matchPlural(p, ar, 0, 0, 0)     // 0
-		matchPlural(p, ar, 110, 0, 0)   // 110
-		matchPlural(p, ar, 99, 99, 2)   // 99.99
+		matchPlural(p, lv, 0, 19, 2, 19)    // 0.19
+		matchPlural(p, lv, 11, 0, 3, 0)    // 11.000
+		matchPlural(p, lv, 100, 123, 4, 123) // 0.1230
+		matchPlural(p, ar, 0, 0, 0, 0)     // 0
+		matchPlural(p, ar, 110, 0, 0, 0)   // 110
+		matchPlural(p, ar, 99, 99, 2, 99)   // 99.99
 	}
 }
