@@ -96,6 +96,55 @@ func TestCLDR49MillionRules(t *testing.T) {
 	}
 }
 
+func TestCLDR49CornishTwo(t *testing.T) {
+	tag := language.MustParse("kw")
+	for _, tc := range []struct {
+		n    int
+		want Form
+	}{
+		{0, Zero},
+		{2, Two},
+		{22, Two},
+		{100, Other},
+		{102, Two},
+		{1000, Two},
+		{10000, Two},
+		{20000, Two},
+		{21000, Other},
+		{40000, Two},
+		{60000, Two},
+		{80000, Two},
+		{90000, Other},
+		{100000, Two},
+		{101000, Two},
+		{1100000, Two},
+		{200000, Other},
+	} {
+		if got := Cardinal.matchComponents(tag, tc.n, 0, 0); got != tc.want {
+			t.Errorf("kw(%d): got %v; want %v", tc.n, got, tc.want)
+		}
+		digits := mkDigits(fmt.Sprint(tc.n))
+		if got := Cardinal.MatchDigits(tag, digits, len(digits), 0); got != tc.want {
+			t.Errorf("kw digits(%d): got %v; want %v", tc.n, got, tc.want)
+		}
+	}
+	for _, tc := range []struct {
+		n    int
+		f    int
+		want Form
+	}{
+		{100, 0, Other},
+		{1000, 0, Two},
+		{10000, 0, Two},
+		{100000, 0, Two},
+		{1000, 1, Other},
+	} {
+		if got := Cardinal.MatchPlural(tag, tc.n, 1, 1, tc.f, tc.f); got != tc.want {
+			t.Errorf("kw(%d.%d): got %v; want %v", tc.n, tc.f, got, tc.want)
+		}
+	}
+}
+
 func TestCLDR49LigurianOrdinals(t *testing.T) {
 	for _, loc := range []string{"lij", "scn"} {
 		for _, tt := range []struct {
