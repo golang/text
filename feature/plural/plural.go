@@ -307,6 +307,13 @@ func matchPlural(p *Rules, index compact.ID, n, f, v, t int) Form {
 			// 100,200,300,400,500,600,700,800,900
 			skip = n == 0 || n >= 1000 || n%100 != 0
 
+		case opAzerbaijan00s | opMod: // Cornish: n % 1000 = 0 and selected n % 100000
+			r := n % 100000
+			skip = f != 0 || n%1000 != 0 || !(r >= 1000 && r <= 20000 || r == 40000 || r == 60000 || r == 80000)
+
+		case opAzerbaijan00s | opNotEqual: // Cornish: n != 0 and n % 1000000 = 100000
+			skip = f != 0 || n == 0 || n%1000000 != 100000
+
 		case opItalian800:
 			skip = (f != 0 || n >= numN || nMask&setBit == 0) && n != 800
 
