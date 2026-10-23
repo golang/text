@@ -309,6 +309,9 @@ func matchPlural(p *Rules, index compact.ID, n, f, v, t int) Form {
 
 		case opItalian800:
 			skip = (f != 0 || n >= numN || nMask&setBit == 0) && n != 800
+
+		case opItalian800 | opNotEqual: // Ligurian and Sicilian: 800..899
+			skip = (f != 0 || n >= numN || nMask&setBit == 0) && (n < 800 || n > 899)
 		}
 		if skip {
 			// advance over AND entries.
