@@ -495,8 +495,8 @@ func TestScript(t *testing.T) {
 		{"en", "Zzzz", "Unknown Script"},
 		{"zh-Hant", "Hang", "諺文"},
 		{"zh-Hant-HK", "Hang", "諺文"},
-		{"zh", "Arab", "阿拉伯字母"},
-		{"zh-Hans-HK", "Arab", "阿拉伯字母"}, // same as zh
+		{"zh", "Arab", "阿拉伯文"},
+		{"zh-Hans-HK", "Arab", "阿拉伯文"}, // same as zh
 		{"zh-Hant", "Arab", "阿拉伯字母"},
 		{"zh-Hant-HK", "Arab", "阿拉伯字母"}, // same as zh
 		// Canonicalized form
@@ -591,7 +591,7 @@ func TestSelf(t *testing.T) {
 		// CLDR 30 dropped Vlaams as the word for nl-BE. It is still called
 		// Flemish in English, though. TODO: check if this is a CLDR bug.
 		// {"nl-BE", "Vlaams"},
-		{"nl-BE", "Nederlands"},
+		{"nl-BE", "Vlaams"},
 		{"en-GB", "British English"},
 		{lastLang2zu.String(), "isiZulu"},
 		{firstLang2aa.String(), ""},  // not defined
