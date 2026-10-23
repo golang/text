@@ -222,12 +222,9 @@ func (b *builder) generate() {
 		if ldn.Scripts != nil {
 			for _, v := range ldn.Scripts.Script {
 				code := language.MustParseScript(v.Type)
-				if code.IsPrivateUse() { // Qaaa..Qabx
-					// TODO: data currently appears to be very meager.
-					// Reconsider if we have data for English.
-					if loc == language.English {
-						log.Fatal("Consider including data for private use scripts.")
-					}
+				// CLDR 49 names Qaag (Zawgyi), a private-use script code.
+				// Preserve it while excluding other private-use scripts.
+				if code.IsPrivateUse() && v.Type != "Qaag" {
 					continue
 				}
 				g.set(loc, code.String(), v.Data())
