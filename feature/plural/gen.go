@@ -474,8 +474,14 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 				if !cond.add(opCode, mod, a) {
 					// Detected large numbers. As we ruled out Azerbaijan, this
 					// must be the many rule for Italian ordinals.
-					cond.set[opItalian800] = cond.set[opN]
-					cond.used[opItalian800] = true
+					// Ligurian and Sicilian use the entire 800..899
+					// range; Italian and related locales use only 800.
+					large := opItalian800
+					if strings.Contains(s, "800..899") {
+						large |= opNotEqual
+					}
+					cond.set[large] = cond.set[opN]
+					cond.used[large] = true
 				}
 
 			case "@integer", "@decimal": // "other" entry: tests only.
