@@ -39,7 +39,7 @@ var roundings = [...]roundingType{
 	{4, 1},
 	{2, 5}, // cash rounding alternative
 	{2, 50},
-	{0, 5}, // cash rounding in five whole currency units
+	{0, 5},  // cash rounding in five whole currency units
 	{2, 20}, // MRU: cash rounding in increments of 0.20
 }
 

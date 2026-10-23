@@ -72153,7 +72153,7 @@ var (
 		header{enRegionStr, enRegionIdx},
 	}
 	enGB = Dictionary{ // en-GB
-		&en001,
+		&en,
 		header{enGBLangStr, enGBLangIdx},
 		header{enGBScriptStr, enGBScriptIdx},
 		header{enGBRegionStr, enGBRegionIdx},
