@@ -5,7 +5,7 @@ package plural
 // CLDRVersion is the CLDR version from which the tables in this package are derived.
 const CLDRVersion = "49"
 
-var cardinalRules = []pluralCheck{ // 189 elements
+var cardinalRules = []pluralCheck{ // 190 elements
 	0:   {cat: 0x2, setID: 0x3},
 	1:   {cat: 0x22, setID: 0x1},
 	2:   {cat: 0x2, setID: 0x4},
@@ -181,28 +181,29 @@ var cardinalRules = []pluralCheck{ // 189 elements
 	172: {cat: 0x21, setID: 0x3},
 	173: {cat: 0x22, setID: 0x1},
 	174: {cat: 0x2b, setID: 0x22},
-	175: {cat: 0xe3, setID: 0x0},
-	176: {cat: 0x2c, setID: 0x23},
-	177: {cat: 0x2f, setID: 0x24},
-	178: {cat: 0x35, setID: 0x1},
-	179: {cat: 0x21, setID: 0x3},
-	180: {cat: 0x22, setID: 0x1},
-	181: {cat: 0x23, setID: 0x2},
-	182: {cat: 0x2c, setID: 0x1e},
-	183: {cat: 0x2d, setID: 0x5},
-	184: {cat: 0x21, setID: 0x3},
-	185: {cat: 0x22, setID: 0x1},
-	186: {cat: 0x23, setID: 0x2},
-	187: {cat: 0x24, setID: 0x25},
-	188: {cat: 0x25, setID: 0x26},
-} // Size: 402 bytes
+	175: {cat: 0xeb, setID: 0x0},
+	176: {cat: 0xf3, setID: 0x0},
+	177: {cat: 0x2c, setID: 0x23},
+	178: {cat: 0x2f, setID: 0x24},
+	179: {cat: 0x35, setID: 0x1},
+	180: {cat: 0x21, setID: 0x3},
+	181: {cat: 0x22, setID: 0x1},
+	182: {cat: 0x23, setID: 0x2},
+	183: {cat: 0x2c, setID: 0x1e},
+	184: {cat: 0x2d, setID: 0x5},
+	185: {cat: 0x21, setID: 0x3},
+	186: {cat: 0x22, setID: 0x1},
+	187: {cat: 0x23, setID: 0x2},
+	188: {cat: 0x24, setID: 0x25},
+	189: {cat: 0x25, setID: 0x26},
+} // Size: 404 bytes
 
 var cardinalIndex = []uint8{ // 40 elements
 	0x00, 0x00, 0x02, 0x03, 0x05, 0x08, 0x09, 0x0b,
 	0x0c, 0x0f, 0x14, 0x19, 0x1f, 0x2a, 0x2d, 0x2f,
 	0x35, 0x37, 0x3a, 0x40, 0x4a, 0x4c, 0x4f, 0x51,
 	0x54, 0x5b, 0x64, 0x69, 0x75, 0x7c, 0x81, 0x8d,
-	0x94, 0x9c, 0xa1, 0xa5, 0xac, 0xb3, 0xb8, 0xbd,
+	0x94, 0x9c, 0xa1, 0xa5, 0xac, 0xb4, 0xb9, 0xbe,
 } // Size: 64 bytes
 
 var cardinalLangToIndex = []uint8{ // 977 elements
@@ -379,7 +380,7 @@ var cardinalInclusionMasks = []uint64{ // 100 elements
 	0x0000000021400221, 0x0000000021400021, 0x0000000021400021, 0x0000000031400221,
 } // Size: 824 bytes
 
-// Slots used for cardinal: BD of 0xFF rules; 28 of 0xFF indexes; 39 of 64 sets
+// Slots used for cardinal: BE of 0xFF rules; 28 of 0xFF indexes; 39 of 64 sets
 
 var ordinalRules = []pluralCheck{ // 84 elements
 	0:  {cat: 0x2f, setID: 0x4},
@@ -651,4 +652,4 @@ var ordinalInclusionMasks = []uint64{ // 100 elements
 
 // Slots used for ordinal: 54 of 0xFF rules; 1D of 0xFF indexes; 50 of 64 sets
 
-// Total table size 4361 bytes (4KiB); checksum: 84CA081E
+// Total table size 4363 bytes (4KiB); checksum: 71B5AE1D
