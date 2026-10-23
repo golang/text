@@ -387,7 +387,8 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 		for {
 			var token string
 			scan.Scan() // Must exist.
-			switch class := scan.Text(); class {
+			originalClass := scan.Text()
+			switch class := originalClass; class {
 			case "t":
 				class = "w" // equal to w for t == 0
 				fallthrough
@@ -396,6 +397,9 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 				opCode := operandIndex[class]
 				mod := 0
 				if op == "%" {
+					if originalClass == "w" {
+						log.Fatal("Modulo on operand w is not supported")
+					}
 					opCode |= opMod
 
 					switch v := scanUint(scan); v {
@@ -428,7 +432,7 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 				}
 				a := []int{}
 				v := scanUint(scan)
-				if class == "w" && v != 0 {
+				if class == "w" && mod == 0 && v != 0 {
 					log.Fatalf("Must compare against zero for operand type %q", class)
 				}
 				token = scanToken(scan)
