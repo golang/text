@@ -122,7 +122,28 @@ func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) Form 
 	// Differentiate up to including mod 100 for the fractional part.
 	f := getIntApprox(digits, exp, exp+scale, 2, 100)
 
-	return matchPlural(p, index, n, f, scale)
+	return matchPlural(p, index, n, f, scale, fractionalWithoutTrailingZeros(digits, exp, scale))
+}
+
+// fractionalWithoutTrailingZeros returns t modulo 100: the fractional digits
+// without trailing zeros. Only modulo 10 and 100 comparisons use t.
+func fractionalWithoutTrailingZeros(digits []byte, exp, scale int) int {
+	end := exp + scale
+	if end > len(digits) {
+		end = len(digits)
+	}
+	for end > exp && end > 0 && digits[end-1] == 0 {
+		end--
+	}
+	start := exp
+	if start < 0 {
+		start = 0
+	}
+	t := 0
+	for i := start; i < end; i++ {
+		t = (t*10 + int(digits[i])) % maxMod
+	}
+	return t
 }
 
 func (p *Rules) matchDisplayDigits(t language.Tag, d *number.Digits) (Form, int) {
@@ -146,7 +167,11 @@ func validForms(p *Rules, t language.Tag) (forms []Form) {
 }
 
 func (p *Rules) matchComponents(t language.Tag, n, f, scale int) Form {
-	return matchPlural(p, tagToID(t), n, f, scale)
+	truncated := f
+	for truncated > 0 && truncated%10 == 0 {
+		truncated /= 10
+	}
+	return matchPlural(p, tagToID(t), n, f, scale, truncated)
 }
 
 // MatchPlural returns the plural form for the given language and plural
@@ -165,10 +190,10 @@ func (p *Rules) matchComponents(t language.Tag, n, f, scale int) Form {
 // If any of the operand values is too large to fit in an int, it is okay to
 // pass the value modulo 10,000,000.
 func (p *Rules) MatchPlural(lang language.Tag, i, v, w, f, t int) Form {
-	return matchPlural(p, tagToID(lang), i, f, v)
+	return matchPlural(p, tagToID(lang), i, f, v, t)
 }
 
-func matchPlural(p *Rules, index compact.ID, n, f, v int) Form {
+func matchPlural(p *Rules, index compact.ID, n, f, v, t int) Form {
 	nMask := p.inclusionMasks[n%maxMod]
 	// Compute the fMask inline in the rules below, as it is relatively rare.
 	// fMask := p.inclusionMasks[f%maxMod]
@@ -229,6 +254,12 @@ func matchPlural(p *Rules, index compact.ID, n, f, v int) Form {
 
 		case opW | opNotEqual: // w != 0
 			skip = f == 0
+
+		case opW | opMod: // t % 10 or t % 100 = x
+			skip = p.inclusionMasks[t%maxMod]&setBit == 0
+
+		case opW | opMod | opNotEqual: // t % 10 or t % 100 != x
+			skip = p.inclusionMasks[t%maxMod]&setBit != 0
 
 		// Hard-wired rules that cannot be handled by our algorithm.
 
