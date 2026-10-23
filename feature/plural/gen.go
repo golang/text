@@ -390,6 +390,23 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 		return append(conds, cond)
 	}
 
+	// CLDR 49 Cornish "two" combines large modular ranges which cannot
+	// be represented by the 0..99 inclusion masks. Keep the ordinary
+	// n % 100 arm and encode the two larger arms with dedicated opcodes.
+	const cornishTwoRule = "n % 100 = 2,22,42,62,82 or n % 1000 = 0 and n % 100000 = 1000..20000,40000,60000,80000 or n != 0 and n % 1000000 = 100000"
+	if strings.TrimSpace(strings.SplitN(s, "@", 2)[0]) == cornishTwoRule {
+		conds = parsePluralCondition(conds, "n % 100 = 2,22,42,62,82 @integer 2", f)
+		for _, op := range []opID{opAzerbaijan00s | opMod, opAzerbaijan00s | opNotEqual} {
+			cond := orCondition{original: s, form: f}
+			cond.used[op] = true
+			for i := range cond.set[op] {
+				cond.set[op][i] = true
+			}
+			conds = append(conds, cond)
+		}
+		return conds
+	}
+
 	scan := bufio.NewScanner(strings.NewReader(s))
 	scan.Split(splitTokens)
 	for {
