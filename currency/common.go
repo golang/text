@@ -39,6 +39,7 @@ var roundings = [...]roundingType{
 	{4, 1},
 	{2, 5}, // cash rounding alternative
 	{2, 50},
+	{0, 5}, // cash rounding in five whole currency units
 }
 
 // regionToCode returns a 16-bit region code. Only two-letter codes are
