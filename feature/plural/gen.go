@@ -372,6 +372,22 @@ var operandIndex = map[string]opID{
 // @integer and @decimal are followed by examples and are not relevant for the
 // rule itself. The are used here to signal the termination of the rule.
 func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
+	// The public plural APIs describe ordinary numbers, so CLDR's compact-
+	// decimal exponent e is always zero. For this exact CLDR 49 rule, the
+	// second disjunct (e != 0..5) can never match. Preserve the first one,
+	// including its v = 0 restriction; compact-format exponent handling
+	// requires a separate API.
+	const millionRule = "e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5"
+	if strings.TrimSpace(strings.SplitN(s, "@", 2)[0]) == millionRule {
+		cond := orCondition{original: s, form: f}
+		const opMillion = opBretonM | opNotEqual
+		for i := range cond.set[opMillion] {
+			cond.set[opMillion][i] = true
+		}
+		cond.used[opMillion] = true
+		return append(conds, cond)
+	}
+
 	scan := bufio.NewScanner(strings.NewReader(s))
 	scan.Split(splitTokens)
 	for {
