@@ -145,7 +145,9 @@ func genPluralsTests(w *gen.CodeWriter, data *cldr.CLDR) {
 						p = &test.decimal
 					case ",", "…":
 					default:
-						if p != nil {
+						if p != nil && !strings.ContainsRune(t, 'c') {
+							// Compact samples such as 1c6 require a compact
+							// exponent API. The ordinary-number tests skip them.
 							*p = append(*p, t)
 						}
 					}
