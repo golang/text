@@ -71,7 +71,7 @@ func TestTables(t *testing.T) {
 					for _, mc := range cal.Months.MonthContext {
 						for _, mw := range mc.MonthWidth {
 							for _, m := range mw.Month {
-								test(m, "calendars", cal.Type, "months", mc.Type, width(mw.Type), m.Yeartype+m.Type)
+								test(m, "calendars", cal.Type, "months", mc.Type, width(mw.Type), m.Yeartype+m.Type, m.Alt)
 							}
 						}
 					}

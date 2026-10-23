@@ -136,7 +136,7 @@ func buildCLDRTree(data *cldr.CLDR, dates *cldrtree.Builder) {
 						for _, mw := range mc.MonthWidth {
 							x := x.IndexFromType(mw, width)
 							for _, m := range mw.Month {
-								x.SetValue(m.Yeartype+m.Type, m, month)
+								x.IndexWithName(m.Yeartype+m.Type, month).SetValue(m.Alt, m, alt)
 							}
 						}
 					}
