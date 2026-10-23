@@ -87,7 +87,7 @@ func TestIcelandicFractionalOperands(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.fraction, func(t *testing.T) {
 			digits := mkDigits(tc.fraction)
-			if got := Cardinal.MatchDigits(language.Icelandic, digits, 0, len(digits)); got != tc.want {
+			if got := Cardinal.MatchDigits(language.MustParse("is"), digits, 0, len(digits)); got != tc.want {
 				t.Errorf("MatchDigits(0.%s) = %v; want %v", tc.fraction, got, tc.want)
 			}
 		})
