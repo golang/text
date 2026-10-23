@@ -68,6 +68,54 @@ func mkDigits(s string) []byte {
 	return b
 }
 
+func TestCLDR49MillionRules(t *testing.T) {
+	// CLDR's compact exponent e is zero for ordinary (noncompact) input.
+	tests := []struct {
+		name   string
+		digits string
+		exp    int
+		scale  int
+		want   Form
+	}{
+		{"one million", "1000000", 7, 0, Many},
+		{"two million", "2000000", 7, 0, Many},
+		{"million plus one", "1000001", 7, 0, Other},
+		{"two million plus one", "2000001", 7, 0, Other},
+		{"million with fraction", "10000000", 7, 1, Other},
+		{"small number", "1000", 4, 0, Other},
+	}
+	for _, lang := range []string{"fr", "pt", "es", "it"} {
+		for _, tt := range tests {
+			t.Run(lang+"/"+tt.name, func(t *testing.T) {
+				got := Cardinal.MatchDigits(language.MustParse(lang), mkDigits(tt.digits), tt.exp, tt.scale)
+				if got != tt.want {
+					t.Errorf("got %v; want %v", got, tt.want)
+				}
+			})
+		}
+	}
+}
+
+func TestGetPluralInteger(t *testing.T) {
+	for _, tt := range []struct {
+		digits string
+		exp    int
+		want   int
+	}{
+		{"1", 7, 1000000},
+		{"1000001", 7, 1000001},
+		{"2", 7, 1000000},
+		{"2000001", 7, 1000001},
+		{"1", 8, 1000000},
+		{"1234567", 7, 1234567},
+		{"0", 7, 0},
+	} {
+		if got := getPluralInteger(mkDigits(tt.digits), tt.exp); got != tt.want {
+			t.Errorf("getPluralInteger(%s, %d) = %d; want %d", tt.digits, tt.exp, got, tt.want)
+		}
+	}
+}
+
 func TestIcelandicFractionalOperands(t *testing.T) {
 	cases := []struct {
 		fraction string
