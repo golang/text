@@ -93,8 +93,8 @@ fr, en-GB, ja, es-ES, es-MX ; 	de, en-US ; 	en-GB
 fr, en-GB, ja, es-ES, es-MX ; 	de, zh ; 	fr
 
 # best match for traditional Chinese
-fr, zh-Hans-CN, en-US ; 	zh-TW ; 	zh-Hans-CN
-fr, zh-Hans-CN, en-US ; 	zh-Hant ; 	zh-Hans-CN
+fr, zh-Hans-CN, en-US ; 	zh-TW ; 	fr	# CLDR 49 has no Hant-to-Hans fallback; use the default.
+fr, zh-Hans-CN, en-US ; 	zh-Hant ; 	fr	# CLDR 49 has no Hant-to-Hans fallback; use the default.
 fr, zh-Hans-CN, en-US ; 	zh-TW, en ; 	en-US
 fr, zh-Hans-CN, en-US ; 	zh-Hant-CN, en ; 	en-US
 fr, zh-Hans-CN, en-US ; 	zh-Hans, en ; 	zh-Hans-CN
@@ -149,7 +149,7 @@ it, und ; 	en ; 	it
 it, fr, zh ; 	und-FR ; 	fr
 it, fr, zh ; 	und-CN ; 	zh
 it, fr, zh ; 	und-Hans ; 	zh
-it, fr, zh ; 	und-Hant ; 	zh
+it, fr, zh ; 	und-Hant ; 	it	# CLDR 49 has no Hant-to-Hans fallback; use the default.
 it, fr, zh ; 	und-Latn ; 	it
 
 # match on maximized tag

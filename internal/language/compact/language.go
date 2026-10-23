@@ -187,6 +187,8 @@ func (t Tag) RegionalTag() Tag {
 	}
 	return t
 }
+var bihLangID = language.MustParseBase("bih")
+var bhLangID = coreTags[bhIndex].Tag().LangID
 
 // FromTag reports closest matching ID for an internal language Tag.
 func FromTag(t language.Tag) (id ID, exact bool) {
@@ -196,6 +198,11 @@ func FromTag(t language.Tag) (id ID, exact bool) {
 	exact = true
 
 	b, s, r := t.Raw()
+	if b == bihLangID {
+		t.LangID = bhLangID
+		b = bhLangID
+		exact = false
+	}
 	if t.HasString() {
 		if t.IsPrivateUse() {
 			// We have no entries for user-defined tags.
@@ -248,8 +255,7 @@ func FromTag(t language.Tag) (id ID, exact bool) {
 	}
 	for t = t.Parent(); t != root; t = t.Parent() {
 		// No variants specified: just compare core components.
-		// The key has the form lllssrrr, where l, s, and r are nibbles for
-		// respectively the langID, scriptID, and regionID.
+		// The key packs the language, script, and region IDs.
 		if x, ok := getCoreIndex(t); ok {
 			return x, exact
 		}

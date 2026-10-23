@@ -117,12 +117,67 @@ func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) Form 
 	index := tagToID(t)
 
 	// Differentiate up to including mod 1000000 for the integer part.
-	n := getIntApprox(digits, 0, exp, 6, 1000000)
+	n := getPluralInteger(digits, exp)
 
 	// Differentiate up to including mod 100 for the fractional part.
 	f := getIntApprox(digits, exp, exp+scale, 2, 100)
 
-	return matchPlural(p, index, n, f, scale)
+	return matchPlural(p, index, n, f, scale, fractionalWithoutTrailingZeros(digits, exp, scale))
+}
+
+// fractionalWithoutTrailingZeros returns t modulo 100: the fractional digits
+// without trailing zeros. Only modulo 10 and 100 comparisons use t.
+// getPluralInteger retains the last six integer digits of large numbers
+// while marking values >= 1000000. This distinguishes multiples of a
+// million from nearby integers without losing the existing small-number
+// comparison semantics used by matchPlural.
+func getPluralInteger(digits []byte, exp int) int {
+	const million = 1000000
+	if exp <= 6 {
+		return getIntApprox(digits, 0, exp, 6, million)
+	}
+	end := exp
+	if end > len(digits) {
+		end = len(digits)
+	}
+	mod := 0
+	big := false
+	for i := 0; i < end; i++ {
+		if i < exp-6 && digits[i] != 0 {
+			big = true
+		}
+		mod = (mod*10 + int(digits[i])) % million
+	}
+	if exp-end >= 6 {
+		mod = 0
+	} else {
+		for i := end; i < exp; i++ {
+			mod = (mod * 10) % million
+		}
+	}
+	if big {
+		mod += million
+	}
+	return mod
+}
+
+func fractionalWithoutTrailingZeros(digits []byte, exp, scale int) int {
+	end := exp + scale
+	if end > len(digits) {
+		end = len(digits)
+	}
+	for end > exp && end > 0 && digits[end-1] == 0 {
+		end--
+	}
+	start := exp
+	if start < 0 {
+		start = 0
+	}
+	t := 0
+	for i := start; i < end; i++ {
+		t = (t*10 + int(digits[i])) % maxMod
+	}
+	return t
 }
 
 func (p *Rules) matchDisplayDigits(t language.Tag, d *number.Digits) (Form, int) {
@@ -146,7 +201,11 @@ func validForms(p *Rules, t language.Tag) (forms []Form) {
 }
 
 func (p *Rules) matchComponents(t language.Tag, n, f, scale int) Form {
-	return matchPlural(p, tagToID(t), n, f, scale)
+	truncated := f
+	for truncated > 0 && truncated%10 == 0 {
+		truncated /= 10
+	}
+	return matchPlural(p, tagToID(t), n, f, scale, truncated)
 }
 
 // MatchPlural returns the plural form for the given language and plural
@@ -165,10 +224,10 @@ func (p *Rules) matchComponents(t language.Tag, n, f, scale int) Form {
 // If any of the operand values is too large to fit in an int, it is okay to
 // pass the value modulo 10,000,000.
 func (p *Rules) MatchPlural(lang language.Tag, i, v, w, f, t int) Form {
-	return matchPlural(p, tagToID(lang), i, f, v)
+	return matchPlural(p, tagToID(lang), i, f, v, t)
 }
 
-func matchPlural(p *Rules, index compact.ID, n, f, v int) Form {
+func matchPlural(p *Rules, index compact.ID, n, f, v, t int) Form {
 	nMask := p.inclusionMasks[n%maxMod]
 	// Compute the fMask inline in the rules below, as it is relatively rare.
 	// fMask := p.inclusionMasks[f%maxMod]
@@ -230,17 +289,36 @@ func matchPlural(p *Rules, index compact.ID, n, f, v int) Form {
 		case opW | opNotEqual: // w != 0
 			skip = f == 0
 
+		case opW | opMod: // t % 10 or t % 100 = x
+			skip = p.inclusionMasks[t%maxMod]&setBit == 0
+
+		case opW | opMod | opNotEqual: // t % 10 or t % 100 != x
+			skip = p.inclusionMasks[t%maxMod]&setBit != 0
+
 		// Hard-wired rules that cannot be handled by our algorithm.
 
 		case opBretonM:
 			skip = f != 0 || n == 0 || n%1000000 != 0
 
+		case opBretonM | opNotEqual: // CLDR 49 e = 0, i multiple of a million, v = 0
+			skip = v != 0 || n == 0 || n%1000000 != 0
+
 		case opAzerbaijan00s:
 			// 100,200,300,400,500,600,700,800,900
 			skip = n == 0 || n >= 1000 || n%100 != 0
 
+		case opAzerbaijan00s | opMod: // Cornish: n % 1000 = 0 and selected n % 100000
+			r := n % 100000
+			skip = f != 0 || n%1000 != 0 || !(r >= 1000 && r <= 20000 || r == 40000 || r == 60000 || r == 80000)
+
+		case opAzerbaijan00s | opNotEqual: // Cornish: n != 0 and n % 1000000 = 100000
+			skip = f != 0 || n == 0 || n%1000000 != 100000
+
 		case opItalian800:
 			skip = (f != 0 || n >= numN || nMask&setBit == 0) && n != 800
+
+		case opItalian800 | opNotEqual: // Ligurian and Sicilian: 800..899
+			skip = (f != 0 || n >= numN || nMask&setBit == 0) && (n < 800 || n > 899)
 		}
 		if skip {
 			// advance over AND entries.

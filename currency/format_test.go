@@ -59,9 +59,9 @@ func TestFormatting(t *testing.T) {
 
 		// https://en.wikipedia.org/wiki/Decimal_separator
 		22: {de, EUR.Amount(1234567.89), nil, "EUR 1.234.567,89"},
-		23: {fr, EUR.Amount(1234567.89), nil, "EUR 1\u00a0234\u00a0567,89"},
+		23: {fr, EUR.Amount(1234567.89), nil, "EUR 1\u202f234\u202f567,89"},
 		24: {en_AU, EUR.Amount(1234567.89), nil, "EUR 1,234,567.89"},
-		25: {de_CH, EUR.Amount(1234567.89), nil, "EUR 1’234’567.89"},
+		25: {de_CH, EUR.Amount(1234567.89), nil, "EUR 1'234'567.89"},
 
 		// https://en.wikipedia.org/wiki/Cash_rounding
 		26: {de, NOK.Amount(2.49), ISO.Kind(Cash), "NOK 2"},

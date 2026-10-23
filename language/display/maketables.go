@@ -222,12 +222,9 @@ func (b *builder) generate() {
 		if ldn.Scripts != nil {
 			for _, v := range ldn.Scripts.Script {
 				code := language.MustParseScript(v.Type)
-				if code.IsPrivateUse() { // Qaaa..Qabx
-					// TODO: data currently appears to be very meager.
-					// Reconsider if we have data for English.
-					if loc == language.English {
-						log.Fatal("Consider including data for private use scripts.")
-					}
+				// CLDR 49 names Qaag (Zawgyi), a private-use script code.
+				// Preserve it while excluding other private-use scripts.
+				if code.IsPrivateUse() && v.Type != "Qaag" {
 					continue
 				}
 				g.set(loc, code.String(), v.Data())
@@ -551,22 +548,28 @@ func (g *group) writeTable(w *gen.CodeWriter, name string) {
 func (b *builder) writeDictionaries() {
 	fmt.Fprintln(b.w, "// Dictionary entries of frequent languages")
 	fmt.Fprintln(b.w, "var (")
-	parents := parentIndices(b.supported)
-
-	for i, t := range b.supported {
+	// Parent pointers must reference dictionaries actually emitted below.
+	// CLDR parent chains can include intermediate locales such as en-001.
+	var dictionaries []language.Tag
+	for _, t := range b.supported {
 		if dict.contains(t) {
-			ident := identifier(t)
-			fmt.Fprintf(b.w, "\t%s = Dictionary{ // %s\n", ident, t)
-			if p := parents[i]; p == -1 {
-				fmt.Fprintln(b.w, "\t\tnil,")
-			} else {
-				fmt.Fprintf(b.w, "\t\t&%s,\n", identifier(b.supported[p]))
-			}
-			fmt.Fprintf(b.w, "\t\theader{%[1]sLangStr, %[1]sLangIdx},\n", ident)
-			fmt.Fprintf(b.w, "\t\theader{%[1]sScriptStr, %[1]sScriptIdx},\n", ident)
-			fmt.Fprintf(b.w, "\t\theader{%[1]sRegionStr, %[1]sRegionIdx},\n", ident)
-			fmt.Fprintln(b.w, "\t}")
+			dictionaries = append(dictionaries, t)
 		}
+	}
+	parents := parentIndices(dictionaries)
+
+	for i, t := range dictionaries {
+		ident := identifier(t)
+		fmt.Fprintf(b.w, "\t%s = Dictionary{ // %s\n", ident, t)
+		if p := parents[i]; p == -1 {
+			fmt.Fprintln(b.w, "\t\tnil,")
+		} else {
+			fmt.Fprintf(b.w, "\t\t&%s,\n", identifier(dictionaries[p]))
+		}
+		fmt.Fprintf(b.w, "\t\theader{%[1]sLangStr, %[1]sLangIdx},\n", ident)
+		fmt.Fprintf(b.w, "\t\theader{%[1]sScriptStr, %[1]sScriptIdx},\n", ident)
+		fmt.Fprintf(b.w, "\t\theader{%[1]sRegionStr, %[1]sRegionIdx},\n", ident)
+		fmt.Fprintln(b.w, "\t}")
 	}
 	fmt.Fprintln(b.w, ")")
 

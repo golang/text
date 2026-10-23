@@ -71,7 +71,7 @@ func TestTables(t *testing.T) {
 					for _, mc := range cal.Months.MonthContext {
 						for _, mw := range mc.MonthWidth {
 							for _, m := range mw.Month {
-								test(m, "calendars", cal.Type, "months", mc.Type, width(mw.Type), m.Yeartype+m.Type)
+								test(m, "calendars", cal.Type, "months", mc.Type, width(mw.Type), m.Yeartype+m.Type, m.Alt)
 							}
 						}
 					}
@@ -162,8 +162,12 @@ func TestTables(t *testing.T) {
 				if cal.DateTimeFormats != nil {
 					for _, dtfl := range cal.DateTimeFormats.DateTimeFormatLength {
 						for _, dtf := range dtfl.DateTimeFormat {
+							formatType := dtf.Type
+							if formatType == "" {
+								formatType = "default"
+							}
 							for _, p := range dtf.Pattern {
-								test(p, "calendars", cal.Type, "dateTimeFormats", dtfl.Type, p.Alt)
+								test(p, "calendars", cal.Type, "dateTimeFormats", dtfl.Type, formatType+"DateTimeFormat", p.Alt)
 							}
 						}
 					}
@@ -198,13 +202,13 @@ func TestTables(t *testing.T) {
 		}
 		if ldml.Dates.TimeZoneNames != nil {
 			for _, h := range ldml.Dates.TimeZoneNames.HourFormat {
-				test(h, "timeZoneNames", "zoneFormat", h.Element())
+				test(h, "timeZoneNames", "zoneFormat", h.Element(), h.Alt)
 			}
 			for _, g := range ldml.Dates.TimeZoneNames.GmtFormat {
-				test(g, "timeZoneNames", "zoneFormat", g.Element())
+				test(g, "timeZoneNames", "zoneFormat", g.Element(), g.Alt)
 			}
 			for _, g := range ldml.Dates.TimeZoneNames.GmtZeroFormat {
-				test(g, "timeZoneNames", "zoneFormat", g.Element())
+				test(g, "timeZoneNames", "zoneFormat", g.Element(), g.Alt)
 			}
 			for _, r := range ldml.Dates.TimeZoneNames.RegionFormat {
 				s := r.Type
@@ -217,7 +221,7 @@ func TestTables(t *testing.T) {
 			testZone := func(zoneType, zoneWidth, zone string, a ...[]*cldr.Common) {
 				for _, e := range a {
 					for _, n := range e {
-						test(n, "timeZoneNames", zoneType, zoneWidth, n.Element()+"Time", zone)
+						test(n, "timeZoneNames", zoneType, zoneWidth, n.Element()+"Time", "zoneID"+zone)
 					}
 				}
 			}

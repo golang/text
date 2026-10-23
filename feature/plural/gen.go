@@ -145,7 +145,9 @@ func genPluralsTests(w *gen.CodeWriter, data *cldr.CLDR) {
 						p = &test.decimal
 					case ",", "…":
 					default:
-						if p != nil {
+						if p != nil && !strings.ContainsRune(t, 'c') {
+							// Compact samples such as 1c6 require a compact
+							// exponent API. The ordinary-number tests skip them.
 							*p = append(*p, t)
 						}
 					}
@@ -372,6 +374,39 @@ var operandIndex = map[string]opID{
 // @integer and @decimal are followed by examples and are not relevant for the
 // rule itself. The are used here to signal the termination of the rule.
 func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
+	// The public plural APIs describe ordinary numbers, so CLDR's compact-
+	// decimal exponent e is always zero. For this exact CLDR 49 rule, the
+	// second disjunct (e != 0..5) can never match. Preserve the first one,
+	// including its v = 0 restriction; compact-format exponent handling
+	// requires a separate API.
+	const millionRule = "e = 0 and i != 0 and i % 1000000 = 0 and v = 0 or e != 0..5"
+	if strings.TrimSpace(strings.SplitN(s, "@", 2)[0]) == millionRule {
+		cond := orCondition{original: s, form: f}
+		const opMillion = opBretonM | opNotEqual
+		for i := range cond.set[opMillion] {
+			cond.set[opMillion][i] = true
+		}
+		cond.used[opMillion] = true
+		return append(conds, cond)
+	}
+
+	// CLDR 49 Cornish "two" combines large modular ranges which cannot
+	// be represented by the 0..99 inclusion masks. Keep the ordinary
+	// n % 100 arm and encode the two larger arms with dedicated opcodes.
+	const cornishTwoRule = "n % 100 = 2,22,42,62,82 or n % 1000 = 0 and n % 100000 = 1000..20000,40000,60000,80000 or n != 0 and n % 1000000 = 100000"
+	if strings.TrimSpace(strings.SplitN(s, "@", 2)[0]) == cornishTwoRule {
+		conds = parsePluralCondition(conds, "n % 100 = 2,22,42,62,82 @integer 2", f)
+		for _, op := range []opID{opAzerbaijan00s | opMod, opAzerbaijan00s | opNotEqual} {
+			cond := orCondition{original: s, form: f}
+			cond.used[op] = true
+			for i := range cond.set[op] {
+				cond.set[op][i] = true
+			}
+			conds = append(conds, cond)
+		}
+		return conds
+	}
+
 	scan := bufio.NewScanner(strings.NewReader(s))
 	scan.Split(splitTokens)
 	for {
@@ -387,7 +422,8 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 		for {
 			var token string
 			scan.Scan() // Must exist.
-			switch class := scan.Text(); class {
+			originalClass := scan.Text()
+			switch class := originalClass; class {
 			case "t":
 				class = "w" // equal to w for t == 0
 				fallthrough
@@ -396,6 +432,9 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 				opCode := operandIndex[class]
 				mod := 0
 				if op == "%" {
+					if originalClass == "w" {
+						log.Fatal("Modulo on operand w is not supported")
+					}
 					opCode |= opMod
 
 					switch v := scanUint(scan); v {
@@ -428,7 +467,7 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 				}
 				a := []int{}
 				v := scanUint(scan)
-				if class == "w" && v != 0 {
+				if class == "w" && mod == 0 && v != 0 {
 					log.Fatalf("Must compare against zero for operand type %q", class)
 				}
 				token = scanToken(scan)
@@ -452,8 +491,14 @@ func parsePluralCondition(conds []orCondition, s string, f Form) []orCondition {
 				if !cond.add(opCode, mod, a) {
 					// Detected large numbers. As we ruled out Azerbaijan, this
 					// must be the many rule for Italian ordinals.
-					cond.set[opItalian800] = cond.set[opN]
-					cond.used[opItalian800] = true
+					// Ligurian and Sicilian use the entire 800..899
+					// range; Italian and related locales use only 800.
+					large := opItalian800
+					if strings.Contains(s, "800..899") {
+						large |= opNotEqual
+					}
+					cond.set[large] = cond.set[opN]
+					cond.used[large] = true
 				}
 
 			case "@integer", "@decimal": // "other" entry: tests only.
