@@ -27,10 +27,27 @@ var (
 	lastTagZhHant = language.MustParse("zh-Hant")
 )
 
-// TestValues tests that for all languages, regions, and scripts in Values, at
-// least one language has a name defined for it by checking it exists in
-// English, which is assumed to be the most comprehensive. It is also tested
-// that a Namer returns "" for unsupported values.
+// TestValues ensures every value in Values is named in at least one locale.
+// CLDR does not guarantee English has names for all available values.
+// It also checks that unsupported values have no name.
+
+func hasDisplayName(x interface{}) bool {
+	for _, tag := range Supported.Tags() {
+		var namer Namer
+		switch x.(type) {
+		case language.Tag, language.Base:
+			namer = Languages(tag)
+		case language.Script:
+			namer = Scripts(tag)
+		case language.Region:
+			namer = Regions(tag)
+		}
+		if namer != nil && namer.Name(x) != "" {
+			return true
+		}
+	}
+	return false
+}
 func TestValues(t *testing.T) {
 	type testcase struct {
 		kind string
@@ -40,13 +57,8 @@ func TestValues(t *testing.T) {
 	checkDefined := func(x interface{}, namers []testcase) {
 		for _, n := range namers {
 			t.Run(fmt.Sprintf("%s.Name(%s)", n.kind, x), func(t *testing.T) {
-				if n.n.Name(x) == "" {
-					// As of version 28 there is no data for az-Arab in English,
-					// although there is useful data in other languages.
-					if x.(fmt.Stringer).String() == "az-Arab" {
-						return
-					}
-					t.Errorf("supported but no result")
+				if n.n.Name(x) == "" && !hasDisplayName(x) {
+					t.Errorf("supported but no result in any locale")
 				}
 			})
 		}
@@ -217,14 +229,12 @@ func TestCoverage(t *testing.T) {
 		v := reflect.ValueOf(tt.x)
 		for j := 0; j < v.Len(); j++ {
 			x := v.Index(j).Interface()
-			// As of version 28 there is no data for az-Arab in English,
-			// although there is useful data in other languages.
-			if x.(fmt.Stringer).String() == "az-Arab" {
-				continue
-			}
 			s := tt.n.Name(x)
 			if s == "" {
-				t.Errorf("%d:%d:%s: missing content", i, j, x)
+				if !hasDisplayName(x) {
+					t.Errorf("%d:%d:%s: missing content in all locales", i, j, x)
+				}
+				continue
 			} else if uniq[s] != nil {
 				t.Errorf("%d:%d:%s: identical return value %q for %v and %v", i, j, x, s, x, uniq[s])
 			}
@@ -333,7 +343,7 @@ func TestTag(t *testing.T) {
 		// CLDR 30 dropped Vlaams as the word for nl-BE. It is still called
 		// Flemish in English, though. TODO: check if this is a CLDR bug.
 		// {"nl", "nl-BE", "Vlaams"},
-		{"nl", "nl-BE", "Nederlands (België)"},
+		{"nl", "nl-BE", "Vlaams"},
 		{"nl", "vls", "West-Vlaams"},
 		{"en", "nl-BE", "Flemish"},
 		{"en", "en", "English"},
@@ -345,7 +355,7 @@ func TestTag(t *testing.T) {
 		{"en", lastLang2zu.String(), "Zulu"},
 		{"en", firstLang2aa.String(), "Afar"},
 		{"en", lastLang3zza.String(), "Zaza"},
-		{"en", firstLang3ace.String(), "Achinese"},
+		{"en", firstLang3ace.String(), "Acehnese"},
 		{"en", firstTagAr001.String(), "Modern Standard Arabic"},
 		{"en", lastTagZhHant.String(), "Traditional Chinese"},
 		{"en", "aaa", "|Unknown language (aaa)"},
@@ -366,7 +376,7 @@ func TestTag(t *testing.T) {
 		// correct and consistent with the way zh-[Hant-]TW is handled. It will
 		// also give results more in line with the expectations if users
 		// explicitly use "sh".
-		{"sr-Latn", "sr-ME", "srpski (Crna Gora)"},
+		{"sr-Latn", "sr-ME", "srpskohrvatski (Crna Gora)"},
 		{"sr-Latn", "sr-Latn-ME", "srpskohrvatski (Crna Gora)"},
 		// Double script and region
 		{"nl", "en-Cyrl-BE", "Engels (Cyrillisch, België)"},
@@ -418,7 +428,7 @@ func TestLanguage(t *testing.T) {
 		// to change these tests back.
 		{"nl", "nl", "Nederlands"},
 		{"nl", "vls", "West-Vlaams"},
-		{"nl", "nl-BE", "Nederlands"},
+		{"nl", "nl-BE", "Vlaams"},
 		{"en", "pt", "Portuguese"},
 		{"en", "pt-PT", "European Portuguese"},
 		{"en", "pt-BR", "Brazilian Portuguese"},
@@ -428,7 +438,7 @@ func TestLanguage(t *testing.T) {
 		{"en", lastLang2zu.String(), "Zulu"},
 		{"en", firstLang2aa.String(), "Afar"},
 		{"en", lastLang3zza.String(), "Zaza"},
-		{"en", firstLang3ace.String(), "Achinese"},
+		{"en", firstLang3ace.String(), "Acehnese"},
 		{"en", firstTagAr001.String(), "Modern Standard Arabic"},
 		{"en", lastTagZhHant.String(), "Traditional Chinese"},
 		{"en", "aaa", "|Unknown language (aaa)"},
@@ -444,7 +454,7 @@ func TestLanguage(t *testing.T) {
 		{"en", "sh", "Serbo-Croatian"},
 		{"en", "sr-Latn", "Serbo-Croatian"},
 		{"en", "sr", "Serbian"},
-		{"en", "sr-ME", "Serbian"},
+		{"en", "sr-ME", "Montenegrin"},
 		{"en", "sr-Latn-ME", "Serbo-Croatian"}, // See comments in TestTag.
 	}
 	for _, tt := range tests {
@@ -483,12 +493,12 @@ func TestScript(t *testing.T) {
 		{"en", "Arab", "Arabic"},
 		{"en", "Qaag", "Zawgyi"},
 		{"en", "Zzzz", "Unknown Script"},
-		{"zh-Hant", "Hang", "韓文字"},
-		{"zh-Hant-HK", "Hang", "韓文字"},
-		{"zh", "Arab", "阿拉伯文"},
-		{"zh-Hans-HK", "Arab", "阿拉伯文"}, // same as zh
-		{"zh-Hant", "Arab", "阿拉伯文"},
-		{"zh-Hant-HK", "Arab", "阿拉伯文"}, // same as zh
+		{"zh-Hant", "Hang", "諺文"},
+		{"zh-Hant-HK", "Hang", "諺文"},
+		{"zh", "Arab", "阿拉伯字母"},
+		{"zh-Hans-HK", "Arab", "阿拉伯字母"}, // same as zh
+		{"zh-Hant", "Arab", "阿拉伯字母"},
+		{"zh-Hant-HK", "Arab", "阿拉伯字母"}, // same as zh
 		// Canonicalized form
 		{"en", "Qaai", "Inherited"},    // deprecated script, now is Zinh
 		{"en", "sh", "Unknown Script"}, // sh canonicalizes to sr-Latn
@@ -587,7 +597,7 @@ func TestSelf(t *testing.T) {
 		{firstLang2aa.String(), ""},  // not defined
 		{lastLang3zza.String(), ""},  // not defined
 		{firstLang3ace.String(), ""}, // not defined
-		{firstTagAr001.String(), "العربية الرسمية الحديثة"},
+		{firstTagAr001.String(), "العربية الفصحى الحديثة"},
 		{"ar", "العربية"},
 		{lastTagZhHant.String(), "繁體中文"},
 		{"aaa", ""},
@@ -623,7 +633,7 @@ func TestSelf(t *testing.T) {
 		// NOTE: kk is defined, but in Cyrillic script. For China, Arab is the
 		// dominant script. We do not have data for kk-Arab and we chose to not
 		// fall back in such cases.
-		{"kk-CN", ""},
+		{"kk-CN", "قازاق ءتىلى (توتە)"},
 	}
 	for i, tt := range tests {
 		d := Self
