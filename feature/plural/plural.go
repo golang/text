@@ -117,7 +117,7 @@ func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) Form 
 	index := tagToID(t)
 
 	// Differentiate up to including mod 1000000 for the integer part.
-	n := getIntApprox(digits, 0, exp, 6, 1000000)
+	n := getPluralInteger(digits, exp)
 
 	// Differentiate up to including mod 100 for the fractional part.
 	f := getIntApprox(digits, exp, exp+scale, 2, 100)
@@ -127,6 +127,40 @@ func (p *Rules) MatchDigits(t language.Tag, digits []byte, exp, scale int) Form 
 
 // fractionalWithoutTrailingZeros returns t modulo 100: the fractional digits
 // without trailing zeros. Only modulo 10 and 100 comparisons use t.
+// getPluralInteger retains the last six integer digits of large numbers
+// while marking values >= 1000000. This distinguishes multiples of a
+// million from nearby integers without losing the existing small-number
+// comparison semantics used by matchPlural.
+func getPluralInteger(digits []byte, exp int) int {
+	const million = 1000000
+	if exp <= 6 {
+		return getIntApprox(digits, 0, exp, 6, million)
+	}
+	end := exp
+	if end > len(digits) {
+		end = len(digits)
+	}
+	mod := 0
+	big := false
+	for i := 0; i < end; i++ {
+		if i < exp-6 && digits[i] != 0 {
+			big = true
+		}
+		mod = (mod*10 + int(digits[i])) % million
+	}
+	if exp-end >= 6 {
+		mod = 0
+	} else {
+		for i := end; i < exp; i++ {
+			mod = (mod * 10) % million
+		}
+	}
+	if big {
+		mod += million
+	}
+	return mod
+}
+
 func fractionalWithoutTrailingZeros(digits []byte, exp, scale int) int {
 	end := exp + scale
 	if end > len(digits) {
@@ -265,6 +299,9 @@ func matchPlural(p *Rules, index compact.ID, n, f, v, t int) Form {
 
 		case opBretonM:
 			skip = f != 0 || n == 0 || n%1000000 != 0
+
+		case opBretonM | opNotEqual: // CLDR 49 e = 0, i multiple of a million, v = 0
+			skip = v != 0 || n == 0 || n%1000000 != 0
 
 		case opAzerbaijan00s:
 			// 100,200,300,400,500,600,700,800,900
