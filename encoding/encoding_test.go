@@ -271,6 +271,14 @@ func TestErrorHandler(t *testing.T) {
 			nSrc:    2,
 			err:     transform.ErrShortDst,
 		},
+		{
+			desc:    "exact buffer html escape",
+			handler: encoding.HTMLEscapeUnsupported,
+			sizeDst: 10,
+			src:     "ab\uAC01",
+			want:    "ab&#44033;",
+			nSrc:    5,
+		},
 	}
 	for i, tc := range testCases {
 		tr := tc.handler(charmap.Windows1250.NewEncoder())
