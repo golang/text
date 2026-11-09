@@ -466,6 +466,7 @@ func TestSetTypeForKey(t *testing.T) {
 		{"co", "pinyi.", "en-u-aaa-co-pinyin", "en-u-aaa-co-pinyin", true},
 		{"col", "pinyin", "en", "en", true},
 		{"co", "cu", "en", "en", true},
+		{"ca", "ca-ca-", "en", "en", true},
 		// error when setting on a private use tag
 		{"co", "phonebook", "x-foo", "x-foo", true},
 	}
