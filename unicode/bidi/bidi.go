@@ -29,10 +29,14 @@ import (
 type Direction int
 
 const (
+	// Neutral means that text contains no left-to-right and right-to-left
+	// characters and that no default direction has been set.
+	Neutral Direction = iota
+
 	// LeftToRight indicates the text contains no right-to-left characters and
 	// that either there are some left-to-right characters or the option
 	// DefaultDirection(LeftToRight) was passed.
-	LeftToRight Direction = iota
+	LeftToRight
 
 	// RightToLeft indicates the text contains no left-to-right characters and
 	// that either there are some right-to-left characters or the option
@@ -42,10 +46,6 @@ const (
 	// Mixed indicates text contains both left-to-right and right-to-left
 	// characters.
 	Mixed
-
-	// Neutral means that text contains no left-to-right and right-to-left
-	// characters and that no default direction has been set.
-	Neutral
 )
 
 type options struct {
@@ -219,8 +219,11 @@ func (p *Paragraph) Order() (Ordering, error) {
 		fn(&p.options)
 	}
 	lvl := level(-1)
-	if p.options.defaultDirection == RightToLeft {
+	switch p.options.defaultDirection {
+	case RightToLeft:
 		lvl = 1
+	case LeftToRight:
+		lvl = 0
 	}
 	para, err := newParagraph(p.types, p.pairTypes, p.pairValues, lvl)
 	if err != nil {
