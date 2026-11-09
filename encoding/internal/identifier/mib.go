@@ -1624,4 +1624,13 @@ const (
 	//
 	// See https://www.iana.org/assignments/charset-reg/CP50220
 	CP50220 MIB = 2260
+
+	// IBM1125 is the MIB identifier.
+	//
+	// See:
+	//  - https://www.ibm.com/docs/en/db2/11.5?topic=tables-code-page-1125-generic-system-1125
+	//  - https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-CP1125-2.3.3.ucm
+	//  - https://public.dhe.ibm.com/software/globalization/gcoc/attachments/CP01125.txt
+	//  - https://public.dhe.ibm.com/software/globalization/gcoc/attachments/CP01125.pdf
+	IBM1125 MIB = 2261
 )
