@@ -66,6 +66,10 @@ func (b *builder) writeCompactIndex() {
 		}
 	}
 
+	// FromTag retains compatibility for bih through the historical bh tag,
+	// which is no longer supplied by CLDR plural data.
+	m[language.MustParse("bh")] = true
+
 	var coreTags []language.CompactCoreInfo
 	var special []string
 
@@ -77,6 +81,9 @@ func (b *builder) writeCompactIndex() {
 			cci, ok := language.GetCompactCore(t)
 			if !ok {
 				log.Fatalf("Locale for non-basic language %q", t)
+			}
+			if decoded := cci.Tag(); decoded != t {
+				log.Fatalf("Compact core does not round-trip: %v -> %v", t, decoded)
 			}
 			coreTags = append(coreTags, cci)
 		} else {

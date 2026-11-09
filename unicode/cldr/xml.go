@@ -33,6 +33,8 @@ type LDMLBCP47 struct {
 				Preferred   string `xml:"preferred,attr"`
 				Alias       string `xml:"alias,attr"`
 				Since       string `xml:"since,attr"`
+				Iana        string `xml:"iana,attr"`
+				Region      string `xml:"region,attr"`
 			} `xml:"type"`
 		} `xml:"key"`
 	} `xml:"keyword"`
@@ -77,9 +79,11 @@ type SupplementalData struct {
 			Currency []*struct {
 				Common
 				Before       string `xml:"before,attr"`
+				Iso4217      string `xml:"iso4217,attr"`
 				From         string `xml:"from,attr"`
 				To           string `xml:"to,attr"`
-				Iso4217      string `xml:"iso4217,attr"`
+				Tz           string `xml:"tz,attr"`
+				T            string `xml:"t,attr"`
 				Digits       string `xml:"digits,attr"`
 				Rounding     string `xml:"rounding,attr"`
 				CashRounding string `xml:"cashRounding,attr"`
@@ -117,6 +121,14 @@ type SupplementalData struct {
 			Variants    string `xml:"variants,attr"`
 		} `xml:"language"`
 	} `xml:"languageData"`
+	ScriptData *struct {
+		Common
+		ScriptVariant []*struct {
+			Common
+			Id   string `xml:"id,attr"`
+			Base string `xml:"base,attr"`
+		} `xml:"scriptVariant"`
+	} `xml:"scriptData"`
 	TerritoryInfo *struct {
 		Common
 		Territory []*struct {
@@ -146,12 +158,19 @@ type SupplementalData struct {
 			Common
 			Territories    string  `xml:"territories,attr"`
 			CalendarSystem *Common `xml:"calendarSystem"`
-			Eras           *struct {
+			InheritEras    *struct {
+				Common
+				Calendar string `xml:"calendar,attr"`
+			} `xml:"inheritEras"`
+			Eras *struct {
 				Common
 				Era []*struct {
 					Common
-					Start string `xml:"start,attr"`
-					End   string `xml:"end,attr"`
+					Start   string `xml:"start,attr"`
+					End     string `xml:"end,attr"`
+					Code    string `xml:"code,attr"`
+					Aliases string `xml:"aliases,attr"`
+					Named   string `xml:"named,attr"`
 				} `xml:"era"`
 			} `xml:"eras"`
 		} `xml:"calendar"`
@@ -213,6 +232,55 @@ type SupplementalData struct {
 			Territories string `xml:"territories,attr"`
 		} `xml:"paperSize"`
 	} `xml:"measurementData"`
+	UnitIdComponents *struct {
+		Common
+		UnitIdComponent []*struct {
+			Common
+			Values string `xml:"values,attr"`
+		} `xml:"unitIdComponent"`
+	} `xml:"unitIdComponents"`
+	UnitPrefixes *struct {
+		Common
+		UnitPrefix []*struct {
+			Common
+			Symbol  string `xml:"symbol,attr"`
+			Power10 string `xml:"power10,attr"`
+			Power2  string `xml:"power2,attr"`
+		} `xml:"unitPrefix"`
+	} `xml:"unitPrefixes"`
+	UnitConstants []*struct {
+		Common
+		UnitConstant []*struct {
+			Common
+			Constant    string `xml:"constant,attr"`
+			Value       string `xml:"value,attr"`
+			Status      string `xml:"status,attr"`
+			Description string `xml:"description,attr"`
+		} `xml:"unitConstant"`
+	} `xml:"unitConstants"`
+	UnitQuantities []*struct {
+		Common
+		UnitQuantity []*struct {
+			Common
+			BaseUnit    string `xml:"baseUnit,attr"`
+			Quantity    string `xml:"quantity,attr"`
+			Status      string `xml:"status,attr"`
+			Description string `xml:"description,attr"`
+		} `xml:"unitQuantity"`
+	} `xml:"unitQuantities"`
+	ConvertUnits []*struct {
+		Common
+		ConvertUnit []*struct {
+			Common
+			Source      string `xml:"source,attr"`
+			BaseUnit    string `xml:"baseUnit,attr"`
+			Factor      string `xml:"factor,attr"`
+			Offset      string `xml:"offset,attr"`
+			Special     string `xml:"special,attr"`
+			Systems     string `xml:"systems,attr"`
+			Description string `xml:"description,attr"`
+		} `xml:"convertUnit"`
+	} `xml:"convertUnits"`
 	UnitPreferenceData *struct {
 		Common
 		UnitPreferences []*struct {
@@ -222,7 +290,9 @@ type SupplementalData struct {
 			Scope          string `xml:"scope,attr"`
 			UnitPreference []*struct {
 				Common
-				Regions string `xml:"regions,attr"`
+				Regions  string `xml:"regions,attr"`
+				Geq      string `xml:"geq,attr"`
+				Skeleton string `xml:"skeleton,attr"`
 			} `xml:"unitPreference"`
 		} `xml:"unitPreferences"`
 	} `xml:"unitPreferenceData"`
@@ -335,6 +405,16 @@ type SupplementalData struct {
 				Replacement string `xml:"replacement,attr"`
 				Reason      string `xml:"reason,attr"`
 			} `xml:"zoneAlias"`
+			UnitAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"unitAlias"`
+			UsageAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"usageAlias"`
 		} `xml:"alias"`
 		Deprecated *struct {
 			Common
@@ -411,20 +491,73 @@ type SupplementalData struct {
 			Numeric string `xml:"numeric,attr"`
 		} `xml:"currencyCodes"`
 	} `xml:"codeMappings"`
-	ParentLocales *struct {
+	ParentLocales []*struct {
 		Common
+		Component    string `xml:"component,attr"`
 		ParentLocale []*struct {
 			Common
-			Parent  string `xml:"parent,attr"`
-			Locales string `xml:"locales,attr"`
+			Parent      string `xml:"parent,attr"`
+			LocaleRules string `xml:"localeRules,attr"`
+			Locales     string `xml:"locales,attr"`
 		} `xml:"parentLocale"`
 	} `xml:"parentLocales"`
+	PersonNamesDefaults *struct {
+		Common
+		Alias *struct {
+			Common
+			LanguageAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"languageAlias"`
+			ScriptAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"scriptAlias"`
+			TerritoryAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"territoryAlias"`
+			SubdivisionAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"subdivisionAlias"`
+			VariantAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"variantAlias"`
+			ZoneAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"zoneAlias"`
+			UnitAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"unitAlias"`
+			UsageAlias []*struct {
+				Common
+				Replacement string `xml:"replacement,attr"`
+				Reason      string `xml:"reason,attr"`
+			} `xml:"usageAlias"`
+		} `xml:"alias"`
+		NameOrderLocalesDefault []*struct {
+			Common
+			Order string `xml:"order,attr"`
+		} `xml:"nameOrderLocalesDefault"`
+	} `xml:"personNamesDefaults"`
 	LikelySubtags *struct {
 		Common
 		LikelySubtag []*struct {
 			Common
-			From string `xml:"from,attr"`
-			To   string `xml:"to,attr"`
+			From   string `xml:"from,attr"`
+			To     string `xml:"to,attr"`
+			Origin string `xml:"origin,attr"`
 		} `xml:"likelySubtag"`
 	} `xml:"likelySubtags"`
 	MetazoneInfo *struct {
@@ -433,9 +566,11 @@ type SupplementalData struct {
 			Common
 			UsesMetazone []*struct {
 				Common
-				From  string `xml:"from,attr"`
-				To    string `xml:"to,attr"`
-				Mzone string `xml:"mzone,attr"`
+				From      string `xml:"from,attr"`
+				To        string `xml:"to,attr"`
+				Mzone     string `xml:"mzone,attr"`
+				StdOffset string `xml:"stdOffset,attr"`
+				DstOffset string `xml:"dstOffset,attr"`
 			} `xml:"usesMetazone"`
 		} `xml:"timezone"`
 	} `xml:"metazoneInfo"`
@@ -560,9 +695,11 @@ type SupplementalData struct {
 				Common
 				UsesMetazone []*struct {
 					Common
-					From  string `xml:"from,attr"`
-					To    string `xml:"to,attr"`
-					Mzone string `xml:"mzone,attr"`
+					From      string `xml:"from,attr"`
+					To        string `xml:"to,attr"`
+					Mzone     string `xml:"mzone,attr"`
+					StdOffset string `xml:"stdOffset,attr"`
+					DstOffset string `xml:"dstOffset,attr"`
 				} `xml:"usesMetazone"`
 			} `xml:"timezone"`
 		} `xml:"metazoneInfo"`
@@ -576,6 +713,17 @@ type SupplementalData struct {
 				Territory string `xml:"territory,attr"`
 			} `xml:"mapZone"`
 		} `xml:"mapTimezones"`
+		MetazoneIds *struct {
+			Common
+			MetazoneId []*struct {
+				Common
+				ShortId    string `xml:"shortId,attr"`
+				LongId     string `xml:"longId,attr"`
+				Deprecated string `xml:"deprecated,attr"`
+				Preferred  string `xml:"preferred,attr"`
+				Since      string `xml:"since,attr"`
+			} `xml:"metazoneId"`
+		} `xml:"metazoneIds"`
 	} `xml:"metaZones"`
 	PrimaryZones *struct {
 		Common
@@ -621,6 +769,11 @@ type SupplementalData struct {
 			Value       string `xml:"value,attr"`
 			Match       string `xml:"match,attr"`
 		} `xml:"coverageLevel"`
+		PathMatch []*struct {
+			Common
+			Id    string `xml:"id,attr"`
+			Match string `xml:"match,attr"`
+		} `xml:"pathMatch"`
 	} `xml:"coverageLevels"`
 	IdValidity *struct {
 		Common
@@ -643,6 +796,46 @@ type SupplementalData struct {
 			Parent string `xml:"parent,attr"`
 		} `xml:"languageGroup"`
 	} `xml:"languageGroups"`
+	GrammaticalData *struct {
+		Common
+		GrammaticalFeatures []*struct {
+			Common
+			Targets         string `xml:"targets,attr"`
+			Locales         string `xml:"locales,attr"`
+			GrammaticalCase []*struct {
+				Common
+				Scope  string `xml:"scope,attr"`
+				Values string `xml:"values,attr"`
+			} `xml:"grammaticalCase"`
+			GrammaticalGender []*struct {
+				Common
+				Scope  string `xml:"scope,attr"`
+				Values string `xml:"values,attr"`
+			} `xml:"grammaticalGender"`
+			GrammaticalDefiniteness []*struct {
+				Common
+				Scope  string `xml:"scope,attr"`
+				Values string `xml:"values,attr"`
+			} `xml:"grammaticalDefiniteness"`
+		} `xml:"grammaticalFeatures"`
+		GrammaticalDerivations []*struct {
+			Common
+			Locales        string `xml:"locales,attr"`
+			DeriveCompound []*struct {
+				Common
+				Feature   string `xml:"feature,attr"`
+				Structure string `xml:"structure,attr"`
+				Value     string `xml:"value,attr"`
+			} `xml:"deriveCompound"`
+			DeriveComponent []*struct {
+				Common
+				Feature   string `xml:"feature,attr"`
+				Structure string `xml:"structure,attr"`
+				Value0    string `xml:"value0,attr"`
+				Value1    string `xml:"value1,attr"`
+			} `xml:"deriveComponent"`
+		} `xml:"grammaticalDerivations"`
+	} `xml:"grammaticalData"`
 }
 
 // LDML is the top-level type for locale-specific data.
@@ -659,7 +852,10 @@ type LDML struct {
 			Common
 			Date string `xml:"date,attr"`
 		} `xml:"generation"`
-		Language  *Common `xml:"language"`
+		Language *struct {
+			Common
+			Menu string `xml:"menu,attr"`
+		} `xml:"language"`
 		Script    *Common `xml:"script"`
 		Territory *Common `xml:"territory"`
 		Variant   *Common `xml:"variant"`
@@ -689,10 +885,14 @@ type LDML struct {
 	} `xml:"contextTransforms"`
 	Characters *struct {
 		Common
-		ExemplarCharacters []*Common `xml:"exemplarCharacters"`
-		Ellipsis           []*Common `xml:"ellipsis"`
-		MoreInformation    []*Common `xml:"moreInformation"`
-		Stopwords          []*struct {
+		ExemplarCharacters       []*Common `xml:"exemplarCharacters"`
+		Ellipsis                 []*Common `xml:"ellipsis"`
+		NestedBracketReplacement []*struct {
+			Common
+			Bracket string `xml:"bracket,attr"`
+		} `xml:"nestedBracketReplacement"`
+		MoreInformation []*Common `xml:"moreInformation"`
+		Stopwords       []*struct {
 			Common
 			StopwordList []*Common `xml:"stopwordList"`
 		} `xml:"stopwords"`
@@ -722,6 +922,11 @@ type LDML struct {
 				Sample string `xml:"sample,attr"`
 			} `xml:"parseLenient"`
 		} `xml:"parseLenients"`
+		PlaceholderBoundarySpacing []*struct {
+			Common
+			Scopes string `xml:"scopes,attr"`
+			Xm     string `xml:"xm,attr"`
+		} `xml:"placeholderBoundarySpacing"`
 	} `xml:"characters"`
 	Delimiters *struct {
 		Common
@@ -773,6 +978,7 @@ type LDML struct {
 		Common
 		Unit []*struct {
 			Common
+			Gender      []*Common `xml:"gender"`
 			DisplayName []*struct {
 				Common
 				Count string `xml:"count,attr"`
@@ -780,6 +986,7 @@ type LDML struct {
 			UnitPattern []*struct {
 				Common
 				Count string `xml:"count,attr"`
+				Case  string `xml:"case,attr"`
 			} `xml:"unitPattern"`
 			PerUnitPattern []*Common `xml:"perUnitPattern"`
 		} `xml:"unit"`
@@ -787,10 +994,21 @@ type LDML struct {
 			Common
 			CompoundUnit []*struct {
 				Common
-				CompoundUnitPattern []*Common `xml:"compoundUnitPattern"`
+				CompoundUnitPattern1 []*struct {
+					Common
+					Count  string `xml:"count,attr"`
+					Gender string `xml:"gender,attr"`
+					Case   string `xml:"case,attr"`
+				} `xml:"compoundUnitPattern1"`
+				CompoundUnitPattern []*struct {
+					Common
+					Case string `xml:"case,attr"`
+				} `xml:"compoundUnitPattern"`
+				UnitPrefixPattern []*Common `xml:"unitPrefixPattern"`
 			} `xml:"compoundUnit"`
 			Unit []*struct {
 				Common
+				Gender      []*Common `xml:"gender"`
 				DisplayName []*struct {
 					Common
 					Count string `xml:"count,attr"`
@@ -798,11 +1016,16 @@ type LDML struct {
 				UnitPattern []*struct {
 					Common
 					Count string `xml:"count,attr"`
+					Case  string `xml:"case,attr"`
 				} `xml:"unitPattern"`
 				PerUnitPattern []*Common `xml:"perUnitPattern"`
 			} `xml:"unit"`
 			CoordinateUnit []*struct {
 				Common
+				DisplayName []*struct {
+					Common
+					Count string `xml:"count,attr"`
+				} `xml:"displayName"`
 				CoordinateUnitPattern []*Common `xml:"coordinateUnitPattern"`
 			} `xml:"coordinateUnit"`
 		} `xml:"unitLength"`
@@ -874,7 +1097,8 @@ type LDML struct {
 		Common
 		RulesetGrouping []*struct {
 			Common
-			Ruleset []*struct {
+			RbnfRules *Common `xml:"rbnfRules"`
+			Ruleset   []*struct {
 				Common
 				Access        string `xml:"access,attr"`
 				AllowsParsing string `xml:"allowsParsing,attr"`
@@ -887,6 +1111,48 @@ type LDML struct {
 			} `xml:"ruleset"`
 		} `xml:"rulesetGrouping"`
 	} `xml:"rbnf"`
+	TypographicNames *struct {
+		Common
+		AxisName  []*Common `xml:"axisName"`
+		StyleName []*struct {
+			Common
+			Subtype string `xml:"subtype,attr"`
+		} `xml:"styleName"`
+		FeatureName []*Common `xml:"featureName"`
+	} `xml:"typographicNames"`
+	PersonNames *struct {
+		Common
+		NameOrderLocales []*struct {
+			Common
+			Order string `xml:"order,attr"`
+		} `xml:"nameOrderLocales"`
+		ParameterDefault []*struct {
+			Common
+			Parameter string `xml:"parameter,attr"`
+		} `xml:"parameterDefault"`
+		NativeSpaceReplacement []*struct {
+			Common
+			Xm string `xml:"xm,attr"`
+		} `xml:"nativeSpaceReplacement"`
+		ForeignSpaceReplacement []*struct {
+			Common
+			Xm string `xml:"xm,attr"`
+		} `xml:"foreignSpaceReplacement"`
+		InitialPattern []*Common `xml:"initialPattern"`
+		PersonName     []*struct {
+			Common
+			Order       string    `xml:"order,attr"`
+			Length      string    `xml:"length,attr"`
+			Usage       string    `xml:"usage,attr"`
+			Formality   string    `xml:"formality,attr"`
+			NamePattern []*Common `xml:"namePattern"`
+		} `xml:"personName"`
+		SampleName []*struct {
+			Common
+			Item      string    `xml:"item,attr"`
+			NameField []*Common `xml:"nameField"`
+		} `xml:"sampleName"`
+	} `xml:"personNames"`
 	Annotations *struct {
 		Common
 		Annotation []*struct {
@@ -991,6 +1257,19 @@ type Calendar struct {
 			} `xml:"monthPatternWidth"`
 		} `xml:"monthPatternContext"`
 	} `xml:"monthPatterns"`
+	DayOfMonths *struct {
+		Common
+		DayOfMonthContext []*struct {
+			Common
+			DayOfMonthWidth []*struct {
+				Common
+				DayOfMonth []*struct {
+					Common
+					Ordinal string `xml:"ordinal,attr"`
+				} `xml:"dayOfMonth"`
+			} `xml:"dayOfMonthWidth"`
+		} `xml:"dayOfMonthContext"`
+	} `xml:"dayOfMonths"`
 	Days *struct {
 		Common
 		DayContext []*struct {
@@ -1091,6 +1370,10 @@ type Calendar struct {
 					Numbers string `xml:"numbers,attr"`
 					Count   string `xml:"count,attr"`
 				} `xml:"pattern"`
+				DatetimeSkeleton []*struct {
+					Common
+					Numbers string `xml:"numbers,attr"`
+				} `xml:"datetimeSkeleton"`
 				DisplayName []*struct {
 					Common
 					Count string `xml:"count,attr"`
@@ -1109,6 +1392,10 @@ type Calendar struct {
 					Numbers string `xml:"numbers,attr"`
 					Count   string `xml:"count,attr"`
 				} `xml:"pattern"`
+				DatetimeSkeleton []*struct {
+					Common
+					Numbers string `xml:"numbers,attr"`
+				} `xml:"datetimeSkeleton"`
 				DisplayName []*struct {
 					Common
 					Count string `xml:"count,attr"`
@@ -1118,6 +1405,11 @@ type Calendar struct {
 	} `xml:"timeFormats"`
 	DateTimeFormats *struct {
 		Common
+		NumericSeparators *struct {
+			Common
+			NumericDateSeparator []*Common `xml:"numericDateSeparator"`
+			NumericTimeSeparator []*Common `xml:"numericTimeSeparator"`
+		} `xml:"numericSeparators"`
 		DateTimeFormatLength []*struct {
 			Common
 			DateTimeFormat []*struct {
@@ -1150,6 +1442,10 @@ type Calendar struct {
 		} `xml:"appendItems"`
 		IntervalFormats []*struct {
 			Common
+			IntervalFormatRanges []*struct {
+				Common
+				IntervalFormatRange []*Common `xml:"intervalFormatRange"`
+			} `xml:"intervalFormatRanges"`
 			IntervalFormatFallback []*Common `xml:"intervalFormatFallback"`
 			IntervalFormatItem     []*struct {
 				Common
@@ -1187,6 +1483,8 @@ type TimeZoneNames struct {
 	HoursFormat          []*Common `xml:"hoursFormat"`
 	GmtFormat            []*Common `xml:"gmtFormat"`
 	GmtZeroFormat        []*Common `xml:"gmtZeroFormat"`
+	GmtUnknownFormat     []*Common `xml:"gmtUnknownFormat"`
+	DualOffsetFormat     []*Common `xml:"dualOffsetFormat"`
 	RegionFormat         []*Common `xml:"regionFormat"`
 	FallbackFormat       []*Common `xml:"fallbackFormat"`
 	FallbackRegionFormat []*Common `xml:"fallbackRegionFormat"`
@@ -1249,7 +1547,10 @@ type LocaleDisplayNames struct {
 	} `xml:"localeDisplayPattern"`
 	Languages *struct {
 		Common
-		Language []*Common `xml:"language"`
+		Language []*struct {
+			Common
+			Menu string `xml:"menu,attr"`
+		} `xml:"language"`
 	} `xml:"languages"`
 	Scripts *struct {
 		Common
@@ -1275,9 +1576,14 @@ type LocaleDisplayNames struct {
 		Common
 		Type []*struct {
 			Common
-			Key string `xml:"key,attr"`
+			Key   string `xml:"key,attr"`
+			Scope string `xml:"scope,attr"`
 		} `xml:"type"`
 	} `xml:"types"`
+	TypeValues *struct {
+		Common
+		TypeValue []*Common `xml:"typeValue"`
+	} `xml:"typeValues"`
 	TransformNames *struct {
 		Common
 		TransformName []*Common `xml:"transformName"`
@@ -1338,7 +1644,8 @@ type Numbers struct {
 			Common
 			NumberSystem string `xml:"numberSystem,attr"`
 		} `xml:"minusSign"`
-		Exponential []*struct {
+		ApproximatelySign []*Common `xml:"approximatelySign"`
+		Exponential       []*struct {
 			Common
 			NumberSystem string `xml:"numberSystem,attr"`
 		} `xml:"exponential"`
@@ -1380,6 +1687,13 @@ type Numbers struct {
 			} `xml:"decimalFormat"`
 		} `xml:"decimalFormatLength"`
 	} `xml:"decimalFormats"`
+	RationalFormats []*struct {
+		Common
+		NumberSystem              string    `xml:"numberSystem,attr"`
+		RationalPattern           []*Common `xml:"rationalPattern"`
+		IntegerAndRationalPattern []*Common `xml:"integerAndRationalPattern"`
+		RationalUsage             []*Common `xml:"rationalUsage"`
+	} `xml:"rationalFormats"`
 	ScientificFormats []*struct {
 		Common
 		NumberSystem           string `xml:"numberSystem,attr"`
@@ -1439,16 +1753,19 @@ type Numbers struct {
 				} `xml:"pattern"`
 			} `xml:"currencyFormat"`
 		} `xml:"currencyFormatLength"`
-		UnitPattern []*struct {
+		CurrencyPatternAppendISO []*Common `xml:"currencyPatternAppendISO"`
+		UnitPattern              []*struct {
 			Common
 			Count string `xml:"count,attr"`
+			Case  string `xml:"case,attr"`
 		} `xml:"unitPattern"`
 	} `xml:"currencyFormats"`
 	Currencies *struct {
 		Common
 		Currency []*struct {
 			Common
-			Pattern []*struct {
+			NumberSystem string `xml:"numberSystem,attr"`
+			Pattern      []*struct {
 				Common
 				Numbers string `xml:"numbers,attr"`
 				Count   string `xml:"count,attr"`
@@ -1487,8 +1804,16 @@ type Numbers struct {
 			Common
 			Ordinal string `xml:"ordinal,attr"`
 		} `xml:"ordinalMinimalPairs"`
+		CaseMinimalPairs []*struct {
+			Common
+			Case string `xml:"case,attr"`
+		} `xml:"caseMinimalPairs"`
+		GenderMinimalPairs []*struct {
+			Common
+			Gender string `xml:"gender,attr"`
+		} `xml:"genderMinimalPairs"`
 	} `xml:"minimalPairs"`
 }
 
 // Version is the version of CLDR from which the XML definitions are generated.
-const Version = "32"
+const Version = "49"

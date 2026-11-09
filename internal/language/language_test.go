@@ -584,10 +584,12 @@ func TestParent(t *testing.T) {
 		// extra
 		{"nl-Cyrl", "und"},
 
+		// European English inherits through en-150 in CLDR 49.
+		{"en-BE", "en-150"},
+
 		// World english inherits from en-001.
 		{"en-150", "en-001"},
 		{"en-AU", "en-001"},
-		{"en-BE", "en-001"},
 		{"en-GG", "en-001"},
 		{"en-GI", "en-001"},
 		{"en-HK", "en-001"},
@@ -637,6 +639,64 @@ func TestParent(t *testing.T) {
 		tag := MustParse(tt.in)
 		if p := MustParse(tt.out); p != tag.Parent() {
 			t.Errorf("%s: was %v; want %v", tt.in, tag.Parent(), p)
+		}
+	}
+}
+
+func TestExactParentOverrides(t *testing.T) {
+	// Exercise the runtime even when bootstrapping with older generated tables.
+	saved := parentOverrides
+	defer func() { parentOverrides = saved }()
+	parentOverrides = nil
+	for _, pair := range [][2]string{
+		{"hi-Latn", "en-IN"},
+		{"nb", "no"},
+		{"nn", "no"},
+		{"no-NO", "no"},
+	} {
+		from, to := MustParse(pair[0]), MustParse(pair[1])
+		parentOverrides = append(parentOverrides, parentOverride{
+			fromLang: uint16(from.LangID), fromScript: uint16(from.ScriptID), fromRegion: uint16(from.RegionID),
+			toLang: uint16(to.LangID), toScript: uint16(to.ScriptID), toRegion: uint16(to.RegionID),
+		})
+	}
+	checkExactParents(t)
+}
+
+func TestGeneratedExactParents(t *testing.T) {
+	if CLDRVersion != "49" {
+		t.Skip("requires regenerated CLDR 49 tables")
+	}
+	checkExactParents(t)
+}
+
+func checkExactParents(t *testing.T) {
+	t.Helper()
+	for _, tt := range []struct{ in, out string }{
+		{"hi-Latn", "en-IN"},
+		{"hi-Latn-u-nu-latn", "hi-Latn"}, // strip extensions first
+		{"hi", "und"},                   // exact script match required
+		{"hi-Deva", "hi"},
+		{"hi-Latn-IN", "hi-Latn"}, // exact region match required
+		{"nb", "no"},
+		{"nn", "no"},
+		{"no-NO", "no"},
+		{"no", "und"}, // no self-parent through the nb-to-no macro alias
+		{"nb-NO", "nb"},
+		{"en-IN", "en-001"}, // existing region overrides still apply
+	} {
+		tag := MustParse(tt.in)
+		if got, want := tag.Parent(), MustParse(tt.out); got != want {
+			t.Errorf("%s: parent = %v; want %v", tt.in, got, want)
+		}
+		seen := make(map[Tag]bool)
+		for tag != Und {
+			if seen[tag] {
+				t.Errorf("%s: parent cycle at %v", tt.in, tag)
+				break
+			}
+			seen[tag] = true
+			tag = tag.Parent()
 		}
 	}
 }
