@@ -297,3 +297,58 @@ func TestTransitionalDefault(t *testing.T) {
 	}
 	doTest(t, Lookup.ToASCII, "Lookup", "straße.de", want, "")
 }
+
+// TestBidiRuleAfterMapping checks that the Bidi rule is applied to labels
+// after UTS #46 mapping, so that a name and its A-label form give the same
+// result. See golang/go#81525.
+func TestBidiRuleAfterMapping(t *testing.T) {
+	lookupBidi := New(MapForLookup(), BidiRule())
+	noValidate := New(MapForLookup(), ValidateLabels(false), BidiRule())
+	for _, tc := range []struct {
+		name    string
+		profile *Profile
+		in      string
+		want    string // "" means an error is expected
+	}{
+		// U+2135 ALEF SYMBOL (L) maps to U+05D0 HEBREW LETTER ALEF (R).
+		// The mapped label "a\u05d0b" violates rule 1 of RFC 5893.
+		{"Lookup", Lookup, "a\u2135b", ""},
+		{"Lookup", Lookup, "a\u05d0b", ""},
+		{"Lookup", Lookup, "xn--ab-vld", ""},
+		{"Display", Display, "a\u2135b", ""},
+		{"Display", Display, "xn--ab-vld", ""},
+		{"MapForLookup+BidiRule", lookupBidi, "a\u2135b", ""},
+		{"MapForLookup+BidiRule", lookupBidi, "xn--ab-vld", ""},
+		// A mapped RTL character makes the whole name a Bidi domain name,
+		// so rule 1 applies to the LTR label too.
+		{"Lookup", Lookup, "1a.\u2135", ""},
+		{"Lookup", Lookup, "1a.xn--4db", ""},
+		// Registration does not map, and rejects U+2135 outright.
+		{"Registration", Registration, "a\u2135b", ""},
+		// Punycode does not check the Bidi rule.
+		{"Punycode", Punycode, "a\u2135b", "xn--ab-zru"},
+		{"Punycode", Punycode, "xn--ab-vld", "xn--ab-vld"},
+		// Valid RTL labels, reached through mapping or not, are unaffected.
+		{"Lookup", Lookup, "\u2135\u2136", "xn--4dbc"},
+		{"Lookup", Lookup, "\u05d0\u05d1", "xn--4dbc"},
+		{"Lookup", Lookup, "xn--4dbc", "xn--4dbc"},
+		{"Lookup", Lookup, "a.\u2135", "a.xn--4db"},
+		{"Display", Display, "\u2135\u2136", "xn--4dbc"},
+		// U+FE8D ARABIC LETTER ALEF ISOLATED FORM (AL) maps to U+0627 (AL).
+		{"Lookup", Lookup, "\ufe8d\ufe8f", "xn--mgbc"},
+		{"Lookup", Lookup, "a\ufe8db", ""},
+		// Without label validation, a disallowed RTL rune such as
+		// U+061C still makes the name a Bidi domain name.
+		{"ValidateLabels(false)", noValidate, "1a.\u061c", ""},
+		{"ValidateLabels(false)", noValidate, "\u061c", "xn--bgb"},
+	} {
+		got, err := tc.profile.ToASCII(tc.in)
+		if tc.want == "" {
+			if err == nil {
+				t.Errorf("%s.ToASCII(%+q) = %q, want error", tc.name, tc.in, got)
+			}
+		} else if err != nil || got != tc.want {
+			t.Errorf("%s.ToASCII(%+q) = %q, %v; want %q, nil", tc.name, tc.in, got, err, tc.want)
+		}
+	}
+}

@@ -517,6 +517,24 @@ func (c info) isBidi(s string) bool {
 	return false
 }
 
+// hasRTL reports whether b contains a rune of Bidi class R, AL or AN,
+// which makes a label an RTL label as defined in RFC 5893, Section 1.4.
+func hasRTL(b []byte) bool {
+	for i := 0; i < len(b); {
+		p, sz := bidi.Lookup(b[i:])
+		if sz == 0 {
+			i++
+			continue
+		}
+		switch p.Class() {
+		case bidi.R, bidi.AL, bidi.AN:
+			return true
+		}
+		i += sz
+	}
+	return false
+}
+
 func validateAndMap(p *Profile, s string) (vm string, bidi bool, err error) {
 	var (
 		b []byte
@@ -539,14 +557,15 @@ func validateAndMap(p *Profile, s string) (vm string, bidi bool, err error) {
 			break
 		}
 		combinedInfoBits |= info(v)
-		bidi = bidi || info(v).isBidi(s[i:])
 		start := i
 		i += sz
 		// Copy bytes not copied so far.
 		switch p.simplify(info(v).category()) {
 		case valid:
+			bidi = bidi || info(v).isBidi(s[start:])
 			continue
 		case disallowed:
+			bidi = bidi || info(v).isBidi(s[start:])
 			// Unicode 16 delays the error until validateLabels.
 			// Unicode 10 gave an error now.
 			if !unicode16 && err == nil {
@@ -561,12 +580,17 @@ func validateAndMap(p *Profile, s string) (vm string, bidi bool, err error) {
 			fallthrough
 		case mapped:
 			b = append(b, s[k:start]...)
+			n := len(b)
 			// Unicode 16 requires a special case to handle ẞ -> ss in transitional mode.
 			if unicode16 && p.transitional && s[start:start+sz] == "ẞ" {
 				b = append(b, "ss"...)
 			} else {
 				b = info(v).appendMapping(b, s[start:i])
 			}
+			// Whether this is a Bidi domain name is decided on the
+			// mapped labels (UTS #46, Section 4.1), so test the mapping,
+			// not the original rune: U+2135 (L) maps to U+05D0 (R).
+			bidi = bidi || hasRTL(b[n:])
 		case ignored:
 			b = append(b, s[k:start]...)
 			// drop the rune
