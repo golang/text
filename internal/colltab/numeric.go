@@ -80,6 +80,7 @@ func (nw *numericWeighter) AppendNext(buf []Elem, s []byte) (ce []Elem, n int) {
 	}
 	// ce might have been grown already, so take it instead of buf.
 	nc.init(ce, len(buf), isZero)
+	oldIndex := len(nc.elems)
 	for n < len(s) {
 		ce, sz := nw.Weighter.AppendNext(nc.elems, s[n:])
 		nc.b = s
@@ -87,7 +88,12 @@ func (nw *numericWeighter) AppendNext(buf []Elem, s []byte) (ce []Elem, n int) {
 		if !nc.update(ce) {
 			break
 		}
+		oldIndex = len(nc.elems)
 	}
+	nc.elems = append(nc.elems, 0)
+	copy(nc.elems[oldIndex+1:], nc.elems[oldIndex:])
+	nc.elems[oldIndex], _ = MakeElem(nc.zero+1, defaultSecondary, defaultTertiary, 0)
+
 	return nc.result(), n
 }
 
@@ -105,6 +111,7 @@ func (nw *numericWeighter) AppendNextString(buf []Elem, s string) (ce []Elem, n 
 		return ce, n
 	}
 	nc.init(ce, len(buf), isZero)
+	oldIndex := len(nc.elems)
 	for n < len(s) {
 		ce, sz := nw.Weighter.AppendNextString(nc.elems, s[n:])
 		nc.s = s
@@ -112,7 +119,12 @@ func (nw *numericWeighter) AppendNextString(buf []Elem, s string) (ce []Elem, n 
 		if !nc.update(ce) {
 			break
 		}
+		oldIndex = len(nc.elems)
 	}
+	nc.elems = append(nc.elems, 0)
+	copy(nc.elems[oldIndex+1:], nc.elems[oldIndex:])
+	nc.elems[oldIndex], _ = MakeElem(nc.zero+1, defaultSecondary, defaultTertiary, 0)
+
 	return nc.result(), n
 }
 
@@ -122,6 +134,7 @@ type numberConverter struct {
 	elems    []Elem
 	nDigits  int
 	lenIndex int
+	zero     int
 
 	s string // set if the input was of type string
 	b []byte // set if the input was of type []byte
@@ -133,6 +146,7 @@ func (nc *numberConverter) init(elems []Elem, oldLen int, isZero bool) {
 	// Insert a marker indicating the start of a number and a placeholder
 	// for the number of digits.
 	if isZero {
+		nc.zero++
 		elems = append(elems[:oldLen], nc.w.numberStart, 0)
 	} else {
 		elems = append(elems, 0, 0)
@@ -217,6 +231,9 @@ const maxDigits = 1<<maxPrimaryBits - 1
 func (nc *numberConverter) update(elems []Elem) bool {
 	isZero, ok := nc.checkNextDigit(elems)
 	if nc.nDigits == 0 && isZero {
+		if nc.zero+1 < maxDigits {
+			nc.zero++
+		}
 		return true
 	}
 	nc.elems = elems
@@ -224,13 +241,13 @@ func (nc *numberConverter) update(elems []Elem) bool {
 		return false
 	}
 	nc.nDigits++
-	return nc.nDigits < maxDigits
+	return nc.nDigits+1 < maxDigits
 }
 
 // result fills in the length element for the digit sequence and returns the
 // completed collation elements.
 func (nc *numberConverter) result() []Elem {
-	e, _ := MakeElem(nc.nDigits, defaultSecondary, defaultTertiary, 0)
+	e, _ := MakeElem(nc.nDigits+1, defaultSecondary, defaultTertiary, 0)
 	nc.elems[nc.lenIndex] = e
 	return nc.elems
 }
