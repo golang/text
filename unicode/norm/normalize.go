@@ -214,6 +214,9 @@ func (f Form) doAppend(out []byte, src input, n int) []byte {
 }
 
 func doAppend(rb *reorderBuffer, out []byte, p int) []byte {
+	// The tail of out is re-scanned below. A reused buffer may have stale
+	// stream-safe state after a quick copy.
+	rb.ss = 0
 	rb.setFlusher(out, appendFlush)
 	src, n := rb.src, rb.nsrc
 	doMerge := len(out) > 0
