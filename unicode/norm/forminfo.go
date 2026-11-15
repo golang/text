@@ -97,6 +97,11 @@ var formTable = []*formInfo{{
 // cannot combine with any rune on the left.
 func (p Properties) BoundaryBefore() bool {
 	if p.ccc == 0 && !p.combinesBackward() {
+		// A compatibility decomposition can start with a Jamo V or T,
+		// which has CCC zero but can still combine with a preceding rune.
+		if d := p.Decomposition(); len(d) > 0 {
+			return !NFC.Properties(d).combinesBackward()
+		}
 		return true
 	}
 	// We assume that the CCC of the first character in a decomposition
