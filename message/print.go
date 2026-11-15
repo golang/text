@@ -934,7 +934,10 @@ func (p *printer) doPrintf(fmt string) {
 			panic("unreachable")
 		}
 	}
+}
 
+// Check for extra arguments after all message fragments have been rendered.
+func (p *printer) checkExtraArgs() {
 	// Check for extra arguments, but only if there was at least one ordered
 	// argument. Note that this behavior is necessarily different from fmt:
 	// different variants of messages may opt to drop some or all of the

@@ -20,6 +20,30 @@ type formatFunc func(s fmt.State, v rune)
 
 func (f formatFunc) Format(s fmt.State, v rune) { f(s, v) }
 
+func TestVariableBetweenSubstitutions(t *testing.T) {
+	for _, tc := range []struct {
+		format string
+		want   string
+	}{
+		{"%d ${var} %d", "1 value 2"},
+		{"${var} %d ${var} %d ${var}", "value 1 value 2 value"},
+		{"%[1]d ${var} %[2]d", "1 value 2"},
+		{"%d ${var}", "1 value%!(EXTRA int=2)"},
+	} {
+		t.Run(tc.format, func(t *testing.T) {
+			cat := catalog.NewBuilder()
+			if err := cat.Set(language.English, "key",
+				catalog.Var("var", catalog.String("value")), catalog.String(tc.format)); err != nil {
+				t.Fatal(err)
+			}
+			p := NewPrinter(language.English, Catalog(cat))
+			if got := p.Sprintf("key", 1, 2); got != tc.want {
+				t.Errorf("Sprintf = %q; want %q", got, tc.want)
+			}
+		})
+	}
+}
+
 func TestBinding(t *testing.T) {
 	testCases := []struct {
 		tag   string
