@@ -195,7 +195,11 @@ func (c *Collator) compare() int {
 func (c *Collator) Key(buf *Buffer, str []byte) []byte {
 	// See https://www.unicode.org/reports/tr10/#Main_Algorithm for more details.
 	buf.init()
-	return c.key(buf, c.getColElems(str))
+	kn := c.key(buf, c.getColElems(str))
+	if !c.ignore[colltab.Identity] {
+		buf.key = append(buf.key, str...)
+	}
+	return buf.key[kn:]
 }
 
 // KeyFromString returns the collation key for str.
@@ -205,14 +209,22 @@ func (c *Collator) Key(buf *Buffer, str []byte) []byte {
 func (c *Collator) KeyFromString(buf *Buffer, str string) []byte {
 	// See https://www.unicode.org/reports/tr10/#Main_Algorithm for more details.
 	buf.init()
-	return c.key(buf, c.getColElemsString(str))
+	kn := c.key(buf, c.getColElemsString(str))
+	if !c.ignore[colltab.Identity] {
+		buf.key = append(buf.key, str...)
+	}
+	return buf.key[kn:]
 }
 
-func (c *Collator) key(buf *Buffer, w []colltab.Elem) []byte {
+func (c *Collator) key(buf *Buffer, w []colltab.Elem) int {
 	processWeights(c.alternate, c.t.Top(), w)
 	kn := len(buf.key)
 	c.keyFromElems(buf, w)
-	return buf.key[kn:]
+	if !c.ignore[colltab.Identity] {
+		// Separate the raw-input tie-breaker from the collation weights.
+		buf.key = append(buf.key, 0, 0)
+	}
+	return kn
 }
 
 func (c *Collator) getColElems(str []byte) []colltab.Elem {
