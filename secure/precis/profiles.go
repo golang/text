@@ -46,6 +46,7 @@ var (
 			LowerCase(),
 			Norm(norm.NFC),
 			BidiRule,
+			DisallowEmpty,
 		),
 		class: identifier,
 	}
@@ -54,6 +55,7 @@ var (
 			FoldWidth,
 			Norm(norm.NFC),
 			BidiRule,
+			DisallowEmpty,
 		),
 		class: identifier,
 	}
