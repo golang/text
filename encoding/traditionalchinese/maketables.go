@@ -47,22 +47,20 @@ func main() {
 		}
 		mapping[x] = y
 
-		// The WHATWG spec http://encoding.spec.whatwg.org/#indexes says that
-		// "The index pointer for code point in index is the first pointer
-		// corresponding to code point in index", which would normally mean
-		// that the code below should be guarded by "if reverse[y] == 0", but
-		// last instead of first seems to match the behavior of
-		// "iconv -f UTF-8 -t BIG5". For example, U+8005 者 occurs twice in
-		// http://encoding.spec.whatwg.org/index-big5.txt, as index 2148
-		// (encoded as "\x8e\xcd") and index 6543 (encoded as "\xaa\xcc")
-		// and "echo 者 | iconv -f UTF-8 -t BIG5 | xxd" gives "\xaa\xcc".
+		// Encode at the index Big5 pointer, the first code from lead 0xA1
+		// on (https://encoding.spec.whatwg.org/#index-big5-pointer). The
+		// standard leaves a code point whose codes all lead below 0xA1
+		// (HKSCS) unencodable; it keeps its last code here instead, so
+		// that HKSCS text still encodes.
 		c0, c1 := x/157, x%157
 		if c1 < 0x3f {
 			c1 += 0x40
 		} else {
 			c1 += 0x62
 		}
-		reverse[y] = (0x81+c0)<<8 | c1
+		if reverse[y] < 0xA140 || lastPointer[y] {
+			reverse[y] = (0x81+c0)<<8 | c1
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatalf("scanner error: %v", err)
@@ -123,6 +121,12 @@ func main() {
 		}
 		fmt.Printf("}\n\n")
 	}
+}
+
+// lastPointer lists the code points the index Big5 pointer encodes at their
+// last code instead of their first.
+var lastPointer = map[uint32]bool{
+	0x2550: true, 0x255E: true, 0x2561: true, 0x256A: true, 0x5341: true, 0x5345: true,
 }
 
 // interval is a half-open interval [low, high).
