@@ -1457,39 +1457,86 @@ type parentRel struct {
 	fromRegion []uint16
 }
 
+// parentOverride records an exact locale parent that cannot be represented by
+// the same-language, region-based parentRel table.
+type parentOverride struct {
+	fromLang, fromScript, fromRegion uint16
+	toLang, toScript, toRegion       uint16
+}
+
+type parentTag struct {
+	lang, script, region uint16
+}
+
+// parentTag parses the language, optional script, and optional region separately.
+func (b *builder) parentTag(locale string) parentTag {
+	sub := strings.Split(locale, "_")
+	t := parentTag{lang: b.langIndex(sub[0])}
+	sub = sub[1:]
+	if len(sub) > 0 && len(sub[0]) == 4 {
+		t.script = uint16(b.script.index(sub[0]))
+		sub = sub[1:]
+	}
+	if len(sub) > 0 && (len(sub[0]) == 2 || len(sub[0]) == 3) {
+		t.region = uint16(b.region.index(sub[0]))
+		sub = sub[1:]
+	}
+	if len(sub) != 0 {
+		log.Panicf("unsupported parent locale %q", locale)
+	}
+	return t
+}
+
 func (b *builder) writeParents() {
 	b.writeType(parentRel{})
 
 	parents := []parentRel{}
+	overrides := []parentOverride{}
 
 	// Construct parent overrides.
 	n := 0
-	for _, p := range b.data.Supplemental().ParentLocales.ParentLocale {
-		// Skipping non-standard scripts to root is implemented using addTags.
-		if p.Parent == "root" {
+	for _, group := range b.data.Supplemental().ParentLocales {
+		// Component-specific parents do not apply to general language inheritance.
+		if group.Component != "" {
 			continue
 		}
+		for _, p := range group.ParentLocale {
+			// Skipping non-standard scripts to root is implemented using addTags.
+			if p.Parent == "root" {
+				continue
+			}
 
-		sub := strings.Split(p.Parent, "_")
-		parent := parentRel{lang: b.langIndex(sub[0])}
-		if len(sub) == 2 {
-			// TODO: check that all undefined scripts are indeed Latn in these
-			// cases.
-			parent.maxScript = uint16(b.script.index("Latn"))
-			parent.toRegion = uint16(b.region.index(sub[1]))
-		} else {
-			parent.script = uint16(b.script.index(sub[1]))
-			parent.maxScript = parent.script
-			parent.toRegion = uint16(b.region.index(sub[2]))
+			to := b.parentTag(p.Parent)
+			parent := parentRel{
+				lang: to.lang, script: to.script, maxScript: to.script,
+				toRegion: to.region,
+			}
+			if parent.maxScript == 0 {
+				// Preserve the existing default for region-based overrides.
+				parent.maxScript = uint16(b.script.index("Latn"))
+			}
+			for _, c := range strings.Fields(p.Locales) {
+				from := b.parentTag(c)
+				if from.lang == to.lang && from.region != 0 && to.region != 0 &&
+					(from.script == 0 || from.script == parent.maxScript) {
+					parent.fromRegion = append(parent.fromRegion, from.region)
+				} else {
+					overrides = append(overrides, parentOverride{
+						fromLang: from.lang, fromScript: from.script, fromRegion: from.region,
+						toLang: to.lang, toScript: to.script, toRegion: to.region,
+					})
+				}
+			}
+			if len(parent.fromRegion) != 0 {
+				parents = append(parents, parent)
+				n += len(parent.fromRegion)
+			}
 		}
-		for _, c := range strings.Split(p.Locales, " ") {
-			region := b.region.index(c[strings.LastIndex(c, "_")+1:])
-			parent.fromRegion = append(parent.fromRegion, uint16(region))
-		}
-		parents = append(parents, parent)
-		n += len(parent.fromRegion)
 	}
 	b.writeSliceAddSize("parents", n*2, parents)
+	b.writeSlice("cldrParentOverrides", overrides)
+	// Older tables lack overrides; keep the runtime buildable while bootstrapping.
+	fmt.Fprintln(b.w, "func init() { parentOverrides = cldrParentOverrides[:] }")
 }
 
 func main() {
@@ -1498,7 +1545,6 @@ func main() {
 	gen.Repackage("gen_common.go", "common.go", "language")
 
 	w := gen.NewCodeWriter()
-	defer w.WriteGoFile("tables.go", "language")
 
 	fmt.Fprintln(w, `import "golang.org/x/text/internal/tag"`)
 
@@ -1516,4 +1562,7 @@ func main() {
 	b.writeLikelyData()
 	b.writeRegionInclusionData()
 	b.writeParents()
+
+	// Preserve the existing tables if generation panics.
+	w.WriteGoFile("tables.go", "language")
 }

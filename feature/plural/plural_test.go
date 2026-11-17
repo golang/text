@@ -68,13 +68,157 @@ func mkDigits(s string) []byte {
 	return b
 }
 
+func TestCLDR49MillionRules(t *testing.T) {
+	// CLDR's compact exponent e is zero for ordinary (noncompact) input.
+	tests := []struct {
+		name   string
+		digits string
+		exp    int
+		scale  int
+		want   Form
+	}{
+		{"one million", "1000000", 7, 0, Many},
+		{"two million", "2000000", 7, 0, Many},
+		{"million plus one", "1000001", 7, 0, Other},
+		{"two million plus one", "2000001", 7, 0, Other},
+		{"million with fraction", "10000000", 7, 1, Other},
+		{"small number", "1000", 4, 0, Other},
+	}
+	for _, lang := range []string{"fr", "pt", "es", "it"} {
+		for _, tt := range tests {
+			t.Run(lang+"/"+tt.name, func(t *testing.T) {
+				got := Cardinal.MatchDigits(language.MustParse(lang), mkDigits(tt.digits), tt.exp, tt.scale)
+				if got != tt.want {
+					t.Errorf("got %v; want %v", got, tt.want)
+				}
+			})
+		}
+	}
+}
+
+func TestCLDR49CornishTwo(t *testing.T) {
+	tag := language.MustParse("kw")
+	for _, tc := range []struct {
+		n    int
+		want Form
+	}{
+		{0, Zero},
+		{2, Two},
+		{22, Two},
+		{100, Other},
+		{102, Two},
+		{1000, Two},
+		{10000, Two},
+		{20000, Two},
+		{21000, Other},
+		{40000, Two},
+		{60000, Two},
+		{80000, Two},
+		{90000, Other},
+		{100000, Two},
+		{101000, Two},
+		{1100000, Two},
+		{200000, Other},
+	} {
+		if got := Cardinal.matchComponents(tag, tc.n, 0, 0); got != tc.want {
+			t.Errorf("kw(%d): got %v; want %v", tc.n, got, tc.want)
+		}
+		digits := mkDigits(fmt.Sprint(tc.n))
+		if got := Cardinal.MatchDigits(tag, digits, len(digits), 0); got != tc.want {
+			t.Errorf("kw digits(%d): got %v; want %v", tc.n, got, tc.want)
+		}
+	}
+	for _, tc := range []struct {
+		n    int
+		f    int
+		want Form
+	}{
+		{100, 0, Other},
+		{1000, 0, Two},
+		{10000, 0, Two},
+		{100000, 0, Two},
+		{1000, 1, Other},
+	} {
+		if got := Cardinal.MatchPlural(tag, tc.n, 1, 1, tc.f, tc.f); got != tc.want {
+			t.Errorf("kw(%d.%d): got %v; want %v", tc.n, tc.f, got, tc.want)
+		}
+	}
+}
+
+func TestCLDR49LigurianOrdinals(t *testing.T) {
+	for _, loc := range []string{"lij", "scn"} {
+		for _, tt := range []struct {
+			n    int
+			want Form
+		}{
+			{799, Other},
+			{800, Many},
+			{801, Many},
+			{803, Many},
+			{899, Many},
+			{900, Other},
+		} {
+			tag := language.MustParse(loc)
+			if got := Ordinal.matchComponents(tag, tt.n, 0, 0); got != tt.want {
+				t.Errorf("%s(%d) = %v; want %v", loc, tt.n, got, tt.want)
+			}
+		}
+	}
+}
+
+func TestGetPluralInteger(t *testing.T) {
+	for _, tt := range []struct {
+		digits string
+		exp    int
+		want   int
+	}{
+		{"1", 7, 1000000},
+		{"1000001", 7, 1000001},
+		{"2", 7, 1000000},
+		{"2000001", 7, 1000001},
+		{"1", 8, 1000000},
+		{"1234567", 7, 1234567},
+		{"0", 7, 0},
+	} {
+		if got := getPluralInteger(mkDigits(tt.digits), tt.exp); got != tt.want {
+			t.Errorf("getPluralInteger(%s, %d) = %d; want %d", tt.digits, tt.exp, got, tt.want)
+		}
+	}
+}
+
+func TestIcelandicFractionalOperands(t *testing.T) {
+	cases := []struct {
+		fraction string
+		want     Form
+	}{
+		{"1", One},       // 0.1: t = 1
+		{"10", One},      // 0.10: t = 1
+		{"0010", One},    // 0.0010: t = 1
+		{"11", Other},    // 0.11: t = 11
+		{"110", Other},   // 0.110: t = 11
+		{"101", One},     // 0.101: t % 100 = 1
+		{"1010", One},    // 0.1010: t % 100 = 1
+		{"111", Other},   // 0.111: t % 100 = 11
+		{"1231", One},    // 0.1231: t % 100 = 31
+		{"12311", Other}, // 0.12311: t % 100 = 11
+	}
+	for _, tc := range cases {
+		t.Run(tc.fraction, func(t *testing.T) {
+			digits := mkDigits(tc.fraction)
+			if got := Cardinal.MatchDigits(language.MustParse("is"), digits, 0, len(digits)); got != tc.want {
+				t.Errorf("MatchDigits(0.%s) = %v; want %v", tc.fraction, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestValidForms(t *testing.T) {
 	testCases := []struct {
 		tag  language.Tag
 		want []Form
 	}{
 		{language.AmericanEnglish, []Form{Other, One}},
-		{language.Portuguese, []Form{Other, One}},
+		{language.Portuguese, []Form{Other, One, Many}},
 		{language.Latvian, []Form{Other, Zero, One}},
 		{language.Arabic, []Form{Other, Zero, One, Two, Few, Many}},
 		{language.Russian, []Form{Other, One, Few, Many}},
@@ -110,6 +254,7 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 				for n := from; n <= to; n++ {
 					t.Run(fmt.Sprintf("%s/int(%d)", loc, n), func(t *testing.T) {
 						if f := p.matchComponents(tag, n, 0, 0); f != Form(tc.form) {
+                                                        t.Errorf("Tag %v, n: %v", tag, n)
 							t.Errorf("matchComponents: got %v; want %v", f, Form(tc.form))
 						}
 						digits := []byte(fmt.Sprint(n))
@@ -117,6 +262,7 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 							digits[i] -= '0'
 						}
 						if f := p.MatchDigits(tag, digits, len(digits), 0); f != Form(tc.form) {
+                                                        t.Errorf("Tag: %v digits: %v", tag, digits)
 							t.Errorf("MatchDigits: got %v; want %v", f, Form(tc.form))
 						}
 					})
@@ -149,9 +295,11 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 							tt /= 10
 						}
 						if f := p.MatchPlural(tag, n/m, scale, w, ff, tt); f != Form(tc.form) {
+						        t.Errorf("Tag: %v n: %v m: %v scale: %v w: %v ff: %v tt: %v", tag, n, m, scale, w, ff, tt)
 							t.Errorf("MatchPlural: got %v; want %v", f, Form(tc.form))
 						}
 						if f := p.matchComponents(tag, n/m, n%m, scale); f != Form(tc.form) {
+						        t.Errorf("Tag: %v n: %v m: %v scale: %v", tag, n, m, scale)
 							t.Errorf("matchComponents: got %v; want %v", f, Form(tc.form))
 						}
 						exp := strings.IndexByte(num, '.')
@@ -160,6 +308,7 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 							digits[i] -= '0'
 						}
 						if f := p.MatchDigits(tag, digits, exp, scale); f != Form(tc.form) {
+						        t.Errorf("Tag: %v, exp: %v digits: %v scale: %v", tag, exp, digits, scale)
 							t.Errorf("MatchDigits: got %v; want %v", f, Form(tc.form))
 						}
 					})
@@ -170,7 +319,7 @@ func testPlurals(t *testing.T, p *Rules, testCases []pluralTest) {
 }
 
 func parseUint(t *testing.T, s string) int {
-	val, err := strconv.ParseUint(s, 10, 32)
+	val, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +329,7 @@ func parseUint(t *testing.T, s string) int {
 func parseFixedPoint(t *testing.T, s string) (val, scale int) {
 	p := strings.Index(s, ".")
 	s = strings.Replace(s, ".", "", 1)
-	v, err := strconv.ParseUint(s, 10, 32)
+	v, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,12 +341,12 @@ func BenchmarkPluralSimpleCases(b *testing.B) {
 	en := tagToID(language.English)
 	zh := tagToID(language.Chinese)
 	for i := 0; i < b.N; i++ {
-		matchPlural(p, en, 0, 0, 0)  // 0
-		matchPlural(p, en, 1, 0, 0)  // 1
-		matchPlural(p, en, 2, 12, 3) // 2.120
-		matchPlural(p, zh, 0, 0, 0)  // 0
-		matchPlural(p, zh, 1, 0, 0)  // 1
-		matchPlural(p, zh, 2, 12, 3) // 2.120
+		matchPlural(p, en, 0, 0, 0, 0)  // 0
+		matchPlural(p, en, 1, 0, 0, 0)  // 1
+		matchPlural(p, en, 2, 12, 3, 12) // 2.120
+		matchPlural(p, zh, 0, 0, 0, 0)  // 0
+		matchPlural(p, zh, 1, 0, 0, 0)  // 1
+		matchPlural(p, zh, 2, 12, 3, 12) // 2.120
 	}
 }
 
@@ -206,11 +355,11 @@ func BenchmarkPluralComplexCases(b *testing.B) {
 	ar := tagToID(language.Arabic)
 	lv := tagToID(language.Latvian)
 	for i := 0; i < b.N; i++ {
-		matchPlural(p, lv, 0, 19, 2)    // 0.19
-		matchPlural(p, lv, 11, 0, 3)    // 11.000
-		matchPlural(p, lv, 100, 123, 4) // 0.1230
-		matchPlural(p, ar, 0, 0, 0)     // 0
-		matchPlural(p, ar, 110, 0, 0)   // 110
-		matchPlural(p, ar, 99, 99, 2)   // 99.99
+		matchPlural(p, lv, 0, 19, 2, 19)    // 0.19
+		matchPlural(p, lv, 11, 0, 3, 0)    // 11.000
+		matchPlural(p, lv, 100, 123, 4, 123) // 0.1230
+		matchPlural(p, ar, 0, 0, 0, 0)     // 0
+		matchPlural(p, ar, 110, 0, 0, 0)   // 110
+		matchPlural(p, ar, 99, 99, 2, 99)   // 99.99
 	}
 }

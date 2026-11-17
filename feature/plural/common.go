@@ -39,7 +39,7 @@ type pluralCheck struct {
 }
 
 // opID identifies the type of operand in the plural rule, being i, n or f.
-// (v, w, and t are treated as filters in our implementation.)
+// (v and w are filters; t uses w's opcode with the modulo bit set.)
 type opID byte
 
 const (
@@ -49,7 +49,7 @@ const (
 	opN             opID = 1 << 2 // full number (must be integer)
 	opF             opID = 2 << 2 // fraction
 	opV             opID = 3 << 2 // number of visible digits
-	opW             opID = 4 << 2 // number of visible digits without trailing zeros
+	opW             opID = 4 << 2 // w == 0; with opMod, t modulo 10 or 100
 	opBretonM       opID = 5 << 2 // hard-wired rule for Breton
 	opItalian800    opID = 6 << 2 // hard-wired rule for Italian
 	opAzerbaijan00s opID = 7 << 2 // hard-wired rule for Azerbaijan

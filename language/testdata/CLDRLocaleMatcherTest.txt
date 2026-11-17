@@ -150,7 +150,7 @@ zh, zh-TW, zh-HK ; 	zh-MO ; 	zh-HK
 
 zh, zh-Hant ; 	und-TW ; 	zh-Hant	# und-TW should be closer to zh-Hant than to zh
 en-Hant-TW, und-TW ; 	zh-Hant ; 	und-TW	# zh-Hant should be closer to und-TW than to en-Hant-TW
-en-Hant-TW, und-TW ; 	zh ; 	und-TW	# zh should be closer to und-TW than to en-Hant-TW
+en-Hant-TW, und-TW ; 	zh ; 	en-Hant-TW	# CLDR 49 has no Hans-to-Hant fallback; use the default.
 
 ##################################################
 # testMatchGrandfatheredCode
@@ -196,17 +196,14 @@ en, de, fr, ja ; 	de-CH, fr ; 	de
 # but does not support Traditional Chinese. zh-Hans-CN could be replaced with zh-CN, zh, or
 # zh-Hans, it wouldn't make much of a difference.
 
-# The script distance (simplified vs. traditional Han) is considered small enough
-# to be an acceptable match. The regional difference is considered almost insignificant.
+# CLDR 49 no longer supplies Hans/Hant fallback rules. With no acceptable
+# language or same-script match, the Go matcher returns the first supported tag.
 
-fr, zh-Hans-CN, en-US ; 	zh-TW ; 	zh-Hans-CN
-fr, zh-Hans-CN, en-US ; 	zh-Hant ; 	zh-Hans-CN
+fr, zh-Hans-CN, en-US ; 	zh-TW ; 	fr	# CLDR 49 has no Hant-to-Hans fallback; use the default.
+fr, zh-Hans-CN, en-US ; 	zh-Hant ; 	fr	# CLDR 49 has no Hant-to-Hans fallback; use the default.
 
-# For geo-political reasons, you might want to avoid a zh-Hant -> zh-Hans match.
-# In this case, if zh-TW, zh-HK or a tag starting with zh-Hant is requested, you can
-# change your call to getBestMatch to include a 2nd language preference.
-# "en" is a better match since its distance to "en-US" is closer than the distance
-# from "zh-TW" to "zh-CN" (script distance).
+# A supported secondary preference still matches when the first preference
+# has no acceptable script match.
 
 fr, zh-Hans-CN, en-US ; 	zh-TW, en ; 	en-US
 fr, zh-Hans-CN, en-US ; 	zh-Hant-CN, en, en ; 	en-US
@@ -238,7 +235,7 @@ it, und ; 	en ; 	it
 # testGetBestMatch-regionDistance
 
 es-AR, es ; 	es-MX ; 	es-AR
-fr, en, en-GB ; 	en-CA ; 	en-GB
+fr, en, en-GB ; 	en-CA ; 	en	# CLDR 49 includes CA in the $enUS region group.
 de-AT, de-DE, de-CH ; 	de ; 	de-DE
 
 ##################################################

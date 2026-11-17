@@ -279,11 +279,11 @@ func ExampleMatcher() {
 
 	fmt.Println("----")
 
-	// We match SimplifiedChinese, but with Low confidence.
+	// CLDR 49 has no Traditional-to-Simplified Chinese script fallback,
+	// so the matcher returns its default with No confidence.
 	fmt.Println(m.Match(language.TraditionalChinese))
 
-	// British English is closer to Australian English than Traditional Chinese
-	// to Simplified Chinese.
+	// The second preference, Australian English, matches British English.
 	fmt.Println(m.Match(language.TraditionalChinese, language.Make("en-AU")))
 
 	fmt.Println("----")
@@ -312,7 +312,8 @@ func ExampleMatcher() {
 	// and preserved in the returned tag.
 	fmt.Println(m.Match(language.Make("de-u-co-phonebk"), language.Make("fr-u-cu-frf")))
 
-	// Even if the matching language is different.
+	// Even if the matching language is different. CLDR 49 assigns the
+	// Breton-to-French fallback distance 20, which yields Low confidence.
 	fmt.Println(m.Match(language.Make("de-u-co-phonebk"), language.Make("br-u-cu-frf")))
 
 	// If there is no matching language, the options of the first preferred tag are used.
@@ -324,7 +325,7 @@ func ExampleMatcher() {
 	// en 0 No
 	// en 0 No
 	// ----
-	// zh-Hans 6 Low
+	// en 0 No
 	// en-GB-u-rg-auzzzz 1 High
 	// ----
 	// pt-BR 4 Exact
@@ -335,7 +336,7 @@ func ExampleMatcher() {
 	// he-u-rg-ilzzzz 9 Exact
 	// ----
 	// fr-u-cu-frf 2 Exact
-	// fr-u-cu-frf 2 High
+	// fr-u-cu-frf 2 Low
 	// en-u-co-phonebk 0 No
 }
 
@@ -366,8 +367,8 @@ func ExampleComprehends() {
 	// There is usually no mutual comprehensibility between different scripts.
 	fmt.Println(language.Comprehends(language.Make("en-Dsrt"), language.English))
 
-	// One exception is for Traditional versus Simplified Chinese, albeit with
-	// a low confidence.
+	// CLDR 49 no longer lists a Traditional-to-Simplified Chinese script
+	// fallback, so this also reports No.
 	fmt.Println(language.Comprehends(language.TraditionalChinese, language.SimplifiedChinese))
 
 	fmt.Println("----")
@@ -384,7 +385,7 @@ func ExampleComprehends() {
 	// No
 	// ----
 	// No
-	// Low
+	// No
 	// ----
 	// High
 	// No
