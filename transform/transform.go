@@ -28,8 +28,8 @@ var (
 	// are not identical.
 	ErrEndOfSpan = errors.New("transform: input and output are not identical")
 
-	// errInconsistentByteCount means that Transform returned success (nil
-	// error) but also returned nSrc inconsistent with the src argument.
+	// errInconsistentByteCount means that Transform returned an invalid byte
+	// count or returned success (nil error) without consuming all input.
 	errInconsistentByteCount = errors.New("transform: inconsistent byte count returned")
 
 	// errShortInternal means that an internal buffer is not large enough
@@ -164,6 +164,15 @@ func (r *Reader) Read(p []byte) (int, error) {
 		if r.src0 != r.src1 || r.err != nil {
 			r.dst0 = 0
 			r.dst1, n, err = r.t.Transform(r.dst, r.src[r.src0:r.src1], r.err == io.EOF)
+			if n < 0 || n > r.src1-r.src0 || r.dst1 < 0 || r.dst1 > len(r.dst) {
+				// Do not use invalid counts to index the source or destination.
+				r.dst1 = 0
+				r.transformComplete = true
+				if r.err == nil || r.err == io.EOF {
+					r.err = errInconsistentByteCount
+				}
+				continue
+			}
 			r.src0 += n
 
 			switch {
