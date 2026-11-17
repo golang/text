@@ -7,6 +7,8 @@ package norm
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"strings"
 	"testing"
 )
 
@@ -33,6 +35,23 @@ func TestReader(t *testing.T) {
 	}
 }
 
+func TestReaderSplitRune(t *testing.T) {
+	input := strings.Repeat("\u0634\u064e\u0651", 16)
+	var readers []io.Reader
+	for i := 0; i < len(input); i += 3 {
+		readers = append(readers, strings.NewReader(input[i:i+3]))
+	}
+	// MultiReader returns at most one piece per Read, splitting every other
+	// piece inside a combining mark.
+	got, err := io.ReadAll(NFC.Reader(io.MultiReader(readers...)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != input {
+		t.Errorf("Reader output = %q; want %q", got, input)
+	}
+}
+
 func writeFunc(size int) appendFunc {
 	return func(f Form, out []byte, s string) []byte {
 		in := append(out, s...)
@@ -45,6 +64,14 @@ func writeFunc(size int) appendFunc {
 		}
 		w.Close()
 		return result.Bytes()
+	}
+}
+
+func TestWriterSplitRune(t *testing.T) {
+	input := strings.Repeat("\u0634\u064e\u0651", 16)
+	got := writeFunc(3)(NFC, nil, input)
+	if string(got) != input {
+		t.Errorf("Writer output = %q; want %q", got, input)
 	}
 }
 
