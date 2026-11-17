@@ -272,7 +272,7 @@ func (h errorHandler) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, er
 func errorToHTML(dst []byte, r rune, err repertoireError) (n int, ok bool) {
 	buf := [8]byte{}
 	b := strconv.AppendUint(buf[:0], uint64(r), 10)
-	if n = len(b) + len("&#;"); n >= len(dst) {
+	if n = len(b) + len("&#;"); n > len(dst) {
 		return 0, false
 	}
 	dst[0] = '&'
