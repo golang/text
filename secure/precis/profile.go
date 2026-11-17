@@ -105,10 +105,12 @@ func (p *Profile) NewTransformer() *Transformer {
 			ts = append(ts, bidirule.New())
 		}
 
-		ts = append(ts, &checker{p: p, allowed: p.Allowed()})
+		ts = append(ts, &checker{p: p, disallow: p.options.disallow})
 	}
 
-	// TODO: Add the disallow empty rule with a dummy transformer?
+	if p.options.disallowEmpty {
+		ts = append(ts, &emptyChecker{})
+	}
 
 	return &Transformer{transform.Chain(ts...)}
 }
@@ -332,8 +334,8 @@ func (p *Profile) Allowed() runes.Set {
 }
 
 type checker struct {
-	p       *Profile
-	allowed runes.Set
+	p        *Profile
+	disallow runes.Set // set only by NewTransformer; enforce checks it separately
 
 	beforeBits catBitmap
 	termBits   catBitmap
@@ -386,6 +388,11 @@ func (c *checker) span(src []byte, atEOF bool) (n int, err error) {
 			c.termBits = d.term
 			c.acceptBits = d.accept
 		}
+		if c.disallow != nil {
+			if r, _ := utf8.DecodeRune(src[n:]); c.disallow.Contains(r) {
+				return n, errDisallowedRune
+			}
+		}
 		n += sz
 	}
 	if m := c.beforeBits >> finalShift; c.beforeBits&m != m || c.termBits != 0 {
@@ -395,6 +402,25 @@ func (c *checker) span(src []byte, atEOF bool) (n int, err error) {
 		err = errContext
 	}
 	return n, err
+}
+
+// emptyChecker implements the DisallowEmpty rule for a Transformer.
+type emptyChecker struct{ seen bool }
+
+func (e *emptyChecker) Reset() { e.seen = false }
+
+func (e *emptyChecker) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err error) {
+	n := copy(dst, src)
+	if n > 0 {
+		e.seen = true
+	}
+	switch {
+	case n < len(src):
+		err = transform.ErrShortDst
+	case atEOF && !e.seen:
+		err = errEmptyString
+	}
+	return n, n, err
 }
 
 // TODO: we may get rid of this transform if transform.Chain understands

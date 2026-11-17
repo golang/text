@@ -68,6 +68,30 @@ func TestAppend(t *testing.T) {
 	})
 }
 
+func TestTransformerDisallow(t *testing.T) {
+	restricted := NewRestrictedProfile(UsernameCaseMapped, runes.Predicate(func(r rune) bool {
+		return r == '@'
+	}))
+	for _, tc := range []struct {
+		name  string
+		p     *Profile
+		input string
+	}{
+		{"restricted", restricted, "juliet@example.com"},
+		{"restricted", restricted, "juliet"},
+		{"Nickname", Nickname, ""},
+		{"Nickname", Nickname, "   "},
+		{"Nickname", Nickname, "Juliet"},
+		{"OpaqueString", OpaqueString, ""},
+	} {
+		want, wantErr := tc.p.String(tc.input)
+		got, _, err := transform.String(tc.p.NewTransformer(), tc.input)
+		if err != wantErr || (err == nil && got != want) {
+			t.Errorf("%s %+q: got %+q (err: %v); want %+q (err: %v)", tc.name, tc.input, got, err, want, wantErr)
+		}
+	}
+}
+
 func TestStringMallocs(t *testing.T) {
 	if n := testtext.AllocsPerRun(100, func() { UsernameCaseMapped.String("helloworld") }); n > 0 {
 		// TODO: reduce this to 0.
