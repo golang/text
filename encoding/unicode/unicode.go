@@ -399,19 +399,23 @@ func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 				x = x>>8 | x<<8
 			}
 			r, sSize = rune(x), 2
-			if utf16.IsSurrogate(r) {
+			if 0xD800 <= r && r < 0xDC00 {
 				if nSrc+3 < len(src) {
 					x = uint16(src[nSrc+2])<<8 | uint16(src[nSrc+3])
 					if u.current.endianness == LittleEndian {
 						x = x>>8 | x<<8
 					}
-					// Save for next iteration if it is not a high surrogate.
-					if isHighSurrogate(rune(x)) {
+					// Save for next iteration if it is not a low surrogate.
+					if isLowSurrogate(rune(x)) {
 						r, sSize = utf16.DecodeRune(r, rune(x)), 4
 					}
 				} else if !atEOF {
 					err = transform.ErrShortSrc
 					break
+				} else {
+					// A leading surrogate and an incomplete trailing code unit
+					// at EOF are a single decoding error.
+					sSize = len(src) - nSrc
 				}
 			}
 			if dSize = utf8.RuneLen(r); dSize < 0 {
@@ -434,7 +438,7 @@ func (u *utf16Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 	return nDst, nSrc, err
 }
 
-func isHighSurrogate(r rune) bool {
+func isLowSurrogate(r rune) bool {
 	return 0xDC00 <= r && r <= 0xDFFF
 }
 
