@@ -18,6 +18,7 @@ import (
 
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/encoding/internal"
 	"golang.org/x/text/encoding/internal/identifier"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/encoding/korean"
@@ -209,6 +210,14 @@ var encodings = [numIANA]encoding.Encoding{
 	enc38:   korean.EUCKR,
 	enc114:  simplifiedchinese.GB18030,
 	enc113:  simplifiedchinese.GBK,
+	// GB2312 is a subset of GBK, so decode it as GBK (matching x/text's
+	// htmlindex, which maps every GB2312 label to GBK). Wrap it so the
+	// encoding reports MIB 2025 and the name GB2312 rather than GBK's.
+	enc2025: &internal.Encoding{
+		Encoding: simplifiedchinese.GBK,
+		Name:     "GB2312",
+		MIB:      identifier.GB2312,
+	},
 	enc2085: simplifiedchinese.HZGB2312,
 	enc2026: traditionalchinese.Big5,
 }
