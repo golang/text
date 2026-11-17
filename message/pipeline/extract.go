@@ -657,6 +657,16 @@ func (px packageExtracter) addMessage(
 	comment string,
 	arguments []argument) {
 	x := px.x
+	
+	// Do not extract strings from external dependencies,
+	// as their files are located in the module cache.    
+    if file := x.conf.Fset.File(pos); file != nil {
+        filename := filepath.ToSlash(file.Name())
+        if strings.Contains(filename, "/pkg/mod/") {
+            return
+        }
+    }
+	
 	fmtMsg := constant.StringVal(c)
 
 	ph := placeholders{index: map[string]string{}}
