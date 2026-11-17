@@ -138,6 +138,7 @@ func (p *Printer) Printf(key Reference, a ...interface{}) (n int, err error) {
 
 func lookupAndFormat(p *printer, r Reference, a []interface{}) {
 	p.fmt.Reset(a)
+	defer p.checkExtraArgs()
 	switch v := r.(type) {
 	case string:
 		if p.catContext.Execute(v) == catalog.ErrNotFound {
