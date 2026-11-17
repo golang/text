@@ -174,6 +174,9 @@ func (s *scanner) deleteRange(start, end int) {
 	s.next -= diff
 	s.start -= diff
 	s.end -= diff
+	if s.token != nil {
+		s.token = s.b[s.start:s.end]
+	}
 }
 
 // scan parses the next token of a BCP 47 string.  Tokens that are larger
@@ -402,7 +405,9 @@ func parseVariants(scan *scanner, end int, t Tag) int {
 		} else {
 			scan.resizeRange(start, end, len(str))
 			copy(scan.b[scan.start:], str)
-			end = scan.end
+			end = start + len(str)
+			scan.next = min(end+1, len(scan.b))
+			scan.scan()
 		}
 	}
 	return end
@@ -473,6 +478,11 @@ func parseExtensions(scan *scanner) int {
 			private = extension
 			break
 		}
+		if isDuplicate(exts, ext) {
+			scan.setError(ErrSyntax)
+			end = extStart
+			continue
+		}
 		exts = append(exts, extension)
 	}
 	sort.Sort(bytesSort{exts, 1})
@@ -487,6 +497,16 @@ func parseExtensions(scan *scanner) int {
 		scan.b = scan.b[:start-1]
 	}
 	return end
+}
+
+// isDuplicate reports whether an extension with singleton ext is in exts.
+func isDuplicate(exts [][]byte, ext byte) bool {
+	for _, e := range exts {
+		if e[0] == ext {
+			return true
+		}
+	}
+	return false
 }
 
 // parseExtension parses a single extension and returns the position of

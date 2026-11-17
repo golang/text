@@ -162,6 +162,15 @@ func parseTests() []parseTest {
 		{in: "en-v-x-abc", lang: "en", ext: "x-abc", invalid: true, changed: true},
 		{in: "en-v-x-a", lang: "en", ext: "x-a", invalid: true, changed: true},
 		{in: "en-9-aa-0-aa-z-bb-x-a", lang: "en", extList: []string{"0-aa", "9-aa", "z-bb", "x-a"}, changed: true},
+		// A singleton may appear at most once (RFC 5646 section 2.2.6); keep the first.
+		{in: "en-a-bbb-a-ccc", lang: "en", ext: "a-bbb", invalid: true},
+		{in: "en-a-bbb-a-bbb", lang: "en", ext: "a-bbb", invalid: true},
+		{in: "en-u-ca-u-nu", lang: "en", ext: "u-ca", invalid: true},
+		{in: "en-t-ja-t-ko", lang: "en", ext: "t-ja", invalid: true},
+		{in: "en-a-bbb-b-ccc-a-ddd", lang: "en", extList: []string{"a-bbb", "b-ccc"}, invalid: true},
+		{in: "en-b-bbb-a-ccc-b-ddd", lang: "en", extList: []string{"a-ccc", "b-bbb"}, invalid: true, changed: true},
+		{in: "en-a-bbb-a-ccc-x-foo", lang: "en", extList: []string{"a-bbb", "x-foo"}, invalid: true, changed: true},
+		{in: "aa-u-aa-aa-u-200-100", lang: "aa", ext: "u-aa", invalid: true},
 		{in: "en-u-c", lang: "en", ext: "", invalid: true},
 		{in: "en-u-co-phonebk", lang: "en", ext: "u-co-phonebk"},
 		{in: "en-u-co-phonebk-ca", lang: "en", ext: "u-ca-co-phonebk", changed: true},
@@ -183,6 +192,16 @@ func parseTests() []parseTest {
 		{in: "en-u-cu-xau-co", lang: "en", extList: []string{"u-co-cu-xau"}, changed: true},
 		// LDML spec is not specific about it, but remove duplicates and return an error if the values differ.
 		{in: "en-u-cu-xau-co-phonebk-cu-xau", lang: "en", ext: "u-co-phonebk-cu-xau", changed: true},
+		// Removing a duplicate must not change how the rest is parsed.
+		{in: "en-u-ca-ca-t-ja-abcd", lang: "en", extList: []string{"t-ja", "u-ca"}, invalid: true, changed: true},
+		{in: "en-u-ca-ca-ca-", lang: "en", ext: "u-ca", invalid: true},
+		{in: "en-u-cb-ca-cb-", lang: "en", ext: "u-ca-cb", invalid: true, changed: true},
+		{in: "de-fonipa-scotland-us", lang: "de", variants: "scotland-fonipa", invalid: true, changed: true},
+		{in: "de-fonipa-scotland-u-cu-xau-co-phonebk", lang: "de", variants: "scotland-fonipa", ext: "u-co-phonebk-cu-xau", changed: true},
+		{in: "de-fonipa-scotland-1901-1901", lang: "de", variants: "1901-scotland-fonipa", changed: true},
+		{in: "de-1901-1901-u-cu-xau-co-phonebk", lang: "de", variants: "1901", ext: "u-co-phonebk-cu-xau", changed: true},
+		{in: "de-1901-1901-t-ja-abcd-x-a", lang: "de", variants: "1901", extList: []string{"t-ja", "x-a"}, invalid: true, changed: true},
+		{in: "en-t-de-1901-1901-m0-names", lang: "en", ext: "t-de-1901-m0-names", changed: true},
 		// No change as the result is a substring of the original!
 		{in: "en-US-u-cu-xau-cu-eur", lang: "en", region: "US", ext: "u-cu-xau", invalid: true, changed: false},
 		{in: "en-t-en-Cyrl-NL-fonipa", lang: "en", ext: "t-en-cyrl-nl-fonipa", changed: true},
@@ -361,6 +380,8 @@ func TestErrors(t *testing.T) {
 		{"ac-u-ca", mkInvalid("ac")},
 		{"ac-u-ca-co-pinyin", mkInvalid("ac")},
 		{"noob", ErrSyntax},
+		{"en-a-bbb-a-ccc", ErrSyntax},
+		{"ac-a-bbb-a-ccc", ErrSyntax},
 	}
 	for _, tt := range tests {
 		_, err := Parse(tt.in)
