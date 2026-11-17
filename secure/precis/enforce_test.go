@@ -447,8 +447,7 @@ var enforceTestCases = []struct {
 		{"שa", "שa", nil}, // no bidi rule
 	}},
 	{"UsernameCaseMapped", UsernameCaseMapped, []testCase{
-		// TODO: Should this work?
-		// {UsernameCaseMapped, "", "", errDisallowedRune},
+		{"", "", errEmptyString},
 		{"juliet@example.com", "juliet@example.com", nil},
 		{"fussball", "fussball", nil},
 		{"fu\u00DFball", "fu\u00DFball", nil},
@@ -497,6 +496,7 @@ var enforceTestCases = []struct {
 
 	}},
 	{"UsernameCasePreserved", UsernameCasePreserved, []testCase{
+		{"", "", errEmptyString},
 		{"ABC", "ABC", nil},
 		{"ＡＢ", "AB", nil},
 		{"שc", "", bidirule.ErrInvalid}, // bidi rule
