@@ -274,6 +274,15 @@ func (w *Writer) Write(data []byte) (n int, err error) {
 				}
 				w.n = m
 				err = nil
+				if n < len(data) {
+					// Some of data did not fit beside the previous remainder.
+					// Fill the space made by Transform and keep processing it.
+					m = copy(w.src[w.n:], data[n:])
+					w.n += m
+					n += m
+					src = w.src[:w.n]
+					continue
+				}
 			} else if nDst > 0 || nSrc > 0 {
 				// Not enough buffer to store the remainder. Keep processing as
 				// long as there is progress. Without this case, transforms that
