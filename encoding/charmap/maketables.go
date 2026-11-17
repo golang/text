@@ -130,6 +130,14 @@ var encodings = []struct {
 		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-IBM1047-2.1.2.ucm",
 	},
 	{
+		"IBM Code Page 1125 (aka cp866u)",
+		"IBM1125",
+		"Ukrainian government standard (RST 2018-91) for DOS, based on common alternative encoding, but different from cp866 in 0xF2-0xF9",
+		"CodePage1125",
+		encoding.ASCIISub,
+		"https://raw.githubusercontent.com/unicode-org/icu-data/main/charset/data/ucm/glibc-CP1125-2.3.3.ucm",
+	},
+	{
 		"IBM Code Page 1140",
 		"IBM01140",
 		"",
